@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lV5x4i4LBkMcgW+SsyXVzYxrouklslLsZvzMvW+vZ6Q='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-PBBBiAVjVO6GI0gKsEfDBnvG25f/k05La21a0D9epfA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -417,11 +417,14 @@ const ui={editT:false,tab:'budget',month:today().slice(0,7),f:{acct:'',uncat:fal
 let nextFocus=null;
 const fKey=el=>{if(!el||!el.dataset)return null;for(const k of ['amt','tgt','plan'])if(el.dataset[k])return `[data-${k}="${el.dataset[k]}"]`;if(el.dataset.card)return `[data-card="${el.dataset.card}"][data-k="${el.dataset.k}"]`;return el.id?'#'+el.id:null};
 document.addEventListener('pointerdown',e=>{nextFocus=e.target.closest&&e.target.closest('input,select,textarea')?fKey(e.target):null},true);
+function rememberView(){try{sessionStorage.setItem('bp-view',JSON.stringify({tab:ui.tab,month:ui.month,f:ui.f,y:Math.round(scrollY)}))}catch(_){}}
+let rvT;addEventListener('scroll',()=>{clearTimeout(rvT);rvT=setTimeout(rememberView,150)},{passive:true});
+addEventListener('pagehide',rememberView);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')rememberView()});
 function render(){
  const want=nextFocus||(document.activeElement&&fKey(document.activeElement));
  $$('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
  const v={budget:vBudget,tx:ui.sub==='import'?vImport:vTx,payoff:vPayoff,charts:vCharts,settings:vSettings}[ui.tab];
- $('#view').innerHTML=v();fitNames();
+ $('#view').innerHTML=v();fitNames();rememberView();
  if(want){const el=$(want);if(el){el.focus({preventScroll:true});if(el.dataset.money)caretEnd(el)}}
 }
 // shrink a long category name until it fits on one line
@@ -886,7 +889,11 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.tar
 (async()=>{
  try{await DB.open();state=await DB.get('state')}catch(e){toast('Storage unavailable: '+e.message)}
  if(!state){state=defaults();save(true)}else fixState(state);
+ // pull-to-refresh / reload: come back to the same tab, month, filters and scroll spot
+ let back=null;try{back=JSON.parse(sessionStorage.getItem('bp-view')||'null')}catch(_){}
+ if(back&&['budget','tx','payoff','charts','settings'].includes(back.tab)){ui.tab=back.tab;if(/^\d{4}-\d{2}$/.test(back.month||''))ui.month=back.month;if(back.f)ui.f={acct:back.f.acct&&acct(back.f.acct)?back.f.acct:'',uncat:!!back.f.uncat,q:String(back.f.q||'')}}
  render();
+ if(back&&back.y)requestAnimationFrame(()=>scrollTo(0,back.y));
  if(navigator.storage&&navigator.storage.persist){navigator.storage.persisted().then(p=>p||navigator.storage.persist()).then(p=>{persisted=p;if(ui.tab==='settings')render()}).catch(()=>{})}
  if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
