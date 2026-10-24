@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-g2hZez5F9zlY9bGfmbS9jovQt3antMMT4lO6U5K2uwA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XWpybX6f3iT6qwH5HEDySoj9+y6+hAWHQpqzjUCgpI0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -450,7 +450,7 @@ function vBudget(){
   h+=block(g.name,`${m(ga)} of ${m(gt)}`,`<div class="colh cg">${ch}</div>`+rows);
  }
  if(st.uncatN&&st.uncatOut)h+=block('Uncategorized',m(st.uncatOut),`<div class="row cat"><div class="cname" style="color:var(--amber)">Needs a category</div><div class="num">${mc(st.uncatOut)}</div><div></div><span class="pill neg">−${mc(st.uncatOut)}</span></div>`);
- h+=`<p class="note">Income uses your check amounts and pay dates; a date shows "in bank" once the deposit is imported. Bank payments for a category fill in Assigned automatically, and you can type over it. Targets stay the same each month until you edit them. Left is green when you're under target, grey when even, and red when over.</p>`;
+ 
  return h;
 }
 
@@ -519,7 +519,7 @@ function vImport(){
  <label class="btn sec" style="width:100%;margin-bottom:12px">Choose CSV file<input type="file" id="impFile" class="hidden"></label>
  <label class="field" style="margin-bottom:10px"><span>…or paste the CSV text here</span><textarea id="impText" placeholder="Date,Description,Amount&#10;10/01/2026,GROCERY STORE,-54.20" spellcheck="false">${esc(im.text)}</textarea></label>
  <button class="btn" data-act="impRead" style="width:100%">Read pasted text</button></div>`);
- if(!im.rows)return h+`<p class="note">Download the CSV from Commerce Bank's, Discover's or Apple's website, then choose it or paste it above. Nothing leaves this device.</p>`;
+ if(!im.rows)return h;
  if(!im.rows.length)return h+`<div class="warn"><div><b>No rows found.</b> Check that this is a CSV export.</div></div>`;
  const M=im.map,opt=(sel,none)=>(none?`<option value="-1">—</option>`:'')+im.names.map((n,j)=>`<option value="${j}"${+sel===j&&sel!=='split'?' selected':''}>${esc(n)}</option>`).join('');
  const split=M.amt==='split';
@@ -621,7 +621,7 @@ function vPayoff(){
   ${chart?`<div style="border-top:1px solid var(--border)">${chart}</div>`:''}
   ${pays.length?`<div class="sub-h"><span>Recent payments</span><span></span></div>`+pays.map(e=>`<div class="row kv"><span style="min-width:0"><span class="tx-d" style="display:block">${esc(e.desc||'Payment')}</span><span class="tx-s" style="display:block">${dateLabel(e.date)} · ${src[e.kind]}</span></span><b class="in">${m(e.pay)}</b></div>`).join(''):''}`);
  }
- h+=`<p class="note">Each payment counts once. If it shows up in both the bank and card files, it is matched and only lowers the balance once.</p>`;
+ 
  return h;
 }
 
@@ -660,7 +660,6 @@ function vSettings(){
  h+=block('Backup and export','',`<div class="row"><div class="btnrow" style="margin:0"><button class="btn" data-act="backup">Save backup</button><button class="btn sec" data-act="restore">Restore backup</button></div><p class="hint" style="margin:10px 0 0">The backup is one JSON file with everything. Save it, move it to the other device, then Restore there.</p></div>
  <div class="row"><div class="btnrow" style="margin:0"><button class="btn sec" data-act="exportCsv">Export transactions (CSV)</button><button class="btn sec" data-act="copyBackup">Copy backup text</button></div></div>
  <div class="row"><button class="btn danger sm" data-act="eraseAll">Erase all data on this device</button></div>`);
- h+=block('Privacy','',`<div class="row small muted">Everything stays on this device. The app never connects to the internet and works offline. Protected from automatic clearing: <b style="color:var(--text)">${persisted==null?'checking…':persisted?'yes':'not granted (install to home screen)'}</b>. ${state.txns.length} transactions saved.</div>`);
  return h;
 }
 function acctSheet(a){
