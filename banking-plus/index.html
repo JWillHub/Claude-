@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-PBBBiAVjVO6GI0gKsEfDBnvG25f/k05La21a0D9epfA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-wojrCxseGgLNecYungZBsFyJaRPrze4e7hwkMxPH16M='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -22,7 +22,8 @@
 :root{--bg:#0E1218;--bar:#151B26;--card:#171D29;--input:#222B3B;--border:#2A3446;--text:#EDF1F7;--muted:#A3AEC0;--gh:#2B3650;--sgh:#212A3B;--accent:#446FDC;--accent-soft:rgba(68,111,220,.20);--accent-text:#A9C4FF;--green:#36CC8E;--red:#F26F6F;--amber:#F6C65B;--dark:#0E1218;--topH:52px;--tabH:64px;color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
-body{overflow-x:hidden;min-height:100vh}
+html,body{overflow-x:hidden;overflow-x:clip}
+body{min-height:100vh;overscroll-behavior-x:none}
 button,input,select,textarea{font:inherit;color:inherit}
 .top{position:fixed;top:0;left:0;right:0;height:calc(var(--topH) + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bar);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;z-index:20}
 .top h1{margin:0;font-size:21px;line-height:1}
@@ -198,6 +199,9 @@ input[type=date]{min-height:44px}
 @media (prefers-reduced-motion:reduce){.clp,.chv,.fold>.grp-h{transition:none}}
 .drow.pressing>.sw-fg,.drow.pressing>.grp-h{background:var(--input);transition:background .45s}
 .sw.dragging .grip{color:var(--accent-text);opacity:1;cursor:grabbing}
+.mclip{overflow:hidden;margin:0 0 18px;border-radius:16px}
+.mclip>.summary{margin:0}
+.s-month{font-size:15px;font-weight:700;margin:0 0 8px}
 .summary.mswipe{touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:grab}
 .swipe-hint{display:flex;justify-content:center;gap:6px;margin-top:10px;font-size:12px;opacity:.7}
 .linkrow{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer}
@@ -450,10 +454,10 @@ const budStr=v=>v?(+v).toFixed(2):'';
 /* ---------- Budget ---------- */
 function vBudget(){
  const ym=ui.month,T=monthTotals(ym),st=T.st,left=r2(T.inc-T.out);
- let h=monthBar();
- h+=`<div class="summary mswipe ${left<0?'neg':''}"><div class="s-lbl">${left<0?'Over this month by':'Left this month'}</div><div class="s-big">${m(Math.abs(left))}</div>
+ let h='';
+ h+=`<div class="mclip"><div class="summary mswipe ${left<0?'neg':''}"><div class="s-month">${monthLabel(ym)}</div><div class="s-lbl">${left<0?'Over by':'Left this month'}</div><div class="s-big">${m(Math.abs(left))}</div>
  <div class="s-grid s3"><div><span>Income</span><b>${m(T.inc)}</b></div><div><span>Assigned</span><b>${m(T.out)}</b></div><div><span>Targets</span><b>${m(T.outT)}</b></div></div>
- <div class="s-foot"><span>Income − targets</span><span>${m(T.inc-T.outT)}</span></div><div class="swipe-hint">‹ Swipe for other months ›</div></div>`;
+ <div class="s-foot"><span>Income − targets</span><span>${m(T.inc-T.outT)}</span></div><div class="swipe-hint">‹ Swipe for other months ›</div></div></div>`;
  if(st.uncatN)h+=`<div class="warn"><div><b>${st.uncatN} uncategorized</b> this month${st.uncatOut?` · ${m(st.uncatOut)} out`:''}${st.uncatIn?` · ${m(st.uncatIn)} in`:''}</div><button class="btn sm" data-act="reviewUncat">Review</button></div>`;
  const IM=incomeMonth(ym);let edb=0;
  for(const g of state.groups){
