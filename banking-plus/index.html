@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XWpybX6f3iT6qwH5HEDySoj9+y6+hAWHQpqzjUCgpI0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-pv/AMDqPGOEGawcnng4dzV72OuPFnK/Z0seI53jcsm8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -185,6 +185,17 @@ input[type=date]{min-height:44px}
 .grp.drow{background:transparent}
 .drow.dragging{z-index:5;background:var(--input);box-shadow:0 8px 24px rgba(0,0,0,.45);border-radius:10px}
 [data-handle]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+.fold>.grp-h{cursor:pointer;border-bottom:1px solid var(--border);border-radius:14px;transition:border-radius .25s}
+.fold.open>.grp-h{border-radius:14px 14px 0 0;border-bottom-color:transparent}
+.fc{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.chv{transition:transform .25s ease;flex:none}
+.fold.open .chv{transform:rotate(180deg)}
+.clp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
+.fold.open>.clp{grid-template-rows:1fr}
+.clp-in{min-height:0;overflow:hidden}
+.fold>.clp .grp-c{border-top:0}
+.fold:not(.open)>.clp{visibility:hidden;transition:grid-template-rows .25s ease,visibility 0s .25s}
+@media (prefers-reduced-motion:reduce){.clp,.chv,.fold>.grp-h{transition:none}}
 .drow.pressing>.sw-fg,.drow.pressing>.grp-h{background:var(--input);transition:background .45s}
 .sw.dragging .grip{color:var(--accent-text);opacity:1;cursor:grabbing}
 .summary.mswipe{touch-action:pan-y;-webkit-user-select:none;user-select:none;cursor:grab}
@@ -416,6 +427,12 @@ function fitNames(){const els=$$('.cn');els.forEach(el=>el.style.fontSize='');
 addEventListener('resize',()=>fitNames());
 const ICON={l:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>'};
 const monthBar=()=>`<div class="monthbar"><button class="iconbtn" data-act="prevM" aria-label="Previous month">${ICON.l}</button><div class="mt">${monthLabel(ui.month)}</div><button class="iconbtn" data-act="nextM" aria-label="Next month">${ICON.r}</button></div>`;
+const CHEV='<svg class="chv" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+let openCards=new Set();try{openCards=new Set(JSON.parse(localStorage.getItem('bp-open')||'[]'))}catch(_){}
+const isOpen=k=>openCards.has(k);
+function toggleCard(sec){const k=sec.dataset.key,o=!sec.classList.contains('open');sec.classList.toggle('open',o);$('.grp-h',sec).setAttribute('aria-expanded',o);o?openCards.add(k):openCards.delete(k);try{localStorage.setItem('bp-open',JSON.stringify([...openCards]))}catch(_){}}
+// a Settings card that folds up: tap the header to open or close it
+const fold=(key,name,count,inner,extra='',cls='')=>`<section class="grp fold ${cls}${isOpen(key)?' open':''}" data-key="${key}"${extra}><div class="grp-h" data-act="toggleCard" role="button" tabindex="0" aria-expanded="${isOpen(key)}"${cls.includes('drow')?' data-handle="1"':''}><span class="gn">${name}</span><span class="gt fc">${count}${CHEV}</span></div><div class="clp"><div class="clp-in"><div class="grp-c">${inner}</div></div></div></section>`;
 const block=(name,total,inner,extra='')=>`<section class="grp"${extra}><div class="grp-h"><span class="gn">${esc(name)}</span><span class="gt">${total}</span></div><div class="grp-c">${inner}</div></section>`;
 const pillCls=v=>v>0.004?'pos':v<-0.004?'neg':'zero';
 const budStr=v=>v?(Number.isInteger(+v)?String(+v):(+v).toFixed(2)):'';
@@ -648,16 +665,16 @@ function vCharts(){
 /* ---------- Settings ---------- */
 let persisted=null;
 function vSettings(){
- let h=block('Accounts',`${state.accounts.length}`,state.accounts.map(a=>swRow('acct',a.id,`<div class="row linkrow" data-act="editAcct" data-id="${a.id}"><span style="min-width:0"><span class="tx-d" style="display:block">${esc(a.name)}</span><span class="tx-s" style="display:block">${a.type==='credit'?'Credit card':'Bank account'} · ${state.txns.filter(t=>t.acct===a.id).length} transactions</span></span><span class="chev">${ICON.r.replace('<svg','<svg width="18" height="18"')}</span></div>`)).join('')+`<div class="row"><button class="btn sec sm" data-act="addAcct">Add account</button></div>`);
+ let h=fold('accounts','Accounts',state.accounts.length,state.accounts.map(a=>swRow('acct',a.id,`<div class="row linkrow" data-act="editAcct" data-id="${a.id}"><span style="min-width:0"><span class="tx-d" style="display:block">${esc(a.name)}</span><span class="tx-s" style="display:block">${a.type==='credit'?'Credit card':'Bank account'} · ${state.txns.filter(t=>t.acct===a.id).length} transactions</span></span><span class="chev">${ICON.r.replace('<svg','<svg width="18" height="18"')}</span></div>`)).join('')+`<div class="row"><button class="btn sec sm" data-act="addAcct">Add account</button></div>`);
  let cats='';
  for(const g of state.groups){
   const cs=state.cats.filter(c=>c.gid===g.id);
-  cats+=`<section class="grp drow" data-drag="grp" data-id="${g.id}"><div class="grp-h" data-handle="1"><span class="gn linkrow" data-act="editGroup" data-id="${g.id}" style="flex:1">${esc(g.name)}${g.income&&!/income/i.test(g.name)?' · income':''}</span></div><div class="grp-c">`;
-  cats+=`<div class="sortable" data-gid="${g.id}">`+cs.map(c=>swRow('cat',c.id,`<div class="row kv"><span class="cname linkrow" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" style="flex:1">${esc(c.name)}${c.cardId?' <span class="tag blue">card payment</span>':''}</span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('')+`</div>`;
-  cats+=`<div class="row"><button class="btn sec sm" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${g.income?'Add income':'Add category'}</button></div></div></section>`;
+  let inner=`<div class="sortable" data-gid="${g.id}">`+cs.map(c=>swRow('cat',c.id,`<div class="row kv"><span class="cname linkrow" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" style="flex:1">${esc(c.name)}${c.cardId?' <span class="tag blue">card payment</span>':''}</span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('')+`</div>`;
+  inner+=`<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec sm" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${g.income?'Add income':'Add category'}</button><button class="btn sec sm" data-act="editGroup" data-id="${g.id}">Rename group</button></div>`;
+  cats+=fold('g'+g.id,esc(g.name)+(g.income&&!/income/i.test(g.name)?' · income':''),cs.length,inner,` data-drag="grp" data-id="${g.id}"`,'drow');
  }
- h+=`<p class="note" style="margin:0 2px 10px">Tap to edit, swipe left to delete. Hold ≡ to move a category, or hold a card's header to move the whole card.</p><div id="gsort">`+cats+`</div><div class="btnrow"><button class="btn sec" data-act="addGroup">Add category group</button></div>`;
- h+=block('Backup and export','',`<div class="row"><div class="btnrow" style="margin:0"><button class="btn" data-act="backup">Save backup</button><button class="btn sec" data-act="restore">Restore backup</button></div><p class="hint" style="margin:10px 0 0">The backup is one JSON file with everything. Save it, move it to the other device, then Restore there.</p></div>
+ h+=`<p class="note" style="margin:0 2px 10px">Tap a card to open it. Inside, tap to edit, swipe left to delete, hold ≡ to move. Hold a card's header to move the whole card.</p><div id="gsort">`+cats+`</div><div class="btnrow"><button class="btn sec" data-act="addGroup">Add category group</button></div>`;
+ h+=fold('backup','Backup and export','',`<div class="row"><div class="btnrow" style="margin:0"><button class="btn" data-act="backup">Save backup</button><button class="btn sec" data-act="restore">Restore backup</button></div><p class="hint" style="margin:10px 0 0">The backup is one JSON file with everything. Save it, move it to the other device, then Restore there.</p></div>
  <div class="row"><div class="btnrow" style="margin:0"><button class="btn sec" data-act="exportCsv">Export transactions (CSV)</button><button class="btn sec" data-act="copyBackup">Copy backup text</button></div></div>
  <div class="row"><button class="btn danger sm" data-act="eraseAll">Erase all data on this device</button></div>`);
  return h;
@@ -815,6 +832,7 @@ const act={
  impGo,
  editAcct(b){acctSheet(acct(b.dataset.id))},addAcct(){acctSheet(null)},
  editCat(b){catSheet(cat(b.dataset.id))},addCat(b){catSheet(null,b.dataset.id)},
+ toggleCard(b){toggleCard(b.closest('.fold'))},
  editGroup(b){groupSheet(grp(b.dataset.id))},addGroup(){groupSheet(null)},
  backup(){saveFile(`banking-plus-backup-${today()}.json`,backupText(),'application/json')},
  copyBackup(){navigator.clipboard.writeText(backupText()).then(()=>toast('Backup copied. Paste it into Restore on the other device.'),()=>toast('Copy not allowed here; use Save backup'))},
@@ -847,7 +865,7 @@ document.addEventListener('change',e=>{
  else if(t.id==='impFile'){const f=t.files[0];if(!f)return;f.text().then(x=>{ui.imp.text=x;impSetText(x)}).catch(()=>toast('Could not read that file. Try pasting the text instead.'))}
 });
 document.addEventListener('input',e=>{if(e.target.id==='txq'){ui.f.q=e.target.value;$('#txlist').innerHTML=txList()}else if(e.target.id==='impText'&&ui.imp)ui.imp.text=e.target.value});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('.bud,.kv input'))e.target.blur();if(e.key==='Escape'){const s=$('.scrim');if(s)s.remove()}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.fold>.grp-h')){e.preventDefault();toggleCard(e.target.closest('.fold'));return}if(e.key==='Enter'&&e.target.matches('.bud,.kv input'))e.target.blur();if(e.key==='Escape'){const s=$('.scrim');if(s)s.remove()}});
 
 /* ---------- start ---------- */
 (async()=>{
