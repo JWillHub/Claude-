@@ -1,5 +1,5 @@
 // Banking+ offline cache. Serves the app from the cache; refreshes it in the background when online.
-const CACHE='bankingplus-v6:'+self.registration.scope;
+const CACHE='bankingplus-v7:'+self.registration.scope;
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
