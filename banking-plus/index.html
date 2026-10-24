@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-pv/AMDqPGOEGawcnng4dzV72OuPFnK/Z0seI53jcsm8='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lV5x4i4LBkMcgW+SsyXVzYxrouklslLsZvzMvW+vZ6Q='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -302,7 +302,7 @@ function incomeSheet(c){
  const isNew=!c;c=c||{name:'',amt:0,date:today(),freq:'biweekly'};
  sheet(isNew?'Add income':'Edit income',`
  <label class="field"><span>Paid by</span><input name="name" required value="${esc(c.name)}" placeholder="e.g. The Guidance Center" autocomplete="off"></label>
- <label class="field"><span>Check amount</span><input name="amt" inputmode="decimal" value="${c.amt?(+c.amt).toFixed(2):''}" placeholder="0.00"></label>
+ <label class="field"><span>Check amount</span><input name="amt" inputmode="numeric" data-money="1" value="${c.amt?(+c.amt).toFixed(2):''}" placeholder="0.00"></label>
  <label class="field"><span>Date a check hit</span><input type="date" name="date" value="${esc(c.date||today())}"></label>
  <label class="field"><span>How often</span><select name="freq">${Object.entries(FREQ).map(([k,v])=>`<option value="${k}"${c.freq===k?' selected':''}>${v}</option>`).join('')}</select></label>`,
  fd=>{const n=fd.name.trim();if(!n){toast('Enter who pays it');return false}
@@ -413,12 +413,19 @@ function detectCols(rows){
 /* ---------- UI state ---------- */
 const ui={editT:false,tab:'budget',month:today().slice(0,7),f:{acct:'',uncat:false,q:''},sub:null,imp:null};
 
+// keep the box you just tapped focused when saving the previous box redraws the page
+let nextFocus=null;
+const fKey=el=>{if(!el||!el.dataset)return null;for(const k of ['amt','tgt','plan'])if(el.dataset[k])return `[data-${k}="${el.dataset[k]}"]`;if(el.dataset.card)return `[data-card="${el.dataset.card}"][data-k="${el.dataset.k}"]`;return el.id?'#'+el.id:null};
+document.addEventListener('pointerdown',e=>{nextFocus=e.target.closest&&e.target.closest('input,select,textarea')?fKey(e.target):null},true);
 function render(){
+ const want=nextFocus||(document.activeElement&&fKey(document.activeElement));
  $$('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
  const v={budget:vBudget,tx:ui.sub==='import'?vImport:vTx,payoff:vPayoff,charts:vCharts,settings:vSettings}[ui.tab];
  $('#view').innerHTML=v();fitNames();
+ if(want){const el=$(want);if(el){el.focus({preventScroll:true});if(el.dataset.money)caretEnd(el)}}
 }
 // shrink a long category name until it fits on one line
+function fitOne(el){el.style.fontSize='';let f=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+1&&f>11){f-=.5;el.style.fontSize=f+'px'}}
 function fitNames(){const els=$$('.cn');els.forEach(el=>el.style.fontSize='');
  const fit=(el,min)=>{let f=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+1&&f>min){f-=.5;el.style.fontSize=f+'px'}return f};
  // one shared size for all names (never below 13px), then only an unusually long name goes smaller
@@ -435,7 +442,7 @@ function toggleCard(sec){const k=sec.dataset.key,o=!sec.classList.contains('open
 const fold=(key,name,count,inner,extra='',cls='')=>`<section class="grp fold ${cls}${isOpen(key)?' open':''}" data-key="${key}"${extra}><div class="grp-h" data-act="toggleCard" role="button" tabindex="0" aria-expanded="${isOpen(key)}"${cls.includes('drow')?' data-handle="1"':''}><span class="gn">${name}</span><span class="gt fc">${count}${CHEV}</span></div><div class="clp"><div class="clp-in"><div class="grp-c">${inner}</div></div></div></section>`;
 const block=(name,total,inner,extra='')=>`<section class="grp"${extra}><div class="grp-h"><span class="gn">${esc(name)}</span><span class="gt">${total}</span></div><div class="grp-c">${inner}</div></section>`;
 const pillCls=v=>v>0.004?'pos':v<-0.004?'neg':'zero';
-const budStr=v=>v?(Number.isInteger(+v)?String(+v):(+v).toFixed(2)):'';
+const budStr=v=>v?(+v).toFixed(2):'';
 
 /* ---------- Budget ---------- */
 function vBudget(){
@@ -461,7 +468,7 @@ function vBudget(){
    let pill;
    if(g.income)pill=n.left>0.004?`<span class="pill zero">${mc(n.left)}</span>`:n.left<-0.004?`<span class="pill pos">+${mc(-n.left)}</span>`:`<span class="pill ${n.tgt?'pos':'zero'}">${n.tgt?'Met':'$0'}</span>`;
    else pill=n.left>0.004?`<span class="pill pos">${mc(n.left)}</span>`:n.left<-0.004?`<span class="pill neg">−${mc(-n.left)}</span>`:`<span class="pill zero">${n.tgt?'Even':'$0'}</span>`;
-   rows+=`<div class="row cat"><div class="cname"><span class="cn">${esc(c.name)}</span>${n.tx?`<span class="cnote">${mc(n.tx)} from bank</span>`:''}</div><input class="bud" data-amt="${c.id}" value="${budStr(n.amt)}" placeholder="0" inputmode="decimal" enterkeyhint="done" aria-label="${g.income?'Received':'Assigned'} for ${esc(c.name)}">${ui.editT?`<input class="bud tgt" data-tgt="${c.id}" value="${budStr(n.tgt)}" placeholder="0" inputmode="decimal" enterkeyhint="done" aria-label="Target for ${esc(c.name)}">`:`<div class="num">${mc(n.tgt)}</div>`}${pill}</div>`}
+   rows+=`<div class="row cat"><div class="cname"><span class="cn">${esc(c.name)}</span>${n.tx?`<span class="cnote">${mc(n.tx)} from bank</span>`:''}</div><input class="bud" data-amt="${c.id}" value="${budStr(n.amt)}" placeholder="0.00" inputmode="numeric" data-money="1" enterkeyhint="done" aria-label="${g.income?'Received':'Assigned'} for ${esc(c.name)}">${ui.editT?`<input class="bud tgt" data-tgt="${c.id}" value="${budStr(n.tgt)}" placeholder="0.00" inputmode="numeric" data-money="1" enterkeyhint="done" aria-label="Target for ${esc(c.name)}">`:`<div class="num">${mc(n.tgt)}</div>`}${pill}</div>`}
   if(!cs.length)rows=`<div class="row empty">No categories yet. Add them in Settings.</div>`;
   const ch=`<span>Category</span><span>${g.income?'Received':'Assigned'}</span><span>Target</span><span>Left</span>`;
   h+=block(g.name,`${m(ga)} of ${m(gt)}`,`<div class="colh cg">${ch}</div>`+rows);
@@ -512,7 +519,7 @@ function txSheet(t){
  sheet(isNew?'Add transaction':'Edit transaction',`
  <label class="field"><span>Account</span><select name="acct" required>${acctOptions(t.acct)}</select></label>
  <div class="seg"><label><input type="radio" name="dir" value="out"${out?' checked':''}>Money out</label><label><input type="radio" name="dir" value="in"${out?'':' checked'}>Money in</label></div>
- <label class="field"><span>Amount</span><input name="amt" inputmode="decimal" required value="${t.amt?Math.abs(t.amt).toFixed(2):''}" placeholder="0.00"></label>
+ <label class="field"><span>Amount</span><input name="amt" inputmode="numeric" data-money="1" required value="${t.amt?Math.abs(t.amt).toFixed(2):''}" placeholder="0.00"></label>
  <label class="field"><span>Date</span><input type="date" name="date" required value="${t.date}"></label>
  <label class="field"><span>Description</span><input name="desc" required value="${esc(t.desc)}" autocomplete="off"></label>
  <label class="field" data-catf><span>Category</span><select name="cat">${catOptions(t.cat)}</select></label>
@@ -629,11 +636,11 @@ function vPayoff(){
   const pays=i.ev.filter(e=>e.kind!=='charge').slice(-6).reverse();
   const src={bank:'From bank',card:'Card statement',both:'Bank + card statement (counted once)'};
   h+=block(a.name,m(i.owed),`
-  <div class="row kv"><span>Starting balance</span><input inputmode="decimal" data-card="${a.id}" data-k="startBal" value="${i.start?i.start.toFixed(2):''}" placeholder="0.00" aria-label="Starting balance"></div>
+  <div class="row kv"><span>Starting balance</span><input inputmode="numeric" data-money="1" data-card="${a.id}" data-k="startBal" value="${i.start?i.start.toFixed(2):''}" placeholder="0.00" aria-label="Starting balance"></div>
   <div class="row kv"><span>As of</span><input type="date" data-card="${a.id}" data-k="startDate" value="${esc(a.startDate||'')}" aria-label="Balance date"></div>
-  <div class="row kv"><span>APR % <span class="muted small">(optional)</span></span><input inputmode="decimal" data-card="${a.id}" data-k="apr" value="${a.apr||''}" placeholder="0" aria-label="APR"></div>
+  <div class="row kv"><span>APR % <span class="muted small">(optional)</span></span><input inputmode="decimal" data-pct="1" data-card="${a.id}" data-k="apr" value="${a.apr||''}" placeholder="0" aria-label="APR"></div>
   <div class="row"><div class="kv"><span>Paid since ${a.startDate?new Date(a.startDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'start'}</span><b class="in">${m(i.paid)}</b></div>${i.charges>0?`<div class="kv small muted" style="margin-top:4px"><span>New charges / interest</span><span>${m(i.charges)}</span></div>`:''}<div class="prog"><i style="width:${pc}%"></i></div></div>
-  <div class="row kv"><span>Monthly payment<br><span class="muted small">${i.pay?'Using '+i.src:'Set a target for the payment, or type one'}</span></span><input inputmode="decimal" data-card="${a.id}" data-k="payment" value="${a.payment?(+a.payment).toFixed(2):''}" placeholder="${i.pay?i.pay.toFixed(2):'0.00'}" aria-label="Planned monthly payment"></div>
+  <div class="row kv"><span>Monthly payment<br><span class="muted small">${i.pay?'Using '+i.src:'Set a target for the payment, or type one'}</span></span><input inputmode="numeric" data-money="1" data-card="${a.id}" data-k="payment" value="${a.payment?(+a.payment).toFixed(2):''}" placeholder="${i.pay?i.pay.toFixed(2):'0.00'}" aria-label="Planned monthly payment"></div>
   <div class="row kv"><span>Estimated payoff${i.months&&!i.never&&i.owed>0.005?`<br><span class="muted small">${i.months} payment${i.months>1?'s':''} of ${m(i.pay)}${i.interest>0.5?` · about ${m(i.interest)} interest`:''}</span>`:''}</span>${est}</div>
   ${chart?`<div style="border-top:1px solid var(--border)">${chart}</div>`:''}
   ${pays.length?`<div class="sub-h"><span>Recent payments</span><span></span></div>`+pays.map(e=>`<div class="row kv"><span style="min-width:0"><span class="tx-d" style="display:block">${esc(e.desc||'Payment')}</span><span class="tx-s" style="display:block">${dateLabel(e.date)} · ${src[e.kind]}</span></span><b class="in">${m(e.pay)}</b></div>`).join(''):''}`);
@@ -685,7 +692,7 @@ function acctSheet(a){
  <label class="field"><span>Name</span><input name="name" required value="${esc(a.name)}" autocomplete="off"></label>
  <label class="field"><span>Type</span><select name="type"><option value="bank"${a.type!=='credit'?' selected':''}>Bank account (checking / savings)</option><option value="credit"${a.type==='credit'?' selected':''}>Credit card</option></select></label>
  <div data-cr><label class="field"><span>Words that identify payments to this card in the bank's description</span><input name="match" value="${esc(a.match||'')}" placeholder="e.g. discover, card payment" autocomplete="off"></label><p class="hint">Separate with commas. Used to categorize bank payments automatically on import.</p></div>
- <div data-bk><label class="field"><span>Balance (optional)</span><input name="startBal" inputmode="decimal" value="${a.type!=='credit'&&a.startBal?(+a.startBal).toFixed(2):''}" placeholder="0.00"></label><label class="field"><span>As of date</span><input type="date" name="startDate" value="${a.type!=='credit'?esc(a.startDate||''):''}"></label></div>`,
+ <div data-bk><label class="field"><span>Balance (optional)</span><input name="startBal" inputmode="numeric" data-money="1" value="${a.type!=='credit'&&a.startBal?(+a.startBal).toFixed(2):''}" placeholder="0.00"></label><label class="field"><span>As of date</span><input type="date" name="startDate" value="${a.type!=='credit'?esc(a.startDate||''):''}"></label></div>`,
  fd=>{const name=fd.name.trim();if(!name)return false;
   if(isNew){a={id:uid(),startBal:0,startDate:today(),apr:0,payment:0};state.accounts.push(a)}
   const old=a.name,wasCredit=a.type==='credit';a.name=name;a.type=fd.type;
@@ -864,6 +871,14 @@ document.addEventListener('change',e=>{
  else if(c==='impInc'){ui.imp.override=ui.imp.override||{};ui.imp.override[+t.dataset.i]=t.checked;const y=scrollY;render();scrollTo(0,y)}
  else if(t.id==='impFile'){const f=t.files[0];if(!f)return;f.text().then(x=>{ui.imp.text=x;impSetText(x)}).catch(()=>toast('Could not read that file. Try pasting the text instead.'))}
 });
+/* cents-first money entry: digits fill in from the right (5 → 0.05, 50 → 0.50, 5000 → 50.00) */
+const centsFmt=d=>{d=d.replace(/\D/g,'').replace(/^0+/,'').slice(0,9);return d?(+d/100).toFixed(2):''};
+const caretEnd=el=>{try{const n=el.value.length;el.setSelectionRange(n,n)}catch(_){}};
+document.addEventListener('beforeinput',e=>{const el=e.target;if(!el.dataset||!el.dataset.money)return;
+ if(e.inputType==='insertFromPaste'||e.inputType==='insertReplacementText'){const t=(e.data??(e.dataTransfer&&e.dataTransfer.getData('text'))??'');const v=parseAmt(t);if(v!=null){e.preventDefault();el.value=Math.abs(v).toFixed(2);el.dispatchEvent(new Event('input',{bubbles:true}))}}});
+document.addEventListener('focusin',e=>{const el=e.target;if(el.dataset&&el.dataset.money)setTimeout(()=>caretEnd(el),0)});
+document.addEventListener('click',e=>{const el=e.target;if(el.dataset&&el.dataset.money)caretEnd(el)},true);
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.money){const el=e.target,v=centsFmt(el.value);if(el.value!==v)el.value=v;caretEnd(el);if(el.matches('.row.cat .bud'))fitOne(el)}});
 document.addEventListener('input',e=>{if(e.target.id==='txq'){ui.f.q=e.target.value;$('#txlist').innerHTML=txList()}else if(e.target.id==='impText'&&ui.imp)ui.imp.text=e.target.value});
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.fold>.grp-h')){e.preventDefault();toggleCard(e.target.closest('.fold'));return}if(e.key==='Enter'&&e.target.matches('.bud,.kv input'))e.target.blur();if(e.key==='Escape'){const s=$('.scrim');if(s)s.remove()}});
 
