@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-wojrCxseGgLNecYungZBsFyJaRPrze4e7hwkMxPH16M='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-zn/08q7oUwU1J+yHqiY41OZ0bxtnyPVV4UFl3J/Nrn4='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -457,7 +457,7 @@ function vBudget(){
  let h='';
  h+=`<div class="mclip"><div class="summary mswipe ${left<0?'neg':''}"><div class="s-month">${monthLabel(ym)}</div><div class="s-lbl">${left<0?'Over by':'Left this month'}</div><div class="s-big">${m(Math.abs(left))}</div>
  <div class="s-grid s3"><div><span>Income</span><b>${m(T.inc)}</b></div><div><span>Assigned</span><b>${m(T.out)}</b></div><div><span>Targets</span><b>${m(T.outT)}</b></div></div>
- <div class="s-foot"><span>Income − targets</span><span>${m(T.inc-T.outT)}</span></div><div class="swipe-hint">‹ Swipe for other months ›</div></div></div>`;
+ <div class="s-foot"><span>${T.inc-T.outT<0?'Short after targets':'Extra money'}</span><span>${m(Math.abs(T.inc-T.outT))}</span></div><div class="swipe-hint">‹ Swipe for other months ›</div></div></div>`;
  if(st.uncatN)h+=`<div class="warn"><div><b>${st.uncatN} uncategorized</b> this month${st.uncatOut?` · ${m(st.uncatOut)} out`:''}${st.uncatIn?` · ${m(st.uncatIn)} in`:''}</div><button class="btn sm" data-act="reviewUncat">Review</button></div>`;
  const IM=incomeMonth(ym);let edb=0;
  for(const g of state.groups){

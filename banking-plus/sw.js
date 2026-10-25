@@ -1,6 +1,6 @@
 // Banking+ offline support. Online: always get the latest from the site (and refresh the cache).
 // Offline: use the cached copy.
-const CACHE='bankingplus-v11:'+self.registration.scope;
+const CACHE='bankingplus-v12:'+self.registration.scope;
 const ASSETS=['./','./index.html','./app.webmanifest','./bp-icon-192.png','./bp-icon-512.png','./bp-apple-touch.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
