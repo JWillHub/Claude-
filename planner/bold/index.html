@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f1ec">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+
+:root{--bg:#f2f1ec;--fg:#111;--muted:#77756e;--line:#111;--accent:#e4002b;
+  --paid:#c4c2ba;--soon:#ff8a00;--over:#e4002b;--up:#111}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--fg);font:15px/1.35 Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  padding:env(safe-area-inset-top) 0 calc(96px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:12px 16px}
+header{display:flex;align-items:flex-start;justify-content:space-between;margin:8px 0 14px}
+h1{font-size:44px;line-height:.9;margin:0;font-weight:900;letter-spacing:-.045em;text-transform:uppercase;max-width:6ch}
+.iconbtn{background:var(--fg);border:0;color:var(--bg);border-radius:0;padding:8px 12px;font:800 12px Archivo,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.card{background:transparent;border-top:4px solid var(--fg);border-radius:0;padding:12px 0 16px;margin:0}
+.sum{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;text-align:left}
+.sum b{display:block;font-size:24px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.sum div:last-child b{color:var(--accent)}
+.sum span{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.banner{border-top-color:var(--accent);background:var(--accent);color:#fff;padding:12px;margin-bottom:12px}
+.banner h3{margin:0 0 8px;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.banner .bill{border-color:rgba(255,255,255,.5)}
+.banner .info .m{color:rgba(255,255,255,.8)}
+.banner .bar{background:#fff}
+.banner .chk{border-color:#fff}
+.calhead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+.calhead button{background:var(--fg);border:0;color:var(--bg);width:40px;height:40px;border-radius:0;font-size:22px;font-weight:800}
+.calhead .title{font-weight:900;font-size:30px;letter-spacing:-.04em;text-transform:uppercase;line-height:1}
+.calhead .title small{display:block;color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:none;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border-top:1.5px solid var(--fg);border-left:1.5px solid var(--fg)}
+.wd,.day{border-right:1.5px solid var(--fg);border-bottom:1.5px solid var(--fg)}
+.wd{text-align:left;font-size:10px;font-weight:800;padding:4px 5px;letter-spacing:.06em}
+.day{aspect-ratio:1/1;background:transparent;border-radius:0;border-top:0;border-left:0;
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;font:800 15px Archivo,sans-serif;color:var(--fg);padding:4px 5px}
+.day.empty{background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(17,17,17,.08) 5px 6px)}
+.day.today{color:var(--accent)}
+.day.sel{background:var(--fg);color:var(--bg)}
+.day.sel .up{background:var(--bg)}
+.dots{display:flex;gap:2px;height:7px}
+.dot{width:7px;height:7px;border-radius:0}
+.paid{background:var(--paid)}.soon{background:var(--soon)}.over{background:var(--over)}.up{background:var(--up)}
+.listhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 4px}
+.listhead h2{font-size:20px;margin:0;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
+.link{background:none;border:0;color:var(--accent);font:800 12px Archivo,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:0}
+.bill{display:flex;align-items:center;gap:12px;background:transparent;border-bottom:1.5px solid var(--fg);border-radius:0;padding:12px 0;margin:0}
+.bar{width:10px;height:10px;border-radius:0;flex:none}
+.info{flex:1;min-width:0}
+.info .n{font-weight:800;font-size:17px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info .m{font-size:12px;color:var(--muted);font-weight:600}
+.amt{text-align:right;font-weight:900;font-size:19px;letter-spacing:-.03em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chk{width:36px;height:36px;border-radius:0;border:2px solid var(--fg);background:transparent;color:var(--bg);font-size:18px;font-weight:900;flex:none}
+.chk.on{background:var(--fg)}
+.empty-msg{color:var(--muted);padding:16px 0;font-weight:600}
+.tag{display:inline-block;font-size:9px;font-weight:800;padding:2px 5px;background:var(--fg);color:var(--bg);margin-left:6px;vertical-align:3px;letter-spacing:.08em;text-transform:uppercase}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));
+  width:min(528px,calc(100% - 32px));height:58px;border:0;border-radius:0;background:var(--accent);color:#fff;font:900 18px Archivo,sans-serif;letter-spacing:-.01em;text-transform:uppercase;text-align:left;padding:0 18px}
+.overlay{position:fixed;inset:0;background:rgba(17,17,17,.6);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.overlay.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;border-top:6px solid var(--accent);border-radius:0;padding:18px 16px calc(16px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto}
+.sheet h2{margin:0 0 8px;font-size:30px;font-weight:900;letter-spacing:-.04em;text-transform:uppercase}
+label{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin:12px 0 4px}
+input,select,textarea{width:100%;background:#fff;color:var(--fg);border:2px solid var(--fg);border-radius:0;padding:10px;font:600 16px Archivo,sans-serif}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--accent);outline-offset:-1px}
+textarea{min-height:60px;resize:vertical}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.toggle{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--fg);padding:12px 0;margin-top:8px;font-weight:800;text-transform:uppercase;font-size:13px}
+.toggle input{width:22px;height:22px;accent-color:var(--fg)}
+.actions{display:flex;gap:10px;margin-top:16px}
+.actions button{flex:1;height:50px;border-radius:0;border:0;font:900 15px Archivo,sans-serif;text-transform:uppercase}
+.save{background:var(--fg);color:var(--bg)}
+.cancel{background:transparent;color:var(--fg);border:2px solid var(--fg)!important}
+.del{background:transparent;color:var(--accent);border:2px solid var(--accent)!important}
+.menu button{display:block;width:100%;text-align:left;background:transparent;color:var(--fg);border:0;border-bottom:2px solid var(--fg);padding:14px 0;font:800 17px Archivo,sans-serif}
+.note{font-size:12px;color:var(--muted);margin-top:8px;font-weight:600}
+
+/* ---- shared fixes ---- */
+[hidden]{display:none!important}
+#homeTitle{cursor:pointer;user-select:none;-webkit-user-select:none}
+.calhead .title,.calhead .title small{white-space:nowrap}
+.chk.on.stamp{animation:stamp .22s ease-out}
+@keyframes stamp{0%{transform:rotate(-8deg) scale(1.6);opacity:0}70%{transform:rotate(-8deg) scale(.95);opacity:1}100%{transform:rotate(-8deg) scale(1)}}
+
+.calhead .title{font-size:min(30px,7.2vw);min-width:0}
+.sum{grid-template-columns:repeat(3,1fr);gap:8px}
+.sum b{font-size:21px;letter-spacing:-.04em}
+.chk{width:60px;height:32px;border:2.5px dashed var(--fg);background:rgba(17,17,17,.05);font-size:0;position:relative;transition:transform .15s}
+.chk.on{background:rgba(228,0,43,.06);border:2.5px solid var(--accent);transform:rotate(-8deg)}
+.chk.on::after{content:"PAID";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 13px/1 Archivo,sans-serif;letter-spacing:.14em;padding-left:.14em;color:var(--accent)}
+.banner .chk{border-color:#fff;background:rgba(255,255,255,.12)}
+.banner .info .m{color:rgba(255,255,255,.85)}
+
+/* ---- app shell ---- */
+[hidden]{display:none!important}
+.view{display:none}.view.on{display:block}
+.hdr-left{display:flex;align-items:center;gap:10px;min-width:0}
+.chk.on::after{content:attr(data-label)}
+.task.done .n{text-decoration:line-through}
+.donehead{display:flex;justify-content:space-between;align-items:center}
+label .link{float:right;font-size:12px}
+.tile{display:block;width:100%;text-align:left;font:inherit;position:relative;cursor:pointer}
+.tile .accentbar{position:absolute}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom, 0px));z-index:30;padding:11px 16px;font-size:14px;max-width:calc(100% - 32px)}
+#askOv .sheet h2{margin-bottom:4px}
+
+.back{background:var(--fg);border:0;color:var(--bg);width:40px;height:40px;border-radius:0;font-size:26px;font-weight:800;line-height:1;flex:none;padding:0 0 4px;align-self:flex-start;margin-top:2px}
+body[data-view=home] h1{max-width:none;font-size:min(44px,11vw)}
+body[data-view=todo] h1{max-width:none}
+.homedate{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:-6px 0 18px}
+.tile{background:transparent;border:0;border-top:4px solid var(--fg);border-radius:0;padding:14px 56px 22px 0;margin:0;color:var(--fg)}
+.tile .accentbar{display:none}
+.tile .k{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.tile .big{font-size:min(36px,9vw);font-weight:900;letter-spacing:-.04em;line-height:1;margin:10px 0 8px;text-transform:uppercase}
+.tile .sub{font-size:13px;font-weight:600;color:var(--muted)}
+.tile .warn{color:var(--accent);font-weight:800}
+.tile::after{content:"\2192";position:absolute;right:0;top:14px;width:44px;height:44px;background:var(--fg);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900}
+.tile.alt::after{background:var(--accent);color:#fff}
+.tile:active::after{transform:translateX(3px)}
+.sec{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin:18px 0 0;padding-bottom:6px;border-bottom:1.5px solid var(--fg)}
+.sec:first-child{margin-top:0}
+.sec.secover{color:var(--accent);border-color:var(--accent)}
+.sec.donehead{border-bottom:0;margin-top:20px}
+.nodate{background:var(--paid)}
+.task.done .n{color:var(--muted)}
+.toast{background:var(--fg);color:var(--bg);border-radius:0;font-weight:800;text-transform:uppercase;letter-spacing:.03em;font-size:13px}
+
+</style>
+</head>
+<body data-view="home">
+<div class="wrap">
+  <header>
+    <div class="hdr-left">
+      <h1 id="homeTitle">Planner</h1>
+    </div>
+    <button class="iconbtn" id="menuBtn">Menu</button>
+  </header>
+
+  <!-- HOME -->
+  <section class="view on" id="v-home">
+    <div class="homedate" id="homeDate"></div>
+    <button class="tile" data-go="bills">
+      <span class="accentbar"></span>
+      <div class="k">Bills</div>
+      <div class="big" id="tBillsBig"></div>
+      <div class="sub" id="tBillsSub"></div>
+    </button>
+    <button class="tile alt" data-go="todo">
+      <span class="accentbar"></span>
+      <div class="k">To-Do</div>
+      <div class="big" id="tTodoBig"></div>
+      <div class="sub" id="tTodoSub"></div>
+    </button>
+  </section>
+
+  <!-- BILLS -->
+  <section class="view" id="v-bills">
+    <div class="card banner" id="overdue" hidden></div>
+    <div class="card">
+      <div class="sum">
+        <div><b id="sTotal">$0</b><span>Due this month</span></div>
+        <div><b id="sPaid">$0</b><span>Paid</span></div>
+        <div><b id="sLeft">$0</b><span>Remaining</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="calhead">
+        <button id="prev" aria-label="Previous month">&#8249;</button>
+        <div class="title" id="monthTitle"></div>
+        <button id="next" aria-label="Next month">&#8250;</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="card">
+      <div class="listhead">
+        <h2 id="listTitle"></h2>
+        <button class="link" id="showAll" hidden>Show all</button>
+      </div>
+      <div id="list"></div>
+    </div>
+  </section>
+
+  <!-- TO-DO -->
+  <section class="view" id="v-todo">
+    <div class="card" id="todoList"></div>
+  </section>
+</div>
+
+<button class="fab" id="fabBill" hidden>Add bill +</button>
+<button class="fab" id="fabTask" hidden>Add task +</button>
+
+<!-- Bill form -->
+<div class="overlay" id="formOv">
+  <div class="sheet">
+    <h2 id="formTitle">Add bill</h2>
+    <label for="fName">Name</label>
+    <input id="fName" placeholder="e.g. Rent, Electric, Discover">
+    <div class="row">
+      <div><label for="fAmt">Amount</label><input id="fAmt" inputmode="decimal" placeholder="0.00"></div>
+      <div><label for="fDate">First due date</label><input id="fDate" type="date"></div>
+    </div>
+    <label for="fFreq">Repeats</label>
+    <select id="fFreq">
+      <option value="1">Monthly</option>
+      <option value="3">Every 3 months</option>
+      <option value="6">Every 6 months</option>
+      <option value="12">Yearly</option>
+      <option value="0">One time</option>
+    </select>
+    <label for="fAcct">Paid from</label>
+    <input id="fAcct" list="acctList" placeholder="e.g. Commerce Bank">
+    <datalist id="acctList"></datalist>
+    <div class="toggle"><span>Autopay</span><input id="fAuto" type="checkbox"></div>
+    <label for="fNotes">Notes</label>
+    <textarea id="fNotes" placeholder="Optional"></textarea>
+    <div class="note">If the due day doesn't exist in a month (like the 31st), the bill lands on that month's last day.</div>
+    <div class="actions">
+      <button class="cancel" id="fCancel">Cancel</button>
+      <button class="save" id="fSave">Save</button>
+    </div>
+    <div class="actions" id="delRow" hidden>
+      <button class="del" id="fDelete">Delete bill</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task form -->
+<div class="overlay" id="taskOv">
+  <div class="sheet">
+    <h2 id="taskTitle">Add task</h2>
+    <label for="tName">Task</label>
+    <input id="tName" placeholder="e.g. Call the bank" enterkeyhint="done">
+    <label for="tDue">Due date <button class="link" id="tClear" type="button">clear</button></label>
+    <input id="tDue" type="date">
+    <label for="tNotes">Notes</label>
+    <textarea id="tNotes" placeholder="Optional"></textarea>
+    <div class="actions">
+      <button class="cancel" id="tCancel">Cancel</button>
+      <button class="save" id="tSave">Save</button>
+    </div>
+    <div class="actions" id="tDelRow" hidden>
+      <button class="del" id="tDelete">Delete task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Menu -->
+<div class="overlay" id="menuOv">
+  <div class="sheet menu">
+    <h2>Menu</h2>
+    <button id="mExport">Export backup (.json)</button>
+    <button id="mImport">Import backup</button>
+    <button id="mClose" style="text-align:center">Close</button>
+    <div class="note">Bills and tasks are stored only on this device. Export a backup now and then, since clearing browser data erases it.</div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div class="overlay" id="askOv">
+  <div class="sheet">
+    <h2 id="askMsg"></h2>
+    <div class="actions">
+      <button class="cancel" id="askNo">Cancel</button>
+      <button class="del" id="askYes">Delete</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const BKEY = 'billcal.v1', TKEY = 'todo.v1';
+  let state = { bills: [], paid: {} }, tasks = [];
+  try { const s = localStorage.getItem(BKEY); if (s) { const p = JSON.parse(s); if (p && Array.isArray(p.bills)) state = { bills: p.bills, paid: p.paid || {} }; } } catch (e) {}
+  try { const s = localStorage.getItem(TKEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p)) tasks = p; } } catch (e) {}
+  function save(){ try { localStorage.setItem(BKEY, JSON.stringify(state)); } catch (e) { toast('Could not save on this device.'); } }
+  function saveTasks(){ try { localStorage.setItem(TKEY, JSON.stringify(tasks)); } catch (e) { toast('Could not save on this device.'); } }
+
+  let toastTimer = null;
+  function toast(msg){
+    const el = $('toast'); el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+  let askResolve = null;
+  function ask(msg, yes){
+    $('askMsg').textContent = msg; $('askYes').textContent = yes || 'Delete';
+    $('askOv').classList.add('open');
+    return new Promise(r => { askResolve = r; });
+  }
+  function answer(v){ $('askOv').classList.remove('open'); const r = askResolve; askResolve = null; if (r) r(v); }
+
+  const pad = n => String(n).padStart(2, '0');
+  const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const lastDay = (y, m) => new Date(y, m + 1, 0).getDate();
+  const money = n => (Number(n) || 0).toLocaleString(undefined, { style: 'currency', currency: 'USD' });
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const buzz = () => { try { navigator.vibrate && navigator.vibrate(30); } catch (_) {} };
+
+  let today;
+  function refreshToday(){ today = new Date(); today.setHours(0,0,0,0); }
+  refreshToday();
+  let viewY = today.getFullYear(), viewM = today.getMonth(), selDay = null, editId = null, justStamped = null;
+  let view = 'home', fromHome = false, editTask = null, showDone = false;
+
+  function parseISO(s){ const [y, m, d] = s.split('-').map(Number); return { y, m: m - 1, d }; }
+  function daysUntil(isoStr){ const p = parseISO(isoStr); return Math.round((new Date(p.y, p.m, p.d) - today) / 864e5); }
+
+  // ================= BILLS =================
+  function occurrences(y, m){
+    const out = [];
+    for (const b of state.bills) {
+      if (!b.first) continue;
+      const f = parseISO(b.first);
+      const diff = (y - f.y) * 12 + (m - f.m);
+      const iv = Number(b.freq);
+      const hit = iv === 0 ? diff === 0 : (diff >= 0 && diff % iv === 0);
+      if (!hit) continue;
+      const d = Math.min(f.d, lastDay(y, m));
+      const date = iso(y, m, d);
+      out.push({ bill: b, day: d, y, m, date, paid: !!state.paid[b.id + '|' + date] });
+    }
+    return out.sort((a, b) => a.day - b.day || a.bill.name.localeCompare(b.bill.name));
+  }
+  function status(o){
+    if (o.paid) return 'paid';
+    const days = daysUntil(o.date);
+    if (days < 0) return 'over';
+    if (days <= 3) return 'soon';
+    return 'up';
+  }
+  function dueText(o){
+    const days = daysUntil(o.date);
+    const base = `${SHORT[o.m]} ${o.day}`;
+    if (o.paid) return base;
+    if (days === 0) return base + ' · today';
+    if (days === 1) return base + ' · tomorrow';
+    if (days < 0) return base + ` · ${-days}d late`;
+    if (days <= 14) return base + ` · in ${days}d`;
+    return base;
+  }
+  function billRow(o){
+    const st = status(o), b = o.bill, key = b.id + '|' + o.date;
+    const meta = [dueText(o), b.account ? esc(b.account) : ''].filter(Boolean).join(' · ');
+    return `<div class="bill" data-edit="${b.id}">
+      <div class="bar ${st}"></div>
+      <div class="info"><div class="n">${esc(b.name)}${b.autopay ? '<span class="tag">Auto</span>' : ''}</div>
+        <div class="m">${meta}</div></div>
+      <div class="amt">${money(b.amount)}</div>
+      <button class="chk ${o.paid ? 'on' : ''}${o.paid && justStamped === key ? ' stamp' : ''}" data-pay="${key}" data-label="PAID" aria-label="Mark paid"></button>
+    </div>`;
+  }
+  function overdueBills(){
+    const items = [];
+    for (let i = 6; i >= 0; i--) {
+      const dt = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      for (const o of occurrences(dt.getFullYear(), dt.getMonth())) if (status(o) === 'over') items.push(o);
+    }
+    return items;
+  }
+  function renderOverdue(){
+    const items = overdueBills(), el = $('overdue');
+    if (!items.length) { el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    const total = items.reduce((s, o) => s + Number(o.bill.amount || 0), 0);
+    el.innerHTML = `<h3>Overdue: ${items.length} bill${items.length > 1 ? 's' : ''} · ${money(total)}</h3>` + items.map(billRow).join('');
+  }
+  function renderBills(){
+    const occ = occurrences(viewY, viewM);
+    const total = occ.reduce((s, o) => s + Number(o.bill.amount || 0), 0);
+    const paid = occ.filter(o => o.paid).reduce((s, o) => s + Number(o.bill.amount || 0), 0);
+    $('sTotal').textContent = money(total);
+    $('sPaid').textContent = money(paid);
+    $('sLeft').textContent = money(total - paid);
+    const isNow = viewY === today.getFullYear() && viewM === today.getMonth();
+    $('monthTitle').textContent = `${MONTHS[viewM]} ${viewY}`;
+    const byDay = {};
+    occ.forEach(o => (byDay[o.day] = byDay[o.day] || []).push(o));
+    let html = ['S','M','T','W','T','F','S'].map(d => `<div class="wd">${d}</div>`).join('');
+    const startDow = new Date(viewY, viewM, 1).getDay();
+    for (let i = 0; i < startDow; i++) html += '<div class="day empty"></div>';
+    for (let d = 1; d <= lastDay(viewY, viewM); d++) {
+      const list = byDay[d] || [];
+      const dots = list.slice(0, 4).map(o => `<span class="dot ${status(o)}"></span>`).join('');
+      const cls = ['day'];
+      if (isNow && d === today.getDate()) cls.push('today');
+      if (selDay === d) cls.push('sel');
+      html += `<button class="${cls.join(' ')}" data-day="${d}">${d}<span class="dots">${dots}</span></button>`;
+    }
+    $('grid').innerHTML = html;
+    const shown = selDay ? occ.filter(o => o.day === selDay) : occ;
+    $('listTitle').textContent = selDay ? `${MONTHS[viewM]} ${selDay}` : `Bills in ${MONTHS[viewM]}`;
+    $('showAll').hidden = !selDay;
+    $('list').innerHTML = shown.length ? shown.map(billRow).join('')
+      : `<div class="empty-msg">${state.bills.length ? 'Nothing due' + (selDay ? ' this day.' : ' this month.') : 'No bills yet. Tap “Add bill” to start.'}</div>`;
+    renderOverdue();
+  }
+
+  // ================= TO-DO =================
+  function taskStatus(t){
+    if (t.done) return 'paid';
+    if (!t.due) return 'nodate';
+    const d = daysUntil(t.due);
+    if (d < 0) return 'over';
+    if (d === 0) return 'soon';
+    return 'up';
+  }
+  function taskDueText(t){
+    if (!t.due) return '';
+    const p = parseISO(t.due), d = daysUntil(t.due), base = `${SHORT[p.m]} ${p.d}`;
+    if (t.done) return base;
+    if (d === 0) return 'Today';
+    if (d === 1) return 'Tomorrow';
+    if (d < 0) return base + ` · ${-d}d late`;
+    if (d <= 14) return base + ` · in ${d}d`;
+    return base;
+  }
+  function taskRow(t){
+    const meta = [taskDueText(t), t.notes ? esc(t.notes.split('\n')[0]) : ''].filter(Boolean).join(' · ');
+    return `<div class="bill task ${t.done ? 'done' : ''}" data-task="${t.id}">
+      <div class="bar ${taskStatus(t)}"></div>
+      <div class="info"><div class="n">${esc(t.title)}</div>${meta ? `<div class="m">${meta}</div>` : ''}</div>
+      <button class="chk ${t.done ? 'on' : ''}${t.done && justStamped === t.id ? ' stamp' : ''}" data-done="${t.id}" data-label="DONE" aria-label="Mark done"></button>
+    </div>`;
+  }
+  function renderTodo(){
+    // a task that was just stamped stays in place until the stamp lands
+    const open = tasks.filter(t => !t.done || t.id === justStamped);
+    const byDue = (a, b) => a.due.localeCompare(b.due) || (a.created || 0) - (b.created || 0);
+    const groups = [
+      ['Overdue', 'secover', open.filter(t => t.due && daysUntil(t.due) < 0).sort(byDue)],
+      ['Today', '', open.filter(t => t.due && daysUntil(t.due) === 0).sort(byDue)],
+      ['Upcoming', '', open.filter(t => t.due && daysUntil(t.due) > 0).sort(byDue)],
+      ['Anytime', '', open.filter(t => !t.due).sort((a, b) => (a.created || 0) - (b.created || 0))],
+    ];
+    let html = '';
+    for (const [label, cls, items] of groups) {
+      if (!items.length) continue;
+      html += `<div class="sec ${cls}">${label}</div>` + items.map(taskRow).join('');
+    }
+    if (!tasks.length) html = '<div class="empty-msg">No tasks yet. Tap “Add task” to start.</div>';
+    else if (!open.length && !tasks.some(t => !t.done)) html = '<div class="empty-msg">All clear. Nothing left to do.</div>';
+    const done = tasks.filter(t => t.done && t.id !== justStamped).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+    if (done.length) {
+      html += `<div class="sec donehead"><button class="link" id="toggleDone">${showDone ? 'Hide' : 'Show'} done (${done.length})</button>
+        ${showDone ? '<button class="link" id="clearDone">Clear done</button>' : ''}</div>`;
+      if (showDone) html += done.map(taskRow).join('');
+    }
+    $('todoList').innerHTML = html;
+  }
+
+  // ================= HOME =================
+  function renderHome(){
+    $('homeDate').textContent = `${MONTHS[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+    const occ = occurrences(today.getFullYear(), today.getMonth());
+    const left = occ.filter(o => !o.paid).reduce((s, o) => s + Number(o.bill.amount || 0), 0);
+    const od = overdueBills();
+    const next = occ.find(o => !o.paid && daysUntil(o.date) >= 0);
+    if (!state.bills.length) {
+      $('tBillsBig').textContent = 'No bills yet';
+      $('tBillsSub').textContent = 'Add your first bill';
+    } else {
+      $('tBillsBig').textContent = `${money(left)} left`;
+      const parts = [];
+      if (od.length) parts.push(`<span class="warn">${od.length} overdue</span>`);
+      parts.push(next ? `Next: ${esc(next.bill.name)}, ${dueText(next)}` : 'All paid this month');
+      $('tBillsSub').innerHTML = parts.join(' · ');
+    }
+    const open = tasks.filter(t => !t.done);
+    const odT = open.filter(t => t.due && daysUntil(t.due) < 0).length;
+    const todayT = open.filter(t => t.due && daysUntil(t.due) === 0).length;
+    $('tTodoBig').textContent = open.length ? `${open.length} open` : (tasks.length ? 'All clear' : 'No tasks yet');
+    const tp = [];
+    if (odT) tp.push(`<span class="warn">${odT} overdue</span>`);
+    if (todayT) tp.push(`${todayT} due today`);
+    if (!tp.length) tp.push(open.length ? 'Nothing due today' : (tasks.length ? 'Everything is done' : 'Add your first task'));
+    $('tTodoSub').innerHTML = tp.join(' · ');
+  }
+
+  function renderAll(){ renderHome(); renderBills(); renderTodo(); }
+
+  // ================= ROUTER =================
+  const TITLES = { bills: 'Bill Calendar', todo: 'To-Do' };
+  function route(){
+    const h = location.hash.replace('#', '');
+    view = (h === 'bills' || h === 'todo') ? h : 'home';
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + view));
+    document.body.dataset.view = view;
+    $('fabBill').hidden = view !== 'bills';
+    $('fabTask').hidden = view !== 'todo';
+    $('homeTitle').textContent = view === 'home' ? WEEKDAYS[today.getDay()] : TITLES[view];
+    if (view === 'bills') { viewY = today.getFullYear(); viewM = today.getMonth(); selDay = null; }
+    document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+    renderAll();
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+  $('homeTitle').onclick = () => {
+    if (view === 'home') return;
+    if (fromHome) { fromHome = false; history.back(); } else location.hash = '';
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    const before = today.getTime(); refreshToday();
+    if (today.getTime() !== before) route(); else renderAll();
+  });
+
+  // ================= CLICKS =================
+  document.addEventListener('click', e => {
+    const go = e.target.closest('[data-go]');
+    if (go) { fromHome = true; location.hash = go.dataset.go; return; }
+    const pay = e.target.closest('[data-pay]');
+    if (pay) {
+      e.stopPropagation();
+      const k = pay.dataset.pay;
+      if (state.paid[k]) { delete state.paid[k]; justStamped = null; } else { state.paid[k] = true; justStamped = k; buzz(); }
+      save(); renderAll(); justStamped = null; return;
+    }
+    const dn = e.target.closest('[data-done]');
+    if (dn) {
+      e.stopPropagation();
+      const t = tasks.find(x => x.id === dn.dataset.done); if (!t) return;
+      t.done = !t.done; t.doneAt = t.done ? Date.now() : null;
+      justStamped = t.done ? t.id : null; if (t.done) buzz();
+      saveTasks();
+      if (t.done) {
+        // let the stamp land before the task moves to Done
+        renderTodo(); justStamped = null;
+        setTimeout(() => { renderAll(); }, 650);
+      } else { renderAll(); }
+      return;
+    }
+    if (e.target.id === 'toggleDone') { showDone = !showDone; renderTodo(); return; }
+    if (e.target.id === 'clearDone') {
+      const n = tasks.filter(t => t.done).length;
+      ask(`Remove ${n} finished task${n > 1 ? 's' : ''}?`, 'Remove').then(ok => {
+        if (!ok) return; tasks = tasks.filter(t => !t.done); saveTasks(); renderAll();
+      });
+      return;
+    }
+    const day = e.target.closest('[data-day]');
+    if (day) { const d = Number(day.dataset.day); selDay = selDay === d ? null : d; renderBills(); return; }
+    const ed = e.target.closest('[data-edit]');
+    if (ed) { openForm(ed.dataset.edit); return; }
+    const tk = e.target.closest('[data-task]');
+    if (tk) { openTask(tk.dataset.task); return; }
+  });
+
+  $('prev').onclick = () => { viewM--; if (viewM < 0) { viewM = 11; viewY--; } selDay = null; renderBills(); };
+  $('next').onclick = () => { viewM++; if (viewM > 11) { viewM = 0; viewY++; } selDay = null; renderBills(); };
+  $('showAll').onclick = () => { selDay = null; renderBills(); };
+  let sx = null;
+  $('grid').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+  $('grid').addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 60) (dx < 0 ? $('next') : $('prev')).click();
+  });
+
+  // ================= BILL FORM =================
+  function openForm(id){
+    editId = id || null;
+    const b = state.bills.find(x => x.id === id);
+    $('formTitle').textContent = b ? 'Edit bill' : 'Add bill';
+    $('fName').value = b ? b.name : '';
+    $('fAmt').value = b ? b.amount : '';
+    const defDay = selDay || (viewY === today.getFullYear() && viewM === today.getMonth() ? today.getDate() : 1);
+    $('fDate').value = b ? b.first : iso(viewY, viewM, defDay);
+    $('fFreq').value = b ? String(b.freq) : '1';
+    $('fAcct').value = b ? (b.account || '') : '';
+    $('fAuto').checked = b ? !!b.autopay : false;
+    $('fNotes').value = b ? (b.notes || '') : '';
+    $('delRow').hidden = !b;
+    const accts = [...new Set(state.bills.map(x => x.account).filter(Boolean))];
+    $('acctList').innerHTML = accts.map(a => `<option value="${esc(a)}">`).join('');
+    $('formOv').classList.add('open');
+  }
+  function closeForm(){ $('formOv').classList.remove('open'); editId = null; }
+  $('fabBill').onclick = () => openForm(null);
+  $('fCancel').onclick = closeForm;
+  $('fSave').onclick = () => {
+    const name = $('fName').value.trim();
+    const amount = parseFloat($('fAmt').value.replace(/[$,\s]/g, ''));
+    const first = $('fDate').value;
+    if (!name) return toast('Enter a name.');
+    if (!(amount >= 0)) return toast('Enter an amount.');
+    if (!first) return toast('Pick a first due date.');
+    const data = { name, amount: Math.round(amount * 100) / 100, first, freq: $('fFreq').value,
+      account: $('fAcct').value.trim(), autopay: $('fAuto').checked, notes: $('fNotes').value.trim() };
+    if (editId) Object.assign(state.bills.find(x => x.id === editId), data);
+    else state.bills.push(Object.assign({ id: newId() }, data));
+    save(); closeForm(); renderAll();
+  };
+  $('fDelete').onclick = async () => {
+    if (!editId) return;
+    const id = editId;
+    if (!(await ask('Delete this bill and its paid history?'))) return;
+    editId = id;
+    state.bills = state.bills.filter(x => x.id !== editId);
+    for (const k of Object.keys(state.paid)) if (k.startsWith(editId + '|')) delete state.paid[k];
+    save(); closeForm(); renderAll();
+  };
+
+  // ================= TASK FORM =================
+  function openTask(id){
+    editTask = id || null;
+    const t = tasks.find(x => x.id === id);
+    $('taskTitle').textContent = t ? 'Edit task' : 'Add task';
+    $('tName').value = t ? t.title : '';
+    $('tDue').value = t ? (t.due || '') : '';
+    $('tNotes').value = t ? (t.notes || '') : '';
+    $('tDelRow').hidden = !t;
+    $('taskOv').classList.add('open');
+    if (!t) setTimeout(() => $('tName').focus(), 50);
+  }
+  function closeTask(){ $('taskOv').classList.remove('open'); editTask = null; }
+  $('fabTask').onclick = () => openTask(null);
+  $('tCancel').onclick = closeTask;
+  $('tClear').onclick = e => { e.preventDefault(); $('tDue').value = ''; };
+  $('tName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('tSave').click(); } });
+  $('tSave').onclick = () => {
+    const title = $('tName').value.trim();
+    if (!title) return toast('Enter a task.');
+    const data = { title, due: $('tDue').value || '', notes: $('tNotes').value.trim() };
+    if (editTask) Object.assign(tasks.find(x => x.id === editTask), data);
+    else tasks.push(Object.assign({ id: newId(), done: false, doneAt: null, created: Date.now() }, data));
+    saveTasks(); closeTask(); renderAll();
+  };
+  $('tDelete').onclick = async () => {
+    if (!editTask) return;
+    const id = editTask;
+    if (!(await ask('Delete this task?'))) return;
+    editTask = id;
+    tasks = tasks.filter(x => x.id !== editTask);
+    saveTasks(); closeTask(); renderAll();
+  };
+
+  // ================= MENU =================
+  $('menuBtn').onclick = () => $('menuOv').classList.add('open');
+  $('mClose').onclick = () => $('menuOv').classList.remove('open');
+  $('mExport').onclick = () => {
+    const blob = new Blob([JSON.stringify({ version: 2, bills: state.bills, paid: state.paid, tasks }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `planner-backup-${iso(today.getFullYear(), today.getMonth(), today.getDate())}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  $('mImport').onclick = () => $('importFile').click();
+  $('importFile').onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const p = JSON.parse(r.result);
+        const hasBills = p && Array.isArray(p.bills), hasTasks = p && Array.isArray(p.tasks);
+        if (!hasBills && !hasTasks) throw 0;
+        const parts = [];
+        if (hasBills) parts.push(`${p.bills.length} bills`);
+        if (hasTasks) parts.push(`${p.tasks.length} tasks`);
+        ask(`Replace current data with ${parts.join(' and ')} from this backup?`, 'Replace').then(ok => {
+          if (!ok) return;
+          if (hasBills) { state = { bills: p.bills, paid: p.paid || {} }; save(); }
+          if (hasTasks) { tasks = p.tasks; saveTasks(); }
+          $('menuOv').classList.remove('open'); renderAll(); toast('Backup restored.');
+        });
+      } catch (_) { toast('That file is not a valid backup.'); }
+      e.target.value = '';
+    };
+    r.readAsText(file);
+  };
+
+  $('askNo').onclick = () => answer(false);
+  $('askYes').onclick = () => answer(true);
+  $('askOv').addEventListener('click', e => { if (e.target.id === 'askOv') answer(false); });
+  ['formOv', 'taskOv', 'menuOv'].forEach(id => $(id).addEventListener('click', e => { if (e.target.id === id) $(id).classList.remove('open'); }));
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+
+  route();
+})();
+</script>
+</body>
+</html>
