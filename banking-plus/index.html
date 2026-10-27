@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-zn/08q7oUwU1J+yHqiY41OZ0bxtnyPVV4UFl3J/Nrn4='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-R1PF0mebzKzVI/R3Gfy9IbdYhAREAYP/Wv7Gwp6mkZI='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -465,7 +465,7 @@ function vBudget(){
   if(g.income){
    for(const c of cs){const r=IM.rows.find(r=>r.c===c);
     const sub=c.amt?`${m(c.amt)} · ${FREQ[c.freq]||''}`:'Tap to set the amount and dates';
-    const chips=r.hits.map(x=>`<span class="tag ${x.got?'blue':''}">${new Date(x.d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}${x.got?' · in bank':''}</span>`).join(' ');
+    const chips=r.hits.map(x=>`<span class="tag ${x.got?'blue':''}">${new Date(x.d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`).join(' ');
     rows+=`<div class="row linkrow" data-act="editIncome" data-id="${c.id}"><span style="min-width:0;flex:1"><span class="tx-d" style="display:block">${esc(c.name)}</span><span class="tx-s" style="display:block">${sub}</span>${chips?`<span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:7px">${chips}</span>`:''}</span><b class="${r.sum?'in':'muted'}" style="font-variant-numeric:tabular-nums">${m(r.sum)}</b></div>`}
    rows+=`<div class="row"><button class="btn sec sm" data-act="addIncome">Add income</button></div>`;
    h+=block(g.name,`${m(IM.rows.filter(r=>r.c.gid===g.id).reduce((s,r)=>s+r.sum,0))} this month`,rows);continue;
@@ -475,7 +475,7 @@ function vBudget(){
    let pill;
    if(g.income)pill=n.left>0.004?`<span class="pill zero">${mc(n.left)}</span>`:n.left<-0.004?`<span class="pill pos">+${mc(-n.left)}</span>`:`<span class="pill ${n.tgt?'pos':'zero'}">${n.tgt?'Met':'$0'}</span>`;
    else pill=n.left>0.004?`<span class="pill pos">${mc(n.left)}</span>`:n.left<-0.004?`<span class="pill neg">−${mc(-n.left)}</span>`:`<span class="pill zero">${n.tgt?'Even':'$0'}</span>`;
-   rows+=`<div class="row cat"><div class="cname"><span class="cn">${esc(c.name)}</span>${n.tx?`<span class="cnote">${mc(n.tx)} from bank</span>`:''}</div><input class="bud" data-amt="${c.id}" value="${budStr(n.amt)}" placeholder="0.00" inputmode="numeric" data-money="1" enterkeyhint="done" aria-label="${g.income?'Received':'Assigned'} for ${esc(c.name)}">${ui.editT?`<input class="bud tgt" data-tgt="${c.id}" value="${budStr(n.tgt)}" placeholder="0.00" inputmode="numeric" data-money="1" enterkeyhint="done" aria-label="Target for ${esc(c.name)}">`:`<div class="num">${mc(n.tgt)}</div>`}${pill}</div>`}
+   rows+=`<div class="row cat"><div class="cname"><span class="cn">${esc(c.name)}</span></div><input class="bud" data-amt="${c.id}" value="${budStr(n.amt)}" placeholder="0.00" inputmode="numeric" data-money="1" enterkeyhint="done" aria-label="${g.income?'Received':'Assigned'} for ${esc(c.name)}">${ui.editT?`<input class="bud tgt" data-tgt="${c.id}" value="${budStr(n.tgt)}" placeholder="0.00" inputmode="numeric" data-money="1" enterkeyhint="done" aria-label="Target for ${esc(c.name)}">`:`<div class="num">${mc(n.tgt)}</div>`}${pill}</div>`}
   if(!cs.length)rows=`<div class="row empty">No categories yet. Add them in Settings.</div>`;
   const ch=`<span>Category</span><span>${g.income?'Received':'Assigned'}</span><span>Target</span><span>Left</span>`;
   h+=block(g.name,`${m(ga)} of ${m(gt)}`,`<div class="colh cg">${ch}</div>`+rows);
