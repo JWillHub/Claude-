@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-B1vEZlJPqdclHlLzu2m9zWcLTl5h/i7/aA9QdTt8c0Q='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Rqo01s267n9yedY4a68+mXWhxv1mtJra0zGAn4WWgB0='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#151B26">
 <meta name="color-scheme" content="dark">
@@ -645,7 +645,7 @@ function vPayoff(){
   h+=block(a.name,m(i.owed),`
   <div class="row kv"><span>Starting balance</span><input inputmode="numeric" data-money="1" data-card="${a.id}" data-k="startBal" value="${i.start?i.start.toFixed(2):''}" placeholder="0.00" aria-label="Starting balance"></div>
   <div class="row kv"><span>APR % <span class="muted small">(optional)</span></span><input inputmode="decimal" data-pct="1" data-card="${a.id}" data-k="apr" value="${a.apr||''}" placeholder="0" aria-label="APR"></div>
-  <div class="row"><div class="kv"><span>Paid since ${a.startDate?new Date(a.startDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'start'}</span><b class="in">${m(i.paid)}</b></div>${i.charges>0?`<div class="kv small muted" style="margin-top:4px"><span>New charges / interest</span><span>${m(i.charges)}</span></div>`:''}<div class="prog"><i style="width:${pc}%"></i></div></div>
+  <div class="row"><div class="kv"><span>${monthLabel(today().slice(0,7))}</span>${(()=>{const t=r2(i.ev.filter(e=>e.kind!=='charge'&&e.date.slice(0,7)===today().slice(0,7)).reduce((s,e)=>s+e.pay,0));return t>0?`<b class="in">Paid ${m(t)}</b>`:'<span class="muted">Not paid yet</span>'})()}</div>${i.charges>0?`<div class="kv small muted" style="margin-top:4px"><span>New charges / interest</span><span>${m(i.charges)}</span></div>`:''}<div class="prog"><i style="width:${pc}%"></i></div></div>
   <div class="row kv"><span>Monthly payment<br><span class="muted small">${i.pay?'Using '+i.src:'Set a target for the payment, or type one'}</span></span><input inputmode="numeric" data-money="1" data-card="${a.id}" data-k="payment" value="${a.payment?(+a.payment).toFixed(2):''}" placeholder="${i.pay?i.pay.toFixed(2):'0.00'}" aria-label="Planned monthly payment"></div>
   <div class="row kv"><span>Estimated payoff${i.months&&!i.never&&i.owed>0.005?`<br><span class="muted small">${i.months} payment${i.months>1?'s':''} of ${m(i.pay)}${i.interest>0.5?` · about ${m(i.interest)} interest`:''}</span>`:''}</span>${est}</div>
   ${chart?`<div style="border-top:1px solid var(--border)">${chart}</div>`:''}
