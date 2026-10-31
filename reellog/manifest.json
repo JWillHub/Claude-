@@ -2,7 +2,7 @@
   "name": "Reel Log",
   "short_name": "Reel Log",
   "description": "Simple movie diary for logging and rating films",
-  "id": "./",
+  "id": "/Claude-/reellog/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -2,7 +2,7 @@
   "name": "Planner (Bold)",
   "short_name": "Planner",
   "description": "Bills and to-do list, stored on this device",
-  "id": "./",
+  "id": "/Claude-/planner/bold/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

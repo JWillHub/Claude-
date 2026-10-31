@@ -2,7 +2,7 @@
   "name": "Cosmos Field Guide",
   "short_name": "Cosmos",
   "description": "Universe, physics and cosmology field guide with three reading levels",
-  "id": "./",
+  "id": "/Claude-/cosmos/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

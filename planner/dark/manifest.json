@@ -2,7 +2,7 @@
   "name": "Planner (Dark)",
   "short_name": "Planner",
   "description": "Bills and to-do list, stored on this device",
-  "id": "./",
+  "id": "/Claude-/planner/dark/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
