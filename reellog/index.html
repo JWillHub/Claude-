@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Reel Log</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#0f1115;--card:#181b22;--card2:#20242d;--line:#2a2f3a;
+  --text:#e9ecf1;--muted:#8a93a3;--accent:#f2b134;--good:#3fbf7f;--bad:#e05858;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:rgba(15,17,21,.94);backdrop-filter:blur(10px);
+  padding:calc(12px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;justify-content:space-between}
+h1{margin:0;font-size:22px;letter-spacing:.5px;white-space:nowrap}
+h1 span{color:var(--accent)}
+.iconbtn{background:none;border:0;color:var(--muted);font-size:22px;padding:4px 6px;cursor:pointer}
+.tabs{display:flex;gap:6px;margin-top:10px}
+.tab{flex:1;background:var(--card);border:1px solid var(--line);color:var(--muted);padding:8px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer}
+.tab.on{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+main{max-width:1000px;margin:0 auto}
+.pad{padding:12px 16px}
+.month{margin:18px 0 8px;font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.entry{display:flex;align-items:center;gap:12px;padding:8px;background:var(--card);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.day{width:30px;text-align:center;font-size:20px;font-weight:700;color:var(--muted)}
+.thumb{width:46px;aspect-ratio:2/3;border-radius:5px;object-fit:cover;background:var(--card2);flex:none}
+.einfo{flex:1;min-width:0}
+.etitle{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.esub{color:var(--muted);font-size:13px}
+.stars{color:var(--accent);letter-spacing:1px;white-space:nowrap}
+.rw{font-size:11px;color:var(--good);border:1px solid var(--good);border-radius:4px;padding:0 4px;margin-left:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+.pc{position:relative;cursor:pointer}
+.pc img,.pc .ph{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;background:var(--card2);display:block}
+.ph{display:flex!important;align-items:center;justify-content:center;text-align:center;padding:6px;font-size:12px;color:var(--muted)}
+.pc .stars{display:block;font-size:12px;margin-top:4px;text-align:center}
+.pc.done::after{content:"✓";position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;
+  background:var(--good);color:#0b1a12;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;color:var(--muted);font-size:13px}
+select,input,textarea{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;width:100%}
+select{width:auto;padding:6px 8px}
+.empty{text-align:center;color:var(--muted);padding:60px 20px}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;
+  background:var(--accent);color:var(--bg);font-size:32px;border:0;box-shadow:0 6px 20px rgba(0,0,0,.5);cursor:pointer;z-index:6}
+
+/* Browse */
+.searchbar{display:flex;gap:8px;padding:12px 16px 4px}
+.searchbar button{flex:none;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:0 14px;font-weight:600;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:8px 16px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar,.track::-webkit-scrollbar{display:none}
+.chip{flex:none;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--bg);font-weight:700}
+.row{margin-top:18px}
+.rowhead{display:flex;align-items:baseline;justify-content:space-between;padding:0 16px 8px}
+.rowhead h3{margin:0;font-size:16px}
+.rowhead button{background:none;border:0;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer}
+.track{display:flex;gap:10px;overflow-x:auto;padding:0 16px;scroll-snap-type:x proximity;scrollbar-width:none;min-height:165px}
+.track .pc{flex:none;width:110px;scroll-snap-align:start}
+.track .msg{padding:60px 0}
+.ltitle{margin:4px 0 12px;font-size:20px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ltitle small{color:var(--muted);font-size:12px;font-weight:500;margin-left:6px}
+.sentinel{height:40px}
+
+/* Sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:92vh;overflow:auto;background:var(--card);z-index:21;max-width:700px;margin:0 auto;
+  border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s}
+.sheet.open{transform:none}
+.sheet h2{margin:0 0 12px;font-size:18px}
+.sheet .chips{padding:0 0 4px;flex-wrap:wrap}
+.result{display:flex;gap:12px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.result:last-child{border-bottom:0}
+.btn{background:var(--accent);color:var(--bg);border:0;border-radius:10px;padding:12px;font-weight:700;font-size:15px;width:100%;cursor:pointer;margin-top:12px}
+.btn.ghost{background:var(--card2);color:var(--text)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.logtop{display:flex;gap:14px;margin-bottom:14px}
+.logtop img,.logtop .ph{width:100px;flex:none;border-radius:8px;aspect-ratio:2/3;object-fit:cover;background:var(--card2)}
+.overview{color:#c4cad4;font-size:14px;margin:0 0 6px}
+label.f{display:block;color:var(--muted);font-size:13px;margin:12px 0 6px}
+.starpick{display:flex;gap:4px;align-items:center;user-select:none}
+.sp{position:relative;font-size:38px;line-height:1;color:var(--line);width:38px;cursor:pointer}
+.sp .fill{position:absolute;left:0;top:0;overflow:hidden;color:var(--accent);width:0}
+.sp .hz{position:absolute;top:0;bottom:0;width:50%}
+.sp .hz.l{left:0}.sp .hz.r{right:0}
+.clear{margin-left:8px;color:var(--muted);font-size:13px;background:none;border:0;cursor:pointer}
+.toggle{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--text)}
+.toggle input{width:auto;transform:scale(1.3)}
+.stat{display:flex;justify-content:space-around;text-align:center;background:var(--card2);border-radius:12px;padding:12px;margin:10px 0}
+.stat b{display:block;font-size:22px;color:var(--accent)}
+.stat span{font-size:12px;color:var(--muted)}
+.small{font-size:12px;color:var(--muted)}
+.hist{border-top:1px solid var(--line);padding:10px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.note{white-space:pre-wrap;color:var(--muted);font-size:13px;margin-top:4px}
+.msg{color:var(--muted);text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>Reel <span>Log</span></h1>
+    <button class="iconbtn" id="setBtn" aria-label="Settings">&#9881;</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-v="browse">Browse</button>
+    <button class="tab" data-v="diary">Diary</button>
+    <button class="tab" data-v="films">My Films</button>
+  </div>
+</header>
+<main>
+  <div id="vBrowse"></div>
+  <div id="vDiary" class="pad" hidden></div>
+  <div id="vFilms" class="pad" hidden></div>
+</main>
+<button class="fab" id="addBtn" aria-label="Log a film">+</button>
+
+<div class="sheet-bg" id="bg"></div>
+<div class="sheet" id="sheet"></div>
+
+<script>
+const IMG = 'https://image.tmdb.org/t/p/';
+const K_LOG = 'reellog.entries', K_KEY = 'reellog.tmdbkey', K_CACHE = 'reellog.c.';
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+};
+let entries = store.get(K_LOG, []);
+let view = 'browse', filmSort = 'recent';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const save = () => { if(!store.set(K_LOG, entries)) alert('Could not save — storage is unavailable.'); };
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const loggedIds = () => new Set(entries.map(e => e.tmdb));
+
+const GENRES = [
+  [28,'Action'],[12,'Adventure'],[16,'Animation'],[35,'Comedy'],[80,'Crime'],[99,'Documentary'],
+  [18,'Drama'],[10751,'Family'],[14,'Fantasy'],[36,'History'],[27,'Horror'],[10402,'Music'],
+  [9648,'Mystery'],[10749,'Romance'],[878,'Sci-Fi'],[53,'Thriller'],[10752,'War'],[37,'Western']
+];
+const GNAME = Object.fromEntries(GENRES);
+const DECADES = ['2020s','2010s','2000s','1990s','1980s','1970s','1960s','1950s','Older'];
+const SORTS = [['popular','Most popular'],['rated','Highest rated'],['newest','Newest'],['oldest','Oldest']];
+
+function starStr(r){ return r ? '★'.repeat(Math.floor(r)) + (r % 1 ? '½' : '') : ''; }
+function posterTag(path, cls, size='w185', title=''){
+  return path ? `<img class="${cls}" loading="lazy" src="${IMG}${size}${path}" alt="${esc(title)}">`
+              : `<div class="${cls} ph">${esc(title)}</div>`;
+}
+
+/* ---------- TMDB ---------- */
+const movies = new Map();   // id -> slim movie, filled from every fetch
+const mem = new Map();
+async function tmdb(path, params={}){
+  const key = store.get(K_KEY, '');
+  if(!key) throw new Error('nokey');
+  const url = new URL('https://api.themoviedb.org/3' + path);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const opts = {};
+  if(key.length > 40) opts.headers = { Authorization: 'Bearer ' + key, accept: 'application/json' };
+  else url.searchParams.set('api_key', key);
+  let r;
+  try{ r = await fetch(url, opts); }catch(e){ throw new Error('blocked'); }
+  if(r.status === 401) throw new Error('badkey');
+  if(!r.ok) throw new Error('http ' + r.status);
+  return r.json();
+}
+const slim = m => ({ id:m.id, title:m.title, year:(m.release_date||'').slice(0,4), poster:m.poster_path,
+  overview:m.overview||'', genres:m.genre_ids || (m.genres||[]).map(g => g.id), vote:m.vote_average||0 });
+async function listPage(path, params, page, persist){
+  const p = { include_adult:'false', ...params, page };
+  const k = path + '?' + new URLSearchParams(p);
+  if(mem.has(k)) return mem.get(k);
+  if(persist && page === 1){
+    const c = store.get(K_CACHE + k, null);
+    if(c && Date.now() - c.t < 6*3600e3){ c.d.results.forEach(m => movies.set(m.id, m)); mem.set(k, c.d); return c.d; }
+  }
+  const d = await tmdb(path, p);
+  const out = { page:d.page, total:Math.min(d.total_pages||1, 500), results:(d.results||[]).filter(m => m.title).map(slim) };
+  out.results.forEach(m => movies.set(m.id, m));
+  mem.set(k, out);
+  if(persist && page === 1) store.set(K_CACHE + k, { t:Date.now(), d:out });
+  return out;
+}
+const errText = e => e.message === 'badkey' ? 'Your TMDB key was rejected. Check it in Settings.'
+  : e.message === 'nokey' ? 'Add your TMDB key in Settings.'
+  : e.message === 'blocked' ? 'Could not reach TMDB. App previews and file viewers block outside connections, so open Reel Log from its GitHub Pages link.'
+  : 'TMDB returned an error (' + esc(e.message) + '). Try again in a minute.';
+
+function cardHTML(m, logged){
+  return `<div class="pc${logged.has(m.id) ? ' done' : ''}" data-id="${m.id}">${posterTag(m.poster, '', 'w185', m.title)}</div>`;
+}
+function bindCards(root){
+  root.querySelectorAll('.pc[data-id]:not([data-b])').forEach(el => {
+    el.dataset.b = 1; el.onclick = () => openMovie(+el.dataset.id);
+  });
+}
+function refreshBadges(){
+  const ids = loggedIds();
+  document.querySelectorAll('#vBrowse .pc[data-id]').forEach(el => el.classList.toggle('done', ids.has(+el.dataset.id)));
+}
+
+/* ---------- Browse ---------- */
+const ROWS = [
+  { title:'Trending this week', path:'/trending/movie/week' },
+  { title:'Popular now', path:'/movie/popular' },
+  { title:'In theaters', path:'/movie/now_playing' },
+  { title:'Coming soon', path:'/movie/upcoming' },
+  { title:'Top rated of all time', path:'/movie/top_rated' },
+  ...GENRES.map(([id,name]) => ({ title:name, path:'/discover/movie',
+    params:{ with_genres:id, sort_by:'popularity.desc', 'vote_count.gte':150 } }))
+];
+let browseBuilt = false, rowObs, listGen = 0, listObs;
+
+function buildBrowse(){
+  const v = $('#vBrowse');
+  if(!store.get(K_KEY, '')){
+    browseBuilt = false;
+    v.innerHTML = `<div class="empty">Add a free TMDB key to load the full film catalog with posters.
+      <button class="btn" id="needKey" style="max-width:260px;display:block;margin:16px auto 0">Add TMDB key</button></div>`;
+    $('#needKey').onclick = () => openSettings();
+    return;
+  }
+  browseBuilt = true;
+  v.innerHTML = `<div class="searchbar"><input id="bq" type="search" placeholder="Search every film…" autocomplete="off">
+      <button id="filtBtn">Filter</button></div>
+    <div class="chips" id="gchips">${GENRES.map(([id,n]) => `<button class="chip" data-g="${id}">${n}</button>`).join('')}</div>
+    <div id="home">${ROWS.map((r,i) => `<section class="row" data-i="${i}">
+      <div class="rowhead"><h3>${r.title}</h3><button data-all="${i}">See all</button></div>
+      <div class="track"><div class="msg">Loading…</div></div></section>`).join('')}</div>
+    <div id="sub" class="pad" hidden></div>`;
+
+  let t;
+  $('#bq').oninput = e => { clearTimeout(t); const q = e.target.value.trim();
+    t = setTimeout(() => q ? openList({ title:`“${q}”`, path:'/search/movie', params:{ query:q }, search:true }) : showHome(), 350); };
+  $('#filtBtn').onclick = openFilter;
+  v.querySelectorAll('#gchips .chip').forEach(c => c.onclick = () =>
+    openList(discoverDef({ genre:+c.dataset.g, decade:'', sort:'popular' })));
+  v.querySelectorAll('[data-all]').forEach(b => b.onclick = () => openList(ROWS[+b.dataset.all]));
+
+  rowObs?.disconnect();
+  rowObs = new IntersectionObserver(es => es.forEach(e => {
+    if(e.isIntersecting){ rowObs.unobserve(e.target); loadRow(e.target); }
+  }), { rootMargin:'600px 0px' });
+  v.querySelectorAll('.row').forEach(s => rowObs.observe(s));
+}
+
+async function loadRow(sec){
+  const def = ROWS[+sec.dataset.i], track = sec.querySelector('.track');
+  let page = 0, total = 1, busy = false;
+  const more = async () => {
+    if(busy || page >= total) return;
+    busy = true;
+    try{
+      const d = await listPage(def.path, def.params || {}, page + 1, true);
+      if(page === 0) track.innerHTML = '';
+      page = d.page; total = d.total;
+      const ids = loggedIds();
+      track.insertAdjacentHTML('beforeend', d.results.map(m => cardHTML(m, ids)).join(''));
+      bindCards(track);
+    }catch(e){ if(page === 0) track.innerHTML = `<div class="msg">${errText(e)}</div>`; }
+    busy = false;
+  };
+  track.onscroll = () => { if(track.scrollLeft + track.clientWidth > track.scrollWidth - 400) more(); };
+  await more();
+}
+
+function showHome(){
+  listObs?.disconnect(); listGen++;
+  $('#sub').hidden = true; $('#home').hidden = false; $('#gchips').hidden = false;
+  $('#gchips').querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+}
+
+function discoverDef(f){
+  const p = { 'vote_count.gte':50 };
+  const label = [];
+  if(f.genre){ p.with_genres = f.genre; label.push(GNAME[f.genre]); }
+  let lte = null;
+  if(f.decade){
+    label.push(f.decade);
+    if(f.decade === 'Older'){ lte = '1949-12-31'; }
+    else { const y = +f.decade.slice(0,4); p['primary_release_date.gte'] = `${y}-01-01`; lte = `${y+9}-12-31`; }
+  }
+  if(lte) p['primary_release_date.lte'] = lte;
+  if(f.sort === 'popular') p.sort_by = 'popularity.desc';
+  if(f.sort === 'rated'){ p.sort_by = 'vote_average.desc'; p['vote_count.gte'] = 300; }
+  if(f.sort === 'newest'){ p.sort_by = 'primary_release_date.desc'; p['vote_count.gte'] = 20;
+    p['primary_release_date.lte'] = lte && lte < today() ? lte : today(); }
+  if(f.sort === 'oldest') p.sort_by = 'primary_release_date.asc';
+  label.push(SORTS.find(s => s[0] === f.sort)[1]);
+  return { title: label.join(' · '), path:'/discover/movie', params:p, filter:f };
+}
+
+function openList(def){
+  const sub = $('#sub');
+  $('#home').hidden = true; sub.hidden = false;
+  if(!def.search) $('#bq').value = '';
+  $('#gchips').querySelectorAll('.chip').forEach(c =>
+    c.classList.toggle('on', !!def.filter && def.filter.genre === +c.dataset.g && !def.filter.decade && def.filter.sort === 'popular'));
+  sub.innerHTML = `<h2 class="ltitle" id="lt">${esc(def.title)}<small>tap to go back</small></h2>
+    <div class="grid" id="lgrid"></div><div class="sentinel" id="sent"></div><div class="msg" id="lmsg">Loading…</div>`;
+  $('#lt').onclick = () => { $('#bq').value = ''; showHome(); window.scrollTo(0,0); };
+  if(!def.search) window.scrollTo(0,0);
+
+  const gen = ++listGen; let page = 0, total = 1, busy = false;
+  const grid = $('#lgrid'), msg = $('#lmsg');
+  const more = async () => {
+    if(busy || page >= total || gen !== listGen) return;
+    busy = true;
+    try{
+      const d = await listPage(def.path, def.params, page + 1, false);
+      if(gen !== listGen) return;
+      page = d.page; total = d.total;
+      const ids = loggedIds();
+      grid.insertAdjacentHTML('beforeend', d.results.map(m => cardHTML(m, ids)).join(''));
+      bindCards(grid);
+      msg.textContent = page >= total ? (grid.children.length ? '' : 'No matches.') : '';
+    }catch(e){ if(gen === listGen) msg.textContent = errText(e); }
+    busy = false;
+    if(gen === listGen && page < total && $('#sent').getBoundingClientRect().top < innerHeight + 800) more();
+  };
+  listObs?.disconnect();
+  listObs = new IntersectionObserver(es => { if(es[0].isIntersecting) more(); }, { rootMargin:'800px 0px' });
+  listObs.observe($('#sent'));
+  more();
+}
+
+let lastFilter = { genre:0, decade:'', sort:'popular' };
+function openFilter(){
+  const f = { ...lastFilter };
+  const chipRow = (name, items, cur) => `<div class="chips" data-k="${name}">${items.map(([v,l]) =>
+    `<button class="chip${String(cur) === String(v) ? ' on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  openSheet(`<h2>Filter films</h2>
+    <label class="f">Genre</label>${chipRow('genre', [[0,'Any'], ...GENRES], f.genre)}
+    <label class="f">Decade</label>${chipRow('decade', [['','Any'], ...DECADES.map(d => [d,d])], f.decade)}
+    <label class="f">Sort by</label>${chipRow('sort', SORTS, f.sort)}
+    <button class="btn" id="apply">Show films</button>`);
+  document.querySelectorAll('#sheet .chips').forEach(row => row.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+    row.querySelectorAll('.chip').forEach(x => x.classList.remove('on')); c.classList.add('on');
+    const k = row.dataset.k; f[k] = k === 'genre' ? +c.dataset.v : c.dataset.v;
+  }));
+  $('#apply').onclick = () => { lastFilter = f; closeSheet(); openList(discoverDef(f)); };
+}
+
+/* ---------- Diary & My Films ---------- */
+function render(){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.v === view));
+  $('#vBrowse').hidden = view !== 'browse';
+  $('#vDiary').hidden = view !== 'diary';
+  $('#vFilms').hidden = view !== 'films';
+  if(view === 'browse'){ if(!browseBuilt) buildBrowse(); }
+  else view === 'diary' ? renderDiary() : renderFilms();
+}
+
+function renderDiary(){
+  const m = $('#vDiary');
+  if(!entries.length){ m.innerHTML = `<div class="empty">Nothing logged yet.<br>Find a film in Browse and tap Log.</div>`; return; }
+  const sorted = [...entries].sort((a,b) => b.date.localeCompare(a.date) || b.added - a.added);
+  let html = '', cur = '';
+  for(const e of sorted){
+    const [y, mo, d] = e.date.split('-');
+    const label = new Date(+y, +mo-1, 1).toLocaleString(undefined, {month:'long', year:'numeric'});
+    if(label !== cur){ html += `<div class="month">${label}</div>`; cur = label; }
+    html += `<div class="entry" data-id="${e.id}"><div class="day">${+d}</div>
+      ${posterTag(e.poster, 'thumb', 'w92')}
+      <div class="einfo"><div class="etitle">${esc(e.title)}</div>
+      <div class="esub">${esc(e.year || '')}${e.rewatch ? '<span class="rw">REWATCH</span>' : ''}</div></div>
+      <div class="stars">${starStr(e.rating)}</div></div>`;
+  }
+  m.innerHTML = html;
+  m.querySelectorAll('.entry').forEach(el => el.onclick = () => openEntry(el.dataset.id));
+}
+
+function filmsList(){
+  const map = new Map();
+  for(const e of entries){
+    const f = map.get(e.tmdb) || { tmdb:e.tmdb, title:e.title, year:e.year, poster:e.poster, logs:[] };
+    f.logs.push(e); map.set(e.tmdb, f);
+  }
+  const films = [...map.values()].map(f => {
+    f.logs.sort((a,b) => b.date.localeCompare(a.date) || b.added - a.added);
+    f.last = f.logs[0].date;
+    f.rating = (f.logs.find(l => l.rating) || {}).rating || 0;
+    return f;
+  });
+  const s = {
+    recent:(a,b) => b.last.localeCompare(a.last),
+    rating:(a,b) => b.rating - a.rating || b.last.localeCompare(a.last),
+    title:(a,b) => a.title.localeCompare(b.title),
+    year:(a,b) => (b.year||0) - (a.year||0)
+  }[filmSort];
+  return films.sort(s);
+}
+
+function renderFilms(){
+  const m = $('#vFilms');
+  const films = filmsList();
+  if(!films.length){ m.innerHTML = `<div class="empty">No films logged yet.</div>`; return; }
+  m.innerHTML = `<div class="toolbar"><span>${films.length} film${films.length>1?'s':''}</span>
+    <span style="flex:1"></span>Sort
+    <select id="sortSel"><option value="recent">Last watched</option><option value="rating">Rating</option>
+      <option value="title">Title</option><option value="year">Release year</option></select></div>
+    <div class="grid">${films.map(f => `<div class="pc" data-t="${f.tmdb}">
+      ${posterTag(f.poster, '', 'w185', f.title)}<span class="stars">${starStr(f.rating) || '&nbsp;'}</span></div>`).join('')}</div>`;
+  const sel = $('#sortSel'); sel.value = filmSort;
+  sel.onchange = () => { filmSort = sel.value; renderFilms(); };
+  m.querySelectorAll('.pc').forEach(el => el.onclick = () => openMovie(+el.dataset.t));
+}
+
+/* ---------- Sheet ---------- */
+function openSheet(html){
+  const s = $('#sheet'); s.innerHTML = html; s.scrollTop = 0;
+  $('#bg').style.display = 'block';
+  requestAnimationFrame(() => s.classList.add('open'));
+}
+function closeSheet(){ $('#sheet').classList.remove('open'); $('#bg').style.display = 'none'; }
+$('#bg').onclick = closeSheet;
+
+/* Quick search sheet (the + button) */
+let searchTimer;
+function openSearch(){
+  if(!store.get(K_KEY, '')){ openSettings(); return; }
+  openSheet(`<h2>Log a film</h2><input id="q" type="search" placeholder="Search titles…" autocomplete="off">
+    <div id="res"><div class="msg">Start typing a title.</div></div>`);
+  const q = $('#q');
+  setTimeout(() => q.focus(), 250);
+  q.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => doSearch(q.value.trim()), 300); };
+}
+async function doSearch(text){
+  const res = $('#res'); if(!res) return;
+  if(!text){ res.innerHTML = `<div class="msg">Start typing a title.</div>`; return; }
+  res.innerHTML = `<div class="msg">Searching…</div>`;
+  try{
+    const d = await listPage('/search/movie', { query:text }, 1, false);
+    if($('#q')?.value.trim() !== text) return;
+    if(!d.results.length){ res.innerHTML = `<div class="msg">No matches.</div>`; return; }
+    res.innerHTML = d.results.map(r => `<div class="result" data-id="${r.id}">${posterTag(r.poster, 'thumb', 'w92')}
+      <div class="einfo"><div class="etitle">${esc(r.title)}</div>
+      <div class="esub">${esc(r.year || '—')}${countFor(r.id) ? ` · logged ${countFor(r.id)}×` : ''}</div></div></div>`).join('');
+    res.querySelectorAll('.result').forEach(el => el.onclick = () => openLog(filmOf(+el.dataset.id)));
+  }catch(e){ res.innerHTML = `<div class="msg">${errText(e)}</div>`; }
+}
+const countFor = id => entries.filter(e => e.tmdb === id).length;
+function filmOf(id){
+  const m = movies.get(id), e = entries.find(x => x.tmdb === id) || {};
+  return { tmdb:id, title:m?.title || e.title, year:m?.year || e.year, poster:m?.poster || e.poster };
+}
+
+/* Movie detail */
+async function openMovie(id){
+  const m = movies.get(id), film = filmOf(id);
+  const logs = entries.filter(e => e.tmdb === id).sort((a,b) => b.date.localeCompare(a.date) || b.added - a.added);
+  const mine = (logs.find(l => l.rating) || {}).rating;
+  const genres = (m?.genres || []).map(g => GNAME[g]).filter(Boolean).join(', ');
+  openSheet(`<div class="logtop">${posterTag(film.poster, '', 'w342', film.title)}
+      <div><h2 style="margin:0">${esc(film.title)}</h2>
+      <div class="esub">${esc(film.year || '')}${genres ? ' · ' + esc(genres) : ''}</div>
+      ${m?.vote ? `<div class="small" style="margin-top:6px">TMDB average ${m.vote.toFixed(1)}/10</div>` : ''}
+      ${mine ? `<div class="stars" style="font-size:20px;margin-top:8px">${starStr(mine)}</div>` : ''}
+      ${logs.length ? `<div class="small">You've watched this ${logs.length}×</div>` : ''}</div></div>
+    <p class="overview" id="ov">${esc(m?.overview || '')}</p>
+    <button class="btn" id="logBtn">${logs.length ? 'Log again' : 'Log'}</button>
+    ${logs.map(l => `<div class="hist" data-id="${l.id}"><div>
+      <div>${new Date(l.date+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}${l.rewatch?'<span class="rw">REWATCH</span>':''}</div>
+      ${l.note ? `<div class="note">${esc(l.note)}</div>` : ''}</div>
+      <div class="stars">${starStr(l.rating)}</div></div>`).join('')}`);
+  $('#logBtn').onclick = () => openLog(film);
+  document.querySelectorAll('.hist').forEach(h => h.onclick = () => openEntry(h.dataset.id));
+  if(!m?.overview && store.get(K_KEY, '')){
+    try{ const d = slim(await tmdb('/movie/' + id)); movies.set(id, d);
+      const ov = $('#ov'); if(ov) ov.textContent = d.overview; }catch(e){}
+  }
+}
+
+/* Log / edit form */
+function openLog(film, existing){
+  const e = existing || { date: today(), rating: 0, rewatch: countFor(film.tmdb) > 0, note:'' };
+  let rating = e.rating;
+  openSheet(`<div class="logtop">${posterTag(film.poster, '', 'w185', film.title)}
+      <div><h2 style="margin:0">${esc(film.title)}</h2><div class="esub">${esc(film.year||'')}</div></div></div>
+    <label class="f">Watched on</label><input type="date" id="dt" value="${e.date}" max="${today()}">
+    <label class="f">Rating</label>
+    <div class="starpick" id="sp">${[1,2,3,4,5].map(n => `<div class="sp" data-n="${n}">★<span class="fill">★</span>
+      <span class="hz l" data-v="${n-.5}"></span><span class="hz r" data-v="${n}"></span></div>`).join('')}
+      <button class="clear" id="clr">clear</button></div>
+    <label class="toggle"><input type="checkbox" id="rw" ${e.rewatch?'checked':''}> Rewatch</label>
+    <label class="f">Note (optional)</label><textarea id="nt" rows="2">${esc(e.note||'')}</textarea>
+    <button class="btn" id="sv">${existing ? 'Save changes' : 'Log it'}</button>
+    ${existing ? `<button class="btn danger" id="del">Delete entry</button>` : ''}`);
+  const paint = () => document.querySelectorAll('#sp .sp').forEach(s => {
+    const n = +s.dataset.n;
+    s.querySelector('.fill').style.width = rating >= n ? '100%' : rating >= n-.5 ? '50%' : '0';
+  });
+  paint();
+  document.querySelectorAll('#sp .hz').forEach(h => h.onclick = () => { const v = +h.dataset.v; rating = rating === v ? 0 : v; paint(); });
+  $('#clr').onclick = () => { rating = 0; paint(); };
+  $('#sv').onclick = () => {
+    const rec = { ...(existing || { id: uid(), added: Date.now() }), ...film,
+      date: $('#dt').value || today(), rating, rewatch: $('#rw').checked, note: $('#nt').value.trim() };
+    if(existing) entries = entries.map(x => x.id === rec.id ? rec : x); else entries.push(rec);
+    save(); closeSheet(); afterChange();
+  };
+  if(existing) $('#del').onclick = () => {
+    if(confirm('Delete this diary entry?')){ entries = entries.filter(x => x.id !== existing.id); save(); closeSheet(); afterChange(); }
+  };
+}
+function afterChange(){ refreshBadges(); if(view !== 'browse') render(); }
+function openEntry(id){
+  const e = entries.find(x => x.id === id); if(!e) return;
+  openLog({ tmdb:e.tmdb, title:e.title, year:e.year, poster:e.poster }, e);
+}
+
+/* Settings */
+function openSettings(){
+  const films = new Set(entries.map(e => e.tmdb)).size;
+  const yr = new Date().getFullYear().toString();
+  const thisYear = entries.filter(e => e.date.startsWith(yr)).length;
+  const rated = entries.filter(e => e.rating);
+  const avg = rated.length ? (rated.reduce((s,e) => s + e.rating, 0) / rated.length).toFixed(1) : '–';
+  const hadKey = !!store.get(K_KEY, '');
+  openSheet(`<h2>Settings</h2>
+    <div class="stat"><div><b>${films}</b><span>Films</span></div><div><b>${thisYear}</b><span>Logged this year</span></div><div><b>${avg}</b><span>Avg rating</span></div></div>
+    <label class="f">TMDB API key or read access token</label>
+    <input id="key" value="${esc(store.get(K_KEY,''))}" placeholder="Paste your key" autocomplete="off">
+    <div class="small" style="margin-top:6px">Free at themoviedb.org → Settings → API.</div>
+    <button class="btn" id="saveKey">Save key</button>
+    <label class="f">Backup</label>
+    <button class="btn ghost" id="exp" style="margin-top:0">Export diary (.json)</button>
+    <button class="btn ghost" id="imp">Import diary</button>
+    <input type="file" id="file" accept=".json,application/json" hidden>
+    <p class="small" style="margin-top:18px">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>`);
+  $('#saveKey').onclick = async () => {
+    const k = $('#key').value.trim(); store.set(K_KEY, k);
+    const done = () => { closeSheet(); if(!hadKey || !k){ browseBuilt = false; view = 'browse'; render(); } };
+    if(!k){ done(); return; }
+    $('#saveKey').textContent = 'Checking…';
+    try{ await tmdb('/configuration'); done(); }
+    catch(err){ $('#saveKey').textContent = err.message === 'badkey' ? 'Key rejected — try again' : 'Saved (could not verify offline)';
+      if(err.message !== 'badkey') setTimeout(done, 900); }
+  };
+  $('#exp').onclick = () => {
+    const blob = new Blob([JSON.stringify({ app:'reellog', v:1, entries }, null, 1)], { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `reellog-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+  $('#imp').onclick = () => $('#file').click();
+  $('#file').onchange = async ev => {
+    const f = ev.target.files[0]; if(!f) return;
+    try{
+      const data = JSON.parse(await f.text());
+      const list = Array.isArray(data) ? data : data.entries;
+      if(!Array.isArray(list)) throw 0;
+      const ids = new Set(entries.map(e => e.id)); let n = 0;
+      for(const e of list) if(e && e.id && e.tmdb && e.date && !ids.has(e.id)){ entries.push(e); n++; }
+      save(); closeSheet(); afterChange(); alert(`Imported ${n} entr${n===1?'y':'ies'}.`);
+    }catch(e){ alert('That file is not a Reel Log backup.'); }
+  };
+}
+
+/* ---------- Wire up ---------- */
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  if(t.dataset.v === 'browse' && view === 'browse' && browseBuilt){ $('#bq').value = ''; showHome(); }
+  view = t.dataset.v; render(); window.scrollTo(0,0);
+});
+$('#addBtn').onclick = openSearch;
+$('#setBtn').onclick = openSettings;
+render();
+if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
