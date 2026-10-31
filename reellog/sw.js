@@ -1,7 +1,7 @@
 // Reel Log offline support for the app's own files only. Film data and posters always come live from TMDB.
 const PREFIX = 'reellog-';
-const CACHE = PREFIX + 'v2:' + self.registration.scope;
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = PREFIX + 'v3:' + self.registration.scope;
+const ASSETS = ['./', './index.html', './reellog.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE)
