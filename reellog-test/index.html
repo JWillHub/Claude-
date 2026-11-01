@@ -41,7 +41,7 @@ main{max-width:1100px;margin:0 auto}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;justify-content:space-around;
   padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(20,17,25,.9);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
-.tb{flex:1;max-width:120px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+.tb{flex:1;max-width:110px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
   color:var(--muted);font-size:11px;font-weight:650;cursor:pointer;padding:4px 0;position:relative}
 .tb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tb.on{color:var(--accent)}
@@ -104,11 +104,11 @@ main{max-width:1100px;margin:0 auto}
 .sagas{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px 16px;padding:0 16px}
 .saga{cursor:pointer;position:relative;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .track>.saga{flex:none;width:136px;scroll-snap-align:start}
-.fan{position:relative;width:100%;aspect-ratio:2/3;margin:20px 0 10px}
+.fan{position:relative;width:100%;aspect-ratio:2/3;margin:10px 0 10px}
 .fan img,.fan .ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;background:var(--card2);
   transform-origin:top center;box-shadow:0 10px 24px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.07)}
-.fan>:nth-child(1){transform:translateY(-20px) scale(.84);filter:brightness(.45)}
-.fan>:nth-child(2){transform:translateY(-10px) scale(.92);filter:brightness(.68)}
+.fan>:nth-child(1){transform:translateY(-6px) scale(.94);filter:brightness(.4)}
+.fan>:nth-child(2){transform:translateY(-3px) scale(.97);filter:brightness(.62)}
 .fan>:nth-child(3){z-index:2}
 .saga:active .fan>:nth-child(3){transform:scale(.97)}
 .sname{font-family:var(--disp);font-weight:700;font-size:17px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -258,8 +258,29 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .onb h2{font-family:var(--disp);font-size:26px;margin:0 0 8px}
 .onb p{color:var(--muted);margin:0 0 6px}
 
+/* TV episode chart */
+.imdbbox{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:12px}
+.imdbbox .ib2{background:#f5c518;color:#000;font-weight:900;border-radius:5px;padding:2px 6px;font-size:13px}
+.imdbbox b{font-family:var(--disp);font-size:28px;line-height:1}
+.chartwrap{overflow-x:auto;margin:10px -16px 0;padding:0 16px 6px;scrollbar-width:none}
+.chartwrap::-webkit-scrollbar{display:none}
+.hm{border-collapse:separate;border-spacing:3px;font-size:12.5px;font-weight:750;margin:0 auto}
+.hm th{color:var(--muted);font-weight:700;font-size:11px;padding:0 2px;white-space:nowrap}
+.hm td{width:38px;min-width:38px;height:30px;text-align:center;border-radius:6px;cursor:pointer}
+.hm td.na{background:var(--card);color:var(--muted)}
+.hm td.sel{outline:2px solid #fff;outline-offset:1px}
+.hm tr.avg td{border-top:0;font-weight:900}
+.c9{background:#1d7a4a;color:#fff}.c8{background:#3dbb6f;color:#0b1a10}.c7{background:#e6c52f;color:#1c1600}
+.c6{background:#ef8b2c;color:#1f0f00}.c5{background:#d9443a;color:#fff}.c4{background:#7c3fbf;color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;font-size:11px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.epinfo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:10px;min-height:44px;font-size:13.5px}
+.epinfo b{font-family:var(--disp);font-size:18px}
+.hl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.hl div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:12.5px;color:var(--muted);cursor:pointer}
+.hl b{display:block;color:var(--text);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* marquee type */
-.logo,.vt,.disp,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.logo,.vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
 </style>
 </head>
@@ -273,10 +294,12 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
   <section id="v-sagas" hidden></section>
   <section id="v-diary" hidden></section>
   <section id="v-films" hidden></section>
+  <section id="v-tv" hidden></section>
 </main>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="sagas"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="15" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h10"/></svg>Sagas</button>
+  <button class="tb" data-v="tv"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 2.5l4 3.5 4-3.5"/></svg>TV</button>
   <button class="tb" data-v="diary"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Diary</button>
   <button class="tb" data-v="films"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>My Films</button>
 </nav>
@@ -328,6 +351,8 @@ const GNAME = Object.fromEntries(GENRES);
 const DECADES = ['2020s','2010s','2000s','1990s','1980s','1970s','1960s','1950s','Older'];
 const SORTS = [['popular','Most popular'],['rated','Highest rated'],['newest','Newest'],['oldest','Oldest']];
 
+const pid = v => /^\d+$/.test(String(v)) ? +v : String(v);
+const IMDB_DATA = 'https://raw.githubusercontent.com/JWillHub/Claude-/imdb-data/';
 const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2.4l2.95 6.1 6.65.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.65-.8z"/></svg>';
 const SEARCH_SVG = '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
 
@@ -354,6 +379,8 @@ const errText = e => e.message === 'badkey' ? 'Your TMDB key was rejected. Check
   : 'TMDB returned an error (' + esc(e.message) + '). Try again in a minute.';
 const slim = m => ({ id:m.id, title:m.title, year:(m.release_date||'').slice(0,4), date:m.release_date||'', poster:m.poster_path,
   backdrop:m.backdrop_path, overview:m.overview||'', genres:m.genre_ids || (m.genres||[]).map(g => g.id), vote:m.vote_average||0 });
+const slimTV = m => ({ id:'tv' + m.id, tid:m.id, tv:true, title:m.name, year:(m.first_air_date||'').slice(0,4), date:m.first_air_date||'',
+  poster:m.poster_path, backdrop:m.backdrop_path, overview:m.overview||'', genres:m.genre_ids || (m.genres||[]).map(g => g.id), vote:m.vote_average||0 });
 function remember(list){ list.forEach(m => { const old = movies.get(m.id); movies.set(m.id, old ? { ...old, ...m } : m); }); }
 async function cached(k, ttlH, fn){
   if(mem.has(k)) return mem.get(k);
@@ -363,12 +390,12 @@ async function cached(k, ttlH, fn){
   mem.set(k, d); store.set(CK + k, { t:Date.now(), d });
   return d;
 }
-async function listPage(path, params, page){
+async function listPage(path, params, page, tv){
   const p = { include_adult:'false', ...params, page };
   const k = path + '?' + new URLSearchParams(p);
   const run = async () => {
     const d = await tmdb(path, p);
-    return { page:d.page, total:Math.min(d.total_pages||1, 500), results:(d.results||[]).filter(m => m.title).map(slim) };
+    return { page:d.page, total:Math.min(d.total_pages||1, 500), results:(d.results||[]).filter(m => tv ? m.name : m.title).map(tv ? slimTV : slim) };
   };
   const out = page === 1 && !params.query ? await cached(k, 6, run) : (mem.get(k) || await run().then(d => (mem.set(k, d), d)));
   remember(out.results);
@@ -421,6 +448,7 @@ function afterChange(){
   sheetStack.forEach(s => s.refresh && s.refresh());
   if(view === 'diary') renderDiary();
   if(view === 'films') renderFilms();
+  if(built.tv) renderMyShows();
 }
 function badge(id){
   const r = getR(id);
@@ -428,7 +456,7 @@ function badge(id){
   return logCount(id) ? '✓' : '';
 }
 function refreshBadges(){
-  $$('.pc[data-id]').forEach(el => { const b = $('.bd', el); if(!b) return; const t = badge(+el.dataset.id); b.textContent = t; b.classList.toggle('seen', t === '✓'); });
+  $$('.pc[data-id]').forEach(el => { const b = $('.bd', el); if(!b) return; const t = badge(pid(el.dataset.id)); b.textContent = t; b.classList.toggle('seen', t === '✓'); });
 }
 function cardHTML(m, rank){
   const b = badge(m.id);
@@ -536,7 +564,7 @@ document.addEventListener('pointerdown', e => {
     if(!lp) return;
     lp.fired = true; pc.classList.remove('pressing');
     navigator.vibrate && navigator.vibrate(14);
-    openRatepad(+pc.dataset.id, true, lp.x);
+    openRatepad(pid(pc.dataset.id), true, lp.x);
   }, 420);
 });
 document.addEventListener('pointermove', e => {
@@ -562,14 +590,14 @@ function openRatepad(id, tracking, x){
     ${starsHTML(46, 6)}
     <div class="rv" id="rpv">${cur ? esc(RWORDS[cur]) : ''}</div>
     <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Tap a star — tap its left half for ½'}</div>
-    <div class="rpbtns"><button class="pill line" id="rpd">Details</button><button class="pill line" id="rpl">Log a watch</button>
+    <div class="rpbtns"><button class="pill line" id="rpd">Details</button>${String(id).startsWith('tv') ? '' : '<button class="pill line" id="rpl">Log a watch</button>'}
       ${cur ? '<button class="pill line" id="rpx">Clear</button>' : ''}</div></div>`;
   el.classList.add('on');
   const s5 = $('.s5', el); paintStars(s5, cur);
   bindStars(s5, (r, fin) => { if(rp.tracking) return; rp.r = r; paintStars(s5, r); $('#rpv').textContent = RWORDS[r]; if(fin) commitRatepad(); });
   el.onclick = e => { if(e.target === el) closeRatepad(); };
   $('#rpd').onclick = () => { closeRatepad(); openMovie(id); };
-  $('#rpl').onclick = () => { closeRatepad(); openLog(f); };
+  const rl = $('#rpl'); if(rl) rl.onclick = () => { closeRatepad(); openLog(f); };
   const x2 = $('#rpx'); if(x2) x2.onclick = () => { closeRatepad(); setRating(f, 0); };
 }
 function rpTrack(x){
@@ -595,9 +623,9 @@ function closeRatepad(){ rp.on = false; rp.tracking = false; $('#rp').classList.
 /* ================= global clicks ================= */
 document.addEventListener('click', e => {
   if(Date.now() - suppressClick < 500){ e.preventDefault(); e.stopPropagation(); return; }
-  const pc = e.target.closest('.pc[data-id]'); if(pc){ openMovie(+pc.dataset.id); return; }
+  const pc = e.target.closest('.pc[data-id]'); if(pc){ openMovie(pid(pc.dataset.id)); return; }
   const sg = e.target.closest('[data-saga]'); if(sg){ const s = sagaByK(sg.dataset.saga); if(s) openRun(s); return; }
-  const all = e.target.closest('[data-all]'); if(all){ openSeeAll(ROWS[+all.dataset.all]); return; }
+  const all = e.target.closest('[data-all]'); if(all){ openSeeAll(rowDef(all.dataset.all)); return; }
   const go = e.target.closest('[data-go]'); if(go){ setView(go.dataset.go); return; }
 }, true);
 
@@ -607,9 +635,10 @@ const built = {};
 function setView(v){
   view = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === v));
-  ['discover','sagas','diary','films'].forEach(n => $('#v-' + n).hidden = n !== v);
+  ['discover','sagas','tv','diary','films'].forEach(n => $('#v-' + n).hidden = n !== v);
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'sagas' && !built.sagas) buildSagas();
+  if(v === 'tv' && !built.tv) buildTV();
   if(v === 'diary') renderDiary();
   if(v === 'films') renderFilms();
   scrollTo(0, 0);
@@ -657,8 +686,9 @@ function buildDiscover(){
   $$('.row[data-row]', v).forEach(s => rowObs.observe(s));
   $$('.saga', v).forEach(t => rowObs.observe(t));
 }
+const rowDef = key => String(key)[0] === 't' ? TVROWS[+String(key).slice(1)] : ROWS[+key];
 function rowHTML(i){
-  const r = ROWS[i];
+  const r = rowDef(i);
   return `<section class="row" data-row="${i}"><div class="rowhead"><div><h3>${esc(r.title)}</h3>${r.sub ? `<p>${esc(r.sub)}</p>` : ''}</div>
     <button data-all="${i}">See all</button></div><div class="track"><div class="msg">Loading…</div></div></section>`;
 }
@@ -679,13 +709,13 @@ async function loadHero(){
   }catch(e){ h.outerHTML = `<div class="onb"><p>${errText(e)}</p></div>`; }
 }
 async function loadRow(sec){
-  const def = ROWS[+sec.dataset.row], track = $('.track', sec);
+  const def = rowDef(sec.dataset.row), track = $('.track', sec);
   let page = 0, total = 1, busy = false, n = 0;
   const more = async () => {
     if(busy || page >= total || (def.max && n >= def.max)) return;
     busy = true;
     try{
-      const d = await listPage(def.path, def.params || {}, page + 1);
+      const d = await listPage(def.path, def.params || {}, page + 1, def.tv);
       if(page === 0) track.innerHTML = '';
       page = d.page; total = d.total;
       let list = d.results; if(def.max) list = list.slice(0, def.max - n);
@@ -706,7 +736,7 @@ function feed(root, grid, sent, msgEl, def){
     if(gen !== grid._gen || busy || page >= total || (def.max && n >= def.max)) return;
     busy = true;
     try{
-      const d = await listPage(def.path, def.params || {}, page + 1);
+      const d = await listPage(def.path, def.params || {}, page + 1, def.tv);
       if(gen !== grid._gen) return;
       page = d.page; total = d.total;
       let list = d.results; if(def.max) list = list.slice(0, def.max - n);
@@ -1044,8 +1074,136 @@ function openRun(saga){
   }).catch(e => { $('#rbody', b).innerHTML = `<div class="msg">${e && e.message ? errText(e) : 'Could not find this series.'}</div>`; $('#rprog', b).textContent = ''; });
 }
 
+/* ---------- TV ---------- */
+const TVROWS = [
+  { title:'Trending TV this week', path:'/trending/tv/week', tv:true },
+  { title:'Top rated shows', sub:'Ranked by TMDB voters', path:'/tv/top_rated', tv:true, ranked:true, max:100 },
+  { title:'Popular right now', path:'/tv/popular', tv:true },
+  { title:'On the air', path:'/tv/on_the_air', tv:true },
+  { title:'Drama', path:'/discover/tv', tv:true, params:{ with_genres:18, sort_by:'popularity.desc', 'vote_count.gte':200 } },
+  { title:'Comedy', path:'/discover/tv', tv:true, params:{ with_genres:35, sort_by:'popularity.desc', 'vote_count.gte':200 } },
+  { title:'Crime', path:'/discover/tv', tv:true, params:{ with_genres:80, sort_by:'popularity.desc', 'vote_count.gte':200 } },
+  { title:'Sci-Fi & Fantasy', path:'/discover/tv', tv:true, params:{ with_genres:10765, sort_by:'popularity.desc', 'vote_count.gte':200 } },
+  { title:'Animation', path:'/discover/tv', tv:true, params:{ with_genres:16, sort_by:'popularity.desc', 'vote_count.gte':200 } }
+];
+let tvObs;
+function buildTV(){
+  const v = $('#v-tv');
+  if(!store.get(K_KEY, '')){ v.innerHTML = `<h2 class="vt">TV</h2><div class="onb"><p>Add your TMDB key in Settings to load shows.</p></div>`; return; }
+  built.tv = true;
+  v.innerHTML = `<h2 class="vt">TV</h2><p class="vs">Every episode's IMDb rating, charted season by season. Hold a poster to rate the show.</p>
+    <button class="searchpill" id="tsp" style="margin-top:0">${SEARCH_SVG}Search any show</button>
+    <div id="myshows"></div>
+    ${TVROWS.map((r, i) => rowHTML('t' + i)).join('')}`;
+  $('#tsp').onclick = openFindTV;
+  renderMyShows();
+  tvObs?.disconnect();
+  tvObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ tvObs.unobserve(e.target); loadRow(e.target); } }), { rootMargin:'500px 400px' });
+  $$('.row[data-row]', v).forEach(s => tvObs.observe(s));
+}
+function renderMyShows(){
+  const box = $('#myshows'); if(!box) return;
+  const mine = Object.entries(ratings).filter(([k]) => k.startsWith('tv')).sort((a, b) => (b[1].at || 0) - (a[1].at || 0));
+  box.innerHTML = mine.length ? `<section class="row" style="margin-top:6px"><div class="rowhead"><div><h3>Your shows</h3></div></div>
+    <div class="track">${mine.map(([k, r]) => cardHTML({ id:k, title:r.title, poster:r.poster })).join('')}</div></section>` : '';
+}
+function openFindTV(){
+  const s = sheet(`<div class="findsaga" style="margin:0 0 12px">${SEARCH_SVG}<input id="tq" type="search" placeholder="Search any show…" autocomplete="off"></div>
+    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg">Type a show's name.</div>`, { tall:true });
+  const b = s.body; let t;
+  $('#tq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(() => {
+    if(q) feed(b, $('.grid', b), $('.sent', b), $('.msg', b), { path:'/search/tv', params:{ query:q }, tv:true });
+    else { $('.grid', b).innerHTML = ''; $('.msg', b).textContent = "Type a show's name."; }
+  }, 350); };
+  setTimeout(() => $('#tq', b).focus(), 350);
+}
+const heat = r => r == null ? 'na' : r >= 9 ? 'c9' : r >= 8 ? 'c8' : r >= 7 ? 'c7' : r >= 6 ? 'c6' : r >= 5 ? 'c5' : 'c4';
+const fmtV = v => v >= 1e6 ? (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : v >= 1e3 ? Math.round(v / 1e3) + 'K' : String(v);
+let imdbMeta;
+async function imdbFile(tt){
+  if(!imdbMeta) imdbMeta = fetch(IMDB_DATA + 'meta.json', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  const meta = await imdbMeta;
+  if(!meta) return { state:'nodata' };
+  try{
+    const r = await fetch(`${IMDB_DATA}tv/${tt.slice(-2)}/${tt}.json`);
+    if(r.status === 404) return { state:'missing', meta };
+    if(!r.ok) throw 0;
+    return { state:'ok', meta, d:await r.json() };
+  }catch(e){ return { state:'error' }; }
+}
+async function openShow(id){
+  const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
+  const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>
+    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div></div></div>
+    <div class="ratebox nodrag"><div class="lbl">Your rating for the show</div>${starsHTML(40, 6)}<div class="rv" id="mrv"></div></div>
+    <div class="acts"><button class="pill line" id="mclr">Clear rating</button></div>
+    <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
+    <p class="ov" id="mov">${esc(m.overview || '')}</p>`, { tall:true, cls:'mvsheet' });
+  const b = s.body, s5 = $('.ratebox .s5', b);
+  const paint = () => {
+    const r = getR(id); paintStars(s5, r);
+    $('#mrv', b).textContent = r ? `${fmtR(r)} — ${RWORDS[r]}` : 'Tap or slide to rate';
+    $('#mclr', b).parentElement.style.display = r ? '' : 'none';
+  };
+  s.refresh = paint; paint();
+  bindStars(s5, (r, fin) => { paintStars(s5, r); $('#mrv', b).textContent = `${fmtR(r)} — ${RWORDS[r]}`; if(fin && r !== getR(id)) setRating(filmOf(id), r); });
+  $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
+  let d;
+  try{
+    d = await cached('tvd:' + tid, 24*3, () => tmdb('/tv/' + tid, { append_to_response:'external_ids' }).then(x => ({
+      ...slimTV(x), seasons:x.number_of_seasons, eps:x.number_of_episodes, end:(x.last_air_date || '').slice(0, 4), status:x.status,
+      network:(x.networks || [])[0]?.name || '', gnames:(x.genres || []).map(g => g.name), imdb:x.external_ids && x.external_ids.imdb_id })));
+    remember([d]);
+    if(!s.el.isConnected) return;
+    if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
+    const yrs = d.year ? d.year + (d.status === 'Returning Series' ? '–' : d.end && d.end !== d.year ? '–' + d.end : '') : '';
+    $('#mm', b).textContent = [yrs, d.seasons ? d.seasons + ' season' + (d.seasons > 1 ? 's' : '') : '', d.network].filter(Boolean).join(' · ');
+    $('#md', b).textContent = d.gnames.slice(0, 3).join(', ');
+    $('#mov', b).textContent = d.overview;
+  }catch(e){ $('#imdb', b).innerHTML = `<div class="msg">${errText(e)}</div>`; return; }
+  if(!d.imdb){ $('#imdb', b).innerHTML = '<div class="msg">This show has no IMDb link on TMDB, so there\'s no episode chart.</div>'; return; }
+  const res = await imdbFile(d.imdb);
+  if(!s.el.isConnected) return;
+  const box = $('#imdb', b);
+  if(res.state === 'nodata'){ box.innerHTML = '<div class="msg">IMDb episode ratings are still being built. They appear after the first nightly update.</div>'; return; }
+  if(res.state === 'error'){ box.innerHTML = '<div class="msg">Could not load IMDb episode ratings. Check your connection.</div>'; return; }
+  if(res.state === 'missing'){ box.innerHTML = `<div class="msg">Not enough IMDb votes to chart this show yet (shows need ${res.meta.minVotes.toLocaleString()}+).</div>`; return; }
+  renderChart(box, res.d, res.meta);
+}
+function renderChart(box, d, meta){
+  const ss = Object.keys(d.s).map(Number).sort((a, b) => a - b);
+  const maxE = Math.max(...ss.map(n => Math.max(...d.s[n].map(e => e[0]))));
+  const all = []; ss.forEach(n => d.s[n].forEach(e => { if(e[1] != null) all.push({ s:n, e:e[0], r:e[1], v:e[2], t:e[3] }); }));
+  const firm = all.filter(x => x.v >= 50), pool = firm.length ? firm : all;
+  const best = pool.reduce((a, x) => !a || x.r > a.r ? x : a, null), worst = pool.reduce((a, x) => !a || x.r < a.r ? x : a, null);
+  const avg = list => { const r = list.filter(e => e[1] != null); return r.length ? r.reduce((a, e) => a + e[1], 0) / r.length : null; };
+  let rowsH = '';
+  for(let e = 1; e <= maxE; e++){
+    rowsH += `<tr><th>E${e}</th>` + ss.map(n => { const x = d.s[n].find(q => q[0] === e);
+      return x ? `<td class="${heat(x[1])}" data-s="${n}" data-e="${e}">${x[1] == null ? '–' : x[1].toFixed(1)}</td>` : '<td style="background:none;cursor:default"></td>'; }).join('') + '</tr>';
+  }
+  rowsH += '<tr class="avg"><th>AVG</th>' + ss.map(n => { const a = avg(d.s[n]); return `<td class="${heat(a)}">${a == null ? '–' : a.toFixed(1)}</td>`; }).join('') + '</tr>';
+  const lbl = x => `S${x.s} E${x.e}`;
+  box.innerHTML = `<div class="imdbbox"><span class="ib2">IMDb</span><b>${d.r.toFixed(1)}</b><span class="small">${fmtV(d.v)} votes · ${all.length} rated episodes</span></div>
+    ${best ? `<div class="hl"><div data-s="${best.s}" data-e="${best.e}">Best episode<b>${esc(best.t || lbl(best))}</b>${lbl(best)} · ${best.r.toFixed(1)}</div>
+      <div data-s="${worst.s}" data-e="${worst.e}">Lowest rated<b>${esc(worst.t || lbl(worst))}</b>${lbl(worst)} · ${worst.r.toFixed(1)}</div></div>` : ''}
+    <div class="chartwrap"><table class="hm"><tr><th></th>${ss.map(n => `<th>S${n}</th>`).join('')}</tr>${rowsH}</table></div>
+    <div class="legend"><span><i class="c9"></i>9+ Absolute cinema</span><span><i class="c8"></i>8+ Great</span><span><i class="c7"></i>7+ Good</span>
+      <span><i class="c6"></i>6+ Regular</span><span><i class="c5"></i>5+ Bad</span><span><i class="c4"></i>Garbage</span></div>
+    <div class="epinfo" id="epi"><span class="small">Tap any episode to see its title and votes.</span></div>
+    <div class="small" style="margin-top:8px;text-align:center">Episode ratings from IMDb, updated ${esc(meta.built)}.</div>`;
+  const info = (n, e) => {
+    const x = (d.s[n] || []).find(q => q[0] === e); if(!x) return;
+    $$('.hm td.sel', box).forEach(c => c.classList.remove('sel'));
+    const cell = $(`.hm td[data-s="${n}"][data-e="${e}"]`, box); if(cell){ cell.classList.add('sel'); cell.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' }); }
+    $('#epi', box).innerHTML = `<b>S${n} E${e}</b> &nbsp;${esc(x[3] || 'Untitled episode')}<br><span class="small">${x[1] == null ? 'Not rated yet' : `IMDb ${x[1].toFixed(1)} · ${x[2].toLocaleString()} votes`}</span>`;
+  };
+  $$('[data-s][data-e]', box).forEach(c => c.onclick = () => info(+c.dataset.s, +c.dataset.e));
+}
+
 /* ---------- Movie sheet ---------- */
 async function openMovie(id){
+  if(typeof id === 'string') return openShow(id);
   const f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div></div></div>
@@ -1151,7 +1309,7 @@ let filmSort = 'recent';
 function renderFilms(){
   const v = $('#v-films');
   const map = new Map();
-  Object.entries(ratings).forEach(([id, r]) => map.set(+id, { id:+id, title:r.title, year:r.year, poster:r.poster, r:r.r, at:r.at || 0 }));
+  Object.entries(ratings).forEach(([id, r]) => !id.startsWith('tv') && map.set(+id, { id:+id, title:r.title, year:r.year, poster:r.poster, r:r.r, at:r.at || 0 }));
   entries.forEach(e => {
     const f = map.get(e.tmdb) || { id:e.tmdb, title:e.title, year:e.year, poster:e.poster, r:0, at:0 };
     f.at = Math.max(f.at, e.added || 0); map.set(e.tmdb, f);
@@ -1184,11 +1342,11 @@ function openSettings(){
     <button class="btn ghost" id="exp" style="margin-top:0">Export ratings & diary (.json)</button>
     <button class="btn ghost" id="imp">Import backup</button>
     <input type="file" id="file" accept=".json,application/json" hidden>
-    <p class="small" style="margin-top:18px">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>`);
+    <p class="small" style="margin-top:18px">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. TV episode ratings: information courtesy of IMDb (imdb.com), used with permission for personal, non-commercial use.</p>`);
   const b = s.body;
   $('#saveKey', b).onclick = async () => {
     const k = $('#key', b).value.trim(); store.set(K_KEY, k);
-    const done = () => { s.close(); if(!hadKey || !k){ built.discover = built.sagas = false; setView(view); } };
+    const done = () => { s.close(); if(!hadKey || !k){ built.discover = built.sagas = built.tv = false; setView(view); } };
     if(!k){ done(); return; }
     $('#saveKey', b).textContent = 'Checking…';
     try{ await tmdb('/configuration'); done(); }

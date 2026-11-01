@@ -1,0 +1,39 @@
+# Rebuilds Reel Log's IMDb TV episode ratings every night and publishes them to the imdb-data branch.
+name: IMDb TV ratings
+on:
+  schedule:
+    - cron: '17 9 * * *'          # daily, ~3-4 AM Central
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/imdb-tv.yml', 'scripts/imdb_tv.py']
+permissions:
+  contents: write
+concurrency: imdb-tv
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download IMDb datasets
+        run: |
+          mkdir -p data
+          for f in title.ratings title.episode title.basics; do
+            curl -sSfL --retry 3 -o "data/$f.tsv.gz" "https://datasets.imdbws.com/$f.tsv.gz"
+          done
+          ls -lh data
+      - name: Build per-show files
+        run: python scripts/imdb_tv.py data out
+      - name: Publish to the imdb-data branch
+        run: |
+          cd out
+          git init -q -b imdb-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "IMDb TV ratings $(date -u +%F)"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" imdb-data
