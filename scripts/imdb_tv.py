@@ -1,4 +1,4 @@
-"""Build per-show IMDb episode rating files for Reel Log.
+"""Build per-show IMDb episode rating files (and film scores) for Reel Log.
 
 Reads IMDb's non-commercial datasets (https://developer.imdb.com/non-commercial-datasets/):
   title.ratings.tsv.gz, title.episode.tsv.gz, title.basics.tsv.gz
@@ -12,6 +12,7 @@ from collections import defaultdict
 
 src, out = sys.argv[1], sys.argv[2]
 MIN_VOTES = int(os.environ.get('MIN_VOTES', '1500'))   # only chart shows with at least this many IMDb votes
+MOVIE_MIN = int(os.environ.get('MOVIE_MIN', '50'))     # film scores: films with at least this many votes
 NA = '\\N'
 
 def rows(name):
@@ -38,8 +39,11 @@ for row in rows('title.episode.tsv.gz'):
     shows[parent].append((s, e, t)); eps.add(t)
 print('shows', len(shows), 'episodes', len(eps), flush=True)
 
-need, names = eps | set(shows), {}
+need, names, films = eps | set(shows), {}, defaultdict(dict)
 for row in rows('title.basics.tsv.gz'):
+    if len(row) > 1 and row[1] in ('movie', 'tvMovie'):
+        r = ratings.get(row[0])
+        if r and r[1] >= MOVIE_MIN: films[row[0][-3:]][row[0]] = [r[0], r[1]]
     if row[0] in need:
         names[row[0]] = (row[2] if len(row) > 2 else '', row[5] if len(row) > 5 and row[5] != NA else '',
                          row[6] if len(row) > 6 and row[6] != NA else '')
@@ -60,8 +64,16 @@ for parent, lst in shows.items():
         json.dump(data, f, separators=(',', ':'), ensure_ascii=False)
     count += 1
 
+os.makedirs(os.path.join(out, 'm'), exist_ok=True)
+nfilms = 0
+for shard, d in films.items():
+    with open(os.path.join(out, 'm', shard + '.json'), 'w') as f:
+        json.dump(d, f, separators=(',', ':'))
+    nfilms += len(d)
+print('wrote', nfilms, 'film scores', flush=True)
+
 with open(os.path.join(out, 'meta.json'), 'w') as f:
-    json.dump({'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d'), 'shows': count, 'minVotes': MIN_VOTES}, f)
+    json.dump({'films': nfilms, 'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d'), 'shows': count, 'minVotes': MIN_VOTES}, f)
 with open(os.path.join(out, 'README.md'), 'w') as f:
     f.write('IMDb episode ratings for Reel Log, rebuilt nightly by .github/workflows/imdb-tv.yml on main.\n\n'
             'Information courtesy of IMDb (https://www.imdb.com). Used with permission. Personal, non-commercial use only.\n')
