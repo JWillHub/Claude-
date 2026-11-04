@@ -184,13 +184,24 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 /* movie sheet */
 .mvsheet .grab{position:absolute;left:0;right:0;top:0}
 .mvsheet .grab i{background:rgba(255,255,255,.7)}
-.mvsheet .sbody{padding-top:0}
+.mvsheet .sbody{padding-top:0;display:flex;flex-direction:column}
+.mvsheet .sbody>*{flex-shrink:0}
+.mvsheet #mhist,.mvsheet .ov{margin-bottom:18px}
 .bdrop{margin:0 -16px;height:210px;background:var(--card) center/cover no-repeat;position:relative;border-radius:24px 24px 0 0}
 .bdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,25,.15),var(--bg2) 98%);border-radius:inherit}
 .mvhead{display:flex;gap:14px;margin-top:-92px;position:relative;z-index:1;align-items:flex-end}
 .mvhead img,.mvhead .ph{width:108px;flex:none;aspect-ratio:2/3;border-radius:12px;object-fit:cover;box-shadow:0 12px 26px rgba(0,0,0,.55);background:var(--card2)}
 .mvhead h2{font-family:var(--disp);font-weight:700;font-size:25px;line-height:1.08;margin:0 0 4px}
 .meta{color:var(--muted);font-size:13px}
+.ratebar{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom));z-index:4;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:auto -16px calc(-24px - env(safe-area-inset-bottom));padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+  background:var(--bg2);border-top:1px solid var(--line);box-shadow:0 -10px 24px rgba(0,0,0,.35)}
+.ratebar .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.rv2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:16px;color:var(--accent);min-height:20px}
+.rv2.dim{color:var(--muted);font-family:inherit;text-transform:none;font-weight:500;font-size:13px}
+.myrow{display:flex;align-items:center;gap:4px}
+.myrow .s5{padding:8px 0;margin:-8px 0}
+.xr{background:none;border:0;color:var(--muted);font-size:15px;cursor:pointer;padding:6px;line-height:1}
 .ratebox{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:16px;text-align:center}
 .ratebox .lbl{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .ratebox .rv{font-family:var(--disp);font-size:15px;color:var(--muted);margin-top:6px;min-height:20px}
@@ -211,6 +222,11 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .seg button{background:none;border:0;border-radius:7px;padding:5px 10px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
 .seg button.on{background:var(--card2);color:var(--text)}
 .stack{position:relative;margin:18px auto 0;width:min(70vw,300px,calc((100dvh - 360px)/1.5));aspect-ratio:2/3}
+.car{position:relative;margin:18px -16px 0;height:calc(min(70vw,300px,(100dvh - 360px)/1.5) * 1.5);overflow:hidden;touch-action:pan-y;user-select:none}
+.card.cc{inset:auto;top:0;left:50%;width:min(70vw,300px,calc((100dvh - 360px)/1.5));height:100%;
+  transition:transform .38s cubic-bezier(.2,.85,.25,1),opacity .38s;box-shadow:0 14px 30px rgba(0,0,0,.55)}
+.card .rb{position:absolute;top:10px;right:10px;background:rgba(12,10,15,.8);border-radius:8px;padding:2px 8px;font-size:13px;font-weight:800;color:var(--accent)}
+.card .rb:empty{display:none}
 .card{position:absolute;inset:0;border-radius:20px;overflow:hidden;background:var(--card2);box-shadow:0 20px 44px rgba(0,0,0,.6);
   transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .32s;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
 .card img{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block}
@@ -424,10 +440,15 @@ function rFromX(el, x){
 }
 /* tap or drag across stars; onChange(r, final) */
 function bindStars(el, onChange){
-  let down = false;
-  el.addEventListener('pointerdown', e => { down = true; el.setPointerCapture?.(e.pointerId); onChange(rFromX(el, e.clientX), false); e.preventDefault(); });
-  el.addEventListener('pointermove', e => { if(down) onChange(rFromX(el, e.clientX), false); });
-  const end = e => { if(!down) return; down = false; onChange(rFromX(el, e.clientX), true); };
+  // slide only: a plain tap does nothing, the rating follows your finger once it moves sideways
+  let down = false, sliding = false, x0 = 0;
+  el.addEventListener('pointerdown', e => { down = true; sliding = false; x0 = e.clientX; el.setPointerCapture?.(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointermove', e => {
+    if(!down) return;
+    if(!sliding && Math.abs(e.clientX - x0) < 8) return;
+    sliding = true; onChange(rFromX(el, e.clientX), false);
+  });
+  const end = e => { if(!down) return; down = false; if(sliding) onChange(rFromX(el, e.clientX), true); };
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', () => { down = false; });
 }
@@ -590,15 +611,14 @@ function openRatepad(id, tracking, x){
     <div class="rph">${poster(f.poster, '', 'w92', f.title)}<div><b>${esc(f.title)}</b><span class="small">${esc(f.year)}${cur ? ' · you gave it ' + fmtR(cur) + '★' : ''}</span></div></div>
     ${starsHTML(46, 6)}
     <div class="rv" id="rpv">${cur ? esc(RWORDS[cur]) : ''}</div>
-    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Tap a star — tap its left half for ½'}</div>
-    <div class="rpbtns"><button class="pill line" id="rpd">Details</button>${String(id).startsWith('tv') ? '' : '<button class="pill line" id="rpl">Log a watch</button>'}
+    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Slide across the stars to rate'}</div>
+    <div class="rpbtns"><button class="pill line" id="rpd">Details</button>
       ${cur ? '<button class="pill line" id="rpx">Clear</button>' : ''}</div></div>`;
   el.classList.add('on');
   const s5 = $('.s5', el); paintStars(s5, cur);
   bindStars(s5, (r, fin) => { if(rp.tracking) return; rp.r = r; paintStars(s5, r); $('#rpv').textContent = RWORDS[r]; if(fin) commitRatepad(); });
   el.onclick = e => { if(e.target === el) closeRatepad(); };
   $('#rpd').onclick = () => { closeRatepad(); openMovie(id); };
-  const rl = $('#rpl'); if(rl) rl.onclick = () => { closeRatepad(); openLog(f); };
   const x2 = $('#rpx'); if(x2) x2.onclick = () => { closeRatepad(); setRating(f, 0); };
 }
 function rpTrack(x){
@@ -612,7 +632,7 @@ function rpRelease(){
   if(!rp.on || !rp.tracking) return;
   rp.tracking = false;
   if(rp.moved && rp.r) commitRatepad();
-  else { const h = $('#rph'); if(h) h.textContent = 'Tap a star — tap its left half for ½'; }
+  else { const h = $('#rph'); if(h) h.textContent = 'Slide across the stars to rate'; }
 }
 function commitRatepad(){
   const f = rp.film, r = rp.r;
@@ -987,7 +1007,7 @@ function openRun(saga){
     mode = x.dataset.m; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); render();
   });
   const render = () => { setProg(); mode === 'list' ? renderList() : (i >= rel.length ? renderDone() : renderStack()); };
-  s.refresh = () => { setProg(); if(mode === 'list') renderList(); else if(i < rel.length) paintTop(); };
+  s.refresh = () => { setProg(); if(mode === 'list') renderList(); else if(i < rel.length){ paintTop(); paintBadges(); } };
 
   function renderList(){
     const box = $('#rbody', b);
@@ -998,60 +1018,72 @@ function openRun(saga){
       <div class="li"><div class="lt">${esc(f.title)}</div><div class="ls">${f.date ? new Date(f.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : 'Date TBA'}</div></div></div>`).join('') : ''}</div>`;
     $$('.lrow', box).forEach(r => r.onclick = () => openMovie(+r.dataset.f));
   }
+  /* carousel: cards stay put in a row; swipe left for the next film, right to bring the previous one back */
   function renderStack(){
     const box = $('#rbody', b);
-    const cards = rel.slice(i, i + 3);
-    box.innerHTML = `<div class="stack nodrag">${cards.map((f, n) => `<div class="card d${n}" data-n="${n}">
-        ${poster(f.poster, '', 'w500', f.title)}<span class="num">${i + n + 1} / ${rel.length}</span>
-        <span class="stamp skip">SKIP</span><span class="stamp keep">NEXT</span>
-        <div class="cap"><b>${esc(f.title)}</b><span>${esc(f.year)}</span></div></div>`).reverse().join('')}</div>
+    box.innerHTML = `<div class="car nodrag">${rel.map((f, n) => `<div class="card cc" data-n="${n}">
+        ${poster(f.poster, '', 'w500', f.title)}<span class="num">${n + 1} / ${rel.length}</span><span class="rb"></span>
+        <div class="cap"><b>${esc(f.title)}</b><span>${esc(f.year)}</span></div></div>`).join('')}</div>
       <div class="runctl nodrag">${starsHTML(42, 6)}<div class="rv" id="rrv"></div>
-        <div class="runbtns"><button class="pill line" id="rundo" ${histI.length ? '' : 'disabled style="opacity:.4"'}>↶ Back</button><button class="pill line" id="rskip">Haven't seen →</button></div>
-        <div class="hint">Tap or slide the stars to rate · swipe the card to skip</div></div>`;
-    paintTop();
-    const top = $('.card.d0', box), s5 = $('.runctl .s5', box);
+        <div class="runbtns"><button class="pill line" id="rprev">‹ Previous</button><button class="pill line" id="rskip">Haven't seen ›</button></div>
+        <div class="hint">Slide across the stars to rate · swipe the card left or right to move</div></div>`;
+    const s5 = $('.runctl .s5', box);
     bindStars(s5, (r, fin) => {
       paintStars(s5, r); $('#rrv', b).textContent = RWORDS[r];
-      if(fin){ setRating(rel[i], r, true); setTimeout(() => advance(1), 260); }
+      if(fin){ const at = i; setRating(rel[i], r, true); paintBadges(); setTimeout(() => { if(i === at) go(i + 1); }, 320); }
     });
-    $('#rskip', box).onclick = () => advance(-1);
-    $('#rundo', box).onclick = () => { if(histI.length){ i = histI.pop(); render(); } };
-    dragCard(top);
+    $('#rskip', box).onclick = () => go(i + 1);
+    $('#rprev', box).onclick = () => go(i - 1);
+    paintBadges(); layout(i, false); paintTop(); dragCar($('.car', box));
+  }
+  function paintBadges(){
+    $$('#rbody .cc', b).forEach(c => { const r = getR(rel[+c.dataset.n].id); $('.rb', c).textContent = r ? fmtR(r) + '★' : ''; });
+  }
+  function layout(pos, anim){
+    const cards = $$('#rbody .cc', b); if(!cards.length) return;
+    const w = cards[0].offsetWidth, step = w * 0.84;
+    cards.forEach(c => {
+      const d = +c.dataset.n - pos, ad = Math.abs(d);
+      c.style.transition = anim ? '' : 'none';
+      c.style.visibility = ad > 2.5 ? 'hidden' : '';
+      c.style.transform = `translateX(calc(-50% + ${d * step}px)) scale(${1 - Math.min(ad, 1) * 0.14})`;
+      c.style.opacity = String(Math.max(0, 1 - Math.min(ad, 2) * 0.42));
+      c.style.zIndex = String(10 - Math.round(ad));
+    });
+    const p = $('#rprev', b); if(p) p.style.opacity = pos <= 0 ? .35 : 1;
+  }
+  function go(n){
+    if(n < 0) n = 0;
+    if(n >= rel.length){ i = rel.length; renderDone(); setProg(); return; }
+    i = n; layout(i, true); paintTop();
   }
   function paintTop(){
     const s5 = $('#rbody .runctl .s5', b); if(!s5 || !rel[i]) return;
     const r = getR(rel[i].id); paintStars(s5, r); $('#rrv', b).textContent = r ? RWORDS[r] : '';
   }
-  function dragCard(card){
-    if(!card) return;
-    let x0, y0, dx = 0, down = false, moved = false;
-    card.addEventListener('pointerdown', e => { down = true; moved = false; x0 = e.clientX; y0 = e.clientY; dx = 0; card.setPointerCapture(e.pointerId); card.style.transition = 'none'; });
-    card.addEventListener('pointermove', e => {
-      if(!down) return;
-      dx = e.clientX - x0; const dy = e.clientY - y0;
-      if(Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
-      card.style.transform = `translate(${dx}px,${dy * 0.25}px) rotate(${dx / 16}deg)`;
-      $('.stamp.skip', card).style.opacity = Math.max(0, -dx / 90);
-      $('.stamp.keep', card).style.opacity = Math.max(0, dx / 90);
+  function dragCar(car){
+    let x0, y0, dx = 0, down = false, moved = false, step = 1, startN = -1;
+    car.addEventListener('pointerdown', e => {
+      down = true; moved = false; x0 = e.clientX; y0 = e.clientY; dx = 0;
+      const c = e.target.closest('.cc'); startN = c ? +c.dataset.n : -1;
+      step = ($('.cc', car)?.offsetWidth || 300) * 0.84; car.setPointerCapture(e.pointerId);
     });
-    const up2 = () => {
-      if(!down) return; down = false; card.style.transition = '';
-      if(Math.abs(dx) > 90) advance(dx > 0 ? 1 : -1);
-      else { card.style.transform = ''; $$('.stamp', card).forEach(x => x.style.opacity = 0); if(!moved) openMovie(rel[i].id); }
+    car.addEventListener('pointermove', e => {
+      if(!down) return;
+      dx = e.clientX - x0;
+      if(Math.abs(dx) > 6 || Math.abs(e.clientY - y0) > 6) moved = true;
+      let pos = i - dx / step;
+      if(pos < 0) pos = pos / 3; if(pos > rel.length - 1) pos = rel.length - 1 + (pos - rel.length + 1) / 3;
+      layout(pos, false);
+    });
+    const end = () => {
+      if(!down) return; down = false;
+      if(dx < -50) go(i + 1);
+      else if(dx > 50) go(i - 1);
+      else { layout(i, true); if(!moved && startN >= 0){ if(startN === i) openMovie(rel[i].id); else go(startN); } }
     };
-    card.addEventListener('pointerup', up2);
-    card.addEventListener('pointercancel', () => { down = false; card.style.transition = ''; card.style.transform = ''; });
-  }
-  function advance(dir){
-    const box = $('#rbody', b), top = $('.card.d0', box);
-    if(!top || top._gone) return;
-    top._gone = true;
-    top.style.transition = 'transform .35s ease-in, opacity .35s';
-    top.style.transform = `translate(${dir * 130}%, -4%) rotate(${dir * 22}deg)`; top.style.opacity = 0;
-    $$('.card.d1', box).forEach(c => { c.style.transform = 'none'; c.style.opacity = 1; });
-    $$('.card.d2', box).forEach(c => { c.style.transform = 'translateY(16px) scale(.94)'; c.style.opacity = .85; });
-    histI.push(i); i++;
-    setTimeout(render, 300);
+    car.addEventListener('pointerup', end);
+    car.addEventListener('pointercancel', () => { down = false; layout(i, true); });
   }
   function renderDone(){
     const box = $('#rbody', b), rated = rel.filter(f => getR(f.id));
@@ -1062,9 +1094,10 @@ function openRun(saga){
       ${best ? `<p style="margin:14px 0 4px">Your favorite: <b>${esc(best.title)}</b> <span class="mini">${starTxt(getR(best.id))}</span></p>` : ''}</div>
       <div style="margin-top:12px">${rel.map(f => `<div class="lrow" data-f="${f.id}">${poster(f.poster, 'thumb', 'w92', f.title)}
         <div class="li"><div class="lt">${esc(f.title)}</div><div class="ls">${esc(f.year)}</div></div><span class="mini">${starTxt(getR(f.id)) || '<span class="small">skipped</span>'}</span></div>`).join('')}</div>
-      <div class="acts"><button class="pill line" id="ragain">Run it again</button><button class="pill" id="rclose">Done</button></div>`;
+      <div class="acts"><button class="pill line" id="rback">‹ Back</button><button class="pill line" id="ragain">Run it again</button><button class="pill" id="rclose">Done</button></div>`;
     $$('.lrow', box).forEach(r => r.onclick = () => openMovie(+r.dataset.f));
-    $('#ragain', box).onclick = () => { i = 0; histI = []; render(); };
+    $('#ragain', box).onclick = () => { i = 0; render(); };
+    $('#rback', box).onclick = () => { i = rel.length - 1; render(); };
     $('#rclose', box).onclick = () => s.close();
   }
   loadSaga(saga).then(f => {
@@ -1136,18 +1169,18 @@ async function openShow(id){
   const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div></div></div>
-    <div class="ratebox nodrag"><div class="lbl">Your rating for the show</div>${starsHTML(40, 6)}<div class="rv" id="mrv"></div></div>
-    <div class="acts"><button class="pill line" id="mclr">Clear rating</button></div>
     <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
-    <p class="ov" id="mov">${esc(m.overview || '')}</p>`, { tall:true, cls:'mvsheet' });
-  const b = s.body, s5 = $('.ratebox .s5', b);
+    <p class="ov" id="mov">${esc(m.overview || '')}</p>
+    <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
+      <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
+  const b = s.body, s5 = $('.ratebar .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    $('#mrv', b).textContent = r ? `${fmtR(r)} — ${RWORDS[r]}` : 'Tap or slide to rate';
-    $('#mclr', b).parentElement.style.display = r ? '' : 'none';
+    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Slide to rate'; rv.classList.toggle('dim', !r);
+    $('#mclr', b).style.visibility = r ? '' : 'hidden';
   };
   s.refresh = paint; paint();
-  bindStars(s5, (r, fin) => { paintStars(s5, r); $('#mrv', b).textContent = `${fmtR(r)} — ${RWORDS[r]}`; if(fin && r !== getR(id)) setRating(filmOf(id), r); });
+  bindStars(s5, (r, fin) => { paintStars(s5, r); const rv = $('#mrv', b); rv.textContent = RWORDS[r]; rv.classList.remove('dim'); if(fin && r !== getR(id)) setRating(filmOf(id), r); });
   $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
   let d;
   try{
@@ -1208,14 +1241,14 @@ async function openMovie(id){
   const f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div></div></div>
-    <div class="ratebox nodrag"><div class="lbl">Your rating</div>${starsHTML(40, 6)}<div class="rv" id="mrv"></div></div>
-    <div class="acts"><button class="pill" id="mlog">＋ Log a watch</button><button class="pill line" id="mclr">Clear rating</button></div>
-    <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div class="small" id="mvote"></div><div id="mhist" style="margin-top:14px"></div>`, { tall:true, cls:'mvsheet' });
-  const b = s.body, s5 = $('.ratebox .s5', b);
+    <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div class="small" id="mvote"></div><div id="mhist" style="margin-top:14px"></div>
+    <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
+      <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
+  const b = s.body, s5 = $('.ratebar .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    $('#mrv', b).textContent = r ? `${fmtR(r)} — ${RWORDS[r]}` : 'Tap or slide to rate';
-    $('#mclr', b).style.display = r ? '' : 'none';
+    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Slide to rate'; rv.classList.toggle('dim', !r);
+    $('#mclr', b).style.visibility = r ? '' : 'hidden';
     const logs = entries.filter(e => e.tmdb === id).sort((a, c) => c.date.localeCompare(a.date) || c.added - a.added);
     $('#mhist', b).innerHTML = logs.length ? `<div class="sec" style="margin:4px 0 4px">Your watches</div>` + logs.map(l => `<div class="hrow" data-e="${l.id}">
       <div><div>${new Date(l.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}${l.rewatch ? '<span class="rw">REWATCH</span>' : ''}</div>
@@ -1224,10 +1257,9 @@ async function openMovie(id){
   };
   s.refresh = paint; paint();
   bindStars(s5, (r, fin) => {
-    paintStars(s5, r); $('#mrv', b).textContent = `${fmtR(r)} — ${RWORDS[r]}`;
+    paintStars(s5, r); const rv = $('#mrv', b); rv.textContent = RWORDS[r]; rv.classList.remove('dim');
     if(fin && r !== getR(id)) setRating(filmOf(id), r);
   });
-  $('#mlog', b).onclick = () => openLog(filmOf(id));
   $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
   try{
     const d = await cached('movie:' + id, 24*3, () => tmdb('/movie/' + id, { append_to_response:'credits' }).then(x => ({
@@ -1287,22 +1319,29 @@ function openEntry(id){
 /* ---------- Diary ---------- */
 function renderDiary(){
   const v = $('#v-diary');
-  const head = `<h2 class="vt">Diary</h2><p class="vs">Every watch, by date.</p>`;
-  if(!entries.length){ v.innerHTML = head + `<div class="empty">Nothing logged yet.<br>Open any film and tap “Log a watch”.</div>`; return; }
-  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date) || b.added - a.added);
+  const head = `<h2 class="vt">Diary</h2><p class="vs">Every film you've rated, by the day you rated it.</p>`;
+  const logged = new Set(entries.map(e => e.tmdb));
+  const ymd = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  const items = [
+    ...entries.map(e => ({ ...e, kind:'e' })),
+    ...Object.entries(ratings).filter(([k, r]) => !k.startsWith('tv') && !logged.has(+k) && r.at > 1e12)
+      .map(([k, r]) => ({ kind:'r', id:k, tmdb:+k, title:r.title, year:r.year, poster:r.poster, rating:r.r, date:ymd(r.at), added:r.at }))
+  ];
+  if(!items.length){ v.innerHTML = head + `<div class="empty">Nothing here yet.<br>Hold any poster and slide to rate it.</div>`; return; }
+  const sorted = items.sort((a, b) => b.date.localeCompare(a.date) || b.added - a.added);
   let html = head + '<div class="pad">', cur = '';
   for(const e of sorted){
     const [y, mo, d] = e.date.split('-');
     const dt = new Date(+y, +mo - 1, +d);
     const label = dt.toLocaleString(undefined, { month:'long', year:'numeric' });
     if(label !== cur){ html += `<div class="month">${label}</div>`; cur = label; }
-    html += `<div class="lrow" data-e="${e.id}"><div class="day"><b>${+d}</b><span>${dt.toLocaleString(undefined, { weekday:'short' })}</span></div>
+    html += `<div class="lrow" data-k="${e.kind}" data-e="${e.id}"><div class="day"><b>${+d}</b><span>${dt.toLocaleString(undefined, { weekday:'short' })}</span></div>
       ${poster(e.poster, 'thumb', 'w92', e.title)}<div class="li"><div class="lt">${esc(e.title)}</div>
       <div class="ls">${esc(e.year || '')}${e.rewatch ? '<span class="rw">REWATCH</span>' : ''}${e.note ? ' · ' + esc(e.note.slice(0, 40)) : ''}</div></div>
       <span class="mini">${starTxt(e.rating)}</span></div>`;
   }
   v.innerHTML = html + '</div>';
-  $$('.lrow', v).forEach(r => r.onclick = () => openEntry(r.dataset.e));
+  $$('.lrow', v).forEach(r => r.onclick = () => r.dataset.k === 'r' ? openMovie(+r.dataset.e) : openEntry(r.dataset.e));
 }
 
 /* ---------- My Films ---------- */
