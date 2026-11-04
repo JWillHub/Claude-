@@ -168,11 +168,11 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 /* sheets */
 .sbk{position:fixed;inset:0;background:rgba(5,4,8,.62);opacity:0;transition:opacity .28s}
 .sbk.in{opacity:1}
-.sh{position:fixed;left:0;right:0;bottom:0;max-width:680px;margin:0 auto;max-height:calc(100dvh - 10px - env(safe-area-inset-top));
+.sh{position:fixed;left:0;right:0;bottom:0;max-width:680px;margin:0 auto;max-height:calc(100dvh - 40px - env(safe-area-inset-top));
   display:flex;flex-direction:column;background:var(--bg2);border-radius:24px 24px 0 0;border:1px solid var(--line);border-bottom:0;
   transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.85,.25,1);box-shadow:0 -20px 50px rgba(0,0,0,.5)}
 .sh.in{transform:none}
-.sh.tall{height:calc(100dvh - 10px - env(safe-area-inset-top))}
+.sh.tall{height:calc(100dvh - 40px - env(safe-area-inset-top))}
 .sh.drag{transition:none}
 .grab{flex:none;height:26px;display:grid;place-items:center;cursor:grab;touch-action:none;position:relative;z-index:3}
 .grab i{width:44px;height:5px;border-radius:5px;background:#5a5166}
@@ -190,12 +190,6 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .mvhead img,.mvhead .ph{width:108px;flex:none;aspect-ratio:2/3;border-radius:12px;object-fit:cover;box-shadow:0 12px 26px rgba(0,0,0,.55);background:var(--card2)}
 .mvhead h2{font-family:var(--disp);font-weight:700;font-size:25px;line-height:1.08;margin:0 0 4px}
 .meta{color:var(--muted);font-size:13px}
-.myr{margin-top:10px}
-.myr .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-.myrow{display:flex;align-items:center;gap:6px}
-.myrow .s5{padding:8px 0;margin:-8px 0}
-.xr{background:none;border:0;color:var(--muted);font-size:15px;cursor:pointer;padding:4px 6px;line-height:1}
-.rv2{font-size:12px;color:var(--muted);min-height:16px;margin-top:1px}
 .ratebox{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:16px;text-align:center}
 .ratebox .lbl{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .ratebox .rv{font-family:var(--disp);font-size:15px;color:var(--muted);margin-top:6px;min-height:20px}
@@ -429,15 +423,10 @@ function rFromX(el, x){
 }
 /* tap or drag across stars; onChange(r, final) */
 function bindStars(el, onChange){
-  // slide only: a plain tap does nothing, the rating follows your finger once it moves sideways
-  let down = false, sliding = false, x0 = 0;
-  el.addEventListener('pointerdown', e => { down = true; sliding = false; x0 = e.clientX; el.setPointerCapture?.(e.pointerId); e.preventDefault(); });
-  el.addEventListener('pointermove', e => {
-    if(!down) return;
-    if(!sliding && Math.abs(e.clientX - x0) < 8) return;
-    sliding = true; onChange(rFromX(el, e.clientX), false);
-  });
-  const end = e => { if(!down) return; down = false; if(sliding) onChange(rFromX(el, e.clientX), true); };
+  let down = false;
+  el.addEventListener('pointerdown', e => { down = true; el.setPointerCapture?.(e.pointerId); onChange(rFromX(el, e.clientX), false); e.preventDefault(); });
+  el.addEventListener('pointermove', e => { if(down) onChange(rFromX(el, e.clientX), false); });
+  const end = e => { if(!down) return; down = false; onChange(rFromX(el, e.clientX), true); };
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', () => { down = false; });
 }
@@ -600,14 +589,15 @@ function openRatepad(id, tracking, x){
     <div class="rph">${poster(f.poster, '', 'w92', f.title)}<div><b>${esc(f.title)}</b><span class="small">${esc(f.year)}${cur ? ' · you gave it ' + fmtR(cur) + '★' : ''}</span></div></div>
     ${starsHTML(46, 6)}
     <div class="rv" id="rpv">${cur ? esc(RWORDS[cur]) : ''}</div>
-    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Slide across the stars to rate'}</div>
-    <div class="rpbtns"><button class="pill line" id="rpd">Details</button>
+    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Tap a star — tap its left half for ½'}</div>
+    <div class="rpbtns"><button class="pill line" id="rpd">Details</button>${String(id).startsWith('tv') ? '' : '<button class="pill line" id="rpl">Log a watch</button>'}
       ${cur ? '<button class="pill line" id="rpx">Clear</button>' : ''}</div></div>`;
   el.classList.add('on');
   const s5 = $('.s5', el); paintStars(s5, cur);
   bindStars(s5, (r, fin) => { if(rp.tracking) return; rp.r = r; paintStars(s5, r); $('#rpv').textContent = RWORDS[r]; if(fin) commitRatepad(); });
   el.onclick = e => { if(e.target === el) closeRatepad(); };
   $('#rpd').onclick = () => { closeRatepad(); openMovie(id); };
+  const rl = $('#rpl'); if(rl) rl.onclick = () => { closeRatepad(); openLog(f); };
   const x2 = $('#rpx'); if(x2) x2.onclick = () => { closeRatepad(); setRating(f, 0); };
 }
 function rpTrack(x){
@@ -621,7 +611,7 @@ function rpRelease(){
   if(!rp.on || !rp.tracking) return;
   rp.tracking = false;
   if(rp.moved && rp.r) commitRatepad();
-  else { const h = $('#rph'); if(h) h.textContent = 'Slide across the stars to rate'; }
+  else { const h = $('#rph'); if(h) h.textContent = 'Tap a star — tap its left half for ½'; }
 }
 function commitRatepad(){
   const f = rp.film, r = rp.r;
@@ -1016,7 +1006,7 @@ function openRun(saga){
         <div class="cap"><b>${esc(f.title)}</b><span>${esc(f.year)}</span></div></div>`).reverse().join('')}</div>
       <div class="runctl nodrag">${starsHTML(42, 6)}<div class="rv" id="rrv"></div>
         <div class="runbtns"><button class="pill line" id="rundo" ${histI.length ? '' : 'disabled style="opacity:.4"'}>↶ Back</button><button class="pill line" id="rskip">Haven't seen →</button></div>
-        <div class="hint">Slide across the stars to rate · swipe the card to skip</div></div>`;
+        <div class="hint">Tap or slide the stars to rate · swipe the card to skip</div></div>`;
     paintTop();
     const top = $('.card.d0', box), s5 = $('.runctl .s5', box);
     bindStars(s5, (r, fin) => {
@@ -1144,18 +1134,19 @@ async function imdbFile(tt){
 async function openShow(id){
   const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>
-    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
-      <div class="myr nodrag"><div class="lbl">Your rating</div><div class="myrow">${starsHTML(26, 3)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div><div class="rv2" id="mrv"></div></div></div></div>
+    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div></div></div>
+    <div class="ratebox nodrag"><div class="lbl">Your rating for the show</div>${starsHTML(40, 6)}<div class="rv" id="mrv"></div></div>
+    <div class="acts"><button class="pill line" id="mclr">Clear rating</button></div>
     <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
     <p class="ov" id="mov">${esc(m.overview || '')}</p>`, { tall:true, cls:'mvsheet' });
-  const b = s.body, s5 = $('.myr .s5', b);
+  const b = s.body, s5 = $('.ratebox .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    $('#mrv', b).textContent = r ? RWORDS[r] : 'Slide to rate';
-    $('#mclr', b).style.visibility = r ? '' : 'hidden';
+    $('#mrv', b).textContent = r ? `${fmtR(r)} — ${RWORDS[r]}` : 'Tap or slide to rate';
+    $('#mclr', b).parentElement.style.display = r ? '' : 'none';
   };
   s.refresh = paint; paint();
-  bindStars(s5, (r, fin) => { paintStars(s5, r); $('#mrv', b).textContent = RWORDS[r]; if(fin && r !== getR(id)) setRating(filmOf(id), r); });
+  bindStars(s5, (r, fin) => { paintStars(s5, r); $('#mrv', b).textContent = `${fmtR(r)} — ${RWORDS[r]}`; if(fin && r !== getR(id)) setRating(filmOf(id), r); });
   $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
   let d;
   try{
@@ -1215,14 +1206,15 @@ async function openMovie(id){
   if(typeof id === 'string') return openShow(id);
   const f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>
-    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
-      <div class="myr nodrag"><div class="lbl">Your rating</div><div class="myrow">${starsHTML(26, 3)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div><div class="rv2" id="mrv"></div></div></div></div>
+    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div></div></div>
+    <div class="ratebox nodrag"><div class="lbl">Your rating</div>${starsHTML(40, 6)}<div class="rv" id="mrv"></div></div>
+    <div class="acts"><button class="pill" id="mlog">＋ Log a watch</button><button class="pill line" id="mclr">Clear rating</button></div>
     <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div class="small" id="mvote"></div><div id="mhist" style="margin-top:14px"></div>`, { tall:true, cls:'mvsheet' });
-  const b = s.body, s5 = $('.myr .s5', b);
+  const b = s.body, s5 = $('.ratebox .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    $('#mrv', b).textContent = r ? RWORDS[r] : 'Slide to rate';
-    $('#mclr', b).style.visibility = r ? '' : 'hidden';
+    $('#mrv', b).textContent = r ? `${fmtR(r)} — ${RWORDS[r]}` : 'Tap or slide to rate';
+    $('#mclr', b).style.display = r ? '' : 'none';
     const logs = entries.filter(e => e.tmdb === id).sort((a, c) => c.date.localeCompare(a.date) || c.added - a.added);
     $('#mhist', b).innerHTML = logs.length ? `<div class="sec" style="margin:4px 0 4px">Your watches</div>` + logs.map(l => `<div class="hrow" data-e="${l.id}">
       <div><div>${new Date(l.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}${l.rewatch ? '<span class="rw">REWATCH</span>' : ''}</div>
@@ -1231,9 +1223,10 @@ async function openMovie(id){
   };
   s.refresh = paint; paint();
   bindStars(s5, (r, fin) => {
-    paintStars(s5, r); $('#mrv', b).textContent = RWORDS[r];
+    paintStars(s5, r); $('#mrv', b).textContent = `${fmtR(r)} — ${RWORDS[r]}`;
     if(fin && r !== getR(id)) setRating(filmOf(id), r);
   });
+  $('#mlog', b).onclick = () => openLog(filmOf(id));
   $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
   try{
     const d = await cached('movie:' + id, 24*3, () => tmdb('/movie/' + id, { append_to_response:'credits' }).then(x => ({
@@ -1293,29 +1286,22 @@ function openEntry(id){
 /* ---------- Diary ---------- */
 function renderDiary(){
   const v = $('#v-diary');
-  const head = `<h2 class="vt">Diary</h2><p class="vs">Every film you've rated, by the day you rated it.</p>`;
-  const logged = new Set(entries.map(e => e.tmdb));
-  const ymd = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
-  const items = [
-    ...entries.map(e => ({ ...e, kind:'e' })),
-    ...Object.entries(ratings).filter(([k, r]) => !k.startsWith('tv') && !logged.has(+k) && r.at > 1e12)
-      .map(([k, r]) => ({ kind:'r', id:k, tmdb:+k, title:r.title, year:r.year, poster:r.poster, rating:r.r, date:ymd(r.at), added:r.at }))
-  ];
-  if(!items.length){ v.innerHTML = head + `<div class="empty">Nothing here yet.<br>Hold any poster and slide to rate it.</div>`; return; }
-  const sorted = items.sort((a, b) => b.date.localeCompare(a.date) || b.added - a.added);
+  const head = `<h2 class="vt">Diary</h2><p class="vs">Every watch, by date.</p>`;
+  if(!entries.length){ v.innerHTML = head + `<div class="empty">Nothing logged yet.<br>Open any film and tap “Log a watch”.</div>`; return; }
+  const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date) || b.added - a.added);
   let html = head + '<div class="pad">', cur = '';
   for(const e of sorted){
     const [y, mo, d] = e.date.split('-');
     const dt = new Date(+y, +mo - 1, +d);
     const label = dt.toLocaleString(undefined, { month:'long', year:'numeric' });
     if(label !== cur){ html += `<div class="month">${label}</div>`; cur = label; }
-    html += `<div class="lrow" data-k="${e.kind}" data-e="${e.id}"><div class="day"><b>${+d}</b><span>${dt.toLocaleString(undefined, { weekday:'short' })}</span></div>
+    html += `<div class="lrow" data-e="${e.id}"><div class="day"><b>${+d}</b><span>${dt.toLocaleString(undefined, { weekday:'short' })}</span></div>
       ${poster(e.poster, 'thumb', 'w92', e.title)}<div class="li"><div class="lt">${esc(e.title)}</div>
       <div class="ls">${esc(e.year || '')}${e.rewatch ? '<span class="rw">REWATCH</span>' : ''}${e.note ? ' · ' + esc(e.note.slice(0, 40)) : ''}</div></div>
       <span class="mini">${starTxt(e.rating)}</span></div>`;
   }
   v.innerHTML = html + '</div>';
-  $$('.lrow', v).forEach(r => r.onclick = () => r.dataset.k === 'r' ? openMovie(+r.dataset.e) : openEntry(r.dataset.e));
+  $$('.lrow', v).forEach(r => r.onclick = () => openEntry(r.dataset.e));
 }
 
 /* ---------- My Films ---------- */
