@@ -258,7 +258,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .done .big{font-family:var(--disp);font-weight:700;font-size:56px;color:var(--accent);line-height:1}
 
 /* rate pad */
-.rp{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(5,4,8,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.rp{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(5,4,8,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .rp.on{display:flex}
 .rpc{position:relative;width:min(92vw,380px);background:var(--bg2);border:1px solid var(--line);border-radius:24px;padding:18px;text-align:center;
   box-shadow:0 30px 70px rgba(0,0,0,.6);animation:pop .22s cubic-bezier(.2,.9,.3,1.3)}
@@ -656,7 +656,7 @@ function makeDraggable(s){
 /* ================= long-press rate pad ================= */
 const rp = { on:false, tracking:false, moved:false, r:0, film:null, startX:0 };
 let lp = null, suppressClick = 0;
-document.addEventListener('contextmenu', e => { if(e.target.closest('.pc,.card,.saga')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if(rp.on || lp || e.target.closest('.pc,.card,.saga,.rp')) e.preventDefault(); }, true);
 document.addEventListener('pointerdown', e => {
   const pc = e.target.closest('.pc[data-id]');
   if(!pc || e.button > 0 || rp.on) return;
@@ -683,10 +683,12 @@ document.addEventListener('pointerup', lpEnd);
 document.addEventListener('pointercancel', () => { if(lp && !lp.fired){ clearTimeout(lp.timer); lp.pc.classList.remove('pressing'); lp = null; } });
 document.addEventListener('touchmove', e => { if(rp.on && rp.tracking){ e.preventDefault(); rpTrack(e.touches[0].clientX, e.touches[0].clientY); } }, { passive:false });
 document.addEventListener('touchend', () => { if(rp.on && rp.tracking){ suppressClick = Date.now(); rpRelease(); lp = null; } });
+// if the phone cancels the touch (its own long-press handling), keep the card open for sliding instead of closing it
+document.addEventListener('touchcancel', () => { if(rp.on && rp.tracking){ suppressClick = Date.now(); rp.tracking = false; lp = null; const h = $('#rph'); if(h) h.textContent = 'Slide across the stars to rate'; } });
 
 function openRatepad(id, tracking, x, y){
   const f = filmOf(id), cur = getR(id), el = $('#rp');
-  Object.assign(rp, { on:true, tracking, moved:false, r:cur, film:f, startX:x || 0, startY:y || 0, wz:false });
+  Object.assign(rp, { on:true, tracking, moved:false, r:cur, film:f, startX:x || 0, startY:y || 0, wz:false, openedAt:Date.now(), downOnBg:false });
   el.innerHTML = `<div class="rpc" id="rpc">
     <div class="wz" id="rpw">${BOOK}${watch[id] ? 'Remove from Watchlist' : 'Add to Watchlist'}${tracking ? ' · slide up' : ''}</div>
     <div class="rph">${poster(f.poster, '', 'w92', f.title)}<div><b>${esc(f.title)}</b><span class="small">${esc(f.year)}${cur ? ' · you gave it ' + fmtR(cur) + '★' : ''}</span></div></div>
@@ -706,7 +708,9 @@ function openRatepad(id, tracking, x, y){
   }
   const s5 = $('.s5', el); paintStars(s5, cur);
   bindStars(s5, (r, fin) => { if(rp.tracking) return; rp.r = r; paintStars(s5, r); $('#rpv').textContent = RWORDS[r]; if(fin) commitRatepad(); });
-  el.onclick = e => { if(e.target === el) closeRatepad(); };
+  // close on the dark area only after a fresh tap there, never from the release of the hold that opened the card
+  el.onpointerdown = e => { rp.downOnBg = e.target === el && Date.now() - rp.openedAt > 500; };
+  el.onclick = e => { if(e.target === el && rp.downOnBg) closeRatepad(); rp.downOnBg = false; };
   $('#rpd').onclick = () => { closeRatepad(); openMovie(id); };
   $('#rpw').onclick = () => { closeRatepad(); toggleWatch(f); };
   const x2 = $('#rpx'); if(x2) x2.onclick = () => { closeRatepad(); setRating(f, 0); };
