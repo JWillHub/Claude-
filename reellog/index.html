@@ -593,7 +593,8 @@ function sheet(html, opt = {}){
   document.body.classList.add('locked');
   history.pushState({ rl:sheetStack.length }, '');
   requestAnimationFrame(() => requestAnimationFrame(() => { bk.classList.add('in'); sh.classList.add('in'); }));
-  bk.onclick = () => s.close();
+  const opened = Date.now();
+  bk.onclick = () => { if(Date.now() - opened > 450) s.close(); };
   makeDraggable(s);
   return s;
 }
@@ -1285,7 +1286,7 @@ function openRun(saga){
       if(!down) return; down = false;
       if(dx < -50) go(i + 1);
       else if(dx > 50) go(i - 1);
-      else { layout(i, true); if(!moved && startN >= 0){ if(startN === i) openMovie(rel[i].id); else go(startN); } }
+      else { layout(i, true); if(!moved && startN >= 0){ suppressClick = Date.now(); if(startN === i) openMovie(rel[i].id); else go(startN); } }
     };
     car.addEventListener('pointerup', end);
     car.addEventListener('pointercancel', () => { down = false; layout(i, true); });
