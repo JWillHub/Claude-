@@ -852,7 +852,7 @@ const SAGAS = [
   { k:'madmax', name:'Mad Max', col:['Mad Max Collection'] },
   { k:'bourne', name:'Bourne', col:['The Bourne Collection'] },
   { k:'dh', name:'Die Hard', col:['Die Hard Collection'] },
-  { k:'mib', name:'Men in Black', col:['Men in Black Collection'] },
+  { k:'mib', name:'Men in Black', col:['Men in Black Collection'], extra:[['Men in Black: International', 2019]] },
   { k:'apes', name:'Planet of the Apes', col:['Planet of the Apes (Reboot) Collection'] },
   { k:'tf', name:'Transformers', col:['Transformers Collection'] },
   { k:'ocean', name:"Ocean's", col:["Ocean's Collection"] },
@@ -899,7 +899,7 @@ async function resolveKeyword(name){
 }
 function loadSaga(s){
   if(sagaData[s.k]) return sagaData[s.k];
-  sagaData[s.k] = cached('saga:' + s.k, 24*7, async () => {
+  sagaData[s.k] = cached('saga2:' + s.k, 24*7, async () => {
     let films = [];
     if(s.kw){
       const id = await resolveKeyword(s.kw);
@@ -916,6 +916,11 @@ function loadSaga(s){
       if(!id) continue;
       const d = await tmdb('/collection/' + id).catch(() => null);
       if(d) films.push(...(d.parts || []).map(slim));
+    }
+    for(const [q, y] of (s.extra || [])){        // films TMDB leaves out of a collection (spin-offs etc.)
+      const d = await tmdb('/search/movie', { query:q, year:y, include_adult:'false' }).catch(() => null);
+      const hit = d && (d.results || []).find(m => m.title.toLowerCase() === q.toLowerCase()) || d && (d.results || [])[0];
+      if(hit) films.push(slim(hit));
     }
     for(const id of (s.cid || [])){
       const d = await tmdb('/collection/' + id);
