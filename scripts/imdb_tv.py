@@ -40,10 +40,16 @@ for row in rows('title.episode.tsv.gz'):
 print('shows', len(shows), 'episodes', len(eps), flush=True)
 
 need, names, films = eps | set(shows), {}, defaultdict(dict)
+TOP_MIN = {'movie': 25000, 'tv': 25000}                   # votes needed to be ranked, as in IMDb's Top 250
+top = {'movie': [], 'tv': []}
 for row in rows('title.basics.tsv.gz'):
     if len(row) > 1 and row[1] in ('movie', 'tvMovie'):
         r = ratings.get(row[0])
         if r and r[1] >= MOVIE_MIN: films[row[0][-3:]][row[0]] = [r[0], r[1]]
+    if len(row) > 5 and row[4] != '1':
+        kind = 'movie' if row[1] == 'movie' else 'tv' if row[1] in ('tvSeries', 'tvMiniSeries') else None
+        r = ratings.get(row[0]) if kind else None
+        if r and r[1] >= TOP_MIN[kind]: top[kind].append((row[0], r[0], r[1], row[2], row[5] if row[5] != NA else ''))
     if row[0] in need:
         names[row[0]] = (row[2] if len(row) > 2 else '', row[5] if len(row) > 5 and row[5] != NA else '',
                          row[6] if len(row) > 6 and row[6] != NA else '')
@@ -71,6 +77,16 @@ for shard, d in films.items():
         json.dump(d, f, separators=(',', ':'))
     nfilms += len(d)
 print('wrote', nfilms, 'film scores', flush=True)
+
+# ranked lists: IMDb-style weighted rating, so a 9.0 with few votes doesn't outrank a 8.9 with millions
+os.makedirs(os.path.join(out, 'top'), exist_ok=True)
+for kind, lst in top.items():
+    if not lst: continue
+    m, C = TOP_MIN[kind], sum(x[1] for x in lst) / len(lst)
+    ranked = sorted(lst, key=lambda x: (x[2] / (x[2] + m)) * x[1] + (m / (x[2] + m)) * C, reverse=True)[:250]
+    with open(os.path.join(out, 'top', kind + '.json'), 'w', encoding='utf-8') as f:
+        json.dump([[t, r, v, title, year] for t, r, v, title, year in ranked], f, separators=(',', ':'), ensure_ascii=False)
+    print('top', kind, len(ranked), ranked[0][3] if ranked else '', flush=True)
 
 with open(os.path.join(out, 'meta.json'), 'w') as f:
     json.dump({'films': nfilms, 'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d'), 'shows': count, 'minVotes': MIN_VOTES}, f)
