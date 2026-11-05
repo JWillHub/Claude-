@@ -215,8 +215,8 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .sbk.in{opacity:1}
 .sh{position:fixed;left:0;right:0;bottom:0;max-width:680px;margin:0 auto;max-height:calc(100dvh - 40px - env(safe-area-inset-top));
   display:flex;flex-direction:column;background:var(--bg2);border-radius:24px 24px 0 0;border:1px solid var(--line);border-bottom:0;
-  transform:translateY(105%);transition:transform .34s cubic-bezier(.32,.72,0,1);box-shadow:0 -20px 50px rgba(0,0,0,.5);
-  will-change:transform;backface-visibility:hidden;contain:layout paint}
+  transform:translateY(105%);transition:transform .32s cubic-bezier(.22,.9,.28,1);box-shadow:0 -20px 50px rgba(0,0,0,.5);
+  will-change:transform;contain:layout paint}
 .sh.in{transform:none}
 .sh.tall{height:calc(100dvh - 40px - env(safe-area-inset-top))}
 .sh.drag{transition:none}
@@ -237,6 +237,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .mvhead{display:flex;gap:14px;margin-top:-92px;position:relative;z-index:1;align-items:flex-end}
 .mvhead img,.mvhead .ph{width:108px;flex:none;aspect-ratio:2/3;border-radius:12px;object-fit:cover;box-shadow:0 12px 26px rgba(0,0,0,.55);background:var(--card2)}
 .mvhead > div:last-child{align-self:stretch;min-width:0;padding-top:66px;min-height:200px}
+.mvsheet #md{min-height:19px}.mvsheet #mimdb{min-height:26px;margin-top:4px}.mvsheet #mact{min-height:30px}
 .mvhead h2{font-family:var(--disp);font-weight:700;font-size:25px;line-height:1.08;margin:0 0 4px}
 .meta{color:var(--muted);font-size:13px}
 .ratebar{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom));z-index:4;display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -606,13 +607,16 @@ const slimTV = m => ({ id:'tv' + m.id, tid:m.id, tv:true, title:m.name, year:(m.
   poster:m.poster_path, backdrop:m.backdrop_path, overview:m.overview||'', genres:m.genre_ids || (m.genres||[]).map(g => g.id), vote:m.vote_average||0,
   lang:m.original_language, votes:m.vote_count });
 function remember(list){ list.forEach(m => { const old = movies.get(m.id); movies.set(m.id, old ? { ...old, ...m } : m); }); }
+const isCached = (k, ttlH) => { if(mem.has(k)) return true; const c = store.get(CK + k, null); return !!(c && Date.now() - c.t < ttlH*3600e3); };
+const inflight = new Map();
 async function cached(k, ttlH, fn){
   if(mem.has(k)) return mem.get(k);
   const c = store.get(CK + k, null);
   if(c && Date.now() - c.t < ttlH*3600e3){ mem.set(k, c.d); return c.d; }
-  const d = await fn();
-  mem.set(k, d); store.set(CK + k, { t:Date.now(), d });
-  return d;
+  if(inflight.has(k)) return inflight.get(k);
+  const pr = (async () => { const d = await fn(); mem.set(k, d); store.set(CK + k, { t:Date.now(), d }); return d; })();
+  inflight.set(k, pr); pr.finally(() => inflight.delete(k)).catch(() => {});
+  return pr;
 }
 async function listPage(path, params, page, tv){
   const p = { include_adult:'false', ...params, page };
@@ -813,6 +817,7 @@ document.addEventListener('pointerdown', e => {
   if(!pc || e.button > 0 || rp.on) return;
   lp = { pc, x:e.clientX, y:e.clientY, fired:false };
   pc.classList.add('pressing');
+  prefetchDetails(pid(pc.dataset.id));
   lp.timer = setTimeout(() => {
     if(!lp) return;
     lp.fired = true; pc.classList.remove('pressing');
@@ -1608,7 +1613,27 @@ async function imdbFile(tt){
     return { state:'ok', meta, d:await r.json() };
   }catch(e){ return { state:'error' }; }
 }
+function movieDetails(id){ return cached('movie3:' + id, 24*3, () => tmdb('/movie/' + id, { append_to_response:'credits,videos,watch/providers' }).then(x => ({
+      dirs:((x.credits && x.credits.crew) || []).filter(c => c.job === 'Director').slice(0, 2).map(c => ({ id:c.id, name:c.name, profile:c.profile_path })),
+      castL:((x.credits && x.credits.cast) || []).slice(0, 12).map(c => ({ id:c.id, name:c.name, profile:c.profile_path, role:c.character })),
+      imdb:x.imdb_id || null, trailer:pickTrailer(x.videos), prov:pickProviders(x['watch/providers']),
+      ...slim(x), runtime:x.runtime, gnames:(x.genres || []).map(g => g.name),
+      director:((x.credits && x.credits.crew) || []).filter(c => c.job === 'Director').map(c => c.name).slice(0, 2).join(', '),
+      cast:((x.credits && x.credits.cast) || []).slice(0, 4).map(c => c.name).join(', '),
+      col:x.belongs_to_collection ? { id:x.belongs_to_collection.id, name:x.belongs_to_collection.name } : null }))); }
+function showDetails(tid){ return cached('tvd3:' + tid, 24*3, () => tmdb('/tv/' + tid, { append_to_response:'external_ids,videos,watch/providers,aggregate_credits' }).then(x => ({
+      castL:((x.aggregate_credits && x.aggregate_credits.cast) || []).slice(0, 12).map(c => ({ id:c.id, name:c.name, profile:c.profile_path, role:((c.roles || [])[0] || {}).character || '' })),
+      trailer:pickTrailer(x.videos), prov:pickProviders(x['watch/providers']),
+      ...slimTV(x), seasons:x.number_of_seasons, eps:x.number_of_episodes, end:(x.last_air_date || '').slice(0, 4), status:x.status,
+      network:(x.networks || [])[0]?.name || '', gnames:(x.genres || []).map(g => g.name), imdb:x.external_ids && x.external_ids.imdb_id }))); }
+// Start loading a title's details the moment a poster is pressed, and give it a moment before the card opens,
+// so the card usually slides up already complete instead of rearranging itself after it lands
+const detailsFor = id => typeof id === 'string' ? showDetails(+String(id).slice(2)) : movieDetails(id);
+const detailsCached = id => typeof id === 'string' ? isCached('tvd3:' + String(id).slice(2), 24*3) : isCached('movie3:' + id, 24*3);
+function prefetchDetails(id){ try{ detailsFor(id).catch(() => {}); }catch(e){} }
+async function waitDetails(id){ if(detailsCached(id)) return; await Promise.race([detailsFor(id).catch(() => {}), new Promise(r => setTimeout(r, 320))]); }
 async function openShow(id){
+  await waitDetails(id);
   const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
@@ -1628,15 +1653,11 @@ async function openShow(id){
   s.refresh = paint; paint();
   bindStars(s5, (r, fin) => { paintStars(s5, r); const rv = $('#mrv', b); rv.textContent = RWORDS[r]; rv.classList.remove('dim'); if(fin && r !== getR(id)) setRating(filmOf(id), r); });
   $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
-  let d;
+  let d; const hit = isCached('tvd3:' + tid, 24*3);
   try{
-    d = await cached('tvd3:' + tid, 24*3, () => tmdb('/tv/' + tid, { append_to_response:'external_ids,videos,watch/providers,aggregate_credits' }).then(x => ({
-      castL:((x.aggregate_credits && x.aggregate_credits.cast) || []).slice(0, 12).map(c => ({ id:c.id, name:c.name, profile:c.profile_path, role:((c.roles || [])[0] || {}).character || '' })),
-      trailer:pickTrailer(x.videos), prov:pickProviders(x['watch/providers']),
-      ...slimTV(x), seasons:x.number_of_seasons, eps:x.number_of_episodes, end:(x.last_air_date || '').slice(0, 4), status:x.status,
-      network:(x.networks || [])[0]?.name || '', gnames:(x.genres || []).map(g => g.name), imdb:x.external_ids && x.external_ids.imdb_id })));
+    d = await showDetails(tid);
     remember([d]);
-    await s.settled;
+    if(!hit) await s.settled;
     if(!s.el.isConnected) return;
     if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const yrs = d.year ? d.year + (d.status === 'Returning Series' ? '–' : d.end && d.end !== d.year ? '–' + d.end : '') : '';
@@ -1696,6 +1717,7 @@ function renderChart(box, d, meta){
 /* ---------- Movie sheet ---------- */
 async function openMovie(id){
   if(typeof id === 'string') return openShow(id);
+  await waitDetails(id);
   const f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
@@ -1728,16 +1750,10 @@ async function openMovie(id){
   let trailerKey = null; acts(null);
   const oldRefresh = s.refresh; s.refresh = () => { oldRefresh(); acts(trailerKey); };
   try{
-    const d = await cached('movie3:' + id, 24*3, () => tmdb('/movie/' + id, { append_to_response:'credits,videos,watch/providers' }).then(x => ({
-      dirs:((x.credits && x.credits.crew) || []).filter(c => c.job === 'Director').slice(0, 2).map(c => ({ id:c.id, name:c.name, profile:c.profile_path })),
-      castL:((x.credits && x.credits.cast) || []).slice(0, 12).map(c => ({ id:c.id, name:c.name, profile:c.profile_path, role:c.character })),
-      imdb:x.imdb_id || null, trailer:pickTrailer(x.videos), prov:pickProviders(x['watch/providers']),
-      ...slim(x), runtime:x.runtime, gnames:(x.genres || []).map(g => g.name),
-      director:((x.credits && x.credits.crew) || []).filter(c => c.job === 'Director').map(c => c.name).slice(0, 2).join(', '),
-      cast:((x.credits && x.credits.cast) || []).slice(0, 4).map(c => c.name).join(', '),
-      col:x.belongs_to_collection ? { id:x.belongs_to_collection.id, name:x.belongs_to_collection.name } : null })));
+    const hit = isCached('movie3:' + id, 24*3);
+    const d = await movieDetails(id);
     remember([d]);
-    await s.settled;
+    if(!hit) await s.settled;
     if(!s.el.isConnected) return;
     if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const rt = d.runtime ? `${Math.floor(d.runtime / 60)}h ${d.runtime % 60}m` : '';
