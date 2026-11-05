@@ -37,7 +37,11 @@ svg{display:block}
 .logo .w2{font-family:var(--disp);font-weight:700;font-size:25px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
 .logo{min-width:0;flex:1}
 .logo .w2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.logo.sub .w1::before{content:"‹ ";letter-spacing:0}
+.logo.sub .w1{display:none}
+.logo.sub .w2{font-size:26px;line-height:1}
+.ib.hback{width:30px;height:30px;border-radius:9px;color:var(--accent);background:rgba(255,181,71,.08);border-color:rgba(255,181,71,.35);margin-right:-2px}
+.ib.hback[hidden]{display:none}
+.hback svg{width:16px;height:16px}
 .hact{display:flex;gap:8px}
 .hact .ib{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.04)}
 .hact .ib.on{color:var(--accent);border-color:rgba(255,181,71,.5)}
@@ -421,6 +425,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 </head>
 <body>
 <header class="top">
+  <button class="ib hback" id="hback" aria-label="Back to genres" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
   <div class="hact">
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
@@ -886,12 +891,14 @@ function setView(v, o = {}){
   scrollTo(0, 0);
 }
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
-$('#logo').onclick = () => { if(view === 'genre') history.back(); else setView('discover'); };
+$('#logo').onclick = () => setView('discover');
+$('#hback').onclick = () => history.back();
 let genrePageTitle = null;
 function setHeaderTitle(t){
   const lg = $('#logo');
-  if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); lg.setAttribute('aria-label', 'Back'); }
-  else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); lg.removeAttribute('aria-label'); }
+  $('#hback').hidden = !t;
+  if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); }
+  else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); }
 }
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
 $('#setTab').onclick = openSettings;
