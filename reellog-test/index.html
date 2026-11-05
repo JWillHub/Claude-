@@ -225,6 +225,9 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 
 /* run (stack) */
 .runhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.wbtn{flex:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;cursor:pointer;color:var(--text)}
+.wbtn.on{border-color:var(--good);color:var(--good)}
+.wbtn:disabled{cursor:default;opacity:.85}
 .runhead h2{font-family:var(--disp);font-weight:700;font-size:24px;margin:0;line-height:1.1}
 .prog{color:var(--muted);font-size:12.5px;margin-top:3px}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px;flex:none}
@@ -329,12 +332,14 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .imdbbox b{font-family:var(--disp);font-size:28px;line-height:1}
 .chartwrap{overflow-x:auto;margin:10px -16px 0;padding:0 16px 6px;scrollbar-width:none}
 .chartwrap::-webkit-scrollbar{display:none}
-.hm{border-collapse:separate;border-spacing:3px;font-size:12.5px;font-weight:750;margin:0 auto}
+.hm{border-collapse:separate;border-spacing:3px;font-size:12.5px;font-weight:750;margin:0}
 .hm th{color:var(--muted);font-weight:700;font-size:11px;padding:0 2px;white-space:nowrap}
 .hm td{width:38px;min-width:38px;height:30px;text-align:center;border-radius:6px;cursor:pointer}
 .hm td.na{background:var(--card);color:var(--muted)}
 .hm td.sel{outline:2px solid #fff;outline-offset:1px}
-.hm tr.avg td{border-top:0;font-weight:900}
+.hm th.sl{position:sticky;left:0;z-index:1;background:var(--bg2);padding-right:6px;text-align:left}
+.hm td.avgc{font-weight:900;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
+.hm th.avgh{color:var(--text)}
 .c9{background:#1d7a4a;color:#fff}.c8{background:#3dbb6f;color:#0b1a10}.c7{background:#e6c52f;color:#1c1600}
 .c6{background:#ef8b2c;color:#1f0f00}.c5{background:#d9443a;color:#fff}.c4{background:#7c3fbf;color:#fff}
 .legend{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;font-size:11px;color:var(--muted);margin-top:8px}
@@ -406,13 +411,21 @@ if(!ratings){            // migrate ratings from older diary-only data
   }
 }catch(e){} })();
 
-const K_WATCH = 'reellog.watch', K_HIDE = 'reellog.hiderated', K_OMDB = 'reellog.omdbkey';
+const K_WATCH = 'reellog.watch', K_HIDE = 'reellog.hiderated', K_OMDB = 'reellog.omdbkey', K_SEEN = 'reellog.seen';
 let watch = store.get(K_WATCH, {});
+let seen = store.get(K_SEEN, {});   // watched, not rated yet
 let hideRated = store.get(K_HIDE, false);
-const saveAll = () => { const a = store.set(K_LOG, entries), b = store.set(K_RATE, ratings), c = store.set(K_WATCH, watch); if(!a || !b || !c) toast('Could not save — storage is full or blocked.'); };
+const saveAll = () => { const a = store.set(K_LOG, entries), b = store.set(K_RATE, ratings), c = store.set(K_WATCH, watch), d = store.set(K_SEEN, seen); if(!a || !b || !c || !d) toast('Could not save — storage is full or blocked.'); };
 const TOMATO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.6c5.3 0 9.4 3.4 9.4 8.2 0 4.7-4.1 7.9-9.4 7.9s-9.4-3.2-9.4-7.9c0-4.8 4.1-8.2 9.4-8.2z" fill="#ea3d1c"/><path d="M12 5.6c5.3 0 9.4 3.4 9.4 8.2 0 .9-.1 1.7-.4 2.4-1-4-4.6-6.7-9-6.7s-8 2.7-9 6.7c-.3-.7-.4-1.5-.4-2.4 0-4.8 4.1-8.2 9.4-8.2z" fill="#f2552c"/><ellipse cx="7.6" cy="11.4" rx="2.3" ry="1.3" transform="rotate(-28 7.6 11.4)" fill="#fff" fill-opacity=".38"/><path d="M12 7.9c-1.3-.9-3.4-.9-4.9-.2 1.1-1.1 2.6-1.6 4-1.5-1.1-1-2.6-1.5-3.9-1.4 1.6-.6 3.4-.4 4.8.6.1-1.3.8-2.4 1.8-3-.5 1-.6 2-.3 3 1.3-.9 3.1-1.1 4.7-.6-1.4.1-2.8.7-3.8 1.6 1.4 0 2.9.5 4 1.5-1.6-.6-3.4-.6-4.4 0z" fill="#3d9a3a"/></svg>';
 const SPLAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.8 6.1Q12.9 4.0 13.2 6.2Q13.5 8.5 16.3 6.9Q19.0 5.3 17.9 8.2Q16.8 11.1 18.5 11.5Q20.2 12.0 18.2 12.8Q16.2 13.7 17.6 16.9Q19.0 20.1 16.5 18.2Q14.1 16.3 13.3 18.3Q12.5 20.3 11.2 18.1Q9.9 16.0 7.6 17.6Q5.4 19.1 6.3 16.8Q7.3 14.4 5.9 13.1Q4.4 11.7 6.1 11.4Q7.8 11.1 6.0 8.6Q4.2 6.2 7.4 7.2Q10.6 8.2 11.8 6.1Z" fill="#2fa84f"/><circle cx="2.2" cy="6.6" r="1.2" fill="#2fa84f"/><circle cx="22" cy="19.8" r="1" fill="#2fa84f"/><circle cx="20.8" cy="3.2" r=".8" fill="#2fa84f"/><circle cx="3.8" cy="21.6" r=".7" fill="#2fa84f"/></svg>';
 const BOOK = '<svg viewBox="0 0 12 15"><path d="M0 0h12v15L6 10.5 0 15z"/></svg>';
+function toggleSeen(f){
+  const had = seen[f.id];
+  if(had) delete seen[f.id]; else { seen[f.id] = { title:f.title, year:f.year, poster:f.poster, at:Date.now() }; }
+  const prevW = watch[f.id]; if(!had) delete watch[f.id];
+  saveAll(); afterChange();
+  return () => { if(had) seen[f.id] = had; else delete seen[f.id]; if(prevW) watch[f.id] = prevW; saveAll(); afterChange(); };
+}
 function toggleWatch(f){
   const had = watch[f.id];
   if(had) delete watch[f.id]; else watch[f.id] = { title:f.title, year:f.year, poster:f.poster, at:Date.now() };
@@ -534,7 +547,7 @@ let changeHooks = [];
 function setRating(f, r, quiet){
   const prev = ratings[f.id] ? { ...ratings[f.id] } : null;
   const prevW = watch[f.id];
-  if(r > 0){ ratings[f.id] = { r, title:f.title, year:f.year, poster:f.poster, at:Date.now(), g:(movies.get(f.id) || {}).genres || prev?.g || [] }; delete watch[f.id]; }
+  if(r > 0){ ratings[f.id] = { r, title:f.title, year:f.year, poster:f.poster, at:Date.now(), g:(movies.get(f.id) || {}).genres || prev?.g || [] }; delete watch[f.id]; delete seen[f.id]; }
   else delete ratings[f.id];
   saveAll(); afterChange();
   if(!quiet) toast(r > 0 ? `<span>${starTxt(r)}&nbsp; ${esc(f.title)}</span>` : `<span>Rating removed · ${esc(f.title)}</span>`, () => {
@@ -554,7 +567,7 @@ function afterChange(){
 function badge(id){
   const r = getR(id);
   if(r) return `${fmtR(r)}★`;
-  return logCount(id) ? '✓' : '';
+  return logCount(id) || seen[id] ? '✓' : '';
 }
 const bdCls = (id, t) => t === '✓' ? ' seen' : (!t && watch[id] ? ' wl' : '');
 function refreshBadges(){
@@ -1024,52 +1037,52 @@ function openGenres(tv, start){
 /* ---------- Sagas ---------- */
 const SAGAS = [
   { k:'mcu', name:'Marvel Cinematic Universe', kw:'marvel cinematic universe (mcu)', u:1 },
-  { k:'sw', name:'Star Wars', col:['Star Wars Collection'], u:1 },
+  { k:'sw', name:'Star Wars', col:['Star Wars Collection'], extra:[['Star Wars: The Clone Wars', 2008], ['Rogue One: A Star Wars Story', 2016], ['Solo: A Star Wars Story', 2018]], u:1 },
   { k:'ww', name:'Wizarding World', col:['Harry Potter Collection', 'Fantastic Beasts Collection'], u:1 },
   { k:'me', name:'Middle-earth', col:['The Lord of the Rings Collection', 'The Hobbit Collection'], u:1 },
   { k:'bond', name:'James Bond 007', col:['James Bond Collection'] },
-  { k:'ff', name:'Fast & Furious', col:['The Fast and the Furious Collection'] },
+  { k:'ff', name:'Fast & Furious', col:['The Fast and the Furious Collection'], extra:[['Fast & Furious Presents: Hobbs & Shaw', 2019]] },
   { k:'mi', name:'Mission: Impossible', col:['Mission: Impossible Collection'] },
-  { k:'jp', name:'Jurassic Park & World', col:['Jurassic Park Collection', 'Jurassic World Collection'] },
+  { k:'jp', name:'Jurassic Park & World', col:['Jurassic Park Collection', 'Jurassic World Collection'], extra:[['Jurassic World Rebirth', 2025]] },
   { k:'dceu', name:'DC Extended Universe', kw:'dc extended universe (dceu)', u:1 },
   { k:'mvrs', name:'MonsterVerse', kw:'monsterverse', u:1 },
-  { k:'conj', name:'The Conjuring Universe', col:['The Conjuring Collection', 'Annabelle Collection', 'The Nun Collection'], u:1 },
-  { k:'xmen', name:'X-Men', col:['X-Men Collection', 'Deadpool Collection', 'The Wolverine Collection'], u:1 },
+  { k:'conj', name:'The Conjuring Universe', col:['The Conjuring Collection', 'Annabelle Collection', 'The Nun Collection'], extra:[['The Curse of La Llorona', 2019]], u:1 },
+  { k:'xmen', name:'X-Men', col:['X-Men Collection', 'Deadpool Collection', 'The Wolverine Collection'], extra:[['Logan', 2017]], u:1 },
   { k:'trek', name:'Star Trek', col:['Star Trek: The Original Series Collection', 'Star Trek: The Next Generation Collection', 'Star Trek: Alternate Reality Collection'], u:1 },
   { k:'indy', name:'Indiana Jones', col:['Indiana Jones Collection'] },
   { k:'bttf', name:'Back to the Future', col:['Back to the Future Collection'] },
   { k:'gf', name:'The Godfather', col:['The Godfather Collection'] },
   { k:'dk', name:'The Dark Knight Trilogy', col:['The Dark Knight Collection'] },
-  { k:'jw', name:'John Wick', col:['John Wick Collection'] },
+  { k:'jw', name:'John Wick', col:['John Wick Collection'], extra:[['Ballerina', 2025]] },
   { k:'mtx', name:'The Matrix', col:['The Matrix Collection'] },
-  { k:'alien', name:'Alien', col:['Alien Collection'] },
+  { k:'alien', name:'Alien', col:['Alien Collection'], extra:[['Prometheus', 2012], ['Alien: Covenant', 2017], ['Alien: Romulus', 2024]] },
   { k:'term', name:'The Terminator', col:['The Terminator Collection'] },
   { k:'potc', name:'Pirates of the Caribbean', col:['Pirates of the Caribbean Collection'] },
   { k:'rocky', name:'Rocky & Creed', col:['Rocky Collection', 'Creed Collection'] },
-  { k:'hg', name:'The Hunger Games', col:['The Hunger Games Collection'] },
+  { k:'hg', name:'The Hunger Games', col:['The Hunger Games Collection'], extra:[['The Hunger Games: The Ballad of Songbirds & Snakes', 2023]] },
   { k:'dune', name:'Dune', col:['Dune Collection'] },
   { k:'avtr', name:'Avatar', col:['Avatar Collection'] },
-  { k:'madmax', name:'Mad Max', col:['Mad Max Collection'] },
+  { k:'madmax', name:'Mad Max', col:['Mad Max Collection'], extra:[['Furiosa: A Mad Max Saga', 2024]] },
   { k:'bourne', name:'Bourne', col:['The Bourne Collection'] },
   { k:'dh', name:'Die Hard', col:['Die Hard Collection'] },
   { k:'mib', name:'Men in Black', col:['Men in Black Collection'], extra:[['Men in Black: International', 2019]] },
-  { k:'apes', name:'Planet of the Apes', col:['Planet of the Apes (Reboot) Collection'] },
-  { k:'tf', name:'Transformers', col:['Transformers Collection'] },
+  { k:'apes', name:'Planet of the Apes', col:['Planet of the Apes (Reboot) Collection'], extra:[['Kingdom of the Planet of the Apes', 2024]] },
+  { k:'tf', name:'Transformers', col:['Transformers Collection'], extra:[['Bumblebee', 2018], ['Transformers One', 2024]] },
   { k:'ocean', name:"Ocean's", col:["Ocean's Collection"] },
   { k:'spidey', name:'Spider-Man (Raimi)', col:['Spider-Man Collection'] },
   { k:'sv', name:'Spider-Verse', col:['Spider-Man: Spider-Verse Collection'] },
-  { k:'toy', name:'Toy Story', col:['Toy Story Collection'] },
-  { k:'shrek', name:'Shrek', col:['Shrek Collection'] },
+  { k:'toy', name:'Toy Story', col:['Toy Story Collection'], extra:[['Lightyear', 2022]] },
+  { k:'shrek', name:'Shrek', col:['Shrek Collection'], extra:[['Puss in Boots', 2011], ['Puss in Boots: The Last Wish', 2022]] },
   { k:'dm', name:'Despicable Me & Minions', col:['Despicable Me Collection', 'Minions Collection'] },
   { k:'httyd', name:'How to Train Your Dragon', col:['How to Train Your Dragon Collection'] },
   { k:'kfp', name:'Kung Fu Panda', col:['Kung Fu Panda Collection'] },
-  { k:'ice', name:'Ice Age', col:['Ice Age Collection'] },
+  { k:'ice', name:'Ice Age', col:['Ice Age Collection'], extra:[['The Ice Age Adventures of Buck Wild', 2022]] },
   { k:'twi', name:'The Twilight Saga', col:['The Twilight Collection', 'Twilight Collection'] },
   { k:'scream', name:'Scream', col:['Scream Collection'] },
   { k:'hallo', name:'Halloween', col:['Halloween Collection'] },
-  { k:'saw', name:'Saw', col:['Saw Collection'] },
+  { k:'saw', name:'Saw', col:['Saw Collection'], extra:[['Spiral: From the Book of Saw', 2021]] },
   { k:'fd', name:'Final Destination', col:['Final Destination Collection'] },
-  { k:'pred', name:'Predator', col:['Predator Collection'] },
+  { k:'pred', name:'Predator', col:['Predator Collection'], extra:[['Prey', 2022], ['Predator: Killer of Killers', 2025], ['Predator: Badlands', 2025]] },
   { k:'ed', name:'Evil Dead', col:['Evil Dead Collection'], extra:[['Evil Dead Rise', 2023]] },
   { k:'hang', name:'The Hangover', col:['The Hangover Collection'] },
   { k:'kb', name:'Kill Bill', col:['Kill Bill Collection'] },
@@ -1110,14 +1123,14 @@ function loadSaga(s){
   if(s.quick){
     sagaData[s.k] = (async () => {
       const pages = await Promise.all([1, 2, 3, 4].flatMap(p => [listPage('/movie/popular', {}, p), listPage('/movie/top_rated', {}, p)]));
-      const seen = new Set(), out = [];
+      const dup = new Set(), out = [];
       const lists = pages.map(d => d.results);
-      for(let i = 0; i < 20; i++) lists.forEach(l => { const m = l[i]; if(m && !seen.has(m.id) && !getR(m.id)){ seen.add(m.id); out.push(m); } });
+      for(let i = 0; i < 20; i++) lists.forEach(l => { const m = l[i]; if(m && !dup.has(m.id) && !getR(m.id) && !seen[m.id]){ dup.add(m.id); out.push(m); } });
       return out.slice(0, 60);
     })();
     return sagaData[s.k];
   }
-  sagaData[s.k] = cached('saga3:' + s.k, 24*7, async () => {
+  sagaData[s.k] = cached('saga4:' + s.k, 24*7, async () => {
     let films = [];
     if(s.kw){
       const id = await resolveKeyword(s.kw);
@@ -1137,7 +1150,8 @@ function loadSaga(s){
     }
     for(const [q, y] of (s.extra || [])){        // films TMDB leaves out of a collection (spin-offs etc.)
       const d = await tmdb('/search/movie', { query:q, year:y, include_adult:'false' }).catch(() => null);
-      const hit = d && (d.results || []).find(m => m.title.toLowerCase() === q.toLowerCase()) || d && (d.results || [])[0];
+      const nm = t => (t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(), want = nm(q), res = (d && d.results) || [];
+      const hit = res.find(m => nm(m.title) === want) || res.find(m => nm(m.title).includes(want) || want.includes(nm(m.title)) && nm(m.title).length > 3);
       if(hit) films.push(slim(hit));
     }
     for(const id of (s.cid || [])){
@@ -1218,29 +1232,28 @@ function openCollectionRun(id, name){
 /* the stack */
 function openRun(saga){
   const s = sheet(`<div class="runhead"><div><h2>${esc(saga.name)}</h2><div class="prog" id="rprog">Loading…</div></div>
-    <div class="seg"><button class="on" data-m="stack">Stack</button><button data-m="list">List</button></div></div>
+    <button class="wbtn" id="rwatched">✓ Watched</button></div>
     <div id="rbody"><div class="msg" style="padding-top:80px">Stacking the films…</div></div>`, { tall:true });
   const b = s.body;
-  let films = [], rel = [], up = [], i = 0, histI = [], mode = 'stack';
+  let films = [], rel = [], up = [], i = 0;
   const setProg = () => {
-    const done = rel.filter(f => getR(f.id)).length;
-    $('#rprog', b).textContent = `${rel.length} films · ${done} rated` + (up.length ? ` · ${up.length} coming` : '');
+    const done = rel.filter(f => getR(f.id)).length, w = rel.filter(f => !getR(f.id) && seen[f.id]).length;
+    $('#rprog', b).textContent = `${rel.length} films · ${done} rated` + (w ? ` · ${w} watched` : '') + (up.length ? ` · ${up.length} coming` : '');
   };
-  $$('.seg button', b).forEach(x => x.onclick = () => {
-    mode = x.dataset.m; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); render();
-  });
-  const render = () => { setProg(); mode === 'list' ? renderList() : (i >= rel.length ? renderDone() : renderStack()); };
-  s.refresh = () => { setProg(); if(mode === 'list') renderList(); else if(i < rel.length){ paintTop(); paintBadges(); } };
+  const paintWatched = () => {
+    const wb = $('#rwatched', b), f = rel[i];
+    wb.style.visibility = f ? '' : 'hidden';
+    if(f){ const on = !!seen[f.id] || !!getR(f.id); wb.classList.toggle('on', on); wb.textContent = on ? '✓ Watched' : 'Watched?'; wb.disabled = !!getR(f.id); }
+  };
+  $('#rwatched', b).onclick = () => {
+    const f = rel[i]; if(!f || getR(f.id)) return;
+    const was = !!seen[f.id], undo = toggleSeen(f), at = i;
+    paintBadges(); paintWatched(); setProg();
+    if(!was){ toast(`<span>Marked watched · ${esc(f.title)}</span>`, () => { undo(); paintBadges(); paintWatched(); setProg(); }); setTimeout(() => { if(i === at) go(i + 1); }, 320); }
+  };
+  const render = () => { setProg(); i >= rel.length ? renderDone() : renderStack(); paintWatched(); };
+  s.refresh = () => { setProg(); if(i < rel.length){ paintTop(); paintBadges(); paintWatched(); } };
 
-  function renderList(){
-    const box = $('#rbody', b);
-    box.innerHTML = `<div style="margin-top:14px">${rel.map((f, n) => `<div class="lrow" data-f="${f.id}">${poster(f.poster, 'thumb', 'w92', f.title)}
-      <div class="li"><div class="lt">${n + 1}. ${esc(f.title)}</div><div class="ls">${esc(f.year)}</div></div>
-      <span class="mini">${starTxt(getR(f.id)) || '<span class="small">—</span>'}</span></div>`).join('')}
-      ${up.length ? `<div class="sec" style="margin:18px 0 8px">Coming later</div>` + up.map(f => `<div class="lrow" data-f="${f.id}">${poster(f.poster, 'thumb', 'w92', f.title)}
-      <div class="li"><div class="lt">${esc(f.title)}</div><div class="ls">${f.date ? new Date(f.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : 'Date TBA'}</div></div></div>`).join('') : ''}</div>`;
-    $$('.lrow', box).forEach(r => r.onclick = () => openMovie(+r.dataset.f));
-  }
   /* carousel: cards stay put in a row; swipe left for the next film, right to bring the previous one back */
   function renderStack(){
     const box = $('#rbody', b);
@@ -1260,7 +1273,7 @@ function openRun(saga){
     paintBadges(); layout(i, false); paintTop(); dragCar($('.car', box));
   }
   function paintBadges(){
-    $$('#rbody .cc', b).forEach(c => { const r = getR(rel[+c.dataset.n].id); $('.rb', c).textContent = r ? fmtR(r) + '★' : ''; });
+    $$('#rbody .cc', b).forEach(c => { const id = rel[+c.dataset.n].id, r = getR(id); $('.rb', c).textContent = r ? fmtR(r) + '★' : seen[id] ? '✓ Watched' : ''; });
   }
   function layout(pos, anim){
     const cards = $$('#rbody .cc', b); if(!cards.length) return;
@@ -1277,8 +1290,8 @@ function openRun(saga){
   }
   function go(n){
     if(n < 0) n = 0;
-    if(n >= rel.length){ i = rel.length; renderDone(); setProg(); return; }
-    i = n; layout(i, true); paintTop();
+    if(n >= rel.length){ i = rel.length; renderDone(); setProg(); paintWatched(); return; }
+    i = n; layout(i, true); paintTop(); paintWatched();
   }
   function paintTop(){
     const s5 = $('#rbody .runctl .s5', b); if(!s5 || !rel[i]) return;
@@ -1316,7 +1329,7 @@ function openRun(saga){
       <div class="big">${avg ? avg.toFixed(1) + '★' : '—'}</div><div class="small">your average across ${rated.length} of ${rel.length} films</div>
       ${best ? `<p style="margin:14px 0 4px">Your favorite: <b>${esc(best.title)}</b> <span class="mini">${starTxt(getR(best.id))}</span></p>` : ''}</div>
       <div style="margin-top:12px">${rel.map(f => `<div class="lrow" data-f="${f.id}">${poster(f.poster, 'thumb', 'w92', f.title)}
-        <div class="li"><div class="lt">${esc(f.title)}</div><div class="ls">${esc(f.year)}</div></div><span class="mini">${starTxt(getR(f.id)) || '<span class="small">skipped</span>'}</span></div>`).join('')}</div>
+        <div class="li"><div class="lt">${esc(f.title)}</div><div class="ls">${esc(f.year)}</div></div><span class="mini">${starTxt(getR(f.id)) || (seen[f.id] ? '<span class="small">watched</span>' : '<span class="small">skipped</span>')}</span></div>`).join('')}</div>
       <div class="acts"><button class="pill line" id="rback">‹ Back</button><button class="pill line" id="ragain">Run it again</button><button class="pill" id="rclose">Done</button></div>`;
     $$('.lrow', box).forEach(r => r.onclick = () => openMovie(+r.dataset.f));
     $('#ragain', box).onclick = () => { i = 0; render(); };
@@ -1326,8 +1339,7 @@ function openRun(saga){
   loadSaga(saga).then(f => {
     films = f; rel = films.filter(released); up = films.filter(x => !released(x));
     if(!rel.length){ $('#rbody', b).innerHTML = '<div class="msg">No released films found for this series.</div>'; setProg(); return; }
-    i = rel.findIndex(x => !getR(x.id)); if(i < 0) i = rel.length;
-    if(saga.quick) $('.seg', b).style.display = 'none';
+    i = rel.findIndex(x => !getR(x.id) && !seen[x.id]); if(i < 0) i = rel.length;
     render(); fillTile(saga.k);
   }).catch(e => { $('#rbody', b).innerHTML = `<div class="msg">${e && e.message ? errText(e) : 'Could not find this series.'}</div>`; $('#rprog', b).textContent = ''; });
 }
@@ -1445,17 +1457,19 @@ function renderChart(box, d, meta){
   const firm = all.filter(x => x.v >= 50), pool = firm.length ? firm : all;
   const best = pool.reduce((a, x) => !a || x.r > a.r ? x : a, null), worst = pool.reduce((a, x) => !a || x.r < a.r ? x : a, null);
   const avg = list => { const r = list.filter(e => e[1] != null); return r.length ? r.reduce((a, e) => a + e[1], 0) / r.length : null; };
-  let rowsH = '';
-  for(let e = 1; e <= maxE; e++){
-    rowsH += `<tr><th>E${e}</th>` + ss.map(n => { const x = d.s[n].find(q => q[0] === e);
-      return x ? `<td class="${heat(x[1])}" data-s="${n}" data-e="${e}">${x[1] == null ? '–' : x[1].toFixed(1)}</td>` : '<td style="background:none;cursor:default"></td>'; }).join('') + '</tr>';
-  }
-  rowsH += '<tr class="avg"><th>AVG</th>' + ss.map(n => { const a = avg(d.s[n]); return `<td class="${heat(a)}">${a == null ? '–' : a.toFixed(1)}</td>`; }).join('') + '</tr>';
+  let rowsH = `<tr><th class="sl"></th><th class="avgh">AVG</th>${Array.from({ length:maxE }, (_, k) => `<th>E${k + 1}</th>`).join('')}</tr>`;
+  ss.forEach(n => {
+    const a = avg(d.s[n]);
+    rowsH += `<tr><th class="sl">S${n}</th><td class="avgc ${heat(a)}">${a == null ? '–' : a.toFixed(1)}</td>` + Array.from({ length:maxE }, (_, k) => {
+      const e = k + 1, x = d.s[n].find(q => q[0] === e);
+      return x ? `<td class="${heat(x[1])}" data-s="${n}" data-e="${e}">${x[1] == null ? '–' : x[1].toFixed(1)}</td>` : '<td style="background:none;cursor:default"></td>';
+    }).join('') + '</tr>';
+  });
   const lbl = x => `S${x.s} E${x.e}`;
   box.innerHTML = `<div class="imdbbox"><span class="ib2">IMDb</span><b>${d.r.toFixed(1)}</b><span class="small">${fmtV(d.v)} votes · ${all.length} rated episodes</span></div>
     ${best ? `<div class="hl"><div data-s="${best.s}" data-e="${best.e}">Best episode<b>${esc(best.t || lbl(best))}</b>${lbl(best)} · ${best.r.toFixed(1)}</div>
       <div data-s="${worst.s}" data-e="${worst.e}">Lowest rated<b>${esc(worst.t || lbl(worst))}</b>${lbl(worst)} · ${worst.r.toFixed(1)}</div></div>` : ''}
-    <div class="chartwrap"><table class="hm"><tr><th></th>${ss.map(n => `<th>S${n}</th>`).join('')}</tr>${rowsH}</table></div>
+    <div class="chartwrap"><table class="hm">${rowsH}</table></div>
     <div class="legend"><span><i class="c9"></i>9+ Absolute cinema</span><span><i class="c8"></i>8+ Great</span><span><i class="c7"></i>7+ Good</span>
       <span><i class="c6"></i>6+ Regular</span><span><i class="c5"></i>5+ Bad</span><span><i class="c4"></i>Garbage</span></div>
     <div class="epinfo" id="epi"><span class="small">Tap any episode to see its title and votes.</span></div>
@@ -1638,6 +1652,7 @@ function renderFilms(){
   const v = $('#v-films');
   const map = new Map();
   Object.entries(ratings).forEach(([id, r]) => !id.startsWith('tv') && map.set(+id, { id:+id, title:r.title, year:r.year, poster:r.poster, r:r.r, at:r.at || 0 }));
+  Object.entries(seen).forEach(([id, w]) => !id.startsWith('tv') && !map.has(+id) && map.set(+id, { id:+id, title:w.title, year:w.year, poster:w.poster, r:0, at:w.at || 0 }));
   entries.forEach(e => {
     const f = map.get(e.tmdb) || { id:e.tmdb, title:e.title, year:e.year, poster:e.poster, r:0, at:0 };
     f.at = Math.max(f.at, e.added || 0); map.set(e.tmdb, f);
@@ -1649,7 +1664,7 @@ function renderFilms(){
   const mx = Math.max(1, ...counts);
   const sorter = { recent:(a, b) => b.at - a.at, rating:(a, b) => b.r - a.r || b.at - a.at, title:(a, b) => a.title.localeCompare(b.title), year:(a, b) => (b.year || 0) - (a.year || 0) }[filmSort];
   films.sort(sorter);
-  v.innerHTML = `<h2 class="vt">My Films</h2><p class="vs">Everything you've rated or logged. Hold a poster to change its rating.</p>
+  v.innerHTML = `<h2 class="vt">My Films</h2><p class="vs">Everything you've rated or marked watched. Hold a poster to rate it.</p>
     <div class="stats"><div class="stat"><b>${films.length}</b><span>Films</span></div><div class="stat"><b>${avg ? avg.toFixed(1) : '–'}</b><span>Avg rating</span></div>
       <div class="stat"><b>${Object.entries(ratings).filter(([k, r]) => !k.startsWith('tv') && r.at && new Date(r.at).getFullYear() === +yr).length}</b><span>Rated in ${yr}</span></div></div>
     ${rated.length ? `<button class="revbtn" id="rev"><span>Your ${yr} in review</span><b>Open →</b></button>` : ''}
@@ -1758,7 +1773,7 @@ function openSettings(){
   $('#okey', b).onchange = e => { store.set(K_OMDB, e.target.value.trim()); toast(e.target.value.trim() ? 'OMDb key saved' : 'OMDb key removed'); };
   $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.tv = false; setView(view); };
   $('#exp', b).onclick = () => {
-    const blob = new Blob([JSON.stringify({ app:'reellog', v:3, entries, ratings, watch }, null, 1)], { type:'application/json' });
+    const blob = new Blob([JSON.stringify({ app:'reellog', v:4, entries, ratings, watch, seen }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = `reellog-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
@@ -1771,6 +1786,7 @@ function openSettings(){
       const ids = new Set(entries.map(e => e.id)); let n = 0, rn = 0;
       for(const e of list) if(e && e.id && e.tmdb && e.date && !ids.has(e.id)){ entries.push(e); n++; }
       if(data.watch) for(const [id, w] of Object.entries(data.watch)) if(!watch[id] && !ratings[id]) watch[id] = w;
+      if(data.seen) for(const [id, w] of Object.entries(data.seen)) if(!seen[id] && !ratings[id]) seen[id] = w;
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       if(!data.ratings) list.forEach(e => { if(e.rating && !ratings[e.tmdb]){ ratings[e.tmdb] = { r:e.rating, title:e.title, year:e.year, poster:e.poster, at:e.added || 0 }; rn++; } });
       saveAll(); s.close(); afterChange(); toast(`Imported ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
