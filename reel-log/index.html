@@ -1482,7 +1482,7 @@ function buildTV(){
   const v = $('#v-tv');
   if(!store.get(K_KEY, '')){ v.innerHTML = `<h2 class="vt">TV</h2><div class="onb"><p>Add your TMDB key in Settings to load shows.</p></div>`; return; }
   built.tv = true;
-  v.innerHTML = `<h2 class="vt">TV</h2><p class="vs">Every episode's IMDb rating, charted season by season.</p>
+  v.innerHTML = `<div style="height:6px"></div>
     <div id="myshows"></div>
     ${TVROWS.map((r, i) => r.genre ? '' : rowHTML('t' + i)).join('')}`;
   renderMyShows();
@@ -1833,7 +1833,7 @@ function renderFilms(){
   const sorter = { recent:(a, b) => b.at - a.at, rating:(a, b) => b.r - a.r || b.at - a.at, title:(a, b) => a.title.localeCompare(b.title), year:(a, b) => (b.year || 0) - (a.year || 0) }[filmSort];
   films.sort(sorter);
   const favL = Object.entries(favs).sort((a, b) => b[1].at - a[1].at);
-  v.innerHTML = `<h2 class="vt">My Films</h2><p class="vs">Everything you've rated or marked watched.</p>
+  v.innerHTML = `<div style="height:16px"></div>
     ${favL.length ? `<div class="pad" style="margin-bottom:14px"><div class="castsec"><div class="lbl" style="margin-top:0">Favorite people</div>
       <div class="ppl">${favL.map(([k, f]) => personHTML({ id:k, name:f.name, profile:f.profile }, f.dept === 'Directing' ? 'Director' : 'Actor')).join('')}</div></div></div>` : ''}
     <div class="stats"><div class="stat"><b>${films.length}</b><span>Films</span></div><div class="stat"><b>${avg ? avg.toFixed(1) : '–'}</b><span>Avg rating</span></div>
