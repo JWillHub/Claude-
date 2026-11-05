@@ -480,6 +480,7 @@ html{touch-action:manipulation}
   <section id="v-discover"></section>
   <section id="v-films" hidden></section>
   <section id="v-series" hidden></section>
+  <section id="v-dc" hidden></section>
   <section id="v-genres" hidden></section>
   <section id="v-genre" hidden></section>
   <section id="v-franchises" hidden></section>
@@ -490,6 +491,7 @@ html{touch-action:manipulation}
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c.6-3.9 3.4-6.2 7-6.2s6.4 2.3 7 6.2"/><path d="M8.6 5.6L6.2 3.4M15.4 5.6l2.4-2.2"/></svg>Characters</button>
   <button class="tb" data-v="series"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="11" height="15" rx="1.6"/><path d="M8 3h10.4A1.6 1.6 0 0 1 20 4.6V17"/></svg>Series</button>
+  <button class="tb" data-v="dc"><svg viewBox="0 0 24 24"><path d="M12 2.8l7.5 2.7v6c0 4.6-3.1 8.3-7.5 9.7-4.4-1.4-7.5-5.1-7.5-9.7v-6z"/><path d="M12 7.6l1.3 2.7 3 .4-2.2 2.1.5 3-2.6-1.4-2.6 1.4.5-3-2.2-2.1 3-.4z"/></svg>DC</button>
   <button class="tb" data-v="films"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>My Comics</button>
   <button class="tb" id="setTab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
 </nav>
@@ -1065,11 +1067,12 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   setHeaderTitle(v === 'genre' ? genrePageTitle : v === 'franchises' ? { small:'', big:'Story arcs' } : v === 'list' ? { small:'', big:listPageTitle } : null);
-  ['discover','films','series','genres','genre','franchises','list'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  ['discover','films','series','dc','genres','genre','franchises','list'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'genres' && !built.genres) buildChars();
   if(v === 'series' && !built.series) buildSeries();
+  if(v === 'dc' && !built.dc) buildDC();
   if(v === 'films') renderFilms();
   scrollTo(0, 0);
 }
@@ -1127,6 +1130,54 @@ const SROWS = [
   { title:'Big events & landmark series', page:'Big events', vols:true, items:EVENTS.map(x => low => resolveVol(...x, low)) },
   ROWS[2]
 ];
+/* ---------- DC ---------- */
+const DC_PUBS = ['dc comics', 'vertigo', 'wildstorm', 'black label'];
+const isDC = n => !!n && DC_PUBS.some(k => n.toLowerCase().includes(k));
+// keep paging until a filtered row has enough to show
+const onlyDC = load => async (p, low) => {
+  let d = await load(p, low), results = d.results.filter(x => x.vol ? isDC(volPub[x.vol.id]) : isDC(x.pub));
+  while(results.length < 8 && d.page < d.total && d.page < p + 3){ d = await load(d.page + 1, low); results = results.concat(d.results.filter(x => x.vol ? isDC(volPub[x.vol.id]) : isDC(x.pub))); }
+  return { ...d, results };
+};
+const DC_LANDMARKS = [['Action Comics', 1938, '1'], ['Detective Comics', 1937, '27'], ['Showcase', 1956, '4'], ['The Flash', 1959, '123'], ['Justice League of America', 1960, '1'],
+  ['Green Lantern', 1960, '76'], ['The New Teen Titans', 1980, '1'], ['The Saga of the Swamp Thing', 1982, '21'], ['Crisis on Infinite Earths', 1985, '7'], ['Watchmen', 1986, '1'],
+  ['Batman: The Dark Knight Returns', 1986, '1'], ['Batman', 1940, '404'], ['Batman: The Killing Joke', 1988, '1'], ['The Sandman', 1989, '1'], ['Batman', 1940, '497'],
+  ['Superman', 1987, '75'], ['Kingdom Come', 1996, '1'], ['Batman: The Long Halloween', 1996, '1'], ['All Star Superman', 2005, '1'], ['Batman', 2011, '1'],
+  ['Mister Miracle', 2017, '1'], ['Absolute Batman', 2024, '1'], ['Absolute Wonder Woman', 2024, '1'], ['Absolute Superman', 2024, '1']];
+const DC_ABSOLUTE = [['Absolute Batman', 2024], ['Absolute Wonder Woman', 2024], ['Absolute Superman', 2024], ['Absolute Flash', 2025], ['Absolute Martian Manhunter', 2025], ['Absolute Green Lantern', 2025]];
+const DC_RUNS = [['Batman', 1940], ['Detective Comics', 1937], ['Action Comics', 1938], ['Superman', 1987], ['Wonder Woman', 1987], ['The Sandman', 1989],
+  ['The Saga of the Swamp Thing', 1982], ['The New Teen Titans', 1980], ['Green Lantern', 2005], ['Justice League', 2011], ['Batman', 2011], ['Nightwing', 2016],
+  ['Mister Miracle', 2017], ['Batman: The Long Halloween', 1996], ['Kingdom Come', 1996], ['Watchmen', 1986], ['Crisis on Infinite Earths', 1985], ['Final Crisis', 2008],
+  ['Blackest Night', 2009], ['Flashpoint', 2011], ['All Star Superman', 2005]];
+const DC_CHARS = ['Batman', 'Superman', 'Wonder Woman', 'Justice League', 'The Flash', 'Green Lantern', 'Aquaman', 'Nightwing', 'Harley Quinn', 'Catwoman', 'Joker',
+  'Teen Titans', 'Green Arrow', 'Supergirl', 'Batgirl', 'Shazam', 'Swamp Thing', 'Constantine', 'Martian Manhunter', 'Suicide Squad'];
+const DROWS = [
+  { title:'New from DC this week', page:'New from DC', load:onlyDC((p, low) => issuePage({ filter:`store_date:${daysAgo(7)}|${today()}`, sort:'store_date:desc' }, p, { low })) },
+  { title:'Absolute Universe', page:'Absolute Universe', vols:true, items:DC_ABSOLUTE.map(x => low => resolveVol(...x, low)) },
+  { title:'DC essential issues', page:'DC essentials', sub:'Landmark DC comics', items:DC_LANDMARKS.map(x => low => resolveIssue(...x, low)) },
+  { title:'Legendary DC runs', page:'DC runs', vols:true, items:DC_RUNS.map(x => low => resolveVol(...x, low)) },
+  { title:'New DC #1s', page:'New DC #1s', sub:'First issues from the last month', load:onlyDC((p, low) => issuePage({ filter:`store_date:${daysAgo(30)}|${today()},issue_number:1`, sort:'store_date:desc' }, p, { low })) },
+  ...DC_CHARS.map(n => ({ title:n, charName:n, vols:true, load:onlyDC((p, low) => volSearch(n, p, low)) }))
+];
+let dObs;
+function buildDC(){
+  const v = $('#v-dc');
+  if(!store.get(K_KEY, '')){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
+  built.dc = true;
+  v.innerHTML = `<div style="height:6px"></div>${rowHTML('d0')}
+    <section class="row"><div class="rowhead"><div><h3>DC story arcs</h3></div><button data-arcs="1">All story arcs</button></div>
+      <div class="track">${ARCS.filter(a => a.g === 'dc').map(tileHTML).join('')}</div></section>
+    ${DROWS.slice(1).map((r, i) => rowHTML('d' + (i + 1))).join('')}`;
+  dObs?.disconnect();
+  dObs = new IntersectionObserver(es => es.forEach(e => {
+    if(!e.isIntersecting) return;
+    dObs.unobserve(e.target);
+    if(e.target.dataset.row != null) loadRow(e.target); else loadTile(e.target);
+  }), { rootMargin:'300px 300px' });
+  $$('.row[data-row]', v).forEach(s => dObs.observe(s));
+  $$('.saga', v).forEach(t => dObs.observe(t));
+}
+
 const GROWS = CHARS.map(n => ({ title:n, charName:n, vols:true, load:(p, low) => volSearch(n, p, low) }));
 let rowObs;
 function needKeyHTML(){
@@ -1185,7 +1236,7 @@ async function loadForYou(){
     sec.hidden = false;
   }catch(e){ sec.hidden = true; }
 }
-const rowDef = key => { const k = String(key); return k[0] === 's' ? SROWS[+k.slice(1)] : k[0] === 'g' ? GROWS[+k.slice(1)] : ROWS[+k]; };
+const rowDef = key => { const k = String(key); return k[0] === 's' ? SROWS[+k.slice(1)] : k[0] === 'g' ? GROWS[+k.slice(1)] : k[0] === 'd' ? DROWS[+k.slice(1)] : ROWS[+k]; };
 function rowHTML(i){
   const r = rowDef(i);
   return `<section class="row" data-row="${i}"><div class="rowhead"><div><h3>${esc(r.title)}</h3>${r.sub ? `<p>${esc(r.sub)}</p>` : ''}</div>
@@ -1972,7 +2023,7 @@ function openSettings(){
     <input type="file" id="file" accept=".json,application/json" hidden>
     <p class="small" style="margin-top:18px">Comic data and covers from Comic Vine (comicvine.gamespot.com). Long Box is not endorsed by Comic Vine or GameSpot.</p>`);
   const b = s.body;
-  const reset = () => { built.discover = built.genres = built.series = false; Object.keys(sagaData).forEach(k => delete sagaData[k]); setView(view); };
+  const reset = () => { built.discover = built.genres = built.series = built.dc = false; Object.keys(sagaData).forEach(k => delete sagaData[k]); setView(view); };
   $('#saveKey', b).onclick = async () => {
     const k = $('#key', b).value.trim(); store.set(K_KEY, k);
     const done = () => { s.close(); if(!hadKey || !k) reset(); };
