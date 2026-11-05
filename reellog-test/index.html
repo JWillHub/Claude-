@@ -83,6 +83,8 @@ main{max-width:1100px;margin:0 auto}
 .gbtn{flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:15px;cursor:pointer}
 .gbtn svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2}
 .gsticky{position:sticky;top:calc(52px + env(safe-area-inset-top));z-index:3;background:var(--bg);margin:0 -16px;padding:12px 16px 8px;border-bottom:1px solid var(--line)}
+body.on-genres .top{display:none}
+body.on-genres .gsticky{top:0;padding-top:calc(12px + env(safe-area-inset-top))}
 .gsticky .chip{padding:6px 12px;font-size:12.5px}
 .gsticky .gopts{margin-top:7px}
 .gsticky .seg button{padding:4px 10px;font-size:12px}
@@ -868,6 +870,7 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   $('#hsearch').classList.toggle('on', v === 'search'); $('#hgenres').classList.toggle('on', v === 'genres');
+  document.body.classList.toggle('on-genres', v === 'genres');
   ['discover','sagas','tv','diary','films','search','genres'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
@@ -1058,8 +1061,8 @@ function discoverDef(f){
 function openSearch(tv){
   setView('search');
   const b = $('#v-search');
-  b.innerHTML = `<div class="pad"><h2 class="vt" style="margin:4px 0 12px">${tv ? 'Search TV' : 'Search'}</h2>
-    <div class="findsaga" style="margin:0 0 14px">${SEARCH_SVG}<input id="fq" type="search" placeholder="${tv ? 'Search any show…' : 'Search films, actors or directors…'}" autocomplete="off"></div>
+  b.innerHTML = `<div class="pad">
+    <div class="findsaga" style="margin:14px 0 14px">${SEARCH_SVG}<input id="fq" type="search" placeholder="${tv ? 'Search any show…' : 'Search films, actors or directors…'}" autocomplete="off"></div>
     <div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   let t, gen = 0;
   $('#fq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
