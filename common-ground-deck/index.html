@@ -1006,8 +1006,7 @@ function home(){
     <button class="tile grape" data-go="research"><b>${STUDIES.length}</b><span>Studies</span></button>
     <button class="tile sun" data-go="guide"><b>${GUIDE.length}</b><span>Guide topics</span></button>
   </div>
-  ${saved.length?`<div class="field"><div class="lh"><span class="label">Saved plans</span><button class="seeall" id="seeAll" hidden>See all</button></div><div class="rows">${savedRows(saved)}</div></div>`:""}
-  <p class="foot">Plans and notes stay on this device. Use initials, not names.</p>`;
+  ${saved.length?`<div class="field"><div class="lh"><span class="label">Saved plans</span><button class="seeall" id="seeAll" hidden>See all</button></div><div class="rows">${savedRows(saved)}</div></div>`:""}`;
   bindSwipeRows(main,saved,()=>home());if($("seeAll"))$("seeAll").onclick=openSaved;fitHome();
 }
 

@@ -1242,7 +1242,7 @@ function finishNote(){
     if(v==="discard"){bot("Discarded.");note=null;menu("Anything else?");return;}
     const a=loadNotes();a.unshift(n);const ok=storeNotes(a);note=null;
     if(v==="copy"){const b=document.createElement("button");copyText(noteText(n),b);}
-    bot(ok?`Saved${v==="copy"?" and copied. Paste it into your agency's record system":""}. Notes stay on this device only.`:"I couldn't save it: browser storage is blocked here. Copy it before you leave.");
+    bot(ok?`Saved${v==="copy"?" and copied. Paste it into your agency's record system":""}.`:"I couldn't save it: browser storage is blocked here. Copy it before you leave.");
     menu("Anything else?");}});
 }
 
@@ -1425,8 +1425,7 @@ function drawLib(anim){
     `<div class="nc tapx" style="--c:${c};--i:${i}"><div class="hd"><span class="ava">${esc(String(n.who).slice(0,3).toUpperCase())}</span><div><h3>${esc(n.who)}</h3><span class="hint">${esc(n.date)} · ${SETNAME[n.setting]||""}</span></div>${n.safety?`<span class="flag">Safety</span>`:""}<span class="chev" aria-hidden="true" style="margin-left:${n.safety?"8px":"auto"}"></span></div>
     ${mood(n)}
     <div class="ndx"><div class="ndi">${n.acts.length?`<p><b>Activities</b>${n.acts.map(a=>esc(byId[a]?.name||a)).join(", ")}</p>`:""}${n.covered?`<p><b>Worked on</b>${esc(n.covered)}</p>`:""}${n.response?`<p><b>Response</b>${esc(n.response)}</p>`:""}${n.strengths?`<p><b>Strengths</b>${esc(n.strengths)}</p>`:""}${n.next?`<p><b>Next step</b>${esc(n.next)}</p>`:""}${n.safety?`<p><b>Safety</b>${esc(n.safetyText||"Yes")}</p>`:""}</div></div>
-    <div class="row"><button class="mini" data-copy="${n.id}">Copy</button><button class="mini" data-ed="${n.id}">Edit</button><button class="mini" data-del="${n.id}">${pendingDel===n.id?"Tap again to delete":"Delete"}</button></div></div>`;}).join("")||`<div class="empty">No notes yet. Finish a plan in the chat and tap "Write a session note".</div>`}
-    <p class="hint">Notes stay on this device only. Clearing browser data deletes them.</p>`;
+    <div class="row"><button class="mini" data-copy="${n.id}">Copy</button><button class="mini" data-ed="${n.id}">Edit</button><button class="mini" data-del="${n.id}">${pendingDel===n.id?"Tap again to delete":"Delete"}</button></div></div>`;}).join("")||`<div class="empty">No notes yet. Finish a plan in the chat and tap "Write a session note".</div>`}`;
     $("nn").onclick=()=>{closeLib();retire();startNote(!!lastBlocks);};
     D.querySelectorAll("[data-sp]").forEach(b=>b.onclick=()=>{const p=saved[+b.dataset.sp];Object.assign(S,{setting:p.setting,len:p.len,concerns:[...p.concerns],energy:p.energy,swap:{...p.swap}});closeLib();retire();me(`Open "${p.name}"`);showPlan();});
     D.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{personSel=b.dataset.p;drawLib();});
