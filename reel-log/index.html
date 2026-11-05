@@ -441,6 +441,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
   <section id="v-genres" hidden></section>
   <section id="v-genre" hidden></section>
   <section id="v-franchises" hidden></section>
+  <section id="v-list" hidden></section>
 </main>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
@@ -862,6 +863,7 @@ document.addEventListener('click', e => {
   const pc = e.target.closest('.pc[data-id]'); if(pc){ openMovie(pid(pc.dataset.id)); return; }
   const sg = e.target.closest('[data-saga]'); if(sg){ const s = sagaByK(sg.dataset.saga); if(s) openRun(s); return; }
   const all = e.target.closest('[data-all]'); if(all){ const d = rowDef(all.dataset.all); d.genreId ? openGenrePage(d) : openSeeAll(d); return; }
+  const sl = e.target.closest('[data-list]'); if(sl){ openStaticList(sl.dataset.list); return; }
   const fr = e.target.closest('[data-franchises]'); if(fr){ openFranchises(); return; }
   const go = e.target.closest('[data-go]'); if(go){ setView(go.dataset.go); return; }
   const pr = e.target.closest('[data-person]'); if(pr){ openPerson(+pr.dataset.person); return; }
@@ -870,7 +872,7 @@ document.addEventListener('click', e => {
 /* ================= views ================= */
 let view = 'discover';
 const built = {};
-const PAGES = ['search', 'genre', 'franchises'];
+const PAGES = ['search', 'genre', 'franchises', 'list'];
 let lastTab = 'discover';
 function setView(v, o = {}){
   const prev = view;
@@ -881,8 +883,8 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   $('#hsearch').classList.toggle('on', v === 'search');
-  setHeaderTitle(v === 'genre' ? genrePageTitle : v === 'franchises' ? { small:'', big:'Franchises' } : null);
-  ['discover','sagas','tv','diary','films','search','genres','genre','franchises'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  setHeaderTitle(v === 'genre' ? genrePageTitle : v === 'franchises' ? { small:'', big:'Franchises' } : v === 'list' ? { small:'', big:listPageTitle } : null);
+  ['discover','sagas','tv','diary','films','search','genres','genre','franchises','list'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'genres' && !built.genres) buildGenres();
@@ -906,9 +908,9 @@ $('#setTab').onclick = openSettings;
 
 /* ---------- Discover ---------- */
 const ROWS = [
-  { title:'Top 100 of all time', sub:'Ranked by IMDb voters', imdbTop:'movie', path:'/movie/top_rated', ranked:true, max:100 },
-  { title:'Trending this week', path:'/trending/movie/week' },
-  { title:'Popular right now', path:'/movie/popular' },
+  { title:'Top 100 of all time', page:'Top 100', sub:'Ranked by IMDb voters', imdbTop:'movie', path:'/movie/top_rated', ranked:true, max:100 },
+  { title:'Trending this week', page:'Trending', path:'/trending/movie/week' },
+  { title:'Popular right now', page:'Popular', path:'/movie/popular' },
   { title:'In theaters', path:'/movie/now_playing' },
   { title:'Coming soon', path:'/movie/upcoming' },
   ...GENRES.map(([id, name]) => ({ title:name, genre:true, path:'/discover/movie', params:{ with_genres:id, sort_by:'popularity.desc', 'vote_count.gte':150 } }))
@@ -928,7 +930,7 @@ function buildDiscover(){
     <div id="wlrow"></div>
     <button class="qs" id="qs"><span class="qi"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.95 6.1 6.65.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.65-.8z"/></svg></span>
       <span><b>Rate what you've seen</b></span></button>
-    <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>For you</h3><p id="fysub"></p></div></div><div class="track"></div></section>
+    <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>For you</h3><p id="fysub"></p></div><button data-list="foryou">See all</button></div><div class="track"></div></section>
     ${rowHTML(0)}
     <section class="row"><div class="rowhead"><div><h3>Franchises</h3></div><button data-franchises="1">All franchises</button></div>
       <div class="track">${SAGAS.slice(0, 10).map(tileHTML).join('')}</div></section>
@@ -948,7 +950,7 @@ function buildDiscover(){
 function renderWatchRow(){
   const box = $('#wlrow'); if(!box) return;
   const list = Object.entries(watch).sort((a, b) => b[1].at - a[1].at);
-  box.innerHTML = list.length ? `<section class="row"><div class="rowhead"><div><h3>Your watchlist</h3><p>${list.length} to watch</p></div></div>
+  box.innerHTML = list.length ? `<section class="row"><div class="rowhead"><div><h3>Your watchlist</h3><p>${list.length} to watch</p></div><button data-list="watch">See all</button></div>
     <div class="track">${list.map(([k, w]) => cardHTML({ id:pid(k), title:w.title, poster:w.poster })).join('')}</div></section>` : '';
 }
 async function loadForYou(){
@@ -962,7 +964,7 @@ async function loadForYou(){
     lists.forEach(l => l.forEach((m, i) => { if(getR(m.id)) return; const c = score.get(m.id) || { m, s:0 }; c.s += 20 - i; score.set(m.id, c); }));
     const top = [...score.values()].sort((a, b) => b.s - a.s).slice(0, 30).map(x => x.m);
     if(!top.length){ sec.hidden = true; return; }
-    remember(top);
+    remember(top); forYouList = top;
     $('#fysub').textContent = 'Because you loved ' + seeds.slice(0, 2).map(([, r]) => r.title).join(' and ');
     $('.track', sec).innerHTML = top.map(m => cardHTML(m)).join('');
     sec.hidden = false;
@@ -1052,10 +1054,34 @@ function feed(root, grid, sent, msgEl, def){
   grid._obs.observe(sent);
   more();
 }
+let listPageTitle = '', forYouList = [];
+function openListPage(title, sub){
+  listPageTitle = title;
+  // leaving one list page for another (a See all from inside a page) keeps a single history step
+  setView('list');
+  const b = $('#v-list');
+  b.innerHTML = `<div class="pad" style="padding-top:12px">${sub ? `<p class="small" style="margin:0 0 12px">${esc(sub)}</p>` : ''}
+    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
+  return b;
+}
 function openSeeAll(def){
-  const s = sheet(`<h2 class="stitle">${esc(def.title)}</h2>${def.sub ? `<p class="small" style="margin:-6px 0 14px">${esc(def.sub)}</p>` : ''}
-    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });
-  feed(s.body, $('.grid', s.body), $('.sent', s.body), $('.msg', s.body), def);
+  const b = openListPage(def.page || def.title, def.sub);
+  feed(null, $('.grid', b), $('.sent', b), $('.msg', b), def);
+}
+function openStaticList(kind){
+  if(kind === 'foryou'){
+    const b = openListPage('For you', $('#fysub') ? $('#fysub').textContent : '');
+    $('.grid', b).innerHTML = forYouList.map(m => cardHTML(m)).join('');
+  } else if(kind === 'watch'){
+    const b = openListPage('Watchlist');
+    const list = Object.entries(watch).sort((a, c) => c[1].at - a[1].at);
+    $('.grid', b).innerHTML = list.length ? list.map(([k, w]) => cardHTML({ id:pid(k), title:w.title, poster:w.poster })).join('') : '';
+    $('.msg', b).textContent = list.length ? '' : 'Nothing on your watchlist.';
+  } else if(kind === 'shows'){
+    const b = openListPage('Your shows');
+    const mine = Object.entries(ratings).filter(([k]) => k.startsWith('tv')).sort((a, c) => (c[1].at || 0) - (a[1].at || 0));
+    $('.grid', b).innerHTML = mine.map(([k, r]) => cardHTML({ id:k, title:r.title, poster:r.poster })).join('');
+  }
 }
 
 /* find / filter */
@@ -1476,9 +1502,9 @@ function openRun(saga){
 
 /* ---------- TV ---------- */
 const TVROWS = [
-  { title:'Trending TV this week', path:'/trending/tv/week', tv:true },
-  { title:'Top rated shows', sub:'Ranked by IMDb voters', imdbTop:'tv', path:'/tv/top_rated', tv:true, ranked:true, max:100 },
-  { title:'Popular right now', path:'/tv/popular', tv:true },
+  { title:'Trending TV this week', page:'Trending TV', path:'/trending/tv/week', tv:true },
+  { title:'Top rated shows', page:'Top shows', sub:'Ranked by IMDb voters', imdbTop:'tv', path:'/tv/top_rated', tv:true, ranked:true, max:100 },
+  { title:'Popular right now', page:'Popular TV', path:'/tv/popular', tv:true },
   { title:'On the air', path:'/tv/on_the_air', tv:true },
   { title:'Drama', genre:true, path:'/discover/tv', tv:true, params:{ with_genres:18, sort_by:'popularity.desc', 'vote_count.gte':200 } },
   { title:'Comedy', genre:true, path:'/discover/tv', tv:true, params:{ with_genres:35, sort_by:'popularity.desc', 'vote_count.gte':200 } },
@@ -1502,7 +1528,7 @@ function buildTV(){
 function renderMyShows(){
   const box = $('#myshows'); if(!box) return;
   const mine = Object.entries(ratings).filter(([k]) => k.startsWith('tv')).sort((a, b) => (b[1].at || 0) - (a[1].at || 0));
-  box.innerHTML = mine.length ? `<section class="row" style="margin-top:6px"><div class="rowhead"><div><h3>Your shows</h3></div></div>
+  box.innerHTML = mine.length ? `<section class="row" style="margin-top:6px"><div class="rowhead"><div><h3>Your shows</h3></div><button data-list="shows">See all</button></div>
     <div class="track">${mine.map(([k, r]) => cardHTML({ id:k, title:r.title, poster:r.poster })).join('')}</div></section>` : '';
 }
 const openFindTV = () => openSearch(true);
