@@ -24,7 +24,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
 body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
-body.locked{overflow:hidden}
+html:has(body.locked),body.locked{overflow:hidden}
+.sbk{touch-action:none}
 button{font:inherit;color:inherit}
 .disp{font-family:var(--disp);font-weight:700;letter-spacing:-.01em}
 svg{display:block}
@@ -239,6 +240,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .bdrop::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,25,.15),var(--bg2) 98%);border-radius:inherit}
 .mvhead{display:flex;gap:14px;margin-top:-92px;position:relative;z-index:1;align-items:flex-end}
 .mvhead img,.mvhead .ph{width:108px;flex:none;aspect-ratio:2/3;border-radius:12px;object-fit:cover;box-shadow:0 12px 26px rgba(0,0,0,.55);background:var(--card2)}
+.mvhead > div:last-child{align-self:stretch;min-width:0;padding-top:66px;min-height:200px}
 .mvhead h2{font-family:var(--disp);font-weight:700;font-size:25px;line-height:1.08;margin:0 0 4px}
 .meta{color:var(--muted);font-size:13px}
 .ratebar{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom));z-index:4;display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -727,7 +729,7 @@ function sheet(html, opt = {}){
   const sh = document.createElement('div'); sh.className = 'sh' + (opt.tall ? ' tall' : '') + (opt.cls ? ' ' + opt.cls : ''); sh.style.zIndex = z + 1;
   sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>`;
   host.append(bk, sh);
-  const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s) };
+  const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
   sheetStack.push(s);
   document.body.classList.add('locked');
   history.pushState({ rl:sheetStack.length }, '');
@@ -750,6 +752,16 @@ function closeSheet(s, fromPop){
   }
   if(!sheetStack.length) document.body.classList.remove('locked');
 }
+// Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it
+addEventListener('touchmove', e => {
+  if(!sheetStack.length || !e.cancelable) return;
+  const top = sheetStack[sheetStack.length - 1], body = top.body;
+  if(!body.contains(e.target)){ if(!top.el.contains(e.target)) e.preventDefault(); return; }
+  for(let n = e.target; n && n !== body; n = n.parentElement){
+    if(n.scrollWidth > n.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(n).overflowX)) return;
+  }
+  if(body.scrollHeight <= body.clientHeight + 1) e.preventDefault();
+}, { passive:false });
 addEventListener('popstate', () => {
   if(popSkip){ popSkip--; return; }
   if(rp.on){ closeRatepad(); history.pushState({ rl:sheetStack.length }, ''); return; }
@@ -1628,6 +1640,7 @@ async function openShow(id){
       ...slimTV(x), seasons:x.number_of_seasons, eps:x.number_of_episodes, end:(x.last_air_date || '').slice(0, 4), status:x.status,
       network:(x.networks || [])[0]?.name || '', gnames:(x.genres || []).map(g => g.name), imdb:x.external_ids && x.external_ids.imdb_id })));
     remember([d]);
+    await s.settled;
     if(!s.el.isConnected) return;
     if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const yrs = d.year ? d.year + (d.status === 'Returning Series' ? '–' : d.end && d.end !== d.year ? '–' + d.end : '') : '';
@@ -1728,6 +1741,7 @@ async function openMovie(id){
       cast:((x.credits && x.credits.cast) || []).slice(0, 4).map(c => c.name).join(', '),
       col:x.belongs_to_collection ? { id:x.belongs_to_collection.id, name:x.belongs_to_collection.name } : null })));
     remember([d]);
+    await s.settled;
     if(!s.el.isConnected) return;
     if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const rt = d.runtime ? `${Math.floor(d.runtime / 60)}h ${d.runtime % 60}m` : '';
