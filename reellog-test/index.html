@@ -28,12 +28,12 @@ svg{display:block}
 /* top bar */
 .top{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;height:calc(52px + env(safe-area-inset-top));
   padding:calc(6px + env(safe-area-inset-top)) 16px 6px;background:linear-gradient(180deg,#120f17,var(--bg));border-bottom:1px solid var(--line)}
-/* a thin strip of film-sprocket holes along the bottom edge of the header */
-.top::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:6px;pointer-events:none;
-  background:radial-gradient(circle at 7px 3px,rgba(255,181,71,.28) 1.5px,transparent 2.2px) 0 0/14px 6px repeat-x}
 .logo{margin:0;cursor:pointer;display:flex;flex-direction:column;line-height:.86;user-select:none;-webkit-user-select:none}
 .logo .w1{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--muted);padding-left:2px}
 .logo .w2{font-family:var(--disp);font-weight:700;font-size:25px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.logo{min-width:0;flex:1}
+.logo .w2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo.sub .w1::before{content:"‹ ";letter-spacing:0}
 .hact{display:flex;gap:8px}
 .hact .ib{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.04)}
 .hact .ib.on{color:var(--accent);border-color:rgba(255,181,71,.5)}
@@ -430,6 +430,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
   <section id="v-tv" hidden></section>
   <section id="v-search" hidden></section>
   <section id="v-genres" hidden></section>
+  <section id="v-genre" hidden></section>
 </main>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
@@ -850,7 +851,7 @@ document.addEventListener('click', e => {
   if(Date.now() - suppressClick < 500){ e.preventDefault(); e.stopPropagation(); return; }
   const pc = e.target.closest('.pc[data-id]'); if(pc){ openMovie(pid(pc.dataset.id)); return; }
   const sg = e.target.closest('[data-saga]'); if(sg){ const s = sagaByK(sg.dataset.saga); if(s) openRun(s); return; }
-  const all = e.target.closest('[data-all]'); if(all){ const d = rowDef(all.dataset.all); d.genreId ? openGenreSheet(d) : openSeeAll(d); return; }
+  const all = e.target.closest('[data-all]'); if(all){ const d = rowDef(all.dataset.all); d.genreId ? openGenrePage(d) : openSeeAll(d); return; }
   const fr = e.target.closest('[data-franchises]'); if(fr){ openFranchises(); return; }
   const go = e.target.closest('[data-go]'); if(go){ setView(go.dataset.go); return; }
   const pr = e.target.closest('[data-person]'); if(pr){ openPerson(+pr.dataset.person); return; }
@@ -859,7 +860,7 @@ document.addEventListener('click', e => {
 /* ================= views ================= */
 let view = 'discover';
 const built = {};
-const PAGES = ['search'];
+const PAGES = ['search', 'genre'];
 let lastTab = 'discover';
 function setView(v, o = {}){
   const prev = view;
@@ -870,7 +871,8 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   $('#hsearch').classList.toggle('on', v === 'search');
-  ['discover','sagas','tv','diary','films','search','genres'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  setHeaderTitle(v === 'genre' ? genrePageTitle : null);
+  ['discover','sagas','tv','diary','films','search','genres','genre'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'genres' && !built.genres) buildGenres();
@@ -880,7 +882,13 @@ function setView(v, o = {}){
   scrollTo(0, 0);
 }
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
-$('#logo').onclick = () => setView('discover');
+$('#logo').onclick = () => { if(view === 'genre') history.back(); else setView('discover'); };
+let genrePageTitle = null;
+function setHeaderTitle(t){
+  const lg = $('#logo');
+  if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); lg.setAttribute('aria-label', 'Back'); }
+  else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); lg.removeAttribute('aria-label'); }
+}
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
 $('#setTab').onclick = openSettings;
 
@@ -1128,6 +1136,19 @@ function openGenreSheet(def){
   const load = () => feed(b, $('.grid', b), $('.sent', b), $('.msg', b), genreDef(def.tv, def.genreId, sort, decade));
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); b.scrollTop = 0; load(); });
   $('#gdec', b).onchange = e => { decade = e.target.value; b.scrollTop = 0; load(); };
+  load();
+}
+function openGenrePage(def){
+  let sort = 'popular', decade = '';
+  genrePageTitle = { small:def.tv ? 'TV genre' : 'Genre', big:def.title };
+  setView('genre');
+  const b = $('#v-genre');
+  b.innerHTML = `<div class="pad"><div class="gopts" style="margin:14px 0"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
+    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
+  const load = () => feed(null, $('.grid', b), $('.sent', b), $('.msg', b), genreDef(def.tv, def.genreId, sort, decade));
+  $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); scrollTo(0, 0); load(); });
+  $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
 }
 const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; setView('genres'); if(built.genres) drawGenreRows(); };
