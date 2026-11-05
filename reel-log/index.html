@@ -48,6 +48,8 @@ svg{display:block}
 .hsearch input{flex:1;min-width:0;background:none;border:0;padding:0;height:100%;font-size:15px;outline:none}
 .hsearch button{flex:none;background:none;border:0;color:var(--accent);font-weight:800;font-size:14px;cursor:pointer;padding:6px}
 .top.searching .logo,.top.searching .hact,.top.searching .hback{display:none}
+.hproj{width:34px;height:34px;flex:none;display:block;margin-right:-4px;cursor:pointer}
+.hproj[hidden],.top.searching .hproj{display:none}
 .top.searching .hsearch{display:flex;animation:fadein .2s ease}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
@@ -441,6 +443,13 @@ html{touch-action:manipulation}
 <body>
 <header class="top">
   <button class="ib hback" id="hback" aria-label="Back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <svg class="hproj" id="hproj" viewBox="0 0 40 40" aria-hidden="true">
+    <circle cx="10" cy="11" r="7.5" fill="#ffb547"/><g fill="#0c0a0f"><circle cx="10" cy="7" r="1.7"/><circle cx="13.8" cy="12.2" r="1.7"/><circle cx="6.2" cy="12.2" r="1.7"/><circle cx="10" cy="11" r=".9"/></g>
+    <circle cx="24" cy="12.5" r="6" fill="#ffb547"/><g fill="#0c0a0f"><circle cx="24" cy="9.3" r="1.4"/><circle cx="27" cy="13.6" r="1.4"/><circle cx="21" cy="13.6" r="1.4"/><circle cx="24" cy="12.5" r=".8"/></g>
+    <rect x="3" y="19" width="26" height="13" rx="3" fill="#ffb547"/><rect x="6" y="22" width="9" height="2" rx="1" fill="#0c0a0f" opacity=".55"/>
+    <path d="M29 22.5 L36 20 L36 31 L29 28.5 Z" fill="#ffb547"/><circle cx="36" cy="25.5" r="2.4" fill="#fff3d6"/>
+    <path d="M9 32 L7 37 M23 32 L25 37" stroke="#ffb547" stroke-width="2" stroke-linecap="round"/>
+  </svg>
   <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
   <div class="hsearch" id="hsbar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -924,10 +933,12 @@ function setView(v, o = {}){
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
 $('#logo').onclick = () => setView('discover');
 $('#hback').onclick = () => history.back();
+$('#hproj').onclick = () => $('#logo').click();
 let genrePageTitle = null;
 function setHeaderTitle(t){
   const lg = $('#logo');
   $('#hback').hidden = !t;
+  $('#hproj').toggleAttribute('hidden', !!t);
   if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); }
   else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); }
 }
