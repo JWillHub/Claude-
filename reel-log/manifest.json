@@ -1,7 +1,7 @@
 {
-  "name": "Reel Log",
-  "short_name": "Reel Log",
-  "description": "Rate films and TV, run whole sagas, and track your watchlist",
+  "name": "Rolling Credits",
+  "short_name": "Rolling Credits",
+  "description": "Rate films and TV, run whole franchises, and keep a watchlist",
   "id": "/Claude-/reel-log/",
   "start_url": "./",
   "scope": "./",
@@ -9,7 +9,17 @@
   "background_color": "#0c0a0f",
   "theme_color": "#0c0a0f",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

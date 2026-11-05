@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c0a0f">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Reel Log</title>
+<title>Rolling Credits</title>
 <link rel="icon" href="../reel-log/icon-192.png">
 <link rel="apple-touch-icon" href="../reel-log/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,10 +26,20 @@ button{font:inherit;color:inherit}
 svg{display:block}
 
 /* top bar */
-.top{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;height:calc(62px + env(safe-area-inset-top));
-  padding:calc(10px + env(safe-area-inset-top)) 16px 12px;background:var(--bg)}
-.logo{font-family:var(--disp);font-weight:700;font-size:25px;margin:0;white-space:nowrap;cursor:pointer}
-.logo b{color:var(--accent);font-weight:700}
+.top{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;height:calc(62px + env(safe-area-inset-top));
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:linear-gradient(180deg,#120f17,var(--bg));border-bottom:1px solid var(--line)}
+/* a thin strip of film-sprocket holes along the bottom edge of the header */
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:6px;pointer-events:none;
+  background:radial-gradient(circle at 7px 3px,rgba(255,181,71,.28) 1.5px,transparent 2.2px) 0 0/14px 6px repeat-x}
+.logo{margin:0;cursor:pointer;display:flex;flex-direction:column;line-height:.86;user-select:none;-webkit-user-select:none}
+.logo .w1{font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.42em;text-transform:uppercase;color:var(--muted);padding-left:2px}
+.logo .w2{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.hact{display:flex;gap:8px}
+.hact .ib{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.04)}
+.hact .ib.on{color:var(--accent);border-color:rgba(255,181,71,.5)}
+.hact .ib svg{width:19px;height:19px}
+@keyframes viewin{from{opacity:0;transform:translateY(8px)}}
+main>section.enter{animation:viewin .26s ease}
 .ib{background:var(--card);border:1px solid var(--line);border-radius:12px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;color:var(--muted);flex:none}
 .ib svg{width:20px;height:20px}
 main{max-width:1100px;margin:0 auto}
@@ -70,9 +80,10 @@ main{max-width:1100px;margin:0 auto}
 .sbar .searchpill{margin:0;width:auto;flex:1;min-width:0}
 .gbtn{flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:15px;cursor:pointer}
 .gbtn svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2}
-.gsticky{position:sticky;top:0;z-index:3;background:var(--bg2);margin:0 -16px;padding:0 16px 10px;border-bottom:1px solid var(--line)}
+.gsticky{position:sticky;top:calc(62px + env(safe-area-inset-top));z-index:3;background:var(--bg);margin:0 -16px;padding:8px 16px 10px;border-bottom:1px solid var(--line)}
+.gsticky .chips{padding:0 16px 4px;margin:0 -16px}
 .gopts{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
-.gpane{margin-top:14px;transition:transform .28s cubic-bezier(.2,.85,.25,1),opacity .28s;touch-action:pan-y}
+.gpane{margin-top:14px;padding-bottom:20px;transition:transform .28s cubic-bezier(.2,.85,.25,1),opacity .28s;touch-action:pan-y}
 /* chips */
 .chips{display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none}
 .chips::-webkit-scrollbar,.track::-webkit-scrollbar{display:none}
@@ -283,6 +294,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .rpc .st .f{transition:width .14s ease-out}
 .rpc .st .f svg{filter:drop-shadow(0 0 7px rgba(255,181,71,.5))}
 .rpc .rv.bump{animation:bump .25s ease}
+.rpc .s5.pulse{animation:bump .3s ease}
 @keyframes bump{40%{transform:scale(1.12)}}
 @keyframes pop{from{transform:scale(.85);opacity:0}}
 .rpc .rph{display:flex;gap:12px;align-items:center;text-align:left;margin-bottom:16px}
@@ -391,14 +403,18 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .bio.open{-webkit-line-clamp:unset;display:block}
 .pbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 12px}
 /* marquee type */
-.logo,.vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
 </style>
 </head>
 <body>
 <header class="top">
-  <h1 class="logo" id="logo">Reel <b>Log</b></h1>
-  <button class="ib" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
+  <div class="hact">
+    <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+    <button class="ib" id="hgenres" aria-label="Genres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></button>
+    <button class="ib" id="setBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
 </header>
 <main>
   <section id="v-discover"></section>
@@ -406,6 +422,8 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
   <section id="v-diary" hidden></section>
   <section id="v-films" hidden></section>
   <section id="v-tv" hidden></section>
+  <section id="v-search" hidden></section>
+  <section id="v-genres" hidden></section>
 </main>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
@@ -529,7 +547,7 @@ const slot = () => inFlight < 6 ? (inFlight++, Promise.resolve()) : new Promise(
 const release = () => { const next = waiting.shift(); if(next) next(); else inFlight--; };
 const errText = e => e.message === 'badkey' ? 'Your TMDB key was rejected. Check it in Settings.'
   : e.message === 'nokey' ? 'Add your TMDB key in Settings.'
-  : e.message === 'blocked' ? 'Could not reach TMDB. App previews block outside connections — open Reel Log from its GitHub Pages link.'
+  : e.message === 'blocked' ? 'Could not reach TMDB. App previews block outside connections — open Rolling Credits from its GitHub Pages link.'
   : 'TMDB returned an error (' + esc(e.message) + '). Try again in a minute.';
 const slim = m => ({ id:m.id, title:m.title, year:(m.release_date||'').slice(0,4), date:m.release_date||'', poster:m.poster_path,
   backdrop:m.backdrop_path, overview:m.overview||'', genres:m.genre_ids || (m.genres||[]).map(g => g.id), vote:m.vote_average||0 });
@@ -681,7 +699,8 @@ function closeSheet(s, fromPop){
 addEventListener('popstate', () => {
   if(popSkip){ popSkip--; return; }
   if(rp.on){ closeRatepad(); history.pushState({ rl:sheetStack.length }, ''); return; }
-  if(sheetStack.length) closeSheet(sheetStack[sheetStack.length - 1], true);
+  if(sheetStack.length){ closeSheet(sheetStack[sheetStack.length - 1], true); return; }
+  if(PAGES.includes(view)) setView(lastTab, { fromPop:true });
 });
 function makeDraggable(s){
   const sh = s.el, body = s.body;
@@ -765,7 +784,7 @@ function openRatepad(id, tracking, x, y){
     ${starsHTML(44, 6)}
     <div class="rv" id="rpv">${cur ? esc(RWORDS[cur]) : ''}</div>
     <div class="rpbtns"><button class="rpp${watch[id] ? ' on' : ''}" id="rpw">${BOOK}<span>${watch[id] ? 'On watchlist' : 'Watchlist'}</span></button>
-      <button class="rpp" id="rpd">Details</button>${cur ? '<button class="rpp" id="rpx" aria-label="Clear rating">Clear</button>' : ''}</div></div>`;
+      <button class="rpp" id="rpd">Details</button></div></div>`;
   const card = $('#rpc');
   void card.offsetWidth;            // start from the closed state so the card glides in
   el.classList.add('on');
@@ -780,8 +799,7 @@ function openRatepad(id, tracking, x, y){
   bindStars(s5, (r, fin) => {
     if(rp.tracking) return;
     rp.r = r; paintStars(s5, r); setWord(r);
-    // after a tap, wait a beat so a second tap can turn it into a half star, then save
-    if(fin){ clearTimeout(rp.saveT); rp.saveT = setTimeout(commitRatepad, 900); }
+    if(fin) commitRatepad();
   });
   el.onclick = e => { if(e.target === el) closeRatepad(); };
   $('#rpd').onclick = () => { closeRatepad(); openMovie(id); };
@@ -789,7 +807,6 @@ function openRatepad(id, tracking, x, y){
     toggleWatch(f); const on = !!watch[id], w = $('#rpw');
     if(w){ w.classList.toggle('on', on); $('span', w).textContent = on ? 'On watchlist' : 'Watchlist'; }
   };
-  const x2 = $('#rpx'); if(x2) x2.onclick = () => { closeRatepad(); setRating(f, 0); };
 }
 function rpTrack(x, y){
   if(!rp.moved && Math.abs(x - rp.startX) < 12) return;
@@ -809,11 +826,11 @@ function setWord(r){
   const w = $('#rpv'); if(!w) return;
   if(w.textContent !== RWORDS[r]){ w.textContent = RWORDS[r]; w.classList.remove('bump'); void w.offsetWidth; w.classList.add('bump'); }
 }
+// saves and stays open: the card only closes when you tap outside it or go back
 function commitRatepad(){
-  const f = rp.film, r = rp.r, card = $('#rpc'); if(!card || !rp.on) return;
-  clearTimeout(rp.saveT);
-  card.classList.add('saved');
-  setTimeout(() => { closeRatepad(); setRating(f, r); }, 240);
+  const f = rp.film, r = rp.r, s5 = $('#rp .s5'); if(!rp.on || !r) return;
+  if(r !== getR(f.id)) setRating(f, r);
+  if(s5){ s5.classList.remove('pulse'); void s5.offsetWidth; s5.classList.add('pulse'); }
 }
 function closeRatepad(){
   rp.on = false; rp.tracking = false; clearTimeout(rp.saveT);
@@ -834,10 +851,19 @@ document.addEventListener('click', e => {
 /* ================= views ================= */
 let view = 'discover';
 const built = {};
-function setView(v){
+const PAGES = ['search', 'genres'];
+let lastTab = 'discover';
+function setView(v, o = {}){
+  const prev = view;
+  // leaving a search or genres page by tab or title: drop the history entry it added, so Back stays in step
+  if(PAGES.includes(prev) && !PAGES.includes(v) && !o.fromPop){ popSkip++; history.back(); }
+  if(PAGES.includes(v) && !o.fromPop && !PAGES.includes(prev)) history.pushState({ page:v }, '');
   view = v;
-  $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === v));
-  ['discover','sagas','tv','diary','films'].forEach(n => $('#v-' + n).hidden = n !== v);
+  if(!PAGES.includes(v)) lastTab = v;
+  $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
+  $('#hsearch').classList.toggle('on', v === 'search'); $('#hgenres').classList.toggle('on', v === 'genres');
+  ['discover','sagas','tv','diary','films','search','genres'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'sagas' && !built.sagas) buildSagas();
   if(v === 'tv' && !built.tv) buildTV();
@@ -847,6 +873,8 @@ function setView(v){
 }
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
 $('#logo').onclick = () => setView('discover');
+$('#hsearch').onclick = () => openSearch(lastTab === 'tv');
+$('#hgenres').onclick = () => openGenres(lastTab === 'tv');
 $('#setBtn').onclick = openSettings;
 
 /* ---------- Discover ---------- */
@@ -863,15 +891,13 @@ function buildDiscover(){
   const v = $('#v-discover');
   if(!store.get(K_KEY, '')){
     built.discover = false;
-    v.innerHTML = `<div class="onb"><h2>Your film catalog awaits</h2><p>Reel Log pulls every film and poster from TMDB. Add your free key once to switch it on.</p>
+    v.innerHTML = `<div class="onb"><h2>Your film catalog awaits</h2><p>Rolling Credits pulls every film and poster from TMDB. Add your free key once to switch it on.</p>
       <button class="btn" id="needKey">Add TMDB key</button></div>`;
     $('#needKey').onclick = openSettings;
     return;
   }
   built.discover = true;
-  v.innerHTML = `<div class="sbar stick"><button class="searchpill" id="sp">${SEARCH_SVG}Search any film</button>
-      <button class="gbtn" id="gb">${GRID_SVG}Genres</button></div>
-    <div class="hero" id="hero"></div>
+  v.innerHTML = `<div class="hero" id="hero" style="margin-top:16px"></div>
     <div id="wlrow"></div>
     <button class="qs" id="qs"><span class="qi"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.95 6.1 6.65.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.65-.8z"/></svg></span>
       <span><b>Rate what you've seen</b></span></button>
@@ -880,10 +906,8 @@ function buildDiscover(){
     <section class="row"><div class="rowhead"><div><h3>Saga Runs</h3></div><button data-go="sagas">All sagas</button></div>
       <div class="track">${SAGAS.slice(0, 10).map(tileHTML).join('')}</div></section>
     ${ROWS.map((r, i) => i && !r.genre ? rowHTML(i) : '').join('')}`;
-  $('#sp').onclick = () => openFind({}, true);
   $('#qs').onclick = () => { delete sagaData.quick; openRun(QUICK); };
   renderWatchRow(); loadForYou();
-  $('#gb').onclick = () => openGenres(false);
   loadHero();
   rowObs?.disconnect();
   rowObs = new IntersectionObserver(es => es.forEach(e => {
@@ -1025,24 +1049,29 @@ function discoverDef(f){
   label.push(SORTS.find(s => s[0] === f.sort)[1]);
   return { title:label.join(' · '), path:'/discover/movie', params:p };
 }
-function openFind(preset = {}, focus){
-  const s = sheet(`<div class="findsaga" style="margin:0 0 14px">${SEARCH_SVG}<input id="fq" type="search" placeholder="Search films, actors or directors…" autocomplete="off"></div>
-    <div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg">Type a film or a person's name.</div>`, { tall:true });
-  const b = s.body; let t, gen = 0;
+function openSearch(tv){
+  setView('search');
+  const b = $('#v-search');
+  b.innerHTML = `<div class="pad"><h2 class="vt" style="margin:4px 0 12px">${tv ? 'Search TV' : 'Search'}</h2>
+    <div class="findsaga" style="margin:0 0 14px">${SEARCH_SVG}<input id="fq" type="search" placeholder="${tv ? 'Search any show…' : 'Search films, actors or directors…'}" autocomplete="off"></div>
+    <div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
+  let t, gen = 0;
   $('#fq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
     const my = ++gen;
-    if(!q){ $('.grid', b).innerHTML = ''; $('#fpeople', b).innerHTML = ''; $('.msg', b).textContent = "Type a film or a person's name."; return; }
-    feed(b, $('.grid', b), $('.sent', b), $('.msg', b), { path:'/search/movie', params:{ query:q } });
+    if(!q){ $('.grid', b).innerHTML = ''; $('#fpeople', b).innerHTML = ''; $('.msg', b).textContent = ''; return; }
+    feed(null, $('.grid', b), $('.sent', b), $('.msg', b), tv ? { path:'/search/tv', params:{ query:q }, tv:true } : { path:'/search/movie', params:{ query:q } });
+    if(tv) return;
     try{
       const d = await tmdb('/search/person', { query:q, include_adult:'false' });
       if(my !== gen) return;
       const ppl = (d.results || []).filter(p => p.known_for_department === 'Acting' || p.known_for_department === 'Directing').slice(0, 10)
         .map(p => ({ id:p.id, name:p.name, profile:p.profile_path, sub:p.known_for_department === 'Directing' ? 'Director' : 'Actor' }));
-      $('#fpeople', b).innerHTML = ppl.length ? `<div class="castsec" style="margin-bottom:6px"><div class="lbl" style="margin-top:0">People</div><div class="ppl nodrag">${ppl.map(p => personHTML(p, p.sub)).join('')}</div></div>` : '';
+      $('#fpeople', b).innerHTML = ppl.length ? `<div class="castsec" style="margin-bottom:6px"><div class="lbl" style="margin-top:0">People</div><div class="ppl">${ppl.map(p => personHTML(p, p.sub)).join('')}</div></div>` : '';
     }catch(err){}
   }, 350); };
-  if(focus !== false) setTimeout(() => $('#fq', b).focus(), 350);
+  setTimeout(() => $('#fq', b).focus(), 280);
 }
+const openFind = () => openSearch(false);
 
 /* ---------- Genres: one card, a tab per genre, swipe between them ---------- */
 const TVGENRES = [[10759,'Action & Adventure'],[16,'Animation'],[35,'Comedy'],[80,'Crime'],[99,'Documentary'],[18,'Drama'],[10751,'Family'],
@@ -1060,22 +1089,25 @@ function genreDef(tv, g, sort, decade){
   if(sort === 'newest'){ p.sort_by = d + '.desc'; p['vote_count.gte'] = 20; p[d + '.lte'] = lte && lte < today() ? lte : today(); }
   return { path:tv ? '/discover/tv' : '/discover/movie', params:p, tv };
 }
+let genresMouseUp = null;
 function openGenres(tv, start){
   const list = tv ? TVGENRES : GENRES;
   let gi = Math.max(0, list.findIndex(x => x[0] === start)), sort = 'popular', decade = '';
-  const s = sheet(`<div class="gsticky"><h2 class="stitle" style="margin-bottom:10px">${tv ? 'TV genres' : 'Genres'}</h2>
+  setView('genres');
+  const b = $('#v-genres');
+  b.innerHTML = `<div class="pad"><div class="gsticky"><h2 class="vt" style="margin:4px 0 10px">${tv ? 'TV genres' : 'Genres'}</h2>
       <div class="chips gtabs">${list.map(([id, n], i) => `<button class="chip" data-i="${i}">${esc(n)}</button>`).join('')}</div>
       <div class="gopts"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
         <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div></div>
-    <div class="gpane nodrag"><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`, { tall:true });
-  const b = s.body, pane = $('.gpane', b), grid = $('.grid', b);
+    <div class="gpane"><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div></div>`;
+  const pane = $('.gpane', b), grid = $('.grid', b);
   const load = (dir) => {
     $$('.gtabs .chip', b).forEach((c, i) => c.classList.toggle('on', i === gi));
     const on = $(`.gtabs .chip[data-i="${gi}"]`, b); on && on.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
     if(dir){ pane.style.transition = 'none'; pane.style.transform = `translateX(${dir * 40}px)`; pane.style.opacity = '0';
       requestAnimationFrame(() => { pane.style.transition = ''; pane.style.transform = ''; pane.style.opacity = ''; }); }
-    b.scrollTop = 0;
-    feed(b, grid, $('.sent', b), $('.msg', b), genreDef(tv, list[gi][0], sort, decade));
+    scrollTo(0, 0);
+    feed(null, grid, $('.sent', b), $('.msg', b), genreDef(tv, list[gi][0], sort, decade));
   };
   $$('.gtabs .chip', b).forEach(c => c.onclick = () => { const n = +c.dataset.i; if(n !== gi){ const d = n > gi ? 1 : -1; gi = n; load(d); } });
   $$('.gopts .seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.gopts .seg button', b).forEach(y => y.classList.toggle('on', y === x)); load(0); });
@@ -1100,7 +1132,8 @@ function openGenres(tv, start){
   // mouse drag for desktop
   let md = null;
   pane.addEventListener('pointerdown', e => { if(e.pointerType === 'mouse') md = { x:e.clientX, y:e.clientY }; });
-  addEventListener('pointerup', e => {
+  if(genresMouseUp) removeEventListener('pointerup', genresMouseUp);
+  addEventListener('pointerup', genresMouseUp = e => {
     if(!md || e.pointerType !== 'mouse') return; const ddx = e.clientX - md.x, ddy = e.clientY - md.y; md = null;
     if(Math.abs(ddx) > 80 && Math.abs(ddx) > Math.abs(ddy) * 1.5){
       suppressClick = Date.now();
@@ -1437,12 +1470,8 @@ function buildTV(){
   if(!store.get(K_KEY, '')){ v.innerHTML = `<h2 class="vt">TV</h2><div class="onb"><p>Add your TMDB key in Settings to load shows.</p></div>`; return; }
   built.tv = true;
   v.innerHTML = `<h2 class="vt">TV</h2><p class="vs">Every episode's IMDb rating, charted season by season.</p>
-    <div class="sbar" style="margin-top:0"><button class="searchpill" id="tsp">${SEARCH_SVG}Search any show</button>
-      <button class="gbtn" id="tgb">${GRID_SVG}Genres</button></div>
     <div id="myshows"></div>
     ${TVROWS.map((r, i) => r.genre ? '' : rowHTML('t' + i)).join('')}`;
-  $('#tsp').onclick = openFindTV;
-  $('#tgb').onclick = () => openGenres(true);
   renderMyShows();
   tvObs?.disconnect();
   tvObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ tvObs.unobserve(e.target); loadRow(e.target); } }), { rootMargin:'500px 400px' });
@@ -1454,16 +1483,7 @@ function renderMyShows(){
   box.innerHTML = mine.length ? `<section class="row" style="margin-top:6px"><div class="rowhead"><div><h3>Your shows</h3></div></div>
     <div class="track">${mine.map(([k, r]) => cardHTML({ id:k, title:r.title, poster:r.poster })).join('')}</div></section>` : '';
 }
-function openFindTV(){
-  const s = sheet(`<div class="findsaga" style="margin:0 0 12px">${SEARCH_SVG}<input id="tq" type="search" placeholder="Search any show…" autocomplete="off"></div>
-    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg">Type a show's name.</div>`, { tall:true });
-  const b = s.body; let t;
-  $('#tq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(() => {
-    if(q) feed(b, $('.grid', b), $('.sent', b), $('.msg', b), { path:'/search/tv', params:{ query:q }, tv:true });
-    else { $('.grid', b).innerHTML = ''; $('.msg', b).textContent = "Type a show's name."; }
-  }, 350); };
-  setTimeout(() => $('#tq', b).focus(), 350);
-}
+const openFindTV = () => openSearch(true);
 const heat = r => r == null ? 'na' : r >= 9 ? 'c9' : r >= 8 ? 'c8' : r >= 7 ? 'c7' : r >= 6 ? 'c6' : r >= 5 ? 'c5' : 'c4';
 const fmtV = v => v >= 1e6 ? (v / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : v >= 1e3 ? Math.round(v / 1e3) + 'K' : String(v);
 let imdbMeta;
@@ -1847,7 +1867,7 @@ async function saveReviewImage(d, btn){
   try{ await document.fonts.load('700 100px "Barlow Condensed"'); }catch(e){}
   const disp = (sz) => `700 ${sz}px "Barlow Condensed", "Arial Narrow", sans-serif`;
   x.textAlign = 'center';
-  x.fillStyle = '#ffb547'; x.font = disp(54); x.fillText('REEL LOG', W / 2, 110);
+  x.fillStyle = '#ffb547'; x.font = disp(54); x.fillText('ROLLING CREDITS', W / 2, 110);
   x.fillStyle = '#9c93a9'; x.font = '600 34px system-ui, sans-serif'; x.fillText(d.thisYear ? `MY ${d.yr} IN FILM` : 'MY FILM LIFE SO FAR', W / 2, 165);
   x.fillStyle = '#ffb547'; x.font = disp(230); x.fillText(String(d.count), W / 2, 390);
   x.fillStyle = '#f4efe9'; x.font = '600 38px system-ui, sans-serif'; x.fillText('films rated', W / 2, 445);
@@ -1913,7 +1933,7 @@ function openSettings(){
   $('#exp', b).onclick = () => {
     const blob = new Blob([JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `reellog-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
   $('#imp', b).onclick = () => $('#file', b).click();
   $('#file', b).onchange = async ev => {
@@ -1929,7 +1949,7 @@ function openSettings(){
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       if(!data.ratings) list.forEach(e => { if(e.rating && !ratings[e.tmdb]){ ratings[e.tmdb] = { r:e.rating, title:e.title, year:e.year, poster:e.poster, at:e.added || 0 }; rn++; } });
       saveAll(); s.close(); afterChange(); toast(`Imported ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
-    }catch(e){ toast('That file is not a Reel Log backup.'); }
+    }catch(e){ toast('That file is not a Rolling Credits backup.'); }
   };
 }
 
