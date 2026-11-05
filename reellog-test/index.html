@@ -312,7 +312,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .prov{margin-top:6px;margin-bottom:6px}
 .prov .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:10px 0 7px}
 .plogos{display:flex;gap:8px;flex-wrap:wrap}
-.plogos img{width:42px;height:42px;border-radius:11px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.plogos img{width:42px;height:42px;border-radius:11px;box-shadow:0 4px 10px rgba(0,0,0,.4)}
 .revbtn{display:flex;align-items:center;justify-content:space-between;margin:0 16px 16px;width:calc(100% - 32px);padding:13px 16px;border-radius:16px;cursor:pointer;
   background:linear-gradient(120deg,rgba(255,111,97,.2),rgba(255,181,71,.12));border:1px solid rgba(255,181,71,.35);font-weight:800}
 .revbtn b{color:var(--accent)}
@@ -1427,7 +1427,7 @@ async function openShow(id){
       box.innerHTML = `${d.trailer ? `<a href="${esc(trailerURL(d.trailer))}" target="_blank" rel="noopener">▶ Trailer</a>` : ''}<button id="mwl" class="${watch[id] ? 'on' : ''}">${BOOK}${watch[id] ? 'On watchlist' : 'Watchlist'}</button>`;
       $('#mwl', b).onclick = () => toggleWatch(filmOf(id)); };
     acts(); const oldR = s.refresh; s.refresh = () => { oldR(); acts(); };
-    $('#mwatch', b).innerHTML = provHTML(d.prov, d.title); bindProv(b, d.prov);
+    $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
   }catch(e){ $('#imdb', b).innerHTML = `<div class="msg">${errText(e)}</div>`; return; }
   if(!d.imdb){ $('#imdb', b).innerHTML = '<div class="msg">This show has no IMDb link on TMDB, so there\'s no episode chart.</div>'; return; }
   const res = await imdbFile(d.imdb);
@@ -1519,7 +1519,7 @@ async function openMovie(id){
     $('#mov', b).textContent = d.overview;
     $('#mvote', b).textContent = [d.cast ? 'Starring ' + d.cast : '', d.vote ? `TMDB average ${d.vote.toFixed(1)}/10` : ''].filter(Boolean).join(' · ');
     trailerKey = d.trailer; acts(trailerKey);
-    $('#mwatch', b).innerHTML = provHTML(d.prov, d.title); bindProv(b, d.prov);
+    $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
     if(d.imdb){
       const box = $('#mimdb', b); box.className = 'scores';
       imdbMovie(d.imdb).then(x => { if(x && s.el.isConnected) box.insertAdjacentHTML('afterbegin', `<span class="imdbm"><span class="ib2">IMDb</span>${x[0].toFixed(1)}<span class="small">${fmtV(x[1])} votes</span></span>`); });
@@ -1544,35 +1544,11 @@ function pickProviders(p){
   const rent = sl([...(us.rent || []), ...(us.buy || [])].filter((x, i, a) => a.findIndex(y => y.provider_id === x.provider_id) === i));
   return { link:us.link, stream:sl([...(us.flatrate || []), ...(us.free || []), ...(us.ads || [])]), rent };
 }
-// Each logo opens that service's own search for the title (its app opens if installed). Order matters:
-// add-on channels sold through Amazon ("Max Amazon Channel") are watched in Prime Video, so Amazon is checked first.
-const PROV_SEARCH = [
-  [/amazon|prime video/i, q => `https://www.amazon.com/s?k=${q}&i=instant-video`],
-  [/netflix/i, q => `https://www.netflix.com/search?q=${q}`],
-  [/hulu/i, q => `https://www.hulu.com/search?q=${q}`],
-  [/disney/i, q => `https://www.disneyplus.com/search?q=${q}`],
-  [/\bmax\b|hbo/i, q => `https://play.hbomax.com/search?q=${q}`],
-  [/apple tv/i, q => `https://tv.apple.com/search?term=${q}`],
-  [/peacock/i, q => `https://www.peacocktv.com/watch/search?q=${q}`],
-  [/paramount/i, q => `https://www.paramountplus.com/search/?q=${q}`],
-  [/youtube/i, q => `https://www.youtube.com/results?search_query=${q}`],
-  [/google play/i, q => `https://play.google.com/store/search?q=${q}&c=movies`],
-  [/tubi/i, q => `https://tubitv.com/search/${q}`]
-];
-function provURL(name, title, fallback){
-  const hit = PROV_SEARCH.find(([re]) => re.test(name));
-  return hit ? hit[1](encodeURIComponent(title)) : fallback;
-}
-function provHTML(p, title){
+function provHTML(p){
   if(!p || (!p.stream.length && !p.rent.length)) return '';
-  const row = a => {
-    const seen = new Set();   // one logo per service ("Netflix" and "Netflix with Ads" go to the same place)
-    const items = a.map(x => ({ ...x, u:provURL(x.n, title || '', p.link || '#') })).filter(x => !seen.has(x.u) && seen.add(x.u));
-    return `<div class="plogos">${items.map(x => `<a href="${esc(x.u)}" target="_blank" rel="noopener"><img src="${IMG}w92${x.l}" alt="${esc(x.n)}" title="${esc(x.n)}"></a>`).join('')}</div>`;
-  };
+  const row = a => `<div class="plogos">${a.map(x => `<img src="${IMG}w92${x.l}" alt="${esc(x.n)}" title="${esc(x.n)}">`).join('')}</div>`;
   return `<div class="prov">${p.stream.length ? '<div class="lbl">Stream it on</div>' + row(p.stream) : ''}
-    ${p.rent.length ? '<div class="lbl">Rent or buy</div>' + row(p.rent) : ''}
-    <div class="small" style="margin-top:8px">Tap a logo to find it in that app · ${p.link ? `<a href="${esc(p.link)}" target="_blank" rel="noopener" style="color:var(--accent)">All streaming options</a> · ` : ''}US availability from JustWatch</div></div>`;
+    ${p.rent.length ? '<div class="lbl">Rent or buy</div>' + row(p.rent) : ''}<div class="small" style="margin-top:8px">US availability from JustWatch</div></div>`;
 }
 function bindProv(){}
 async function rtScore(tt){
