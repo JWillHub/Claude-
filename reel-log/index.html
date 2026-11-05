@@ -425,7 +425,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 </head>
 <body>
 <header class="top">
-  <button class="ib hback" id="hback" aria-label="Back to genres" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="ib hback" id="hback" aria-label="Back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
   <div class="hact">
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
@@ -440,6 +440,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
   <section id="v-search" hidden></section>
   <section id="v-genres" hidden></section>
   <section id="v-genre" hidden></section>
+  <section id="v-franchises" hidden></section>
 </main>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
@@ -869,7 +870,7 @@ document.addEventListener('click', e => {
 /* ================= views ================= */
 let view = 'discover';
 const built = {};
-const PAGES = ['search', 'genre'];
+const PAGES = ['search', 'genre', 'franchises'];
 let lastTab = 'discover';
 function setView(v, o = {}){
   const prev = view;
@@ -880,8 +881,8 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   $('#hsearch').classList.toggle('on', v === 'search');
-  setHeaderTitle(v === 'genre' ? genrePageTitle : null);
-  ['discover','sagas','tv','diary','films','search','genres','genre'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  setHeaderTitle(v === 'genre' ? genrePageTitle : v === 'franchises' ? { small:'', big:'Franchises' } : null);
+  ['discover','sagas','tv','diary','films','search','genres','genre','franchises'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'genres' && !built.genres) buildGenres();
@@ -1325,16 +1326,18 @@ function fillTile(k){
 }
 function refreshTiles(){ Object.keys(sagaData).forEach(fillTile); }
 let tileObs;
+let frObs;
 function openFranchises(){
-  const s = sheet(`<h2 class="stitle">Franchises</h2>
+  setView('franchises');
+  const b = $('#v-franchises');
+  b.innerHTML = `<div class="pad" style="padding-top:14px">
     <div class="findsaga" style="margin:0">${SEARCH_SVG}<input id="sq" type="search" placeholder="Find any other film series…" autocomplete="off"></div>
-    <div id="sres" style="margin-top:10px"></div>
-    <div class="sec" style="margin-left:0">Cinematic universes</div><div class="sagas" style="padding:0">${SAGAS.filter(x => x.u).map(tileHTML).join('')}</div>
-    <div class="sec" style="margin-left:0">Series & trilogies</div><div class="sagas" style="padding:0">${SAGAS.filter(x => !x.u).map(tileHTML).join('')}</div>`, { tall:true });
-  const b = s.body;
-  const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ obs.unobserve(e.target); loadTile(e.target); } }), { root:b, rootMargin:'400px' });
-  $$('.saga', b).forEach(t => obs.observe(t));
-  s.onClose = () => obs.disconnect();
+    <div id="sres" style="margin-top:10px"></div></div>
+    <div class="sec">Cinematic universes</div><div class="sagas">${SAGAS.filter(x => x.u).map(tileHTML).join('')}</div>
+    <div class="sec">Series & trilogies</div><div class="sagas" style="padding-bottom:20px">${SAGAS.filter(x => !x.u).map(tileHTML).join('')}</div>`;
+  frObs?.disconnect();
+  frObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ frObs.unobserve(e.target); loadTile(e.target); } }), { rootMargin:'400px' });
+  $$('.saga', b).forEach(t => frObs.observe(t));
   let t;
   $('#sq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(() => findCollections(q), 350); };
 }
