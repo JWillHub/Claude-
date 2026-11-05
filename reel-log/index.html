@@ -87,14 +87,14 @@ main{max-width:1100px;margin:0 auto}
 .gbtn{flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:15px;cursor:pointer}
 .gbtn svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2}
 .gsticky{position:sticky;top:calc(52px + env(safe-area-inset-top));z-index:3;background:var(--bg);margin:0 -16px;padding:12px 16px 8px;border-bottom:1px solid var(--line)}
-body.on-genres .top{display:none}
-body.on-genres .gsticky{top:0;padding-top:calc(12px + env(safe-area-inset-top))}
 .gsticky .chip{padding:6px 12px;font-size:12.5px}
 .gsticky .gopts{margin-top:7px}
 .gsticky .seg button{padding:4px 10px;font-size:12px}
 .gsticky select{padding:4px 8px;font-size:12.5px}
 .gsticky .chips{padding:0 16px 4px;margin:0 -16px}
 .gopts{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.gk{padding:14px 16px 2px}
+.gk .seg{display:inline-flex}
 .gpane{margin-top:14px;padding-bottom:20px;transition:transform .28s cubic-bezier(.2,.85,.25,1),opacity .28s;touch-action:pan-y}
 /* chips */
 .chips{display:flex;gap:8px;overflow-x:auto;padding:0 16px 4px;scrollbar-width:none}
@@ -424,7 +424,6 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
   <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
   <div class="hact">
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
-    <button class="ib gen" id="hgenres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg><span>Genres</span></button>
   </div>
 </header>
 <main>
@@ -438,7 +437,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 </main>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
-  <button class="tb" data-v="sagas"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="15" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h10"/></svg>Franchises</button>
+  <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Genres</button>
   <button class="tb" data-v="tv"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 2.5l4 3.5 4-3.5"/></svg>TV</button>
   <button class="tb" data-v="diary" hidden><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Diary</button>
   <button class="tb" data-v="films"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>My Films</button>
@@ -855,7 +854,8 @@ document.addEventListener('click', e => {
   if(Date.now() - suppressClick < 500){ e.preventDefault(); e.stopPropagation(); return; }
   const pc = e.target.closest('.pc[data-id]'); if(pc){ openMovie(pid(pc.dataset.id)); return; }
   const sg = e.target.closest('[data-saga]'); if(sg){ const s = sagaByK(sg.dataset.saga); if(s) openRun(s); return; }
-  const all = e.target.closest('[data-all]'); if(all){ openSeeAll(rowDef(all.dataset.all)); return; }
+  const all = e.target.closest('[data-all]'); if(all){ const d = rowDef(all.dataset.all); d.genreId ? openGenreSheet(d) : openSeeAll(d); return; }
+  const fr = e.target.closest('[data-franchises]'); if(fr){ openFranchises(); return; }
   const go = e.target.closest('[data-go]'); if(go){ setView(go.dataset.go); return; }
   const pr = e.target.closest('[data-person]'); if(pr){ openPerson(+pr.dataset.person); return; }
 }, true);
@@ -863,7 +863,7 @@ document.addEventListener('click', e => {
 /* ================= views ================= */
 let view = 'discover';
 const built = {};
-const PAGES = ['search', 'genres'];
+const PAGES = ['search'];
 let lastTab = 'discover';
 function setView(v, o = {}){
   const prev = view;
@@ -873,12 +873,11 @@ function setView(v, o = {}){
   view = v;
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
-  $('#hsearch').classList.toggle('on', v === 'search'); $('#hgenres').classList.toggle('on', v === 'genres');
-  document.body.classList.toggle('on-genres', v === 'genres');
+  $('#hsearch').classList.toggle('on', v === 'search');
   ['discover','sagas','tv','diary','films','search','genres'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
-  if(v === 'sagas' && !built.sagas) buildSagas();
+  if(v === 'genres' && !built.genres) buildGenres();
   if(v === 'tv' && !built.tv) buildTV();
   if(v === 'diary') renderDiary();
   if(v === 'films') renderFilms();
@@ -887,7 +886,6 @@ function setView(v, o = {}){
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
 $('#logo').onclick = () => setView('discover');
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
-$('#hgenres').onclick = () => openGenres(lastTab === 'tv');
 $('#setTab').onclick = openSettings;
 
 /* ---------- Discover ---------- */
@@ -916,7 +914,7 @@ function buildDiscover(){
       <span><b>Rate what you've seen</b></span></button>
     <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>For you</h3><p id="fysub"></p></div></div><div class="track"></div></section>
     ${rowHTML(0)}
-    <section class="row"><div class="rowhead"><div><h3>Franchises</h3></div><button data-go="sagas">All franchises</button></div>
+    <section class="row"><div class="rowhead"><div><h3>Franchises</h3></div><button data-franchises="1">All franchises</button></div>
       <div class="track">${SAGAS.slice(0, 10).map(tileHTML).join('')}</div></section>
     ${ROWS.map((r, i) => i && !r.genre ? rowHTML(i) : '').join('')}`;
   $('#qs').onclick = () => { delete sagaData.quick; openRun(QUICK); };
@@ -954,7 +952,7 @@ async function loadForYou(){
     sec.hidden = false;
   }catch(e){ sec.hidden = true; }
 }
-const rowDef = key => String(key)[0] === 't' ? TVROWS[+String(key).slice(1)] : ROWS[+key];
+const rowDef = key => { const k = String(key); return k[0] === 't' ? TVROWS[+k.slice(1)] : k[0] === 'g' ? GROWS[+k.slice(1)] : ROWS[+k]; };
 function rowHTML(i){
   const r = rowDef(i);
   return `<section class="row" data-row="${i}"><div class="rowhead"><div><h3>${esc(r.title)}</h3>${r.sub ? `<p>${esc(r.sub)}</p>` : ''}</div>
@@ -1102,59 +1100,41 @@ function genreDef(tv, g, sort, decade){
   if(sort === 'newest'){ p.sort_by = d + '.desc'; p['vote_count.gte'] = 20; p[d + '.lte'] = lte && lte < today() ? lte : today(); }
   return { path:tv ? '/discover/tv' : '/discover/movie', params:p, tv };
 }
-let genresMouseUp = null;
-function openGenres(tv, start){
-  const list = tv ? TVGENRES : GENRES;
-  let gi = Math.max(0, list.findIndex(x => x[0] === start)), sort = 'popular', decade = '';
-  setView('genres');
-  const b = $('#v-genres');
-  b.innerHTML = `<div class="pad"><div class="gsticky">
-      <div class="chips gtabs">${list.map(([id, n], i) => `<button class="chip" data-i="${i}">${esc(n)}</button>`).join('')}</div>
-      <div class="gopts"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
-        <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div></div>
-    <div class="gpane"><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div></div>`;
-  const pane = $('.gpane', b), grid = $('.grid', b);
-  const load = (dir) => {
-    $$('.gtabs .chip', b).forEach((c, i) => c.classList.toggle('on', i === gi));
-    const on = $(`.gtabs .chip[data-i="${gi}"]`, b); on && on.scrollIntoView({ inline:'center', block:'nearest', behavior:'smooth' });
-    if(dir){ pane.style.transition = 'none'; pane.style.transform = `translateX(${dir * 40}px)`; pane.style.opacity = '0';
-      requestAnimationFrame(() => { pane.style.transition = ''; pane.style.transform = ''; pane.style.opacity = ''; }); }
-    scrollTo(0, 0);
-    feed(null, grid, $('.sent', b), $('.msg', b), genreDef(tv, list[gi][0], sort, decade));
-  };
-  $$('.gtabs .chip', b).forEach(c => c.onclick = () => { const n = +c.dataset.i; if(n !== gi){ const d = n > gi ? 1 : -1; gi = n; load(d); } });
-  $$('.gopts .seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.gopts .seg button', b).forEach(y => y.classList.toggle('on', y === x)); load(0); });
-  $('#gdec', b).onchange = e => { decade = e.target.value; load(0); };
-  // horizontal swipe on the grid changes genre; vertical scrolling is left alone
-  let x0, y0, t0, dx = 0, track = false, decided = false;
-  pane.addEventListener('touchstart', e => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); dx = 0; track = true; decided = false; }, { passive:true });
-  pane.addEventListener('touchmove', e => {
-    if(!track) return; const t = e.touches[0]; dx = t.clientX - x0; const dy = t.clientY - y0;
-    if(!decided){ if(Math.abs(dx) < 10 && Math.abs(dy) < 10) return; decided = true; if(Math.abs(dy) > Math.abs(dx)){ track = false; return; } }
-    e.cancelable && e.preventDefault();
-    pane.style.transition = 'none'; pane.style.transform = `translateX(${dx * 0.5}px)`; pane.style.opacity = String(1 - Math.min(.5, Math.abs(dx) / 500));
-  }, { passive:false });
-  const end = () => {
-    if(!track) return; track = false; pane.style.transition = '';
-    const fast = Math.abs(dx) / Math.max(1, Date.now() - t0) > 0.5;
-    if((dx < -70 || (dx < -30 && fast)) && gi < list.length - 1){ gi++; load(1); }
-    else if((dx > 70 || (dx > 30 && fast)) && gi > 0){ gi--; load(-1); }
-    else { pane.style.transform = ''; pane.style.opacity = ''; }
-  };
-  pane.addEventListener('touchend', end); pane.addEventListener('touchcancel', end);
-  // mouse drag for desktop
-  let md = null;
-  pane.addEventListener('pointerdown', e => { if(e.pointerType === 'mouse') md = { x:e.clientX, y:e.clientY }; });
-  if(genresMouseUp) removeEventListener('pointerup', genresMouseUp);
-  addEventListener('pointerup', genresMouseUp = e => {
-    if(!md || e.pointerType !== 'mouse') return; const ddx = e.clientX - md.x, ddy = e.clientY - md.y; md = null;
-    if(Math.abs(ddx) > 80 && Math.abs(ddx) > Math.abs(ddy) * 1.5){
-      suppressClick = Date.now();
-      if(ddx < 0 && gi < list.length - 1){ gi++; load(1); } else if(ddx > 0 && gi > 0){ gi--; load(-1); }
-    }
-  });
-  load(0);
+const GROWS = [];
+let genreKind = 'film', gObs;
+function buildGenres(){
+  const v = $('#v-genres');
+  if(!store.get(K_KEY, '')){ v.innerHTML = `<div class="onb"><p>Add your TMDB key in Settings to load genres.</p></div>`; return; }
+  built.genres = true;
+  v.innerHTML = `<div class="gk"><div class="seg"><button data-k="film">Films</button><button data-k="tv">TV</button></div></div><div id="grows"></div>`;
+  $$('.gk button', v).forEach(x => x.onclick = () => { if(genreKind !== x.dataset.k){ genreKind = x.dataset.k; drawGenreRows(); } });
+  drawGenreRows();
 }
+function drawGenreRows(){
+  const tv = genreKind === 'tv', list = tv ? TVGENRES : GENRES;
+  $$('#v-genres .gk button').forEach(x => x.classList.toggle('on', x.dataset.k === genreKind));
+  GROWS.length = 0;
+  list.forEach(([id, name]) => GROWS.push({ title:name, genreId:id, tv, path:tv ? '/discover/tv' : '/discover/movie',
+    params:{ with_genres:id, sort_by:'popularity.desc', 'vote_count.gte':tv ? 100 : 150 } }));
+  const box = $('#grows');
+  box.innerHTML = GROWS.map((r, i) => rowHTML('g' + i)).join('');
+  gObs?.disconnect();
+  gObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ gObs.unobserve(e.target); loadRow(e.target); } }), { rootMargin:'500px 400px' });
+  $$('.row[data-row]', box).forEach(r => gObs.observe(r));
+}
+function openGenreSheet(def){
+  let sort = 'popular', decade = '';
+  const s = sheet(`<h2 class="stitle">${esc(def.title)}${def.tv ? ' <span class="small" style="font-family:inherit;letter-spacing:0">TV</span>' : ''}</h2>
+    <div class="gopts" style="margin:0 0 14px"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
+    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });
+  const b = s.body;
+  const load = () => feed(b, $('.grid', b), $('.sent', b), $('.msg', b), genreDef(def.tv, def.genreId, sort, decade));
+  $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); b.scrollTop = 0; load(); });
+  $('#gdec', b).onchange = e => { decade = e.target.value; b.scrollTop = 0; load(); };
+  load();
+}
+const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; setView('genres'); if(built.genres) drawGenreRows(); };
 
 /* ---------- Sagas ---------- */
 const SAGAS = [
@@ -1317,20 +1297,18 @@ function fillTile(k){
 }
 function refreshTiles(){ Object.keys(sagaData).forEach(fillTile); }
 let tileObs;
-function buildSagas(){
-  built.sagas = true;
-  const v = $('#v-sagas');
-  if(!store.get(K_KEY, '')){ built.sagas = false; v.innerHTML = `<h2 class="vt">Franchises</h2><div class="onb"><p>Add your TMDB key in Settings to load the franchises.</p></div>`; return; }
-  v.innerHTML = `<h2 class="vt" style="margin-bottom:14px">Franchises</h2>
-    <div class="findsaga">${SEARCH_SVG}<input id="sq" type="search" placeholder="Find any other film series…" autocomplete="off"></div>
-    <div id="sres" class="pad" style="margin-top:10px"></div>
-    <div class="sec">Cinematic universes</div><div class="sagas">${SAGAS.filter(s => s.u).map(tileHTML).join('')}</div>
-    <div class="sec">Series & trilogies</div><div class="sagas">${SAGAS.filter(s => !s.u).map(tileHTML).join('')}</div>`;
-  tileObs?.disconnect();
-  tileObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ tileObs.unobserve(e.target); loadTile(e.target); } }), { rootMargin:'400px' });
-  $$('.saga', v).forEach(t => tileObs.observe(t));
+function openFranchises(){
+  const s = sheet(`<h2 class="stitle">Franchises</h2>
+    <div class="findsaga" style="margin:0">${SEARCH_SVG}<input id="sq" type="search" placeholder="Find any other film series…" autocomplete="off"></div>
+    <div id="sres" style="margin-top:10px"></div>
+    <div class="sec" style="margin-left:0">Cinematic universes</div><div class="sagas" style="padding:0">${SAGAS.filter(x => x.u).map(tileHTML).join('')}</div>
+    <div class="sec" style="margin-left:0">Series & trilogies</div><div class="sagas" style="padding:0">${SAGAS.filter(x => !x.u).map(tileHTML).join('')}</div>`, { tall:true });
+  const b = s.body;
+  const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ obs.unobserve(e.target); loadTile(e.target); } }), { root:b, rootMargin:'400px' });
+  $$('.saga', b).forEach(t => obs.observe(t));
+  s.onClose = () => obs.disconnect();
   let t;
-  $('#sq').oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(() => findCollections(q), 350); };
+  $('#sq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(() => findCollections(q), 350); };
 }
 async function findCollections(q){
   const box = $('#sres');
@@ -1932,7 +1910,7 @@ function openSettings(){
   const b = s.body;
   $('#saveKey', b).onclick = async () => {
     const k = $('#key', b).value.trim(); store.set(K_KEY, k);
-    const done = () => { s.close(); if(!hadKey || !k){ built.discover = built.sagas = built.tv = false; setView(view); } };
+    const done = () => { s.close(); if(!hadKey || !k){ built.discover = built.genres = built.tv = false; setView(view); } };
     if(!k){ done(); return; }
     $('#saveKey', b).textContent = 'Checking…';
     try{ await tmdb('/configuration'); done(); }
@@ -1942,7 +1920,7 @@ function openSettings(){
     }
   };
   $('#okey', b).onchange = e => { store.set(K_OMDB, e.target.value.trim()); toast(e.target.value.trim() ? 'OMDb key saved' : 'OMDb key removed'); };
-  $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.tv = false; setView(view); };
+  $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
   $('#exp', b).onclick = () => {
     const blob = new Blob([JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
