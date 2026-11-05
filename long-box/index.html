@@ -502,6 +502,9 @@ html{touch-action:manipulation}
 <script>
 /* ================= basics ================= */
 const CV = 'https://comicvine.gamespot.com/api/';
+// Shared server (Cloudflare Worker) that holds the Comic Vine key and shares saved answers. People with their own key go direct.
+const SHARED = '';
+const hasAccess = () => !!(SHARED || store.get(K_KEY, ''));
 const K_KEY = 'longbox.cvkey', K_RATE = 'longbox.ratings', K_WATCH = 'longbox.toread', K_SEEN = 'longbox.read', K_FAV = 'longbox.favs',
   K_HIDE = 'longbox.hiderated', K_PUB = 'longbox.volpub', K_AV = 'longbox.avatars', CK = 'longbox.c1.';
 const store = {
@@ -598,19 +601,29 @@ function jsonp(url){
 // low = background work (rows, tiles, faces): it waits behind anything you opened
 async function cv(path, params = {}, low = false){
   const key = store.get(K_KEY, '');
-  if(!key) throw new Error('nokey');
+  if(!key && !SHARED) throw new Error('nokey');
   for(let attempt = 0; ; attempt++){
     const cvDone = await cvSlot(low);
     let d;
     try{
       if(window.CV_MOCK) d = await window.CV_MOCK(path, params);
+      else if(!key){
+        const u = new URL(SHARED.replace(/\/?$/, '/') + path);
+        Object.entries(params).forEach(([k, v]) => { if(v != null && v !== '') u.searchParams.set(k, v); });
+        const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 20000);
+        let r;
+        try{ r = await fetch(u, { signal:ctl.signal }); }catch(e){ throw new Error(e.name === 'AbortError' ? 'timeout' : 'blocked'); }
+        finally{ clearTimeout(t); }
+        d = await r.json().catch(() => null);
+        if(d && d.status_code === 100) throw new Error('sharedkey');
+      }
       else {
         const u = new URL(CV + path);
         Object.entries(params).forEach(([k, v]) => { if(v != null && v !== '') u.searchParams.set(k, v); });
         u.searchParams.set('api_key', key); u.searchParams.set('format', 'jsonp');
         d = await jsonp(u.toString());
       }
-    }catch(e){ cvDone(); if(attempt < 1 && e.message !== 'timeout'){ await sleep(1500); continue; } throw e; }
+    }catch(e){ cvDone(); if(attempt < 1 && e.message !== 'timeout' && e.message !== 'sharedkey'){ await sleep(1500); continue; } throw e; }
     cvDone();
     if(!d || typeof d !== 'object') throw new Error('error');
     if(d.status_code === 100) throw new Error('badkey');
@@ -624,6 +637,7 @@ const errText = e => {
   const m = e && e.message;
   return m === 'nokey' ? 'Add your Comic Vine key in Settings.'
     : m === 'badkey' ? 'Comic Vine rejected your key. Check it in Settings.'
+    : m === 'sharedkey' ? 'The shared server can\u2019t reach Comic Vine right now. Try again later, or add your own key in Settings.'
     : m === 'limit' ? 'Comic Vine’s hourly limit was reached. Give it a few minutes.'
     : m === 'notfound' ? 'Not found on Comic Vine.'
     : m === 'blocked' || m === 'timeout' ? 'Could not reach Comic Vine. Check your connection, or wait a bit if you’ve browsed a lot this hour.'
@@ -1162,7 +1176,7 @@ const DROWS = [
 let dObs;
 function buildDC(){
   const v = $('#v-dc');
-  if(!store.get(K_KEY, '')){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
+  if(!hasAccess()){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
   built.dc = true;
   v.innerHTML = `<div style="height:6px"></div>${rowHTML('d0')}
     <section class="row"><div class="rowhead"><div><h3>DC story arcs</h3></div><button data-arcs="1">All story arcs</button></div>
@@ -1186,7 +1200,7 @@ function needKeyHTML(){
 }
 function buildDiscover(){
   const v = $('#v-discover');
-  if(!store.get(K_KEY, '')){ built.discover = false; v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
+  if(!hasAccess()){ built.discover = false; v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
   built.discover = true;
   v.innerHTML = `<div class="hero" id="hero" style="margin-top:16px"></div>
     <div id="wlrow"></div>
@@ -1393,7 +1407,7 @@ function closeSearch(fromPop){
 let gObs;
 function buildChars(){
   const v = $('#v-genres');
-  if(!store.get(K_KEY, '')){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
+  if(!hasAccess()){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
   built.genres = true;
   v.innerHTML = `<div style="height:4px"></div>` + GROWS.map((r, i) => rowHTML('g' + i)).join('');
   gObs?.disconnect();
@@ -1680,7 +1694,7 @@ function mySeries(){
 }
 function buildSeries(){
   const v = $('#v-series');
-  if(!store.get(K_KEY, '')){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
+  if(!hasAccess()){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
   built.series = true;
   v.innerHTML = `<div style="height:6px"></div><div id="myseries"></div>${SROWS.map((r, i) => rowHTML('s' + i)).join('')}`;
   renderMySeries();
@@ -2010,11 +2024,11 @@ async function saveReviewImage(d, btn){
 
 /* ---------- Settings ---------- */
 function openSettings(){
-  const hadKey = !!store.get(K_KEY, '');
+  const hadKey = hasAccess();
   const s = sheet(`<h2 class="stitle">Settings</h2>
-    <label class="f">Comic Vine API key</label>
+    <label class="f">${SHARED ? 'Your own Comic Vine key (optional)' : 'Comic Vine API key'}</label>
     <input id="key" value="${esc(store.get(K_KEY, ''))}" placeholder="Paste your key" autocomplete="off">
-    <div class="small" style="margin-top:6px">Free at comicvine.gamespot.com/api — sign in and copy your key.</div>
+    <div class="small" style="margin-top:6px">${SHARED ? 'Long Box works without one. Your own key gives you a private hourly allowance.' : 'Free at comicvine.gamespot.com/api — sign in and copy your key.'}</div>
     <button class="btn" id="saveKey">Save key</button>
     <label class="toggle"><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}> Hide issues I've rated while browsing</label>
     <label class="f">Backup</label>
@@ -2026,7 +2040,7 @@ function openSettings(){
   const reset = () => { built.discover = built.genres = built.series = built.dc = false; Object.keys(sagaData).forEach(k => delete sagaData[k]); setView(view); };
   $('#saveKey', b).onclick = async () => {
     const k = $('#key', b).value.trim(); store.set(K_KEY, k);
-    const done = () => { s.close(); if(!hadKey || !k) reset(); };
+    const done = () => { s.close(); if(!hadKey || !hasAccess()) reset(); };
     if(!k){ done(); return; }
     $('#saveKey', b).textContent = 'Checking…';
     try{ await cv('issues/', { limit:1, field_list:'id' }); done(); }
