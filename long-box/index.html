@@ -503,7 +503,7 @@ html{touch-action:manipulation}
 /* ================= basics ================= */
 const CV = 'https://comicvine.gamespot.com/api/';
 // Shared server (Cloudflare Worker) that holds the Comic Vine key and shares saved answers. People with their own key go direct.
-const SHARED = '';
+const SHARED = 'https://long-box19c4.jwill-personalacc.workers.dev/';
 const hasAccess = () => !!(SHARED || store.get(K_KEY, ''));
 const K_KEY = 'longbox.cvkey', K_RATE = 'longbox.ratings', K_WATCH = 'longbox.toread', K_SEEN = 'longbox.read', K_FAV = 'longbox.favs',
   K_HIDE = 'longbox.hiderated', K_PUB = 'longbox.volpub', K_AV = 'longbox.avatars', CK = 'longbox.c1.';

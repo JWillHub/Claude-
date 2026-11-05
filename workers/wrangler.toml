@@ -1,4 +1,4 @@
 # Lets Cloudflare deploy the Long Box shared server straight from this GitHub folder (Import a repository → root directory "workers").
-name = "long-box-27"
+name = "long-box19c4"
 main = "long-box-server.js"
 compatibility_date = "2025-10-01"
