@@ -533,15 +533,11 @@ function rFromX(el, x){
 }
 /* tap or drag across stars; onChange(r, final) */
 function bindStars(el, onChange){
-  // slide only: a plain tap does nothing, the rating follows your finger once it moves sideways
-  let down = false, sliding = false, x0 = 0;
-  el.addEventListener('pointerdown', e => { down = true; sliding = false; x0 = e.clientX; el.setPointerCapture?.(e.pointerId); e.preventDefault(); });
-  el.addEventListener('pointermove', e => {
-    if(!down) return;
-    if(!sliding && Math.abs(e.clientX - x0) < 8) return;
-    sliding = true; onChange(rFromX(el, e.clientX), false);
-  });
-  const end = e => { if(!down) return; down = false; if(sliding) onChange(rFromX(el, e.clientX), true); };
+  // tap a star (left half = half star) or slide across; the rating is saved when the finger lifts
+  let down = false;
+  el.addEventListener('pointerdown', e => { down = true; el.setPointerCapture?.(e.pointerId); onChange(rFromX(el, e.clientX), false); e.preventDefault(); });
+  el.addEventListener('pointermove', e => { if(down) onChange(rFromX(el, e.clientX), false); });
+  const end = e => { if(!down) return; down = false; onChange(rFromX(el, e.clientX), true); };
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', () => { down = false; });
 }
@@ -710,7 +706,7 @@ function openRatepad(id, tracking, x, y){
     <div class="rph">${poster(f.poster, '', 'w92', f.title)}<div><b>${esc(f.title)}</b><span class="small">${esc(f.year)}${cur ? ' · you gave it ' + fmtR(cur) + '★' : ''}</span></div></div>
     ${starsHTML(46, 6)}
     <div class="rv" id="rpv">${cur ? esc(RWORDS[cur]) : ''}</div>
-    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Slide across the stars to rate'}</div>
+    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Tap or slide across the stars'}</div>
     <div class="rpbtns"><button class="pill line" id="rpd">Details</button>
       ${cur ? '<button class="pill line" id="rpx">Clear</button>' : ''}</div></div>`;
   el.classList.add('on');
@@ -748,7 +744,7 @@ function rpRelease(){
   rp.tracking = false;
   if(rp.wz){ const f = rp.film; closeRatepad(); toggleWatch(f); return; }
   if(rp.moved && rp.r) commitRatepad();
-  else { const h = $('#rph'); if(h) h.textContent = 'Slide across the stars to rate'; }
+  else { const h = $('#rph'); if(h) h.textContent = 'Tap or slide across the stars'; }
 }
 function commitRatepad(){
   const f = rp.film, r = rp.r;
@@ -1253,7 +1249,7 @@ function openRun(saga){
     const f = rel[i]; if(!f || getR(f.id)) return;
     const was = !!seen[f.id], undo = toggleSeen(f), at = i;
     paintBadges(); paintWatched(); setProg();
-    if(!was){ toast(`<span>Marked watched · ${esc(f.title)}</span>`, () => { undo(); paintBadges(); paintWatched(); setProg(); }); setTimeout(() => { if(i === at) go(i + 1); }, 320); }
+    if(!was) toast(`<span>Marked watched · ${esc(f.title)}</span>`, () => { undo(); paintBadges(); paintWatched(); setProg(); });
   };
   const render = () => { setProg(); i >= rel.length ? renderDone() : renderStack(); paintWatched(); };
   s.refresh = () => { setProg(); if(i < rel.length){ paintTop(); paintBadges(); paintWatched(); } };
@@ -1266,11 +1262,11 @@ function openRun(saga){
         <div class="cap"><b>${esc(f.title)}</b><span>${esc(f.year)}</span></div></div>`).join('')}</div>
       <div class="runctl nodrag">${starsHTML(42, 6)}<div class="rv" id="rrv"></div>
         <div class="runbtns"><button class="pill line" id="rprev">‹ Previous</button><button class="pill line" id="rskip">Next ›</button></div>
-        <div class="hint">Slide across the stars to rate · swipe the card left or right to move</div></div>`;
+        <div class="hint">Tap or slide the stars to rate · swipe the card when you're ready</div></div>`;
     const s5 = $('.runctl .s5', box);
     bindStars(s5, (r, fin) => {
       paintStars(s5, r); $('#rrv', b).textContent = RWORDS[r];
-      if(fin){ const at = i; setRating(rel[i], r, true); paintBadges(); setTimeout(() => { if(i === at) go(i + 1); }, 320); }
+      if(fin && r !== getR(rel[i].id)){ setRating(rel[i], r, true); paintBadges(); paintWatched(); }
     });
     $('#rskip', box).onclick = () => go(i + 1);
     $('#rprev', box).onclick = () => go(i - 1);
@@ -1420,7 +1416,7 @@ async function openShow(id){
   const b = s.body, s5 = $('.ratebar .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Slide to rate'; rv.classList.toggle('dim', !r);
+    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Tap or slide to rate'; rv.classList.toggle('dim', !r);
     $('#mclr', b).style.visibility = r ? '' : 'hidden';
   };
   s.refresh = paint; paint();
@@ -1500,7 +1496,7 @@ async function openMovie(id){
   const b = s.body, s5 = $('.ratebar .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Slide to rate'; rv.classList.toggle('dim', !r);
+    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Tap or slide to rate'; rv.classList.toggle('dim', !r);
     $('#mclr', b).style.visibility = r ? '' : 'hidden';
     const logs = entries.filter(e => e.tmdb === id).sort((a, c) => c.date.localeCompare(a.date) || c.added - a.added);
     $('#mhist', b).innerHTML = logs.length ? `<div class="sec" style="margin:4px 0 4px">Your watches</div>` + logs.map(l => `<div class="hrow" data-e="${l.id}">
