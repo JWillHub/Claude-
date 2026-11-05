@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}</style></head><body>
+<title>Common Ground Deck</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: hub-and-spoke. Home is a bento of big color tiles; planning is a 4-step tap wizard ending in a swipeable card deck. */
+:root{
+  --bg:#F6F4FB; --surface:#FFFFFF; --ink:#1B1530; --muted:#6B6680; --line:#E4E0EF;
+  --coral:#FF9077; --sun:#FFD45C; --mint:#74DDB5; --sky:#8FC6FF; --grape:#BBA6FF; --blockink:#1B1530;
+  --warn:#C9301F; --warn-bg:#FFE1DC; --focus:#5B3FD9;
+  --f-display:"Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14111D; --surface:#1F1B2C; --ink:#F1EEF8; --muted:#A39DB8; --line:#312B44; --warn:#FF8A7A; --warn-bg:#3D1F1C; --focus:#C9B8FF; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14111D; --surface:#1F1B2C; --ink:#F1EEF8; --muted:#A39DB8; --line:#312B44; --warn:#FF8A7A; --warn-bg:#3D1F1C; --focus:#C9B8FF; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.app{max-width:600px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:32px;line-height:1.1}h2{font-size:24px;line-height:1.15}h3{font-size:19px;line-height:1.2}
+p{margin:0}
+button{font:inherit;color:inherit}
+*{-webkit-tap-highlight-color:transparent}
+button:focus,[role="button"]:focus{outline:none}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.lt,.tile,.pick,.pill,.small,.btn,.iconbtn,.hero,.cta,.dial button,.scale button{transition:transform .12s ease}
+.lt:active,.tile:active,.pick:active,.pill:active,.small:active,.btn:active,.iconbtn:active,.hero:active,.cta:active,.dial button:active,.scale button:active{transform:scale(.96)}
+.coral{background:var(--coral)}.sun{background:var(--sun)}.mint{background:var(--mint)}.sky{background:var(--sky)}.grape{background:var(--grape)}
+.coral,.sun,.mint,.sky,.grape{color:var(--blockink)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:10px;padding-block:14px}
+.iconbtn{appearance:none;border:0;width:42px;height:42px;border-radius:14px;background:var(--surface);display:grid;place-items:center;cursor:pointer;box-shadow:0 1px 0 var(--line)}
+.iconbtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.logo{font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+.logo i{width:22px;height:22px;border-radius:7px;background:var(--mint);display:inline-block;position:relative;transform:rotate(-8deg)}
+.logo i::after{content:"";position:absolute;inset:5px;border-radius:4px;background:var(--coral)}
+.ptitle{flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:23px;letter-spacing:-.02em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;-webkit-user-select:none;user-select:none;border-radius:10px;transition:opacity .15s}
+.ptitle:active{opacity:.6}
+.bar .thm{margin-left:auto}
+.crumb{margin-left:auto;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+main{display:flex;flex-direction:column;gap:18px}
+.kicker{font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hello{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+.hero{appearance:none;border:0;cursor:pointer;text-align:left;border-radius:28px;padding:22px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:end;min-height:160px;position:relative;overflow:hidden}
+.hero .big{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1.05;grid-column:1}
+.hero .sub{grid-column:1;font-weight:600;opacity:.85}
+.hero .go{grid-column:2;grid-row:1/3;width:58px;height:58px;border-radius:50%;background:var(--blockink);color:var(--coral);display:grid;place-items:center;font-size:26px;font-weight:700}
+.hero::before{content:"";position:absolute;right:-30px;top:-40px;width:150px;height:150px;border-radius:50%;background:var(--sun);opacity:.85}
+.hero>*{position:relative}
+@media (prefers-reduced-motion: no-preference){.hero::before{animation:bubble 9s ease-in-out infinite;will-change:transform}}
+@keyframes bubble{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(-10px,8px) scale(1.04)}50%{transform:translate(-4px,16px) scale(.98)}75%{transform:translate(6px,6px) scale(1.03)}}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{appearance:none;border:0;cursor:pointer;border-radius:24px;padding:16px 18px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:118px;justify-content:flex-end}
+.tile b{font-family:var(--f-display);font-size:40px;line-height:1;font-weight:700}
+.tile span{font-weight:800}
+.tile:nth-child(1){border-radius:24px 24px 24px 8px}.tile:nth-child(4){border-radius:8px 24px 24px 24px}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;margin:0 -2px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.strip .pill:last-child{margin-right:28px}
+.strip::-webkit-scrollbar{display:none}
+.pill{appearance:none;flex:none;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+.pill[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+/* wizard */
+.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.progress span{height:8px;border-radius:99px;background:var(--line)}
+.progress span.on{background:var(--ink)}
+.q{display:flex;flex-direction:column;gap:4px}
+.q p{color:var(--muted);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pick{appearance:none;border:3px solid transparent;cursor:pointer;border-radius:20px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:104px;justify-content:space-between;transition:transform .12s}
+.pick svg{width:32px;height:32px;stroke:var(--blockink);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.pick b{font-family:var(--f-display);font-size:18px;font-weight:600;line-height:1.1}
+.pick small{font-weight:700;opacity:.75;font-size:12.5px}
+.pick[aria-pressed="true"]{border-color:var(--ink);transform:scale(.97);box-shadow:inset 0 0 0 3px var(--surface)}
+.pick.concern{flex-direction:row;align-items:center;min-height:60px;padding:10px 12px;gap:8px;border-radius:18px}
+.pick.concern>span:first-child{min-width:0}
+.pick.concern b{display:block;font-size:15px;line-height:1.15}
+.pick.concern small{display:block;font-size:12px;line-height:1.25;margin-top:1px}
+.pick.concern .tick{width:22px;height:22px;font-size:12px;align-self:center;flex:none}
+.pick .tick{width:26px;height:26px;border-radius:50%;border:2.5px solid var(--blockink);display:grid;place-items:center;font-weight:800;font-size:14px;align-self:flex-end}
+.pick[aria-pressed="true"] .tick{background:var(--blockink);color:#FFFFFF}
+.pick.crisis{background:rgba(255,59,48,.38);color:var(--ink)}
+.pick.crisis[aria-pressed="true"]{background:rgba(255,59,48,.6)}
+.pick.crisis .tick{border-color:var(--warn)}.pick.crisis[aria-pressed="true"] .tick{background:var(--warn);color:var(--surface)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);font-weight:800;font-size:14px;border-radius:999px;padding:10px 18px;transition:opacity .25s,transform .3s cubic-bezier(.2,.9,.3,1.2);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.cta.cta-hide{opacity:0;transform:translateY(24px);pointer-events:none;transition:opacity .25s ease,transform .3s cubic-bezier(.2,.9,.3,1.2)}
+.cta.cta-hide.cta-on{opacity:1;transform:none;pointer-events:auto}
+.cta{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));appearance:none;border:0;cursor:pointer;border-radius:20px;padding:17px 20px;background:var(--ink);color:var(--bg);font-family:var(--f-display);font-weight:600;font-size:19px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 10px 30px rgba(20,17,29,.25)}
+.cta:disabled{opacity:.4;cursor:default}
+.dial{background:var(--surface);border-radius:26px;padding:20px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;text-align:center}
+.dial button{appearance:none;border:0;width:56px;height:56px;border-radius:18px;background:var(--sky);color:var(--blockink);font-size:28px;font-weight:800;cursor:pointer}
+.dial b{font-family:var(--f-display);font-size:56px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums}
+.dial small{display:block;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid3 .pick{min-height:116px;align-items:center;text-align:center;justify-content:center}
+.grid3 .pick svg{width:46px;height:46px}
+/* deck */
+.stack{position:relative;width:100%;max-width:440px;aspect-ratio:1/1;margin:0 auto 30px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.card{position:absolute;inset:0;border-radius:30px;padding:22px;display:flex;flex-direction:column;gap:10px;overflow:hidden;box-shadow:0 10px 30px rgba(20,17,29,.18);transition:transform .32s cubic-bezier(.2,.8,.3,1),opacity .32s;will-change:transform;cursor:grab}
+.card.dragging{transition:none;cursor:grabbing}
+.card.tap{cursor:pointer}
+.card .acts{align-items:center;justify-content:space-between}
+.taphint{font-weight:800;font-size:14px;opacity:.75}
+@media (hover:hover){.card.tap:hover .taphint{opacity:1}}
+.card.plain{background:var(--surface);color:var(--ink);border:2px dashed var(--line)}
+.stacknav{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:-8px}
+.stacknav .iconbtn:disabled{opacity:.35;cursor:default}
+.stacknav span{font-weight:800;font-size:14px;color:var(--muted);min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){.card{transition:none}}
+.card .when{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.card .when b{font-family:var(--f-display);font-size:15px;letter-spacing:0;background:var(--blockink);color:#FFFFFF;padding:4px 10px;border-radius:999px;font-weight:600;font-variant-numeric:tabular-nums}
+.card.plain .when b{background:var(--ink);color:var(--bg)}
+.card h2{font-size:27px}
+.card .grow{flex:1}
+.card .acts{display:flex;gap:8px;flex-wrap:wrap}
+.small{appearance:none;border:2px solid currentColor;background:transparent;border-radius:999px;padding:7px 14px;font-weight:800;font-size:14px;cursor:pointer}
+.small.solid{background:var(--blockink);border-color:var(--blockink);color:#FFFFFF}
+.ev{font-weight:800;font-size:12.5px;display:inline-flex;align-items:center;gap:6px}
+.ev i{letter-spacing:2px;font-style:normal;font-size:11px}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots span{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.box{background:var(--surface);border-radius:24px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.box ul,.box ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.box h3{font-size:18px}
+.alert{background:var(--warn-bg);border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.alert b{color:var(--warn);font-family:var(--f-display);font-size:18px;font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row input{flex:1;min-width:0}
+input[type="text"],input[type="search"],input[type="date"],textarea{font:inherit;font-size:16px;padding:13px 15px;border-radius:16px;border:2px solid var(--line);background:var(--surface);color:var(--ink);width:100%}
+textarea{min-height:88px;resize:vertical}
+.btn{appearance:none;border:0;cursor:pointer;border-radius:16px;padding:13px 18px;background:var(--ink);color:var(--bg);font-weight:800}
+.btn.alt{background:var(--surface);color:var(--ink);border:2px solid var(--line)}
+.hint{font-size:13.5px;color:var(--muted);font-weight:600}
+.label{font-weight:800;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+/* library */
+.lib{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.groups{display:flex;flex-direction:column;gap:20px}
+.grp .gh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.grp .gh h2{font-size:21px;display:flex;align-items:center;gap:8px}
+.grp .gh h2 span{font:800 12px var(--f-body);color:var(--blockink);border-radius:999px;padding:2px 9px}
+.gall{appearance:none;border:0;cursor:pointer;flex:none;font:inherit;font-weight:800;font-size:13px;color:var(--ink);background:var(--surface);box-shadow:0 1px 0 var(--line);border-radius:999px;padding:6px 13px;transition:transform .12s}
+.gall:active{transform:scale(.94)}
+.hrow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;padding:2px 0 4px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;scroll-behavior:smooth}
+.hrow::-webkit-scrollbar{display:none}
+.lt.mini{flex:none;width:calc((100% - 10px) / 2);min-height:128px;scroll-snap-align:start;transition:opacity .15s}
+.lt.mini:active{transform:none;opacity:.8}
+.pdots{display:flex;justify-content:center;gap:6px;margin-top:8px}
+.pdots i{width:6px;height:6px;border-radius:3px;background:var(--line);transition:width .25s,background .25s}
+.pdots i.on{width:18px;background:var(--ink)}
+.lt.mini b{font-size:16px}
+
+.lt{appearance:none;border:0;cursor:pointer;border-radius:20px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:150px}
+.lt b{font-family:var(--f-display);font-size:17.5px;line-height:1.15;font-weight:600}
+.lt .meta{font-weight:800;font-size:12px;opacity:.75;margin-top:auto}
+.lt span.c{font-weight:800;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.study{background:var(--surface);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.st-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.st-yr{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.study h3{font-size:18px;line-height:1.25}
+.study p{font-size:15px}
+.study .cite{font-size:13px;color:var(--muted);line-height:1.4}
+.st-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:2px dashed var(--line);padding-top:12px}
+.st-tags{display:flex;flex-wrap:wrap;gap:6px}
+.st-tag{font-size:12px;font-weight:700;color:var(--muted);border:1.5px solid var(--line);border-radius:999px;padding:2px 9px}
+.study a{appearance:none;text-decoration:none;color:var(--bg);background:var(--ink);font-weight:800;font-size:13.5px;border-radius:999px;padding:7px 13px;white-space:nowrap}
+.tagpill{display:inline-block;font-weight:800;font-size:11.5px;padding:3px 9px;border-radius:999px;margin-right:4px}
+details.g{border-radius:22px;overflow:hidden}
+details.g summary{list-style:none;cursor:pointer;padding:16px 18px;font-family:var(--f-display);font-size:19px;font-weight:600;display:flex;justify-content:space-between;gap:10px}
+details.g summary::-webkit-details-marker{display:none}
+details.g summary::after{content:"+";font-weight:700}
+details.g[open] summary::after{content:"–"}
+details.g .gb{background:var(--surface);color:var(--ink);padding:16px 18px;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.gb ul,.gb ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.gb .hint{font-size:13px}
+/* notes */
+.seg{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:4px;background:var(--line);padding:4px;border-radius:16px}
+.seg button{appearance:none;border:0;background:transparent;border-radius:12px;padding:11px 4px;font:inherit;font-weight:800;font-size:14px;color:var(--muted);cursor:pointer;transition:background .15s}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cgrid>:last-child:nth-child(odd){grid-column:1/-1}
+.cpick{appearance:none;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:16px;padding:10px 12px;min-height:60px;display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;cursor:pointer;font:inherit;transition:transform .12s ease,background .15s,border-color .15s}
+.cpick:active{transform:scale(.97)}
+.cpick>span{min-width:0}
+.cpick b{display:block;font-weight:800;font-size:14.5px;line-height:1.25}
+.cpick small{display:block;font-size:12px;color:var(--muted);font-weight:600;line-height:1.3}
+.cpick .ck{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.cpick[aria-pressed="true"]{border-color:var(--ink);background:color-mix(in srgb,var(--mint) 30%,var(--surface))}
+.cpick[aria-pressed="true"] .ck{background:var(--ink);border-color:var(--ink)}
+.cpick[aria-pressed="true"] .ck::after{content:"";width:9px;height:5px;border-left:2.5px solid var(--bg);border-bottom:2.5px solid var(--bg);transform:rotate(-45deg) translate(1px,-1px)}
+.cpick.crisis{width:100%;border-color:transparent;background:rgba(255,59,48,.36)}
+.cpick.crisis .ck{border-color:rgba(255,59,48,.65)}
+.cpick.crisis b{color:var(--ink)}
+.cpick.crisis[aria-pressed="true"]{border-color:transparent;background:rgba(255,59,48,.58)}
+.cpick.crisis[aria-pressed="true"] .ck{background:var(--warn);border-color:var(--warn)}
+.rows{display:flex;flex-direction:column;gap:6px}
+.rowbtn{appearance:none;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font:inherit;cursor:pointer;text-align:left}
+.rowbtn b{font-weight:800}.swr{position:relative;border-radius:14px;overflow:hidden;transition:height .26s ease,opacity .26s ease,margin .26s ease}
+.swr .rowbtn{position:relative;z-index:1;width:100%;touch-action:pan-y;transition:transform .28s cubic-bezier(.2,.9,.3,1.15)}
+.swr.drag .rowbtn{transition:none}
+.swdel{position:absolute;inset:0 0 0 auto;width:110px;appearance:none;border:0;cursor:pointer;background:#F2362B;color:#fff;font:inherit;font-weight:800;font-size:14px;
+  display:flex;align-items:center;justify-content:flex-end;gap:6px;padding-right:16px;border-radius:14px;opacity:0;transition:opacity .15s}
+.swr.open .swdel,.swr.drag .swdel{opacity:1}
+.swdel svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.swdel:active{background:#D61F15}
+.lh{display:flex;justify-content:space-between;align-items:center}
+.seeall{appearance:none;border:0;cursor:pointer;background:var(--surface);box-shadow:0 1px 0 var(--line);color:var(--ink);font:inherit;font-weight:800;font-size:13px;border-radius:999px;padding:5px 12px;transition:transform .12s}
+.seeall:active{transform:scale(.95)}
+.sheet .body .hint{font-size:13px;color:var(--muted);font-weight:600}
+.swr.gone{height:0!important;opacity:0;margin-top:-6px}
+.rowbtn span{font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap}
+.actrow{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:6px 6px 6px 14px;font-weight:700;font-size:14.5px}
+.actrow .rm{appearance:none;border:0;width:32px;height:32px;border-radius:50%;background:var(--line);color:var(--ink);font-size:18px;line-height:1;cursor:pointer;flex:none}
+.mood{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 14px}
+.mood-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mood-val{display:flex;align-items:baseline;gap:6px}
+.mood-val b{font-family:var(--f-display);font-weight:700;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.mood-val .of{font-size:13px;color:var(--muted);font-weight:700}
+.mood-clear{appearance:none;border:0;background:var(--line);color:var(--ink);font:inherit;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;cursor:pointer;margin-left:4px}
+.mood input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0;cursor:pointer;touch-action:pan-y}
+.mood input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--coral),var(--sun) 50%,var(--mint))}
+.mood input[type=range]::-moz-range-track{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--coral),var(--sun) 50%,var(--mint))}
+.mood input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-9px;border-radius:50%;background:#FFFFFF;border:3px solid var(--blockink);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.mood input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#FFFFFF;border:3px solid var(--blockink);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.mood[data-rated="false"] input[type=range]{opacity:.45}
+.mood[data-rated="false"] .mood-val b{color:var(--muted)}
+.mood-ends{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:700}
+.scale{display:grid;grid-template-columns:repeat(11,1fr);gap:4px}
+.scale button{appearance:none;border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 0;font-weight:800;font-size:14px;cursor:pointer;font-variant-numeric:tabular-nums}
+.scale button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.form{display:flex;flex-direction:column;gap:16px}
+.field{display:flex;flex-direction:column;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.nc{background:var(--surface);border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.nc .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.nc h3{font-size:20px}
+.delta{font-family:var(--f-display);font-weight:600;padding:3px 10px;border-radius:999px;font-size:14px}
+.flag{background:var(--warn-bg);color:var(--warn);font-weight:800;font-size:12px;padding:3px 9px;border-radius:999px}
+details.nd summary{cursor:pointer;font-weight:800;list-style:none;font-size:14px}
+details.nd summary::-webkit-details-marker{display:none}
+.nd p{font-size:14.5px;margin-top:6px}.nd p b{display:block;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bars{display:flex;gap:4px;align-items:flex-end;height:64px}
+.bars span{flex:1;max-width:22px;border-radius:6px 6px 3px 3px;background:var(--mint);min-height:4px}
+.empty{border:2px dashed var(--line);border-radius:22px;padding:18px;color:var(--muted);font-weight:600}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(20,17,29,.5);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:90vh;overflow-y:auto;background:var(--bg);border-radius:30px 30px 0 0;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.sheet .head{padding:12px max(20px,env(safe-area-inset-right,0px)) 20px max(20px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:8px;border-radius:30px 30px 0 0;touch-action:none;cursor:grab}
+.sheet{transition:transform .22s ease-out}
+.sheet.dragging{transition:none}
+.scrim{transition:opacity .2s}
+.grabber{appearance:none;border:0;padding:0;cursor:pointer;width:52px!important;max-width:52px!important;height:6px;border-radius:3px;background:var(--blockink);opacity:.35;margin:0 auto 10px!important;flex:none}
+.grabber:hover,.grabber:focus-visible{opacity:.6}
+.sheet .body{padding:16px max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;max-width:640px;margin:0 auto}
+.sheet .head>*{max-width:600px;width:100%;margin:0 auto}
+.sheet ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.ad{display:grid;gap:8px}.ad div{background:var(--surface);border-radius:16px;padding:12px 14px;font-size:14.5px}.ad b{display:block;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.foot{font-size:13px;color:var(--muted);font-weight:600;padding-top:6px}
+@media (prefers-reduced-motion: no-preference){.sheet{animation:up .25s cubic-bezier(.2,.9,.3,1.2)}@keyframes up{from{transform:translateY(40px)}to{transform:none}}
+  main>*{animation:swapIn .22s ease-out both}@keyframes swapIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}}
+main.still>*{animation:none!important}
+@media (min-width:700px){.lib{grid-template-columns:repeat(3,1fr)}}
+
+.crisis-bg{position:fixed;inset:0;z-index:60;background:rgba(8,10,14,.62);display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px))}
+.crisis-card{width:100%;max-width:420px;max-height:calc(100vh - 40px);overflow-y:auto;background:var(--surface);color:var(--ink);border-radius:24px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.crisis-head{background:var(--warn-bg);padding:16px 18px 14px;display:flex;gap:12px;align-items:flex-start}
+.crisis-head svg{width:30px;height:30px;flex:none;stroke:var(--warn);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;margin-top:2px}
+.crisis-head h2{margin:0;font-family:var(--f-display);color:var(--warn);font-size:23px;line-height:1.15}
+.crisis-head p{margin:4px 0 0;font-size:14px;color:var(--ink);line-height:1.45}
+.crisis-body{padding:14px 18px 18px;display:flex;flex-direction:column;gap:8px}
+.crisis-body .cl{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.cline{display:flex;gap:14px;align-items:center;border:2px solid var(--line);border-radius:16px;padding:10px 14px;text-decoration:none;color:inherit;background:var(--surface)}
+.cline .num{font-family:var(--f-display);font-size:24px;font-weight:700;color:var(--warn);min-width:74px;line-height:1.05;user-select:all;-webkit-user-select:all}
+.cline .num small{display:block;font-size:12px;font-family:inherit;font-weight:600}
+.cline b{display:block;font-size:15px}
+.cline span.d{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+.crisis-body ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:14.5px}
+.crisis-body .note{font-size:13px;color:var(--muted);line-height:1.45}
+.crisis-ok{appearance:none;border:0;cursor:pointer;width:100%;margin-top:6px;background:var(--ink);color:var(--surface);font:inherit;font-weight:700;font-size:16px;padding:14px;border-radius:14px}
+.crisis-bg{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+@media (prefers-reduced-motion: no-preference){
+.crisis-bg{animation:cfade .3s ease-out both}
+.crisis-card{animation:cspring .62s cubic-bezier(.2,.8,.2,1) both;will-change:transform,opacity}
+.crisis-head svg{animation:cpulse .7s .38s ease-out both}
+.crisis-body>*{animation:crise .42s cubic-bezier(.2,.8,.3,1) both}
+.crisis-body>*:nth-child(1){animation-delay:.16s}.crisis-body>*:nth-child(2){animation-delay:.22s}.crisis-body>*:nth-child(3){animation-delay:.28s}.crisis-body>*:nth-child(4){animation-delay:.34s}.crisis-body>*:nth-child(5){animation-delay:.42s}
+.crisis-bg.out{animation:cfadeout .26s ease-in forwards}
+.crisis-bg.out .crisis-card{animation:cshrink .26s ease-in forwards}
+@keyframes cfade{from{opacity:0}to{opacity:1}}
+@keyframes cspring{0%{opacity:0;transform:translateY(56px) scale(.9)}55%{opacity:1;transform:translateY(-9px) scale(1.02)}78%{transform:translateY(3px) scale(.996)}100%{opacity:1;transform:none}}
+@keyframes crise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes cpulse{0%{transform:scale(1)}35%{transform:scale(1.25)}60%{transform:scale(.94)}100%{transform:scale(1)}}
+@keyframes cfadeout{to{opacity:0}}
+@keyframes cshrink{to{opacity:0;transform:translateY(14px) scale(.94)}}}
+
+.cpick.crisis,.chips .chip.crisis,.chips.multi .chip.crisis,.pick.crisis{background:#F2362B!important;border-color:#F2362B!important;color:#FFFFFF!important}
+.cpick.crisis b,.chips.multi .chip.crisis b,.pick.crisis b{color:#FFFFFF!important}
+.cpick.crisis small,.chips.multi .chip.crisis small,.pick.crisis small{color:rgba(255,255,255,.88)!important;opacity:1!important}
+.cpick.crisis .ck,.chips.multi .chip.crisis .ck,.pick.crisis .tick{border-color:rgba(255,255,255,.9)!important;color:#D61F15!important}
+.cpick.crisis[aria-pressed="true"],.chips.multi .chip.crisis[aria-pressed="true"],.pick.crisis[aria-pressed="true"]{background:#D61F15!important;border-color:#FFFFFF!important;box-shadow:0 0 0 3px rgba(242,54,43,.45)!important}
+.cpick.crisis[aria-pressed="true"] .ck,.chips.multi .chip.crisis[aria-pressed="true"] .ck,.pick.crisis[aria-pressed="true"] .tick{background:#FFFFFF!important;border-color:#FFFFFF!important}
+.cpick.crisis[aria-pressed="true"] .ck::after,.chips.multi .chip.crisis[aria-pressed="true"] .ck::after{border-color:#D61F15!important}
+
+.sumcard{background:var(--surface);border:2px dashed var(--line);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.sumcard p{margin:0;font-size:14.5px;line-height:1.45}
+.sumcard p b{display:block;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.needwho input{border-color:var(--warn)!important}
+.whoerr{color:var(--warn);font-size:13.5px;font-weight:700;margin:0}
+@media (prefers-reduced-motion: no-preference){.needwho input{animation:nudge .32s ease}@keyframes nudge{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}}
+
+html.homefix,html.homefix body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.homefix body{padding-bottom:0}
+html.homefix .app{height:100vh;height:100dvh;display:flex;flex-direction:column}
+html.homefix main{flex:1;min-height:0;overflow:hidden;gap:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+html.homefix .hero{flex:1 1 auto;min-height:150px;max-height:260px}
+html.homefix .hero,html.homefix .bento,html.homefix .hello,html.homefix .field{flex-shrink:0}
+html.homefix .hero{flex-shrink:1}
+html.homefix .tile{min-height:100px}
+html.homefix .foot{margin-top:auto;padding-top:0}
+.homelink{cursor:pointer;-webkit-user-select:none;user-select:none;border-radius:10px;transition:opacity .15s}
+.homelink:active{opacity:.6}
+.homelink:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+
+/* theme toggle */
+.thm{appearance:none;border:0;cursor:pointer;width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;position:relative;overflow:hidden;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);color:var(--ink);box-shadow:0 1px 0 color-mix(in srgb,var(--ink) 14%,transparent),0 4px 14px -8px rgba(0,0,0,.35);transition:transform .15s ease}
+.thm:active{transform:scale(.9)}
+.thm svg{grid-area:1/1;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;transition:transform .55s cubic-bezier(.3,1.5,.5,1),opacity .3s}
+.thm .tsun{color:#F2A516}.thm .tmoon{color:#8EA2FF;fill:color-mix(in srgb,#8EA2FF 30%,transparent)}
+:root[data-theme="dark"] .thm .tsun{transform:rotate(-90deg) scale(.3);opacity:0}
+:root:not([data-theme="dark"]) .thm .tmoon{transform:rotate(90deg) scale(.3);opacity:0}
+html.thx,html.thx *,html.thx *::before,html.thx *::after{transition:background-color .45s ease,color .45s ease,border-color .45s ease,fill .45s ease,stroke .45s ease,box-shadow .45s ease!important}
+
+/* search bars removed */
+input[type="search"],.srch{display:none!important}
+
+/* tap card to expand note */
+.nc.tapx{cursor:pointer;transition:transform .12s ease}
+.nc.tapx:active{transform:scale(.99)}
+.ndx{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.2,.8,.3,1)}
+.ndx>.ndi{overflow:hidden;min-height:0}
+.nc.open .ndx{grid-template-rows:1fr}
+.ndx p{font-size:14.5px;margin-top:6px}.ndx p:first-child{margin-top:2px}.ndx p b{display:block;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chev{display:inline-block;width:9px;height:9px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);margin-left:8px;transition:transform .3s;position:relative;top:-2px}
+.nc.open .chev{transform:rotate(225deg);top:2px}
+
+
+.mood input[type=range]{touch-action:none}
+</style>
+
+<div class="app">
+  <header class="bar">
+    <button class="iconbtn" id="back" aria-label="Back to home" hidden><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="logo homelink" role="link" tabindex="0" aria-label="Common Ground, go home"><i></i>common ground</div>
+    <span class="crumb" id="crumb" hidden></span><div class="ptitle" id="ptitle" role="link" tabindex="0" hidden></div><button class="thm" type="button" aria-label="Switch theme"><svg class="tsun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><svg class="tmoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z"/></svg></button>
+  </header>
+  <main id="main"></main>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
+
+<script>
+/* ---------- DATA: concerns ---------- */
+const CONCERNS=[
+ {id:"anxiety",name:"Anxiety / panic",focus:"Calming the body first, then naming worries and testing them",
+  ask:["When the anxiety shows up, where do you feel it in your body?","What has helped even a little in the past?","What would feeling 10% calmer look like this week?"],
+  prompts:["What does anxiety try to protect you from?","Share one thing that brings you back to the present.","What's a worry that turned out smaller than expected?"],
+  watch:["Panic symptoms that are new or include chest pain need medical evaluation","Avoidance growing to the point the person stops leaving home"]},
+ {id:"depression",name:"Low mood / depression",focus:"Small, doable actions that rebuild energy, plus reconnecting with what matters",
+  ask:["What does a hard day look like for you right now?","What used to give you even a small sense of enjoyment?","What's one thing you'd like to be able to do again?"],
+  prompts:["What gets you out of bed on the hard days?","Share one small win from this week, however small.","What does 'feeling better' mean to you?"],
+  watch:["Hopelessness, statements about being a burden, or talk of death","Not eating, not sleeping, or not taking medication as prescribed"]},
+ {id:"trauma",name:"Trauma / triggers",focus:"Safety and choice, staying inside the window of tolerance, and grounding. Not retelling the trauma",
+  ask:["What helps you feel safe in a space like this one?","How do you know when you're getting overwhelmed?","What do you want me to do if that happens while we talk?"],
+  prompts:["What does safety feel like for you?","What's something you do that helps you come back to yourself?","How do you take care of yourself after a hard reminder?"],
+  watch:["Dissociation or flashbacks during the session: pause, ground, and go slower","Detailed trauma retelling, which belongs with a clinician"]},
+ {id:"substance",name:"Substance use / cravings",focus:"Recovery capital, triggers and coping, and the person's own reasons for change",
+  ask:["What's your relationship with using right now, in your own words?","What tends to come right before a craving?","What would you lose and gain if things changed?"],
+  prompts:["What does recovery look like for you today?","What's a trigger you've learned to work around?","Who or what is in your corner?"],
+  watch:["Overdose risk after a period of not using: share naloxone and harm-reduction info per policy","Withdrawal symptoms that need medical care"]},
+ {id:"anger",name:"Anger / irritability",focus:"Spotting early warning signs and building a pause between feeling and reacting",
+  ask:["What are the first signs you notice when anger starts building?","What's usually underneath the anger: hurt, fear, unfairness?","What has a good pause looked like for you before?"],
+  prompts:["What's your anger trying to tell you?","Share a time you handled frustration in a way you felt good about.","What helps you cool down?"],
+  watch:["Threats toward a specific person: follow duty-to-warn and facility protocol","Anger that escalates in session: lower your voice, create space, end if unsafe"]},
+ {id:"grief",name:"Grief / loss",focus:"Room to talk about the loss, connection to memories, and gentle routines",
+  ask:["Would you tell me about the person or thing you lost?","What's been hardest about the days since?","What helps you feel close to them?"],
+  prompts:["What's a memory you carry with you?","How has grief changed over time for you?","What do people get wrong about grief?"],
+  watch:["Grief that leaves the person unable to function months later may need a clinical referral","Wanting to join the person who died"]},
+ {id:"lonely",name:"Loneliness / isolation",focus:"Mapping existing connections and taking one small step toward people",
+  ask:["Who do you talk to in a typical week?","When did you last feel connected to someone?","What gets in the way of reaching out?"],
+  prompts:["Where do you feel like you belong?","What's a low-pressure way you've connected with someone?","What does a good friend do?"],
+  watch:["Isolation paired with hopelessness","Unsafe relationships the person returns to because they have no one else"]},
+ {id:"sleep",name:"Sleep problems",focus:"A wind-down routine and steady wake time, plus calming a busy mind at night",
+  ask:["Walk me through a typical night.","What keeps you up: thoughts, pain, noise, schedule?","Have you talked with your prescriber about sleep?"],
+  prompts:["What helps you wind down?","What gets in the way of rest?","What's one sleep habit you'd like to change?"],
+  watch:["Long-standing insomnia, loud snoring, or breathing pauses need medical evaluation","Sudden drop in need for sleep with high energy"]},
+ {id:"selfworth",name:"Shame / self-worth",focus:"Noticing the inner critic, practicing self-compassion, and naming real strengths",
+  ask:["How do you talk to yourself after a mistake?","Would you say that to a friend?","What's something you've gotten through that you don't give yourself credit for?"],
+  prompts:["What's a strength someone else sees in you?","How would you encourage a friend in your shoes?","What's one thing you're learning to accept about yourself?"],
+  watch:["Self-hatred tied to self-harm urges","Shame that keeps the person from seeking care"]},
+ {id:"stress",name:"Stress / overwhelm",focus:"Breaking problems into pieces and bringing the body's stress response down",
+  ask:["What's on your plate right now?","Which of these is in your control?","What's one thing that would lighten the load this week?"],
+  prompts:["What does stress feel like in your body?","What's your go-to stress reset?","What's something you've let go of that helped?"],
+  watch:["Stress coming from basic needs (housing, food, money): connect to case management","Physical symptoms that need medical attention"]},
+ {id:"transition",name:"Life transitions",focus:"Practical planning for a change such as discharge, housing, or a new job, with hope",
+  ask:["What's changing for you, and when?","What are you looking forward to, and what worries you?","Who and what will you need in place?"],
+  prompts:["Share a change you got through that surprised you.","What helps you adjust to something new?","What do you want to bring with you into the next chapter?"],
+  watch:["Higher risk in the weeks after discharge from inpatient or crisis care","Gaps in medication, benefits, or housing"]},
+ {id:"hope",name:"Hopelessness / motivation",focus:"Hope through lived experience, values, and very small achievable goals",
+  ask:["What matters to you, even if it feels out of reach right now?","When have you felt even a little hopeful?","What's one thing that would make next week slightly better?"],
+  prompts:["What does hope mean to you?","Who showed you that recovery was possible?","What keeps you going?"],
+  watch:["Hopelessness is a key suicide risk factor: ask directly about thoughts of suicide","Stopping all treatment"]},
+ {id:"relation",name:"Relationships / conflict",focus:"Clear communication, boundaries, and deciding what the person wants from the relationship",
+  ask:["What's happening in the relationship?","What do you want from this person or situation?","What have you tried, and how did it go?"],
+  prompts:["What makes a relationship feel safe?","What's a boundary you've set that helped?","How do you repair after a conflict?"],
+  watch:["Signs of domestic or intimate partner violence: share resources and follow protocol","Coercion around money, medication, or housing"]},
+ {id:"crisis",name:"Suicidal thoughts / crisis",focus:"Safety first: collaborative safety planning and immediate connection to clinical support",
+  ask:["Are you having thoughts of suicide right now?","Have you thought about how you would do it?","What has kept you safe so far?"],
+  prompts:[],
+  watch:["Do not leave the person alone if risk is imminent","Follow your facility's crisis protocol and involve clinical staff"]}
+];
+
+/* ---------- DATA: studies ---------- */
+const STUDIES=[
+ {id:"chinman2014",a:"Chinman M, George P, Dougherty RH, et al.",y:2014,t:"Peer support services for individuals with serious mental illnesses: assessing the evidence",j:"Psychiatric Services",v:"65(4):429-441",type:"Systematic review",tags:["Peer support"],
+  f:"Rated the evidence for peer support as moderate. Across studies, adding peers to teams was linked to less inpatient use in some trials, better engagement, and more hopefulness, though study quality varied."},
+ {id:"lloydevans2014",a:"Lloyd-Evans B, Mayo-Wilson E, Harrison B, et al.",y:2014,t:"A systematic review and meta-analysis of randomised controlled trials of peer support for people with severe mental illness",j:"BMC Psychiatry",v:"14:39",type:"Meta-analysis",tags:["Peer support","Recovery"],
+  f:"Pooled 18 trials. Found little evidence that peer support changed hospital admission or overall symptoms, but some evidence for gains in hope, recovery, and empowerment. Authors flagged risk of bias in many trials."},
+ {id:"fuhr2014",a:"Fuhr DC, Salisbury TT, De Silva MJ, et al.",y:2014,t:"Effectiveness of peer-delivered interventions for severe mental illness and depression on clinical and psychosocial outcomes: a systematic review and meta-analysis",j:"Social Psychiatry and Psychiatric Epidemiology",v:"49(11):1691-1702",type:"Meta-analysis",tags:["Peer support","Depression"],
+  f:"For serious mental illness, peer-delivered care produced outcomes comparable to care from professionals, with a modest gain in hope. For depression, peer support showed a benefit over usual care."},
+ {id:"pitt2013",a:"Pitt V, Lowe D, Hill S, et al.",y:2013,t:"Consumer-providers of care for adult clients of statutory mental health services",j:"Cochrane Database of Systematic Reviews",v:"Issue 3, CD004807",type:"Systematic review",tags:["Peer support"],
+  f:"People with lived experience working as providers achieved psychosocial, symptom, and service-use outcomes similar to non-peer staff. No evidence of harm was found."},
+ {id:"white2020",a:"White S, Foster R, Marks J, et al.",y:2020,t:"The effectiveness of one-to-one peer support in mental health services: a systematic review and meta-analysis",j:"BMC Psychiatry",v:"20:534",type:"Meta-analysis",tags:["Peer support","Recovery"],
+  f:"One-to-one peer support had small positive effects on self-reported recovery, hope, and empowerment. Effects on clinical symptoms and hospitalization were not clearly established."},
+ {id:"smit2023",a:"Smit D, Miguel C, Vrijsen JN, et al.",y:2023,t:"The effectiveness of peer support for individuals with mental illness: systematic review and meta-analysis",j:"Psychological Medicine",v:"53(11):5332-5341",type:"Meta-analysis",tags:["Peer support","Recovery"],
+  f:"Pooled 28 randomized trials (about 4,150 people). Peer support produced small but significant improvements in both clinical recovery and personal recovery. Study quality was modest."},
+ {id:"johnson2018",a:"Johnson S, Lamb D, Marston L, et al.",y:2018,t:"Peer-supported self-management for people discharged from a mental health crisis team: a randomised controlled trial",j:"The Lancet",v:"392(10145):409-418",type:"RCT",tags:["Peer support","Crisis","Transitions"],
+  f:"After discharge from crisis care, people who worked through a self-management workbook with a peer worker had fewer readmissions to acute care over the following year than controls."},
+ {id:"davidson2012",a:"Davidson L, Bellamy C, Guy K, Miller R",y:2012,t:"Peer support among persons with severe mental illnesses: a review of evidence and experience",j:"World Psychiatry",v:"11(2):123-128",type:"Review",tags:["Peer support","Recovery"],
+  f:"Peer staff performed at least as well as non-peer staff, with some evidence of better engagement among people hard to reach through traditional services, plus gains in hope and self-care."},
+ {id:"repper2011",a:"Repper J, Carter T",y:2011,t:"A review of the literature on peer support in mental health services",j:"Journal of Mental Health",v:"20(4):392-411",type:"Review",tags:["Peer support"],
+  f:"Peer workers were associated with increased hope, empowerment, and social inclusion for the people they served. The review also described workplace challenges like role clarity and boundaries."},
+ {id:"shalaby2020",a:"Shalaby RAH, Agyapong VIO",y:2020,t:"Peer support in mental health: literature review",j:"JMIR Mental Health",v:"7(6):e15572",type:"Review",tags:["Peer support"],
+  f:"Summarized peer support models, benefits for service users and for peers themselves, and recurring barriers including stigma from colleagues, unclear roles, and limited training."},
+ {id:"solomon2004",a:"Solomon P",y:2004,t:"Peer support/peer provided services underlying processes, benefits, and critical ingredients",j:"Psychiatric Rehabilitation Journal",v:"27(4):392-401",type:"Theory",tags:["Peer support"],
+  f:"Defined categories of peer services and explained why they work, pointing to experiential knowledge, social support, and the helper-therapy principle, where helping others benefits the helper."},
+ {id:"mead2001",a:"Mead S, Hilton D, Curtis L",y:2001,t:"Peer support: a theoretical perspective",j:"Psychiatric Rehabilitation Journal",v:"25(2):134-141",type:"Theory",tags:["Peer support"],
+  f:"Framed peer support as a relationship built on respect, shared responsibility, and mutual agreement about what is helpful, moving away from an illness-focused model. Foundation of Intentional Peer Support."},
+ {id:"leamy2011",a:"Leamy M, Bird V, Le Boutillier C, Williams J, Slade M",y:2011,t:"Conceptual framework for personal recovery in mental health: systematic review and narrative synthesis",j:"British Journal of Psychiatry",v:"199(6):445-452",type:"Systematic review",tags:["Recovery"],
+  f:"Synthesized 97 papers into the CHIME framework: Connectedness, Hope and optimism, Identity, Meaning in life, and Empowerment."},
+ {id:"cook2012",a:"Cook JA, Copeland ME, Jonikas JA, et al.",y:2012,t:"Results of a randomized controlled trial of mental illness self-management using Wellness Recovery Action Planning",j:"Schizophrenia Bulletin",v:"38(4):881-891",type:"RCT",tags:["Recovery","Skills"],
+  f:"Peer-led WRAP groups reduced symptoms and improved hopefulness and quality of life compared with a waitlist group."},
+ {id:"bassuk2016",a:"Bassuk EL, Hanson J, Greene RN, Richard M, Laudet A",y:2016,t:"Peer-delivered recovery support services for addictions in the United States: a systematic review",j:"Journal of Substance Abuse Treatment",v:"63:1-9",type:"Systematic review",tags:["Substance use","Peer support"],
+  f:"Studies generally found positive effects of peer recovery support on substance use, relapse, and treatment retention, though the authors noted major methodological limits."},
+ {id:"eddie2019",a:"Eddie D, Hoffman L, Vilsaint C, et al.",y:2019,t:"Lived experience in new models of care for substance use disorder: a systematic review of peer recovery support services and recovery coaching",j:"Frontiers in Psychology",v:"10:1052",type:"Systematic review",tags:["Substance use","Peer support"],
+  f:"Peer recovery support was associated with less substance use, better treatment retention, and lower relapse rates. The evidence base was still described as developing."},
+ {id:"stanley2018",a:"Stanley B, Brown GK, Brenner LA, et al.",y:2018,t:"Comparison of the Safety Planning Intervention with follow-up vs usual care of suicidal patients treated in the emergency department",j:"JAMA Psychiatry",v:"75(9):894-900",type:"Cohort study",tags:["Crisis","Skills"],
+  f:"In a comparison of 1,640 veterans across nine emergency departments, a safety plan plus follow-up calls was linked to about 45% fewer suicidal behaviors over six months and about double the odds of attending outpatient care, compared with usual care. Not randomized."},
+ {id:"balban2023",a:"Balban MY, Neri E, Kogon MM, et al.",y:2023,t:"Brief structured respiration practices enhance mood and reduce physiological arousal",j:"Cell Reports Medicine",v:"4(1):100895",type:"RCT",tags:["Anxiety","Skills"],
+  f:"Five minutes a day of cyclic sighing (long exhales) improved mood and lowered resting breathing rate more than mindfulness meditation over one month."},
+ {id:"zaccaro2018",a:"Zaccaro A, Piarulli A, Laurino M, et al.",y:2018,t:"How breath-control can change your life: a systematic review on psycho-physiological correlates of slow breathing",j:"Frontiers in Human Neuroscience",v:"12:353",type:"Systematic review",tags:["Anxiety","Skills"],
+  f:"Slow breathing near six breaths per minute was associated with higher heart rate variability, more relaxation, and less anxiety and arousal. Most studies were small."},
+ {id:"manzoni2008",a:"Manzoni GM, Pagnini F, Castelnuovo G, Molinari E",y:2008,t:"Relaxation training for anxiety: a ten-years systematic review with meta-analysis",j:"BMC Psychiatry",v:"8:41",type:"Meta-analysis",tags:["Anxiety","Skills"],
+  f:"Relaxation training, including progressive muscle relaxation, had a medium-to-large effect on reducing anxiety."},
+ {id:"khoury2015",a:"Khoury B, Sharma M, Rush SE, Fournier C",y:2015,t:"Mindfulness-based stress reduction for healthy individuals: a meta-analysis",j:"Journal of Psychosomatic Research",v:"78(6):519-528",type:"Meta-analysis",tags:["Stress","Skills"],
+  f:"In healthy adults, MBSR produced large reductions in stress and moderate reductions in anxiety, depression, and distress, along with better quality of life."},
+ {id:"hofmann2012",a:"Hofmann SG, Asnaani A, Vonk IJJ, Sawyer AT, Fang A",y:2012,t:"The efficacy of cognitive behavioral therapy: a review of meta-analyses",j:"Cognitive Therapy and Research",v:"36(5):427-440",type:"Review of meta-analyses",tags:["Anxiety","Depression","Skills"],
+  f:"Across 269 meta-analyses, CBT had strong support for anxiety disorders, general stress, and anger problems, with solid support for depression."},
+ {id:"ekers2014",a:"Ekers D, Webster L, Van Straten A, et al.",y:2014,t:"Behavioural activation for depression; an update of meta-analysis of effectiveness and sub group analysis",j:"PLoS ONE",v:"9(6):e100100",type:"Meta-analysis",tags:["Depression","Skills"],
+  f:"Behavioral activation was more effective than control conditions and about as effective as CBT for depression."},
+ {id:"cuijpers2018",a:"Cuijpers P, de Wit L, Kleiboer A, Karyotaki E, Ebert DD",y:2018,t:"Problem-solving therapy for adult depression: an updated meta-analysis",j:"European Psychiatry",v:"48:27-37",type:"Meta-analysis",tags:["Depression","Stress","Skills"],
+  f:"Structured problem solving had a large effect on depression compared with control groups and performed similarly to other psychological treatments."},
+ {id:"schuch2016",a:"Schuch FB, Vancampfort D, Richards J, et al.",y:2016,t:"Exercise as a treatment for depression: a meta-analysis adjusting for publication bias",j:"Journal of Psychiatric Research",v:"77:42-51",type:"Meta-analysis",tags:["Depression","Skills"],
+  f:"Exercise had a large effect on depressive symptoms, and the effect held up after correcting for publication bias."},
+ {id:"trauer2015",a:"Trauer JM, Qian MY, Doyle JS, Rajaratnam SMW, Cunnington D",y:2015,t:"Cognitive behavioral therapy for chronic insomnia: a systematic review and meta-analysis",j:"Annals of Internal Medicine",v:"163(3):191-204",type:"Meta-analysis",tags:["Sleep","Skills"],
+  f:"CBT for insomnia shortened time to fall asleep, reduced time awake at night, and improved sleep efficiency, with gains lasting after treatment."},
+ {id:"lundahl2010",a:"Lundahl BW, Kunz C, Brownell C, Tollefson D, Burke BL",y:2010,t:"A meta-analysis of motivational interviewing: twenty-five years of empirical studies",j:"Research on Social Work Practice",v:"20(2):137-160",type:"Meta-analysis",tags:["Substance use","Skills"],
+  f:"Motivational interviewing had small but significant effects across many behaviors, most clearly for substance use, and matched other active treatments in less time."},
+ {id:"bowen2009",a:"Bowen S, Marlatt A",y:2009,t:"Surfing the urge: brief mindfulness-based intervention for college student smokers",j:"Psychology of Addictive Behaviors",v:"23(4):666-671",type:"RCT",tags:["Substance use","Skills"],
+  f:"Brief urge-surfing instruction did not make urges weaker, but participants smoked significantly fewer cigarettes over the following week than the comparison group."},
+ {id:"masi2011",a:"Masi CM, Chen HY, Hawkley LC, Cacioppo JT",y:2011,t:"A meta-analysis of interventions to reduce loneliness",j:"Personality and Social Psychology Review",v:"15(3):219-266",type:"Meta-analysis",tags:["Connection"],
+  f:"Interventions that targeted unhelpful thinking about social situations reduced loneliness more than those that only added social contact or support."},
+ {id:"holtlunstad2010",a:"Holt-Lunstad J, Smith TB, Layton JB",y:2010,t:"Social relationships and mortality risk: a meta-analytic review",j:"PLoS Medicine",v:"7(7):e1000316",type:"Meta-analysis",tags:["Connection"],
+  f:"People with stronger social relationships had about 50% greater likelihood of survival over the study periods, a size comparable to well-known risk factors like smoking."},
+ {id:"frattaroli2006",a:"Frattaroli J",y:2006,t:"Experimental disclosure and its moderators: a meta-analysis",j:"Psychological Bulletin",v:"132(6):823-865",type:"Meta-analysis",tags:["Trauma","Skills"],
+  f:"Writing or talking about emotional experiences had a small positive effect on health and well-being. Effects varied with how and where it was done."},
+ {id:"macbeth2012",a:"MacBeth A, Gumley A",y:2012,t:"Exploring compassion: a meta-analysis of the association between self-compassion and psychopathology",j:"Clinical Psychology Review",v:"32(6):545-552",type:"Meta-analysis",tags:["Depression","Anxiety"],
+  f:"Higher self-compassion was strongly associated with lower depression, anxiety, and stress. The data are correlational, so they show a link rather than cause."},
+ {id:"atjak2015",a:"A-Tjak JGL, Davis ML, Morina N, et al.",y:2015,t:"A meta-analysis of the efficacy of acceptance and commitment therapy for clinically relevant mental and physical health problems",j:"Psychotherapy and Psychosomatics",v:"84(1):30-36",type:"Meta-analysis",tags:["Skills","Recovery"],
+  f:"ACT, which centers on values and acceptance, outperformed waitlist and usual care and performed similarly to established treatments."},
+ {id:"snyder2002",a:"Snyder CR",y:2002,t:"Hope theory: rainbows in the mind",j:"Psychological Inquiry",v:"13(4):249-275",type:"Theory",tags:["Recovery"],
+  f:"Described hope as having goals, seeing pathways to reach them, and feeling the agency to use those pathways. Higher hope predicted better coping and outcomes across many studies."},
+ {id:"davis2016",a:"Davis DE, Choe E, Meyers J, et al.",y:2016,t:"Thankful for the little things: a meta-analysis of gratitude interventions",j:"Journal of Counseling Psychology",v:"63(1):20-31",type:"Meta-analysis",tags:["Depression","Skills"],
+  f:"Gratitude exercises gave small benefits compared with doing nothing, but little advantage over other active activities. Useful as a closer, not a core treatment."},
+ {id:"wittouck2011",a:"Wittouck C, Van Autreve S, De Jaegere E, Portzky G, van Heeringen K",y:2011,t:"The prevention and treatment of complicated grief: a meta-analysis",j:"Clinical Psychology Review",v:"31(1):69-78",type:"Meta-analysis",tags:["Grief"],
+  f:"Treatment helped people with complicated grief, but preventive interventions for people with normal grief showed no clear benefit. Most grief does not need fixing."},
+ {id:"lee2018",a:"Lee AH, DiGiuseppe R",y:2018,t:"Anger and aggression treatments: a review of meta-analyses",j:"Current Opinion in Psychology",v:"19:65-74",type:"Review of meta-analyses",tags:["Anger","Skills"],
+  f:"Cognitive behavioral treatments are the most widely used for anger and have consistently shown at least moderate effects on anger. Results for reducing aggression were less consistent."},
+ {id:"cristea2017",a:"Cristea IA, Gentili C, Cotet CD, et al.",y:2017,t:"Efficacy of psychotherapies for borderline personality disorder: a systematic review and meta-analysis",j:"JAMA Psychiatry",v:"74(4):319-328",type:"Meta-analysis",tags:["Trauma","Skills"],
+  f:"DBT, which teaches distress tolerance and emotion regulation skills, reduced self-harm and related outcomes, with small to moderate effects."}
+ ,{id:"valentine2015",a:"Valentine SE, Bankoff SM, Poulin RM, Reidler EB, Pantalone DW.",y:2015,t:"The use of dialectical behavior therapy skills training as stand-alone treatment: a systematic review of the treatment outcome literature",j:"Journal of Clinical Psychology",v:"71(1):1-20",type:"Systematic review",tags:["Skills","Depression","Anger","Stress"],
+  f:"Reviewed studies using DBT skills groups on their own, without full DBT therapy. Most found improvements in depression, anger, and emotion regulation across varied groups, though many studies were small and uncontrolled."}
+ ,{id:"neacsiu2010",a:"Neacsiu AD, Rizvi SL, Linehan MM.",y:2010,t:"Dialectical behavior therapy skills use as a mediator and outcome of treatment for borderline personality disorder",j:"Behaviour Research and Therapy",v:"48(9):832-839",type:"RCT secondary analysis",tags:["Skills","Crisis","Depression"],
+  f:"People in DBT used skills far more by the end of treatment than people in comparison therapy, and more skills use explained much of the drop in suicide attempts and depression and the gain in anger control. Suggests the skills themselves do real work."}
+ ,{id:"lieberman2007",a:"Lieberman MD, Eisenberger NI, Crockett MJ, et al.",y:2007,t:"Putting feelings into words: affect labeling disrupts amygdala activity in response to affective stimuli",j:"Psychological Science",v:"18(5):421-428",type:"Experimental study",tags:["Skills","Stress"],
+  f:"Naming the emotion in a picture lowered activity in the brain's alarm center compared with other tasks. Supports 'name it to tame it' as a simple regulation step."}
+ ,{id:"gloster2020",a:"Gloster AT, Walder N, Levin ME, Twohig MP, Karekla M.",y:2020,t:"The empirical status of acceptance and commitment therapy: a review of meta-analyses",j:"Journal of Contextual Behavioral Science",v:"18:181-192",type:"Review of meta-analyses",tags:["Skills","Anxiety","Depression","Substance use"],
+  f:"Across 20 meta-analyses, ACT was more effective than waitlist and usual care for anxiety, depression, substance use, and chronic pain, and comparable to CBT."}
+ ,{id:"mcgowan2013",a:"McGowan SK, Behar E.",y:2013,t:"A preliminary investigation of stimulus control training for worry: effects on anxiety and insomnia",j:"Behavior Modification",v:"37(1):90-112",type:"RCT",tags:["Anxiety","Sleep","Skills"],
+  f:"People who postponed worry to a set daily time had larger drops in worry and anxiety than people told to keep worrying as usual. A small, preliminary study."}
+];
+
+/* ---------- DATA: techniques ---------- */
+const TECH=[
+ {id:"g54321",name:"5-4-3-2-1 Grounding",cat:"Regulate",roles:["open","core"],min:5,demand:1,fit:{anxiety:3,trauma:3,stress:2,anger:2,substance:1,crisis:1},ev:"Practice",refs:[],
+  sum:"Use the five senses to pull attention back to the room.",
+  steps:["Ask for a 0-10 rating of how distressed they feel.","Name 5 things you can see, slowly and out loud.","Name 4 things you can feel (feet on floor, chair at your back).","Name 3 things you can hear.","Name 2 things you can smell, or 2 smells you like.","Name 1 thing you can taste, or take a sip of water.","Rate distress again and ask what changed."],
+  why:"Directing attention to present sensory input interrupts worry and intrusive memories. It is a staple of distress-tolerance skills training; trials of this exact exercise are limited.",
+  ad:{nfmh:"Keep it seated and allow pointing instead of naming if speech is hard.",community:"Works anywhere, including a car or park bench. Nothing to carry.",group:"Go around the room, one sense per person."}},
+ {id:"sigh",name:"Physiological Sigh",cat:"Regulate",roles:["open"],min:5,demand:1,fit:{anxiety:3,stress:3,anger:2,sleep:1,trauma:1,crisis:1},ev:"Moderate",refs:["balban2023","zaccaro2018"],
+  sum:"Two inhales through the nose, one long exhale. Lowers arousal fast.",
+  steps:["Breathe in through the nose.","Take a second short sip of air on top to fill the lungs.","Exhale slowly through the mouth, longer than the inhale.","Repeat for 1 to 5 minutes at a comfortable pace.","Check in: what do you notice in your body now?"],
+  why:"A long exhale slows heart rate. In a month-long trial, daily cyclic sighing improved mood more than mindfulness meditation.",
+  ad:{nfmh:"Check with nursing for anyone with COPD or breathing restrictions; keep it gentle.",community:"Discreet enough to do in public.",group:"Lead three rounds together to settle the room at the start."}},
+ {id:"paced",name:"Slow Paced Breathing",cat:"Regulate",roles:["open","core"],min:6,demand:1,fit:{anxiety:3,stress:2,sleep:2,anger:1},ev:"Moderate",refs:["zaccaro2018"],
+  sum:"Breathe in for 4, out for 6, about six breaths a minute.",
+  steps:["Sit with feet flat and one hand on the belly.","Breathe in through the nose for a count of 4.","Breathe out for a count of 6.","Continue for 5 minutes. If counting is stressful, just lengthen the exhale.","Practice once a day so it's available when stress spikes."],
+  why:"Breathing near six per minute raises heart rate variability, a marker of the body's calming system.",
+  ad:{nfmh:"Shorten to 3 minutes; counting out loud for them helps.",community:"Suggest practicing at a set time, like before bed.",group:"Use a slow count out loud or a visual like raising a hand on the inhale."}},
+ {id:"pmr",name:"Progressive Muscle Relaxation",cat:"Regulate",roles:["core"],min:12,demand:1,fit:{anxiety:3,stress:3,sleep:3,anger:2},ev:"Strong",refs:["manzoni2008"],
+  sum:"Tense and release muscle groups to feel the difference between tight and relaxed.",
+  steps:["Get comfortable. Eyes can be open or closed.","Make fists for 5 seconds, then release for 10. Notice the change.","Move through arms, shoulders (lift to ears), face, stomach, legs, feet.","Tense to about half effort, never to pain.","Finish with three slow breaths and a check-in."],
+  why:"Relaxation training has a medium-to-large effect on anxiety in pooled trials and helps with falling asleep.",
+  ad:{nfmh:"Seated version. Skip any area with pain, injury, or recent surgery.",community:"Teach a short hands-and-shoulders version for use on the go.",group:"Read the script slowly; let people opt out of any part."}},
+ {id:"bodyscan",name:"Body Scan",cat:"Regulate",roles:["core"],min:10,demand:1,fit:{stress:2,sleep:2,anxiety:2},ev:"Moderate",refs:["khoury2015"],
+  sum:"Slowly move attention through the body, noticing without changing anything.",
+  steps:["Invite a comfortable position; eyes open is fine.","Start at the feet and move attention upward a region at a time.","Notice sensations: warmth, pressure, tightness, nothing at all.","When the mind wanders, return to the last area without judgment.","Close by asking what they noticed."],
+  why:"A core MBSR practice. In pooled studies of healthy adults, MBSR produced large reductions in stress.",
+  ad:{nfmh:"Keep it to 5 minutes; some residents find body focus distressing, so offer breath or sound as an anchor instead.",community:"Better in a quiet indoor space.",group:"Give the option to keep eyes open and stay aware of the room. For trauma survivors, offer an exit."}},
+ {id:"mindful",name:"Mindful Minute",cat:"Regulate",roles:["open","close"],min:3,demand:1,fit:{stress:2,anxiety:2,depression:1},ev:"Moderate",refs:["khoury2015"],
+  sum:"One minute of noticing breath and sounds to arrive in the session.",
+  steps:["Set a one-minute timer.","Notice the breath going in and out.","When thoughts show up, name them 'thinking' and return to the breath.","When the timer ends, ask for one word to describe how they feel."],
+  why:"Short practices build the attention skills used in mindfulness programs.",
+  ad:{nfmh:"Fine as is.",community:"Good transition after travel to the meeting spot.",group:"Ring a bell or chime to start and end."}},
+ {id:"window",name:"Window of Tolerance Map",cat:"Learn",roles:["core"],min:15,demand:2,fit:{trauma:3,anxiety:2,anger:2,crisis:1},ev:"Practice",refs:[],writing:true,
+  sum:"Map the zones of too much, just right, and too little, and what moves you between them.",
+  steps:["Draw three bands: top (overwhelmed, panicky, angry), middle (able to think and feel), bottom (numb, shut down).","Ask what each zone looks and feels like for them.","List early signs they're leaving the middle zone.","List what helps them come back from above and from below.","Keep the map for future sessions."],
+  why:"Gives shared language for overwhelm and helps people choose a skill that matches their state. It's psychoeducation drawn from trauma-informed care, not a tested standalone treatment.",
+  ad:{nfmh:"Use simple words like 'too revved up' and 'too shut down'. You can draw it for them.",community:"Do it verbally and send a photo of the drawing if allowed.",group:"Draw it on a board and collect examples from the room."}},
+ {id:"container",name:"Container Exercise",cat:"Regulate",roles:["close"],min:5,demand:1,fit:{trauma:2,anxiety:1,stress:1,grief:1},ev:"Practice",refs:[],
+  sum:"Imagine placing hard thoughts in a secure container to set them down until later.",
+  steps:["Ask them to picture a container strong enough to hold what came up today.","Let them describe it: size, lock, where it's kept.","Imagine placing today's difficult thoughts inside and closing it.","Remind them they can open it again with support.","End with a grounding breath."],
+  why:"Used in trauma-informed practice to close a session safely after hard material. Evidence is clinical experience rather than trials.",
+  ad:{nfmh:"Use a real box or envelope if imagery is hard.",community:"Use before parting ways so they don't leave activated.",group:"Lead it at the end of any heavy group."}},
+ {id:"ba",name:"Plan One Small Thing",cat:"Act",roles:["core"],min:12,demand:2,fit:{depression:3,hope:2,lonely:1,grief:1,transition:1},ev:"Strong",refs:["ekers2014"],
+  sum:"Behavioral activation: schedule one specific, doable activity before the next visit.",
+  steps:["Explain the idea: action comes before motivation, not after.","Pick one activity that's either enjoyable or gives a sense of accomplishment.","Make it smaller than feels necessary (5 minutes of a walk, not 30).","Decide the day, time, and place.","Name what might get in the way and a backup plan.","Follow up next session without judgment."],
+  why:"Behavioral activation is as effective as CBT for depression and simple enough to support in peer sessions.",
+  ad:{nfmh:"Choose activities possible within facility routines, like the courtyard or activity room.",community:"Can do the first step together during the session.",group:"Each person names their small thing and reports back next week."}},
+ {id:"pleasure",name:"Enjoy and Achieve List",cat:"Act",roles:["core"],min:12,demand:2,fit:{depression:3,hope:2,selfworth:1},ev:"Strong",refs:["ekers2014"],writing:true,
+  sum:"Build a personal menu of activities that bring enjoyment or a sense of accomplishment.",
+  steps:["Make two columns: Enjoy and Achieve.","Brainstorm activities for each, including tiny ones.","Star the ones possible this week.","Rate mood before and after trying one.","Keep the list somewhere visible."],
+  why:"A standard behavioral activation tool for low mood.",
+  ad:{nfmh:"Use picture cards or a pre-made list to choose from.",community:"Include free local options.",group:"Share lists out loud; people borrow ideas from each other."}},
+ {id:"pst",name:"Five-Step Problem Solving",cat:"Plan",roles:["core"],min:15,demand:2,fit:{stress:3,transition:3,relation:2,depression:2},ev:"Strong",refs:["cuijpers2018"],writing:true,
+  sum:"Define the problem, brainstorm, weigh options, pick one, plan it.",
+  steps:["Define one specific problem in a sentence.","Brainstorm every possible solution without judging.","List pros and cons of the top 2-3.","Pick one and break it into steps.","Set a time to review how it went."],
+  why:"Structured problem solving has a large effect on depression and reduces the sense of overwhelm.",
+  ad:{nfmh:"Focus on one small, concrete problem in the facility.",community:"Pair with real tasks, like making a call together.",group:"Use a volunteer's problem (with consent) and brainstorm as a group."}},
+ {id:"values",name:"Values Compass",cat:"Reflect",roles:["core"],min:15,demand:2,fit:{hope:3,depression:2,transition:2,substance:2,selfworth:2},ev:"Moderate",refs:["atjak2015"],
+  sum:"Identify what matters most and one action that moves toward it.",
+  steps:["Offer areas: family, health, work or purpose, faith, fun, community, growth.","Ask which matter most right now and why.","Rate how closely life lines up with each (0-10).","Choose one value and one small action toward it.","Note that values are directions, not finish lines."],
+  why:"Values work is central to ACT, which performs comparably to established therapies.",
+  ad:{nfmh:"Use cards with pictures and fewer choices.",community:"Can connect to local resources tied to the value.",group:"Value card sort in pairs, then share."}},
+ {id:"strengths",name:"Strengths Spotting",cat:"Reflect",roles:["core","close"],min:8,demand:1,fit:{selfworth:3,hope:2,depression:1,transition:1},ev:"Emerging",refs:["leamy2011","snyder2002"],
+  sum:"Name real strengths shown in past challenges.",
+  steps:["Ask about something hard they got through.","Listen for the strengths they used: persistence, humor, faith, caring for others.","Reflect those back in specific words.","Ask which strength they could use this week."],
+  why:"Supports the Identity and Hope parts of CHIME. Strengths-based work is widely used; the evidence is still developing.",
+  ad:{nfmh:"Staff or family examples can help jog memory.",community:"Fine as is.",group:"Each person names one strength they see in the person to their right."}},
+ {id:"selfcomp",name:"Self-Compassion Break",cat:"Reflect",roles:["core","close"],min:7,demand:1,fit:{selfworth:3,grief:2,depression:2,trauma:1,anxiety:1},ev:"Moderate",refs:["macbeth2012"],
+  sum:"Three steps: this is hard, others feel this too, what do I need?",
+  steps:["Acknowledge the moment: 'This is really hard right now.'","Common humanity: 'Other people struggle with this too. I'm not alone.'","Kindness: 'What would I say to a friend in this spot?' Say that to yourself.","Optional: a hand over the heart or another comforting gesture."],
+  why:"Self-compassion is strongly linked with lower depression and anxiety. The link is correlational, so treat it as promising rather than proven.",
+  ad:{nfmh:"Write the three phrases on a card to keep.",community:"Fine as is.",group:"Pair with a discussion about the inner critic."}},
+ {id:"ccc",name:"Catch, Check, Change",cat:"Reflect",roles:["core"],min:15,demand:3,fit:{anxiety:2,depression:2,selfworth:2,anger:2},ev:"Moderate",refs:["hofmann2012"],writing:true,
+  sum:"Notice a hard thought, check the evidence, find a more balanced one.",
+  steps:["Catch: what went through your mind when you felt worst?","Check: what supports this thought? What doesn't?","Ask how a friend would see it.","Change: write a more balanced thought that is still true.","Rate how strongly you believe each one."],
+  why:"A simplified CBT thought record. CBT has strong support for anxiety and good support for depression. As a peer, you're sharing a skill, not doing therapy.",
+  ad:{nfmh:"Often too demanding; use Self-Compassion Break or Strengths Spotting instead.",community:"Use phone notes rather than worksheets.",group:"Work through a common example together."}},
+ {id:"urge",name:"Urge Surfing",cat:"Regulate",roles:["core"],min:10,demand:2,fit:{substance:3,anger:2},ev:"Emerging",refs:["bowen2009"],
+  sum:"Ride out a craving like a wave instead of fighting or giving in.",
+  steps:["Explain that urges rise, peak, and fall, often within 20 to 30 minutes.","Recall a recent craving and where it was felt in the body.","Breathe and describe the sensation as it changes.","Picture it as a wave you're riding over.","Plan when to use this next time."],
+  why:"In a trial with college smokers, brief urge-surfing instruction did not make urges weaker, but people smoked fewer cigarettes the following week.",
+  ad:{nfmh:"Works for cigarettes, food, or other urges common in residential settings.",community:"Practice right before a known high-risk time.",group:"Guided version, then share what people noticed."}},
+ {id:"triggers",name:"Trigger and Coping Map",cat:"Plan",roles:["core"],min:15,demand:2,fit:{substance:3,trauma:2,anger:2,anxiety:1},ev:"Moderate",refs:["cook2012","bassuk2016"],writing:true,
+  sum:"List people, places, feelings, and times that trigger, and a plan for each.",
+  steps:["List triggers in four groups: people, places, feelings, times or events.","Mark the top three.","For each, write one way to avoid it and one way to cope if it can't be avoided.","Add one person to call.","Keep the map where they'll see it."],
+  why:"Core part of WRAP and relapse prevention. Peer recovery support is linked to less use and better retention.",
+  ad:{nfmh:"Include facility triggers like noise, roommates, or visits.",community:"Map real local places they pass daily.",group:"Share coping ideas across the group."}},
+ {id:"wrap",name:"Wellness Toolbox (WRAP)",cat:"Plan",roles:["core"],min:20,demand:2,fit:{hope:2,depression:2,substance:2,transition:2,crisis:1,anxiety:1},ev:"Moderate",refs:["cook2012"],writing:true,
+  sum:"Build a personal list of what keeps them well and a daily maintenance plan.",
+  steps:["Ask: what are you like when you're well?","List wellness tools: things that help them feel good or better.","Pick daily must-dos and things to do some days.","Add early warning signs and what to do about them.","Return to the plan in later sessions to add sections."],
+  why:"In a randomized trial, peer-led WRAP reduced symptoms and improved hope and quality of life.",
+  ad:{nfmh:"Build it over several short sessions.",community:"Keep a copy on their phone.",group:"WRAP is designed for groups; use one section per meeting."}},
+ {id:"safety",name:"Safety Plan",cat:"Plan",roles:["core"],min:20,demand:2,fit:{crisis:5,hope:1},ev:"Moderate",refs:["stanley2018"],writing:true,
+  sum:"Stanley-Brown style plan: warning signs, coping, people, professionals, safer environment.",
+  steps:["Warning signs: thoughts, feelings, situations that come before a crisis.","Internal coping: things they can do alone to take their mind off it.","People and places that offer distraction.","People they can ask for help.","Professionals and crisis lines: 988 (call or text), clinician, facility contacts.","Making the environment safer, including access to means. Coordinate this step with clinical staff.","Ask: what's the one reason for living that matters most?"],
+  why:"In a large non-randomized study, safety planning plus follow-up calls was linked to about 45% fewer suicidal behaviors over six months. Complete it with or alongside the clinical team.",
+  ad:{nfmh:"Coordinate with nursing and the treatment team; give the resident a copy.",community:"Make sure they have a copy on their phone and paper. Confirm who to call tonight.",group:"Not a group activity. Meet one-on-one."}},
+ {id:"sleep",name:"Wind-Down Routine",cat:"Act",roles:["core"],min:12,demand:1,fit:{sleep:3,anxiety:1,stress:1,depression:1},ev:"Moderate",refs:["trauer2015"],
+  sum:"Set a steady wake time and a 30-minute wind-down before bed.",
+  steps:["Pick a wake time to keep every day, weekends included.","Build a 30-minute wind-down: dim lights, screens off, something calming.","Use the bed for sleep only. If awake 20+ minutes, get up and do something quiet.","Park worries: write them down before bed.","Track sleep for a week and review."],
+  why:"These are pieces of CBT for insomnia, which has strong evidence. Sleep habits alone are less powerful, so encourage a provider visit for long-standing problems.",
+  ad:{nfmh:"Work within facility lights-out and med times; talk with staff.",community:"Address noise, light, and shared spaces at home.",group:"Swap wind-down ideas."}},
+ {id:"move",name:"Walk-and-Talk",cat:"Act",roles:["core","open"],min:15,demand:2,fit:{depression:3,stress:2,anxiety:2,anger:2,lonely:1},ev:"Strong",refs:["schuch2016"],
+  sum:"Hold part of the session while moving, or plan regular movement.",
+  steps:["Ask about comfort with walking or other movement.","Walk side by side at their pace; many people talk more easily this way.","Notice mood before and after.","Plan one movement goal for the week, sized to their ability."],
+  why:"Exercise has a large effect on depressive symptoms in pooled trials.",
+  ad:{nfmh:"Chair movement or a hallway walk. Check mobility and fall risk with staff first.",community:"A natural fit. Agree on a route and keep privacy in mind.",group:"Stretch break or a short group walk."}},
+ {id:"writing",name:"Expressive Writing",cat:"Reflect",roles:["core"],min:15,demand:2,fit:{grief:2,stress:2,trauma:1,relation:1},ev:"Emerging",refs:["frattaroli2006"],writing:true,
+  sum:"Write freely about thoughts and feelings for 15 minutes.",
+  steps:["Explain it's private and spelling doesn't matter.","Write about thoughts and feelings on one topic for 10-15 minutes.","Stop if it becomes overwhelming and ground.","Afterward, ask how it felt; they don't have to share what they wrote."],
+  why:"Emotional writing has a small positive effect on well-being. For trauma, avoid pushing detail; that belongs with a clinician.",
+  ad:{nfmh:"Offer dictation or drawing if writing is hard.",community:"Homework rather than in-session.",group:"Quiet writing time, then optional sharing."}},
+ {id:"gratitude",name:"Three Good Things",cat:"Reflect",roles:["close"],min:5,demand:1,fit:{depression:1,hope:2,selfworth:1},ev:"Emerging",refs:["davis2016"],
+  sum:"Name three things that went okay today and why.",
+  steps:["Name three things that went well or were okay, even small ones.","For one, say why it happened or what role you played.","Suggest trying it nightly for a week."],
+  why:"Small benefits compared with doing nothing. Good for ending on a steady note.",
+  ad:{nfmh:"One good thing is plenty.",community:"Text it to yourself nightly.",group:"Popcorn-style sharing to close."}},
+ {id:"connect",name:"Connection Map",cat:"Connect",roles:["core"],min:15,demand:2,fit:{lonely:3,transition:2,relation:2,substance:1,hope:1},ev:"Moderate",refs:["masi2011","holtlunstad2010"],writing:true,
+  sum:"Draw circles of close, middle, and outer connections and find one to strengthen.",
+  steps:["Draw three circles with the person in the center.","Place people, pets, groups, and places in each ring.","Notice who's there, who's missing, and who drains energy.","Talk about thoughts that get in the way of reaching out.","Choose one low-pressure step toward one connection."],
+  why:"Social ties strongly predict health. Interventions that address beliefs about connecting reduce loneliness most.",
+  ad:{nfmh:"Include staff, other residents, and visitors.",community:"Add local groups, faith communities, and drop-in centers.",group:"Individual maps, then share one step."}},
+ {id:"story",name:"Purposeful Recovery Story",cat:"Connect",roles:["core"],min:10,demand:1,fit:{hope:3,selfworth:2,lonely:2,substance:2,depression:1},ev:"Moderate",refs:["davidson2012","mead2001"],
+  sum:"Share a brief, intentional piece of your own recovery to build hope.",
+  steps:["Ask yourself first: whose need does this meet? Theirs, not mine.","Keep it short and focused on what helped, not the details of the worst times.","Connect it back: 'I wonder if any of that fits for you.'","Return the focus to them."],
+  why:"Intentional self-disclosure is the distinctive tool of peer work and is thought to be part of why peer support is linked with more hope and engagement.",
+  ad:{nfmh:"Keep it concrete and simple.",community:"Same principles apply.",group:"Model it, then invite others to share what's helped them."}},
+ {id:"oars",name:"Change Talk Conversation",cat:"Connect",roles:["core"],min:15,demand:2,fit:{substance:3,hope:2,transition:2,anger:1,depression:1},ev:"Moderate",refs:["lundahl2010"],
+  sum:"Motivational interviewing skills to draw out the person's own reasons for change.",
+  steps:["Open questions: 'What would be different if...?'","Affirmations: name effort and strengths.","Reflections: say back what you heard, including mixed feelings.","Summaries: pull together their reasons for change.","Ask: 'On a scale of 0-10, how important is this to you? Why not lower?'"],
+  why:"Motivational interviewing has reliable effects, especially for substance use, in less time than other approaches.",
+  ad:{nfmh:"Shorter questions and more reflections.",community:"Fine as is.",group:"Pros and cons of change on a board, without pushing anyone."}},
+ {id:"griefbonds",name:"Memory Sharing",cat:"Connect",roles:["core"],min:15,demand:1,fit:{grief:3,lonely:1},ev:"Practice",refs:["wittouck2011"],
+  sum:"Invite stories about the person who died and ways to stay connected.",
+  steps:["Ask them to tell you about the person.","Invite a favorite memory or object.","Explore ways to honor them: rituals, dates, carrying on something they valued.","Ask what support they have on hard days, like anniversaries."],
+  why:"Most grief doesn't need treatment, and preventive programs show little benefit. Being heard and keeping a connection to the person is a reasonable peer role. Refer for grief that is still disabling many months later.",
+  ad:{nfmh:"Photos help. Losses may include home, independence, and roommates.",community:"Visiting a meaningful place together can help, if they choose.",group:"Bring a photo or object to share."}},
+ {id:"stop",name:"STOP and Time-Out Plan",cat:"Regulate",roles:["core","open"],min:10,demand:2,fit:{anger:3,relation:2,substance:1,stress:1},ev:"Moderate",refs:["lee2018"],
+  sum:"DBT's STOP skill: Stop, Take a step back, Observe, Proceed mindfully, plus a plan for stepping away.",
+  steps:["Name the earliest body signs of anger (jaw, fists, heat).","Practice STOP: Stop (freeze, don't react), Take a step back (step away or take a breath), Observe what's happening inside and around you, Proceed mindfully (ask what will make things better or worse).","Build a time-out plan: what you'll say, where you'll go, how long, when you'll come back.","Rehearse once out loud."],
+  why:"Cognitive behavioral anger approaches show at least moderate effects on anger. Results for aggression are less consistent, so pair this with your facility's safety protocol.",
+  ad:{nfmh:"Agree with staff on where a resident can go for a time-out.",community:"Plan for real places: home, work, the bus.",group:"Role-play a time-out statement."}},
+ {id:"istate",name:"I-Statements and Boundaries",cat:"Connect",roles:["core"],min:12,demand:2,fit:{relation:3,anger:2,selfworth:1},ev:"Practice",refs:[],
+  sum:"Practice saying what you feel and need without blame.",
+  steps:["Formula: 'I feel ___ when ___ because ___. What I need is ___.'","Pick a real situation and draft a statement.","Practice saying it out loud.","Talk about what to do if the other person doesn't respond well."],
+  why:"Assertiveness skills are a standard part of communication training. Evidence for this exact format is mainly practice-based.",
+  ad:{nfmh:"Practice for conversations with staff or roommates.",community:"Fine as is.",group:"Pairs practice with a scenario."}},
+ {id:"hopemap",name:"Hope Map",cat:"Plan",roles:["core","close"],min:12,demand:2,fit:{hope:3,transition:2,depression:1,substance:1},ev:"Moderate",refs:["snyder2002"],writing:true,
+  sum:"One goal, three pathways, and what will keep you going.",
+  steps:["Choose one goal that matters and is reachable in weeks, not years.","Brainstorm three different pathways to it.","Name likely obstacles on each path.","Identify sources of willpower: people, reasons, past wins.","Choose the first step."],
+  why:"Built on hope theory: goals, pathways, and agency. Higher hope predicts better coping.",
+  ad:{nfmh:"One goal and one pathway is enough.",community:"Can link to local resources for each pathway.",group:"Share pathways; others suggest more."}},
+ {id:"nextstep",name:"One Next Step",cat:"Plan",roles:["close"],min:4,demand:1,fit:{},ev:"Practice",refs:[],
+  sum:"End with one specific thing to try before next time.",
+  steps:["Ask: 'What's one thing you'll take from today?'","Turn it into a specific step: what, when, where.","Confirm when you'll meet next."],
+  why:"A clear next step helps carry the session into the week.",
+  ad:{nfmh:"Write it down for them.",community:"Confirm how you'll stay in touch.",group:"Quick round of next steps."}}
+  ,{id:"tipp",src:"DBT",name:"TIPP for Intense Emotion",cat:"Regulate",roles:["open","core"],min:8,demand:1,fit:{anger:3,anxiety:3,stress:2,substance:2},ev:"Emerging",refs:["valentine2015","zaccaro2018"],
+   sum:"Four fast ways to bring big emotion down when it's too high to think: temperature, intense movement, paced breathing, paired relaxation.",
+   steps:["Rate the emotion 0-10. TIPP is for when it's 7 or higher.","Temperature: lean over and put your face in cold water, or hold a cold pack or cold, wet cloth over your eyes and cheeks, while holding your breath for about 30 seconds. Keep the water above 50°F.","Intense movement: if able, walk fast or march in place for 1-2 minutes.","Paced breathing: breathe out longer than you breathe in, about 5-6 breaths a minute.","Paired relaxation: tense a muscle group on the in-breath, let go on the out-breath.","Rate again. Use whichever part helped most next time."],
+   why:"A DBT distress-tolerance skill that works on the body first, because intense arousal makes problem-solving hard. Cold water on the face triggers the dive reflex, which quickly slows the heart. Caution from the DBT handout: very cold water lowers heart rate fast, so anyone with a heart or medical condition, a low heart rate from medication, or an eating disorder should get medical approval first. Skip intense movement if mobility is limited.",
+   ad:{nfmh:"Seated version: cool cloth, paced breathing, and paired relaxation only.",community:"A cold bottle of water from a store works for the first step.",group:"Teach it as a menu and let each person pick one part to practice."}}
+  ,{id:"wisemind",src:"DBT",name:"Wise Mind",cat:"Reflect",roles:["core","close"],min:10,demand:2,fit:{anger:2,relation:2,substance:2,stress:2,selfworth:1,transition:2},ev:"Emerging",refs:["valentine2015","neacsiu2010"],
+   sum:"Find the middle ground between emotion mind and reasonable mind before making a choice.",
+   steps:["Draw two overlapping circles: emotion mind and reasonable mind.","Ask: what does emotion mind want right now? What does reasonable mind say?","The overlap is wise mind: what feels right and makes sense.","Take three slow breaths and ask quietly, \"What would wise mind do?\"","Notice the first calm answer. Check it isn't just one side talking.","Name one action that fits wise mind."],
+   why:"A core DBT mindfulness skill. It gives people a simple frame for pausing between a feeling and a decision. Evidence comes from DBT skills training as a whole rather than this exercise alone.",
+   ad:{nfmh:"Draw the circles for them and point instead of writing.",community:"Sketch it on a napkin or phone note.",group:"Have members share a time they acted from each 'mind'."}}
+  ,{id:"whatskills",src:"DBT",name:"Observe, Describe, Participate",cat:"Regulate",roles:["open","core"],min:8,demand:1,fit:{anxiety:2,stress:2,trauma:1,depression:1,anger:1},ev:"Emerging",refs:["khoury2015","valentine2015"],
+   sum:"DBT's three 'what' skills: notice without reacting, put words to it, then throw yourself into the moment.",
+   steps:["Observe: pick one thing (a sound, a breath, an object). Just notice it for 30 seconds.","Describe: put words to only the facts. \"I hear a fan. My hands are warm.\"","Leave out judgments like good, bad, should.","Participate: choose a simple activity (folding a towel, a song) and do it with full attention.","Debrief: what pulled attention away, and how did you bring it back?"],
+   why:"Mindfulness practice has moderate evidence for reducing stress and anxiety. These three steps are the beginner mindfulness skills taught in DBT groups.",
+   ad:{nfmh:"Use a familiar object like a photo or blanket.",community:"Observe the scene around you on a walk.",group:"Pass an object around; each person describes one fact about it."}}
+  ,{id:"accepts",src:"DBT",name:"ACCEPTS Distraction",cat:"Plan",roles:["core"],min:12,demand:1,fit:{substance:3,anxiety:2,stress:2,anger:2,crisis:1,grief:1},ev:"Emerging",refs:["valentine2015"],
+   sum:"Seven ways to ride out a crisis urge without making it worse: Activities, Contributing, Comparisons, Emotions, Pushing away, Thoughts, Sensations.",
+   steps:["Explain this is short-term: distraction gets you through the wave, not the problem.","Go through each letter and write one idea that would work for them.","Activities: a game, a show, a chore.","Contributing: help someone, send a kind text.","Comparisons: a time you got through something hard.","Emotions: a funny video or an uplifting song.","Pushing away: put the problem on a shelf until a set time.","Thoughts: count, puzzle, name things by category.","Sensations: a strong mint, a warm shower, squeezing a stress ball.","Circle the top three to try first."],
+   why:"A DBT distress-tolerance skill. Planned distraction helps people avoid acting on urges while an emotion peaks. Pair it with a safety plan if risk is present.",
+   ad:{nfmh:"Pick ideas that work in their room and schedule.",community:"Save the list in their phone notes.",group:"Build one shared list on a whiteboard."}}
+  ,{id:"improve",src:"DBT",name:"IMPROVE the Moment",cat:"Regulate",roles:["core"],min:10,demand:1,fit:{stress:3,grief:2,anxiety:2,depression:1,hope:2},ev:"Practice",refs:["valentine2015"],
+   sum:"Make a painful moment more bearable with Imagery, Meaning, Prayer, Relaxation, One thing, Vacation, Encouragement.",
+   steps:["Imagery: picture a safe, calm place in detail.","Meaning: find any purpose or lesson, even small.","Prayer or connecting to something bigger, if that fits their beliefs.","Relaxation: loosen the shoulders, unclench the jaw.","One thing in the moment: focus only on what you're doing now.","Vacation: take a short, planned break.","Encouragement: say a supportive phrase out loud.","Ask which two they'd actually use."],
+   why:"A DBT distress-tolerance skill for times a situation can't be changed right away. Offer prayer only if the person brings faith up or welcomes it.",
+   ad:{nfmh:"Imagery and encouragement work well bedside.",community:"A 10-minute 'vacation' could be a walk or a coffee.",group:"Each member writes their own encouragement phrase."}}
+  ,{id:"soothekit",src:"DBT",name:"Self-Soothe Kit",cat:"Plan",roles:["core","close"],min:12,demand:1,fit:{anxiety:2,stress:3,grief:2,sleep:2,trauma:2,lonely:1},ev:"Practice",refs:["valentine2015"],
+   sum:"Build a small kit of comforting things for each of the five senses.",
+   steps:["Explain self-soothing: being kind to yourself through the senses.","Sight: a photo, a calming picture.","Sound: a song, playlist, or nature sounds.","Smell: lotion, a candle, coffee.","Taste: tea, a mint, a favorite snack.","Touch: a soft blanket, smooth stone, warm socks.","Decide where the kit will live and when to use it."],
+   why:"A DBT distress-tolerance skill. Having comfort ready ahead of time makes it easier to reach for in a hard moment instead of an unhealthy habit.",
+   ad:{nfmh:"Check with staff on scents and food rules first.",community:"A pouch or bag they can carry works well.",group:"Members share one item for each sense."}}
+  ,{id:"proscons",src:"DBT",name:"Pros and Cons of an Urge",cat:"Reflect",roles:["core"],min:12,demand:2,fit:{substance:3,anger:2,relation:1,crisis:1},ev:"Emerging",refs:["valentine2015","bowen2009"],
+   sum:"A four-box grid comparing acting on an urge with resisting it, short term and long term.",
+   steps:["Name the urge (use, lash out, quit, isolate).","Draw a four-box grid: pros and cons of acting on it, pros and cons of resisting.","Fill in short-term and long-term effects in each box.","Look at the long-term column together.","Ask: which choice fits the life you want?","Keep the grid somewhere they'll see it when the urge hits."],
+   why:"A DBT distress-tolerance skill that makes the long-term cost of an urge visible in the moment. Done ahead of time, it gives people something to read when thinking is foggy.",
+   ad:{nfmh:"Use it for urges like refusing care or isolating.",community:"Photograph the grid so it's on their phone.",group:"Work one example together, then individually."}}
+  ,{id:"radaccept",src:"DBT",name:"Radical Acceptance",cat:"Reflect",roles:["core"],min:15,demand:2,fit:{grief:3,transition:3,stress:2,anger:2,selfworth:1},ev:"Emerging",refs:["valentine2015"],
+   sum:"Accept reality as it is, without approving of it, so the fight with what can't change stops adding suffering.",
+   steps:["Explain: pain + not accepting = suffering. Acceptance is not approval.","Name a fact they keep fighting (a loss, a diagnosis, a past event).","Notice body signs of fighting it: clenched jaw, tight chest.","Practice the words: \"It is what it is. I can't change that it happened.\"","Relax the hands, open the palms, breathe out slowly.","Ask: now that this is accepted, what can I do next?","Expect to repeat it. Acceptance often has to be chosen many times."],
+   why:"A DBT distress-tolerance skill. Struggling against facts that can't change tends to keep distress high. Go gently with fresh grief or trauma, and don't use it to accept anything unsafe.",
+   ad:{nfmh:"Fits losses of independence, home, or health.",community:"Use it for housing or legal situations they can't change today.",group:"Share examples of 'turning the mind' toward acceptance."}}
+  ,{id:"willing",src:"DBT",name:"Willing Hands and Half-Smile",cat:"Regulate",roles:["open","close"],min:4,demand:1,fit:{anger:3,stress:2,relation:2,grief:1},ev:"Practice",refs:["valentine2015"],
+   sum:"Use the body to soften resistance: relaxed open palms and a slight upturn of the lips.",
+   steps:["Notice tight fists, crossed arms, or a clenched jaw.","Willing hands: rest hands on the thighs, palms up, fingers relaxed.","Half-smile: relax the face and let the lips turn up just slightly.","Hold for 1-2 minutes while breathing slowly.","Ask what shifted in the body or mood."],
+   why:"DBT skills for accepting reality through the body. Changing posture and facial tension is a quick way to signal safety to yourself. Effects are modest and individual.",
+   ad:{nfmh:"Easy to do seated or lying down.",community:"Works on a bus or before a hard phone call.",group:"Try it together at the start of group."}}
+  ,{id:"checkfacts",src:"DBT",name:"Check the Facts",cat:"Reflect",roles:["core"],min:12,demand:2,fit:{anxiety:2,anger:3,relation:3,selfworth:2,stress:1},ev:"Emerging",refs:["valentine2015","hofmann2012"],
+   sum:"Ask whether an emotion and its intensity fit the actual facts of the situation.",
+   steps:["Name the emotion and rate it 0-10.","What happened? Describe only what a camera would record.","What am I assuming or interpreting?","Am I expecting a threat or catastrophe? How likely is it really?","Does the emotion and its size fit the facts?","If yes, problem-solve. If no, try Opposite Action."],
+   why:"A DBT emotion-regulation skill that overlaps with CBT's thought checking. Separating facts from interpretations often lowers the intensity of anger, fear, and shame.",
+   ad:{nfmh:"Keep it to one recent, small event.",community:"Use a real interaction from this week.",group:"Use a made-up scenario so no one feels on the spot."}}
+  ,{id:"opposite",src:"DBT",name:"Opposite Action",cat:"Act",roles:["core"],min:12,demand:2,fit:{depression:3,anxiety:2,anger:2,lonely:2,selfworth:2,hope:2},ev:"Emerging",refs:["valentine2015","ekers2014"],
+   sum:"When an emotion doesn't fit the facts, act opposite to its urge: approach instead of avoid, be gentle instead of attack.",
+   steps:["Name the emotion and its urge (fear → avoid, sadness → withdraw, anger → attack, shame → hide).","Check the facts: does the emotion fit? If it does, don't use this skill.","Pick the opposite action (approach, get active, be gentle, show up).","Do it all the way, including posture and tone.","Repeat until the emotion eases.","Plan one opposite action for this week."],
+   why:"A DBT emotion-regulation skill with roots in behavioral activation and exposure, which have solid evidence for depression and anxiety.",
+   ad:{nfmh:"Small steps: joining an activity instead of staying in the room.",community:"Practice one approach step during the visit.",group:"Pair up to plan opposite actions."}}
+  ,{id:"please",src:"DBT",name:"PLEASE Self-Care Check",cat:"Plan",roles:["core","close"],min:10,demand:1,fit:{stress:3,sleep:3,depression:2,anger:2,substance:2,anxiety:1},ev:"Emerging",refs:["valentine2015","trauer2015"],
+   sum:"Lower emotional vulnerability by caring for the body: treat PhysicaL illness, Eat balanced, Avoid mood-altering substances, Sleep, Exercise.",
+   steps:["Explain: a run-down body makes emotions harder to manage.","PhysicaL illness: anything untreated or meds being skipped?","Eating: regular meals?","Avoid substances that throw mood off.","Sleep: how many hours, and is it regular?","Exercise: any movement most days?","Pick the one letter that would help most this week and plan a small step."],
+   why:"A DBT emotion-regulation skill. Sleep loss, hunger, illness, and substances all raise reactivity. Refer medical or medication concerns to the care team.",
+   ad:{nfmh:"Coordinate with nursing on meals, meds, and sleep.",community:"Connect to food, clinic, or pharmacy resources if needed.",group:"Each member rates themselves on each letter privately."}}
+  ,{id:"copeahead",src:"DBT",name:"Cope Ahead Rehearsal",cat:"Plan",roles:["core"],min:12,demand:2,fit:{anxiety:3,substance:3,relation:2,transition:2,stress:2},ev:"Emerging",refs:["valentine2015"],
+   sum:"Plan and mentally rehearse how to handle a hard situation before it happens.",
+   steps:["Name a situation coming up that could be hard.","Describe it in detail: where, who, what might happen.","Choose the skills to use (breathing, DEAR MAN, leaving).","Picture it happening and see yourself coping well, step by step.","Include a moment where it goes badly and you still cope.","Practice a calming skill right after."],
+   why:"A DBT emotion-regulation skill. Rehearsal makes it more likely people use skills under stress, similar to relapse-prevention planning.",
+   ad:{nfmh:"Use for appointments, visits, or room changes.",community:"Use for court dates, interviews, or family events.",group:"Members coach each other through a scenario."}}
+  ,{id:"dearman",src:"DBT",name:"DEAR MAN",cat:"Connect",roles:["core"],min:15,demand:2,fit:{relation:3,anger:2,selfworth:2,transition:1,anxiety:1},ev:"Emerging",refs:["valentine2015","neacsiu2010"],
+   sum:"A script for asking for what you need or saying no: Describe, Express, Assert, Reinforce, stay Mindful, Appear confident, Negotiate.",
+   steps:["Pick a real request or a 'no' they need to say.","Describe the facts.","Express feelings with \"I\" statements.","Assert the ask clearly.","Reinforce: say how it helps the other person too.","Mindful: stay on topic and repeat if needed.","Appear confident: posture, eye contact, steady voice.","Negotiate: be willing to give to get.","Role-play it twice, switching roles."],
+   why:"A DBT interpersonal-effectiveness skill. Assertiveness training helps people get needs met while keeping relationships intact. Practicing out loud is what makes it stick.",
+   ad:{nfmh:"Practice asking staff for something they need.",community:"Use for landlords, case managers, or family.",group:"Role-play in pairs with a script card."}}
+  ,{id:"give",src:"DBT",name:"GIVE: Keep the Relationship",cat:"Connect",roles:["core"],min:10,demand:1,fit:{relation:3,lonely:2,anger:2},ev:"Emerging",refs:["valentine2015"],
+   sum:"Keep relationships healthy during hard conversations: be Gentle, act Interested, Validate, use an Easy manner.",
+   steps:["Gentle: no attacks, threats, or judging.","Interested: listen and don't interrupt.","Validate: \"I can see why you'd feel that way.\"","Easy manner: a little humor, a relaxed tone.","Practice validating a made-up complaint.","Plan one conversation to try it in."],
+   why:"A DBT interpersonal-effectiveness skill. Validation lowers defensiveness on both sides and is one of the most teachable relationship skills.",
+   ad:{nfmh:"Fits roommates, family visits, or staff.",community:"Use for a tense family or partner relationship.",group:"Practice validation statements around the circle."}}
+  ,{id:"fast",src:"DBT",name:"FAST: Keep Self-Respect",cat:"Connect",roles:["core"],min:10,demand:1,fit:{selfworth:3,relation:2,substance:1},ev:"Emerging",refs:["valentine2015"],
+   sum:"Hold on to self-respect in conflict: be Fair, no needless Apologies, Stick to values, be Truthful.",
+   steps:["Fair: be fair to yourself and the other person.","Apologies: no over-apologizing for having needs.","Stick to values: don't give them up to be liked.","Truthful: no lies or exaggerating.","Think of a time they gave in and felt worse after.","Rewrite how it could go using FAST."],
+   why:"A DBT interpersonal-effectiveness skill. It helps people who tend to give in, people-please, or feel shame after conflict.",
+   ad:{nfmh:"Supports speaking up about their own care.",community:"Useful with pressure from old using friends.",group:"Discuss which letter is hardest for each person."}}
+  ,{id:"nameit",src:"DBT",name:"Name the Emotion",cat:"Learn",roles:["open","core"],min:8,demand:1,fit:{anger:2,anxiety:2,depression:2,trauma:1,relation:1,stress:2},ev:"Emerging",refs:["lieberman2007","valentine2015"],
+   sum:"Put a precise name on what you feel. Naming it often turns down its volume.",
+   steps:["Ask: what are you feeling right now, in one word?","Offer a feelings list if words are hard.","Find the body signs: where is it, what does it feel like?","What set it off? What does it make you want to do?","Rate it 0-10 before and after naming it.","Note any shift."],
+   why:"Labeling emotions in words reduces their intensity in lab studies. Emotion identification is the first step of DBT emotion regulation.",
+   ad:{nfmh:"Use a printed feelings wheel or faces chart.",community:"A feelings list on their phone works well.",group:"One-word feeling check-in to open group."}}
+  ,{id:"thoughtrec",src:"CBT",name:"Thought Record",cat:"Reflect",roles:["core"],min:15,demand:3,fit:{depression:3,anxiety:3,selfworth:3,anger:2,stress:2},ev:"Moderate",refs:["hofmann2012","cuijpers2018"],
+   sum:"Five columns that slow down a hard moment: situation, feeling, automatic thought, evidence, balanced thought.",
+   steps:["Situation: where, when, who.","Feeling: name it and rate 0-100.","Automatic thought: what went through your mind?","Evidence for and against that thought.","Balanced thought: a fairer way to see it.","Re-rate the feeling."],
+   why:"The thought record is a core CBT tool. CBT has strong evidence for depression and anxiety. Peers can teach and practice it as a self-help skill; formal CBT treatment stays with clinicians.",
+   ad:{nfmh:"Fill it in for them as they talk.",community:"Use a phone note template.",group:"Do one together with a made-up example."}}
+  ,{id:"traps",src:"CBT",name:"Thinking Traps",cat:"Learn",roles:["core"],min:12,demand:2,fit:{anxiety:3,depression:3,selfworth:3,anger:2,stress:1},ev:"Moderate",refs:["hofmann2012"],
+   sum:"Learn to spot common thinking patterns like all-or-nothing, mind reading, and catastrophizing.",
+   steps:["Show a short list: all-or-nothing, catastrophizing, mind reading, fortune telling, should statements, labeling, discounting the positive.","Give a quick example of each.","Ask which ones feel familiar.","Pick their top one and catch it once this week.","When caught, ask: what's a fairer way to say this?"],
+   why:"Identifying cognitive distortions is a basic CBT psychoeducation step. Naming the pattern makes it easier to step back from it.",
+   ad:{nfmh:"Keep it to two or three traps.",community:"Text them the list after the visit.",group:"Bingo game: spot the trap in sample statements."}}
+  ,{id:"behexp",src:"CBT",name:"Behavioral Experiment",cat:"Act",roles:["core"],min:15,demand:2,fit:{anxiety:3,selfworth:2,lonely:2,depression:2},ev:"Moderate",refs:["hofmann2012"],
+   sum:"Test a worried prediction with a small, safe real-world experiment.",
+   steps:["Name the prediction (\"If I say hi, they'll ignore me\").","Rate how strongly they believe it, 0-100.","Design a small, safe test.","Predict what will happen.","Do it, then record what actually happened.","Re-rate the belief and note what they learned."],
+   why:"A CBT technique. Real experience changes beliefs more than discussion alone. Keep tests small and safe; anything involving trauma memories or severe fears belongs with a clinician.",
+   ad:{nfmh:"Test predictions about joining an activity.",community:"Try it during the visit, like ordering at a counter.",group:"Members plan experiments and report back next week."}}
+  ,{id:"worrytime",src:"CBT",name:"Worry Time",cat:"Plan",roles:["core"],min:10,demand:1,fit:{anxiety:3,sleep:3,stress:2},ev:"Emerging",refs:["mcgowan2013"],
+   sum:"Postpone worries to a set 15-minute window each day instead of worrying all day.",
+   steps:["Pick a daily 15-minute worry time, not close to bedtime.","When a worry shows up, jot it down and say \"Later.\"","Return attention to what you were doing.","At worry time, review the list. Problem-solve what you can.","Notice how many worries no longer matter.","Try it for one week."],
+   why:"Worry postponement, a CBT stimulus-control technique, reduced worry in a small randomized study. It gives people a sense of control over worry.",
+   ad:{nfmh:"Schedule it around activities and meals.",community:"Set a phone alarm for worry time.",group:"Share what happened after a week of trying."}}
+  ,{id:"moodlog",src:"CBT",name:"Activity and Mood Log",cat:"Act",roles:["core","close"],min:10,demand:1,fit:{depression:3,hope:2,stress:1,sleep:1},ev:"Strong",refs:["ekers2014","cuijpers2018"],
+   sum:"Track activities and mood for a week to see what lifts or drains you.",
+   steps:["Make a simple daily grid: time, activity, mood 0-10.","Fill in yesterday together as practice.","Ask them to log for a week.","Next session, look for patterns: what raised mood, what dropped it.","Plan more of the lifts."],
+   why:"Activity monitoring is the first step of behavioral activation, which has strong evidence for depression.",
+   ad:{nfmh:"Staff can help log if writing is hard.",community:"Use a phone note or a printed sheet.",group:"Compare patterns without sharing details."}}
+  ,{id:"copecards",src:"CBT",name:"Coping Cards",cat:"Plan",roles:["close","core"],min:8,demand:1,fit:{anxiety:2,depression:2,substance:2,selfworth:2,crisis:1},ev:"Practice",refs:["hofmann2012"],
+   sum:"Write short reminders of a balanced thought or a plan on cards to carry.",
+   steps:["Pick a hard thought or situation that keeps coming up.","Write the trigger on the front.","On the back, write a balanced thought and one action.","Keep it short and in their own words.","Decide where they'll keep it (wallet, phone case, mirror)."],
+   why:"A common CBT tool. Having the answer ready makes it easier to use when stress narrows thinking.",
+   ad:{nfmh:"Large print, kept at the bedside.",community:"Phone lock-screen photo works too.",group:"Each member makes one card to take home."}}
+  ,{id:"decat",src:"CBT",name:"Worst, Best, Most Likely",cat:"Reflect",roles:["core"],min:10,demand:2,fit:{anxiety:3,stress:2,transition:2},ev:"Moderate",refs:["hofmann2012"],
+   sum:"Shrink a catastrophe down to size by naming the worst, best, and most likely outcome.",
+   steps:["Name the worry.","What's the worst that could happen?","What's the best that could happen?","What's most likely, honestly?","If the worst happened, how would you cope?","Plan for the most likely outcome."],
+   why:"A CBT technique for catastrophic thinking. Looking at the full range of outcomes usually lowers anxiety and points toward a plan.",
+   ad:{nfmh:"Use for health or move-related worries.",community:"Use for appointments or money worries.",group:"Work one worry as a group on the board."}}
+  ,{id:"cbtisleep",src:"CBT",name:"Bed Is for Sleep",cat:"Act",roles:["core"],min:10,demand:1,fit:{sleep:3,anxiety:1,stress:1},ev:"Strong",refs:["trauer2015"],
+   sum:"Retrain the brain to link bed with sleep: get up if you can't sleep, and keep a regular wake time.",
+   steps:["Go to bed only when sleepy.","Use the bed only for sleep (no phone, TV, or worrying).","If not asleep in about 20 minutes, get up and do something calm in dim light.","Return when sleepy. Repeat as needed.","Get up at the same time every day, even after a bad night.","Avoid naps, or keep them under 20 minutes."],
+   why:"Stimulus control is part of CBT for insomnia, which has strong evidence. Peers can teach these basics; anyone with suspected sleep apnea or ongoing insomnia should see their provider.",
+   ad:{nfmh:"Adapt to the unit's schedule with nursing.",community:"Plan a calm spot outside the bed to go to.",group:"Members share their wake time goal."}}
+  ,{id:"unhook",src:"ACT",name:"Unhook from a Thought",cat:"Reflect",roles:["core","open"],min:8,demand:1,fit:{selfworth:3,anxiety:2,depression:2,trauma:1,substance:1},ev:"Moderate",refs:["gloster2020"],
+   sum:"Create distance from a painful thought by noticing it as a thought, not a fact.",
+   steps:["Name a sticky thought (\"I'm a failure\").","Say it to yourself and rate how true it feels.","Now add: \"I'm having the thought that I'm a failure.\"","Then: \"I notice I'm having the thought that…\"","Re-rate how much it grips you.","Try saying it in a silly voice or singing it."],
+   why:"Cognitive defusion from Acceptance and Commitment Therapy (ACT), which has broad evidence across many conditions. The thought doesn't have to change for its grip to loosen.",
+   ad:{nfmh:"Keep it simple: just the 'I'm having the thought' step.",community:"Practice with a thought that came up this week.",group:"Members write a thought and practice together."}}
+  ,{id:"leaves",src:"ACT",name:"Leaves on a Stream",cat:"Regulate",roles:["core","close"],min:8,demand:1,fit:{anxiety:2,stress:2,sleep:2,depression:1},ev:"Moderate",refs:["gloster2020","khoury2015"],
+   sum:"Picture each thought on a leaf floating down a stream and let it drift by.",
+   steps:["Sit comfortably and close the eyes or soften the gaze.","Picture a stream with leaves floating by.","Place each thought on a leaf and watch it float away.","If you get caught in a thought, notice that and gently start again.","Do this for 3-5 minutes.","Debrief: what was it like to watch thoughts instead of follow them?"],
+   why:"A classic ACT mindfulness exercise for defusion. It helps people step back from rumination and worry.",
+   ad:{nfmh:"Read the script slowly and keep it short.",community:"Find a quiet bench or sit in the car.",group:"Lead it as a guided practice."}}
+  ,{id:"box",name:"Box Breathing",cat:"Regulate",roles:["open"],min:4,demand:1,fit:{anxiety:3,stress:3,anger:2,sleep:1},ev:"Emerging",refs:["balban2023","zaccaro2018"],
+   sum:"Breathe in, hold, out, hold, each for a count of four.",
+   steps:["Sit upright and relax the shoulders.","Breathe in through the nose for 4.","Hold for 4.","Breathe out slowly for 4.","Hold for 4.","Repeat 4-6 rounds. Shorten the counts if it's uncomfortable."],
+   why:"A simple structured breathing pattern. Slow breathing lowers arousal; in one trial box breathing helped mood, though cyclic sighing helped a bit more.",
+   ad:{nfmh:"Use shorter counts (3) for people with breathing conditions.",community:"Easy to do anywhere without anyone noticing.",group:"Trace a square in the air together."}}
+  ,{id:"anchor",src:"ACT",name:"Drop Anchor",cat:"Regulate",roles:["open","core"],min:5,demand:1,fit:{anxiety:3,trauma:2,stress:3,anger:2,crisis:1,substance:1},ev:"Moderate",refs:["gloster2020","atjak2015"],
+   sum:"Steady yourself in an emotional storm: Acknowledge what's inside, Come back into the body, Engage with the room.",
+   steps:["Acknowledge: quietly name what's showing up. \"I notice anxiety. I notice the thought that I can't handle this.\"","Come back into your body: press feet into the floor, straighten the back, press fingertips together.","Engage: look around and name 5 things you see and 3 things you hear.","Cycle through these steps 3-4 times, slowly.","Ask: what are you doing right now, and what matters next?"],
+   why:"An ACT grounding exercise (ACE). It doesn't try to make feelings go away; it builds enough steadiness to choose what to do next. ACT has broad evidence across anxiety, depression, and substance use.",
+   ad:{nfmh:"Do it seated; pressing hands on the armrests works for the body step.",community:"Works standing, walking, or in a car.",group:"Lead it as a 3-minute opener."}}
+  ,{id:"expansion",src:"ACT",name:"Make Room for a Feeling",cat:"Regulate",roles:["core"],min:8,demand:1,fit:{anxiety:3,grief:3,stress:2,trauma:1,substance:2},ev:"Moderate",refs:["gloster2020"],
+   sum:"Instead of fighting a feeling, get curious about it and give it space.",
+   steps:["Name the feeling and where it sits in the body.","Observe it like a scientist: size, shape, temperature, movement.","Breathe into and around it.","Imagine the body opening up and making space around it.","Say: \"I don't like this, but I can make room for it.\"","Notice whether its grip changes, even a little."],
+   why:"Expansion is ACT's acceptance skill. Struggling to push feelings away often makes them louder; allowing them reduces the struggle. Go slowly with trauma and stop if it becomes overwhelming.",
+   ad:{nfmh:"Keep it short and guide each step aloud.",community:"Use for cravings or anxiety before an appointment.",group:"Guide it together, then share one word about the experience."}}
+  ,{id:"passengers",src:"ACT",name:"Passengers on the Bus",cat:"Reflect",roles:["core"],min:15,demand:2,fit:{selfworth:3,anxiety:2,substance:2,hope:2,depression:2},ev:"Moderate",refs:["gloster2020","atjak2015"],
+   sum:"You're the driver; your hard thoughts and feelings are noisy passengers. You can keep driving toward what matters.",
+   steps:["Explain the metaphor: you drive the bus of your life toward your values.","Passengers (fear, shame, cravings, old stories) shout directions.","Name their top three passengers and what each one says.","Ask: what happens when you let them steer?","Practice saying: \"I hear you. You can ride along, but I'm driving.\"","Name one direction they want to drive this week."],
+   why:"A classic ACT metaphor that combines defusion and values. It gives people a memorable way to keep acting on what matters without waiting for hard thoughts to leave.",
+   ad:{nfmh:"Draw a simple bus and let them name the passengers.",community:"Tie it to a goal they're working on right now.",group:"Members share their loudest passenger and its catchphrase."}}
+  ,{id:"choicepoint",src:"ACT",name:"Choice Point",cat:"Plan",roles:["core"],min:12,demand:2,fit:{substance:3,anger:2,relation:2,depression:2,hope:2,stress:1},ev:"Moderate",refs:["gloster2020"],
+   sum:"Map a hard moment: what pulls you away from your values, what moves you toward them, and which skills help.",
+   steps:["Draw a 'V': the bottom is the hard situation, thoughts, and feelings.","Left arm: away moves (what you do that pulls you off track).","Right arm: toward moves (what you'd do if acting on your values).","List the hooks that pull you away.","Add helpful skills under the V: grounding, unhooking, reaching out.","Pick one toward move for the next time it happens."],
+   why:"An ACT tool for turning values into specific choices. It helps people see the moment of choice and plan ahead for it.",
+   ad:{nfmh:"Use a recent moment on the unit.",community:"Map a specific trigger they face this week.",group:"Map one shared example on the board."}}
+  ,{id:"committed",src:"ACT",name:"Values to Action Step",cat:"Act",roles:["core","close"],min:10,demand:1,fit:{depression:3,hope:3,transition:2,lonely:2,selfworth:1},ev:"Moderate",refs:["gloster2020","atjak2015"],
+   sum:"Turn a value into one small, specific action you'll take this week.",
+   steps:["Pick one value (connection, health, honesty, faith, learning).","Ask: what's one small thing that would show this value this week?","Make it specific: what, when, where.","Name the barriers likely to show up (thoughts, feelings, logistics).","Plan how to handle them.","Rate confidence 0-10. If under 7, make the step smaller."],
+   why:"Committed action is the 'doing' part of ACT. Small, values-based steps build momentum and overlap with behavioral activation for depression.",
+   ad:{nfmh:"Keep steps within the unit's routine.",community:"Plan a step they can do before the next visit.",group:"Members share their step and check in next week."}}
+  ,{id:"observer",src:"ACT",name:"The Noticing Self",cat:"Reflect",roles:["core","close"],min:8,demand:2,fit:{selfworth:3,trauma:2,anxiety:2,depression:1,transition:1},ev:"Emerging",refs:["gloster2020"],
+   sum:"Connect with the part of you that notices thoughts and feelings, the part that stays steady no matter what passes through.",
+   steps:["Notice your breath for a moment.","Notice that you're noticing.","Notice a thought, then notice who is noticing it.","Explain: thoughts, feelings, and roles change. The part that notices stays the same.","Use the sky and weather image: you're the sky, feelings are the weather.","Ask what it's like to step back into that noticing place."],
+   why:"ACT's 'self-as-context' skill. It can help people who feel defined by a diagnosis, past, or label. Keep it light and concrete if the person is dissociating or very distressed.",
+   ad:{nfmh:"Use the sky and weather image only.",community:"Pair with looking at the sky outside.",group:"Guide it, then discuss the sky and weather image."}}
+  ,{id:"namestory",src:"ACT",name:"Name the Story",cat:"Reflect",roles:["core"],min:8,demand:1,fit:{selfworth:3,depression:2,anxiety:2,relation:1,substance:1},ev:"Moderate",refs:["gloster2020"],
+   sum:"Give a familiar painful story a name, so you can recognize it and say \"There's that story again.\"",
+   steps:["Notice a story the mind tells over and over (\"Nobody cares about me\").","Give it a title, like a movie: \"The Not Good Enough Story.\"","When it shows up, say: \"Ah, there's the Not Good Enough Story.\"","Optionally add: \"Thanks, mind.\"","Return attention to what you were doing.","Notice whether naming it reduces its pull."],
+   why:"A playful ACT defusion skill. Labeling a pattern helps people see it as a story the mind tells, not the truth about them.",
+   ad:{nfmh:"Help them pick a title with gentle humor.",community:"Text themselves the story's name as a reminder.",group:"Members share their story titles if comfortable."}}
+];
+
+/* ---------- DATA: guide ---------- */
+const GUIDE=[
+ {t:"What peer support is",b:`<p>Peer support is help offered by someone with lived experience of mental health or substance use challenges who is trained to use that experience on purpose. The relationship is mutual and non-hierarchical. You walk alongside the person rather than directing them.</p><p>It rests on four ideas from the research and practice literature: shared experience builds trust, hope is contagious, people are the experts on their own lives, and helping others strengthens the helper.</p>`},
+ {t:"Core values",b:`<ul><li><b>Hope:</b> recovery is possible and you are evidence of it.</li><li><b>Self-determination:</b> the person chooses their goals and path.</li><li><b>Mutuality:</b> both people learn; power is shared.</li><li><b>Dignity and respect:</b> people-first language, no labels.</li><li><b>Lived experience:</b> used intentionally, for their benefit.</li><li><b>Strengths focus:</b> start with what's working.</li></ul><p class="hint">Based on the National Practice Guidelines for Peer Supporters (iNAPS) and SAMHSA's working definition of recovery.</p>`},
+ {t:"CHIME: what recovery is made of",b:`<p>A review of 97 papers found five processes behind personal recovery (Leamy et al., 2011). Use them to check whether your sessions cover more than symptoms.</p><ul><li><b>Connectedness:</b> relationships, community, belonging</li><li><b>Hope and optimism:</b> belief that change is possible</li><li><b>Identity:</b> a sense of self beyond the diagnosis</li><li><b>Meaning:</b> purpose, roles, spirituality</li><li><b>Empowerment:</b> control, responsibility, strengths</li></ul>`},
+ {t:"Intentional Peer Support: four tasks",b:`<ol><li><b>Connection:</b> build a relationship where both people feel heard.</li><li><b>Worldview:</b> get curious about how they make sense of their experience, and notice your own assumptions.</li><li><b>Mutuality:</b> share responsibility for the relationship, including saying what doesn't work.</li><li><b>Moving towards:</b> focus on what they want to create, not only what they want to avoid.</li></ol><p class="hint">Mead, Hilton &amp; Curtis (2001) and later IPS training materials.</p>`},
+ {t:"Purposeful self-disclosure",b:`<p>Before you share, ask yourself three questions: Whose need does this meet? Is it brief? Does it point toward what helped?</p><ul><li>Share the process of recovery, not graphic detail of the worst times.</li><li>Keep it short, then hand the focus back.</li><li>Don't compare ("I had it worse") or prescribe ("do what I did").</li><li>It's fine not to share. Disclosure is a tool, not a requirement.</li></ul>`},
+ {t:"Scope: what peers do and don't do",b:`<p><b>Peers do:</b> listen, share lived experience, teach and practice coping skills, help with goal setting, connect people to resources and community, advocate, and model recovery.</p><p><b>Peers don't:</b> diagnose, give medication or treatment advice, do trauma processing or therapy, or keep secrets that involve safety. When a question is clinical, the answer is "That's a great question for your prescriber. Want help figuring out how to ask?"</p>`},
+ {t:"Boundaries and ethics",b:`<ul><li>Be clear at the start about confidentiality and its limits: risk to self or others, abuse of a child or vulnerable adult, and court orders.</li><li>No dual relationships: not friends on social media, no money, no romantic contact.</li><li>Gifts, rides, and contact outside hours follow agency policy.</li><li>When you're unsure, bring it to supervision before acting.</li><li>Protect your own recovery. Boundaries keep the work sustainable.</li></ul>`},
+ {t:"Trauma-informed principles",b:`<p>SAMHSA's six principles apply to every setting:</p><ol><li>Safety</li><li>Trustworthiness and transparency</li><li>Peer support</li><li>Collaboration and mutuality</li><li>Empowerment, voice, and choice</li><li>Cultural, historical, and gender issues</li></ol><p>In practice: explain what you're doing and why, offer choices (where to sit, whether to close the door, eyes open or closed), and never pressure someone to tell their story.</p>`},
+ {t:"Crisis response",b:`<ul><li>Ask directly: "Are you thinking about suicide?" Asking does not plant the idea.</li><li>Stay calm, listen, and don't leave someone alone if risk seems imminent.</li><li>Follow your facility's crisis protocol and bring in clinical staff right away.</li><li>988 Suicide &amp; Crisis Lifeline: call or text <b>988</b>. Veterans press 1 after dialing.</li><li>Call 911 for immediate danger to life.</li><li>Document per policy and debrief with your supervisor.</li></ul>`},
+ {t:"Running groups",b:`<ul><li><b>Open:</b> welcome, agreements (confidentiality, one voice at a time, right to pass), and a brief check-in round.</li><li><b>Middle:</b> one skill or topic, practiced rather than lectured. Use pairs to give quieter members a voice.</li><li><b>Close:</b> takeaway round and a grounding moment, especially after heavy topics.</li><li>For someone who dominates: thank them, summarize, and invite others ("Let's hear from someone who hasn't spoken yet").</li><li>If someone becomes distressed, pause the group, ground together, and check in privately after.</li></ul>`},
+ {t:"Working in an NFMH",b:`<ul><li>Coordinate with nursing and activity staff on timing, mobility, and medication schedules.</li><li>Keep sessions shorter and more concrete; repeat key points and leave something written.</li><li>Honor resident rights: the choice to decline, privacy, and being addressed as an adult.</li><li>Many residents face loss of independence, home, and relationships. Validate that grief.</li><li>Be a steady, predictable presence. Consistency builds trust in residential settings.</li></ul>`},
+ {t:"Community sessions",b:`<ul><li>Agree on a meeting place that's private enough and safe for both of you.</li><li>Check in on basic needs: food, housing, transportation, phone.</li><li>Know your agency's policy on transporting clients and home visits.</li><li>Tell someone where you'll be. Leave if a setting feels unsafe.</li><li>Use what's around you: a walk, a library card, a bus route practice run.</li></ul>`},
+ {t:"Documentation tips",b:`<ul><li>Write in plain, respectful language. Imagine the person reading it.</li><li>Use their words in quotes when it matters.</li><li>Note strengths and progress, not only problems.</li><li>Record what you did (skill taught, resource linked), how they responded, and the next step.</li><li>Document safety concerns and who you notified.</li></ul>`},
+ {t:"Taking care of yourself",b:`<p>Peer workers report high rates of stress, partly from role ambiguity and hearing stories close to their own. Protect your recovery with regular supervision, your own wellness plan, time off you actually take, and people outside work. Noticing your own warning signs is part of the job, not a failure at it.</p>`}
+];
+
+/* ---------- STATE ---------- */
+const S={setting:"facility",concerns:["anxiety"],len:30,energy:"steady",swap:{}};
+const byId=Object.fromEntries(TECH.map(t=>[t.id,t]));
+const studyById=Object.fromEntries(STUDIES.map(s=>[s.id,s]));
+const concernById=Object.fromEntries(CONCERNS.map(c=>[c.id,c]));
+const EVLABEL={Strong:"Strong evidence",Moderate:"Moderate evidence",Emerging:"Emerging evidence",Practice:"Practice-based"};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+
+/* ---------- PLANNER ---------- */
+function score(t){
+  let s=0;S.concerns.forEach(c=>s+=(t.fit[c]||0));
+  if(S.energy==="low"){if(t.demand===3)s-=2.5;else if(t.demand===2)s-=.6;}
+  if(S.energy==="high"&&t.cat==="Regulate")s+=1;
+  if((S.setting==="community")&&t.writing)s-=.7;
+  if(S.setting==="nfmh"){if(t.demand===3)s-=2;if(t.writing)s-=.4;}
+  if(S.setting==="group"&&t.id==="safety")s-=99;
+  return s;
+}
+function ranked(role,exclude){
+  return TECH.filter(t=>t.roles.includes(role)&&!exclude.includes(t.id)).map(t=>({t,s:score(t)})).sort((a,b)=>b.s-a.s||a.t.min-b.t.min);
+}
+function pick(role,key,exclude){
+  const r=ranked(role,exclude);if(!r.length)return null;
+  const i=(S.swap[key]||0)%Math.min(r.length,6);return r[i].t;
+}
+function buildPlan(){
+  const L=S.len,grp=S.setting==="group",crisis=S.concerns.includes("crisis");
+  const checkin=L<=15?2:L<=30?4:L<=60?(grp?8:6):12;
+  const wrap=L<=15?2:L<=30?3:5;
+  const openM=L<=15?3:L>=60?7:5;
+  const closeM=L<=15?0:L<=45?4:6;
+  const discM=grp&&L>=45&&!crisis?(L>=90?20:L>=60?15:10):0;
+  let coreM=L-checkin-wrap-openM-closeM-discM;
+  const blocks=[];const used=[];
+  blocks.push({kind:grp?"Welcome and check-in":"Check-in",fixed:true,m:checkin,desc:grp?"Group agreements, then a one-word or 0-10 mood round.":"How are you arriving today? Rate mood 0-10 and ask what they want from the session."});
+  const op=crisis?byId.sigh:pick("open","open",used);if(op){used.push(op.id);blocks.push({kind:"Settle",t:op,m:openM,key:"open"});}
+  const coreList=[];
+  if(crisis){coreList.push(byId.safety);used.push("safety");}
+  const twoCores=coreM>=28&&!crisis;
+  if(!crisis){const c1=pick("core","core1",used);if(c1){coreList.push(c1);used.push(c1.id);}}
+  if(twoCores||(crisis&&coreM>=30)){const c2=pick("core","core2",used);if(c2){coreList.push(c2);used.push(c2.id);}}
+  const each=Math.floor(coreM/coreList.length);
+  coreList.forEach((t,i)=>blocks.push({kind:i?"Practice two":"Focus activity",t,m:i===coreList.length-1?coreM-each*(coreList.length-1):each,key:t.id==="safety"?null:"core"+(i+1)}));
+  if(discM){blocks.push({kind:"Group discussion",fixed:true,m:discM,desc:"Use the prompts below. Pairs first, then share with the room."});}
+  if(closeM){const cl=pick("close","close",used);if(cl){used.push(cl.id);blocks.push({kind:"Close",t:cl,m:closeM,key:"close"});}}
+  blocks.push({kind:"Wrap-up",fixed:true,m:wrap,desc:grp?"Takeaway round and reminder of next meeting and resources.":"Recap one takeaway, confirm the next step, and schedule the next session."});
+  return blocks;
+}
+function mm(n){return String(n).padStart(2,"0")}
+const SETNAME={facility:"Facility",community:"Community",nfmh:"NFMH",group:"Group"};
+function loadNotes(){try{return JSON.parse(localStorage.getItem("cg-notes")||"[]")}catch(e){return[]}}
+function storeNotes(a){try{localStorage.setItem("cg-notes",JSON.stringify(a));return true}catch(e){return false}}
+function today(){const d=new Date();return d.getFullYear()+"-"+mm(d.getMonth()+1)+"-"+mm(d.getDate())}
+function noteText(n){
+  const L=[`Peer support note: ${n.who}`,`Date: ${n.date}  Setting: ${SETNAME[n.setting]}`];
+  if(n.concerns.length)L.push("Focus: "+n.concerns.map(c=>concernById[c]?.name).join(", "));
+  if(n.acts.length)L.push("Activities: "+n.acts.map(a=>byId[a]?.name||a).join(", "));
+  if(n.moodA!=null||n.moodB!=null)L.push(`Mood (0-10): ${n.moodA??"-"} at start, ${n.moodB??"-"} at end`);
+  if(n.covered)L.push("Worked on: "+n.covered);
+  if(n.response)L.push("Response: "+n.response);
+  if(n.strengths)L.push("Strengths: "+n.strengths);
+  if(n.next)L.push("Next step: "+n.next);
+  L.push("Safety concerns: "+(n.safety?(n.safetyText||"Yes, see supervisor"):"None noted"));
+  return L.join("\n");
+}
+function copyText(txt,btn,label){
+  const done=ok=>{btn.textContent=ok?"Copied":"Copy blocked";setTimeout(()=>btn.textContent=label||"Copy",1500)};
+  const fb=()=>{const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}ta.remove();done(ok)};
+  try{navigator.clipboard.writeText(txt).then(()=>done(true),fb)}catch(e){fb()}
+}
+function clampMood(v){if(v===""||v==null)return null;const n=Math.round(+v);return isNaN(n)?null:Math.max(0,Math.min(10,n));}
+function bestFor(t,n){return Object.entries(t.fit).sort((a,b)=>b[1]-a[1]).slice(0,n||3).map(([k])=>concernById[k]?.name).filter(Boolean)}
+function pubmed(s){return "https://pubmed.ncbi.nlm.nih.gov/?term="+encodeURIComponent(s.t)}
+
+const main=$("main");
+const COLS=["coral","sun","mint","sky","grape"];
+const CATCOL={Regulate:"sky",Reflect:"grape",Act:"coral",Plan:"sun",Connect:"mint",Learn:"sky"};
+const ROLECOL={Settle:"sky","Focus activity":"coral","Practice two":"grape",Close:"mint"};
+const EVDOTS={Strong:"●●●",Moderate:"●●○",Emerging:"●○○",Practice:"○○○"};
+const ev=t=>`<span class="ev"><i>${EVDOTS[t.ev]}</i>${EVLABEL[t.ev]}</span>`;
+const IC={
+ facility:'<svg viewBox="0 0 40 40"><path d="M6 34V12l14-6 14 6v22"/><path d="M15 34v-9h10v9M13 16h3M24 16h3"/></svg>',
+ community:'<svg viewBox="0 0 40 40"><circle cx="13" cy="13" r="6"/><path d="M13 19v15M27 34V20M21 34h13M23 20l4-8 4 8z"/></svg>',
+ nfmh:'<svg viewBox="0 0 40 40"><path d="M6 18L20 7l14 11"/><path d="M10 15v19h20V15"/><path d="M20 30s-6-3.5-6-7.5a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4-6 7.5-6 7.5z"/></svg>',
+ group:'<svg viewBox="0 0 40 40"><circle cx="20" cy="12" r="4.5"/><circle cx="9" cy="20" r="4"/><circle cx="31" cy="20" r="4"/><path d="M12 34c0-5 3.5-8 8-8s8 3 8 8M3 32c0-4 2.5-6 6-6M37 32c0-4-2.5-6-6-6"/></svg>',
+ low:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15"/><path d="M13 18h4M23 18h4M15 27h10"/></svg>',
+ steady:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15"/><circle cx="15" cy="17" r="1.5"/><circle cx="25" cy="17" r="1.5"/><path d="M14 24c3 3 9 3 12 0"/></svg>',
+ high:'<svg viewBox="0 0 40 40"><path d="M22 4L9 23h10l-2 13 14-20H21z"/></svg>'
+};
+const SETSUB={facility:"Individual, on site",community:"Out and about",nfmh:"Nursing facility",group:"Group session"};
+let step=0, noteMode="list", personSel="All", pendingDel=null, techCat="All", resTag="All";
+const go=h=>{location.hash=h};
+
+/* ---------- home ---------- */
+function greet(){const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening"}
+function loadSaved(){try{return JSON.parse(localStorage.getItem("cg-saved")||"[]")}catch(e){return[]}}
+function storeSaved(a){try{localStorage.setItem("cg-saved",JSON.stringify(a))}catch(e){}}
+function savedRows(saved){return saved.map((p,i)=>`<div class="swr"><button class="swdel" data-del="${i}" tabindex="-1" aria-label="Delete ${esc(p.name)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg>Delete</button><button class="rowbtn" data-load="${i}"><b>${esc(p.name)}</b><span>${SETNAME[p.setting]||""} · ${p.len} min →</span></button></div>`).join("");}
+function loadPlan(p){if(!$("sheet").hidden)closeSheet();Object.assign(S,{setting:p.setting,len:p.len,concerns:[...p.concerns],energy:p.energy,swap:{...p.swap}});step=3;cardIdx=0;go("#plan");}
+function openSaved(){lastFocus=document.activeElement;const draw=()=>{const saved=loadSaved();if(!saved.length){closeSheet();home();return;}$("sheetBody").innerHTML=`<div class="rows">${savedRows(saved)}</div><p class="hint">Swipe a plan left to delete it.</p>`;bindSwipeRows($("sheetBody"),saved,()=>{draw();home();});};
+  $("sheet").innerHTML=`<div class="head sky" id="sheetHead"><button class="grabber" id="x" aria-label="Close"></button><h1>Saved plans</h1></div><div class="body" id="sheetBody"></div>`;draw();
+  $("sheet").hidden=false;$("scrim").hidden=false;document.body.style.overflow="hidden";$("sheet").scrollTop=0;$("sheet").style.transform="";$("scrim").style.opacity="";$("x").onclick=closeSheet;$("x").focus();bindSheetDrag();}
+function bindSwipeRows(root,saved,after){
+  const rows=[...root.querySelectorAll(".swr")],OPEN=-96;
+  const closeAll=x=>rows.forEach(r=>{if(r!==x&&r.classList.contains("open")){r.classList.remove("open");r.querySelector(".rowbtn").style.transform="";}});
+  rows.forEach(w=>{const b=w.querySelector(".rowbtn");let x0=0,y0=0,dx=0,base=0,mode=null,id=null;
+    b.addEventListener("pointerdown",e=>{if(e.button)return;id=e.pointerId;x0=e.clientX;y0=e.clientY;dx=0;mode=null;base=w.classList.contains("open")?OPEN:0;});
+    b.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;const mx=e.clientX-x0,my=e.clientY-y0;
+      if(!mode){if(Math.abs(mx)<8&&Math.abs(my)<8)return;mode=Math.abs(mx)>Math.abs(my)?"x":"y";if(mode==="x"){try{b.setPointerCapture(id)}catch(_){}closeAll(w);w.classList.add("drag");}}
+      if(mode!=="x")return;dx=mx;let t=base+dx;if(t>0)t=t*.25;if(t<OPEN)t=OPEN+(t-OPEN)*.3;b.style.transform=`translateX(${t}px)`;});
+    const end=e=>{if(e.pointerId!==id)return;id=null;if(mode!=="x"){mode=null;return;}w.classList.remove("drag");w.dataset.moved="1";setTimeout(()=>{w.dataset.moved="";},350);
+      const t=base+dx,open=t<OPEN/2;w.classList.toggle("open",open);b.style.transform=open?`translateX(${OPEN}px)`:"";mode=null;};
+    b.addEventListener("pointerup",end);b.addEventListener("pointercancel",end);});
+  root.querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>{const w=b.parentNode;if(w.dataset.moved==="1"){w.dataset.moved="";return;}if(w.classList.contains("open")){w.classList.remove("open");b.style.transform="";return;}loadPlan(saved[+b.dataset.load]);});
+  root.querySelectorAll("[data-del]").forEach(d=>d.onclick=()=>{const w=d.parentNode,i=+d.dataset.del;w.style.height=w.offsetHeight+"px";
+    requestAnimationFrame(()=>{w.classList.add("gone");});
+    setTimeout(()=>{const a=loadSaved();a.splice(i,1);storeSaved(a);after();},280);});
+}
+function fitHome(){if(!document.documentElement.classList.contains("homefix"))return;const m=main;
+  m.querySelectorAll(".swr").forEach(r=>r.hidden=false);const f=m.querySelector(".field");if(f)f.hidden=false;
+  const over=()=>{const cs=getComputedStyle(m);const kids=[...m.children].filter(c=>!c.hidden);
+    const t=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom)+kids.reduce((s,c)=>s+(c.classList.contains("hero")?parseFloat(getComputedStyle(c).minHeight)||c.offsetHeight:c.offsetHeight),0)+(kids.length-1)*(parseFloat(cs.rowGap)||0);
+    return t>m.clientHeight+1;};const rows=[...m.querySelectorAll(".swr")];
+  while(over()&&rows.length){rows.pop().hidden=true;}
+  const sa=$("seeAll"),vis=m.querySelectorAll(".swr:not([hidden])").length,tot=rows.length+vis;
+  if(sa){const more=m.querySelectorAll(".swr[hidden]").length;sa.hidden=!more;sa.textContent=`See all ${m.querySelectorAll(".swr").length}`;}
+  if(f&&over())f.hidden=true;}
+window.addEventListener("resize",()=>{clearTimeout(fitHome.t);fitHome.t=setTimeout(fitHome,120);});
+try{document.fonts.ready.then(()=>fitHome());}catch(e){}window.addEventListener("load",()=>fitHome());
+function home(){
+  const saved=loadSaved();
+  main.innerHTML=`<section class="hello"><p class="kicker">${greet()}</p><h1>Who are we showing up for today?</h1></section>
+  <button class="hero coral" data-go="plan"><span class="big">Plan a session</span><span class="sub">Four taps: where, what, how long, how's the energy.</span><span class="go">→</span></button>
+  <div class="bento">
+    <button class="tile sky" data-go="notes"><b>${loadNotes().length}</b><span>Session notes</span></button>
+    <button class="tile mint" data-go="tools"><b>${TECH.length}</b><span>Techniques</span></button>
+    <button class="tile grape" data-go="research"><b>${STUDIES.length}</b><span>Studies</span></button>
+    <button class="tile sun" data-go="guide"><b>${GUIDE.length}</b><span>Guide topics</span></button>
+  </div>
+  ${saved.length?`<div class="field"><div class="lh"><span class="label">Saved plans</span><button class="seeall" id="seeAll" hidden>See all</button></div><div class="rows">${savedRows(saved)}</div></div>`:""}
+  <p class="foot">Plans and notes stay on this device. Use initials, not names.</p>`;
+  bindSwipeRows(main,saved,()=>home());if($("seeAll"))$("seeAll").onclick=openSaved;fitHome();
+}
+
+/* ---------- plan wizard ---------- */
+function progress(){return `<div class="progress">${[0,1,2,3].map(i=>`<span class="${i<=step?"on":""}"></span>`).join("")}</div>`}
+function plan(){
+  if(step===0){
+    main.innerHTML=progress()+`<div class="q"><h1>Where are you meeting?</h1><p>Tap one to keep going.</p></div>
+    <div class="grid2">${["facility","community","nfmh","group"].map((k,i)=>`<button class="pick ${COLS[i]}" data-set="${k}" aria-pressed="${S.setting===k}">${IC[k]}<span><b>${SETNAME[k]}</b><br><small>${SETSUB[k]}</small></span></button>`).join("")}</div>`;
+    main.querySelectorAll("[data-set]").forEach(b=>b.onclick=()=>{S.setting=b.dataset.set;S.swap={};step=1;plan();window.scrollTo(0,0);});
+  }else if(step===1){
+    main.innerHTML=progress()+`<div class="q"><h1>What's coming up?</h1><p>Pick up to three.</p></div>
+    <div class="grid2">${CONCERNS.map((c,i)=>`<button class="pick concern ${c.id==="crisis"?"crisis":COLS[i%5]}" data-c="${c.id}" aria-pressed="${S.concerns.includes(c.id)}"><span><b>${esc(c.name.split(" / ")[0])}</b>${c.name.includes(" / ")?`<small>${esc(c.name.split(" / ")[1])}</small>`:""}</span><span class="tick">${S.concerns.includes(c.id)?"✓":""}</span></button>`).join("")}</div>
+    <button class="cta" id="next" ${S.concerns.length?"":"disabled"}><span>${S.concerns.length?S.concerns.length+" picked":"Pick at least one"}</span><span>Next →</span></button>`;
+    main.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{const v=b.dataset.c,i=S.concerns.indexOf(v);if(i>-1)S.concerns.splice(i,1);else{S.concerns.push(v);if(S.concerns.length>3)S.concerns.shift();}S.swap={};const y=window.scrollY;plan();window.scrollTo(0,y);});
+    $("next").onclick=()=>{const go2=()=>{step=2;plan();window.scrollTo(0,0);};if(S.concerns.includes("crisis"))showCrisis(go2);else go2();};
+  }else if(step===2){
+    const LENS=[15,30,45,60,90];const li=LENS.indexOf(S.len);
+    main.innerHTML=progress()+`<div class="q"><h1>How long do you have?</h1></div>
+    <div class="dial"><button id="minus" aria-label="Shorter">−</button><div><b>${S.len}</b><small>minutes</small></div><button id="plus" aria-label="Longer">+</button></div>
+    <div class="q"><h2>How's the energy in the room?</h2></div>
+    <div class="grid3">${[["low","Low","sun"],["steady","Steady","mint"],["high","Activated","coral"]].map(([k,n,c])=>`<button class="pick ${c}" data-e="${k}" aria-pressed="${S.energy===k}">${IC[k]}<b>${n}</b></button>`).join("")}</div>
+    <button class="cta" id="build"><span>Build my plan</span><span>→</span></button>`;
+    $("minus").onclick=()=>{S.len=LENS[Math.max(0,li-1)];S.swap={};plan();};
+    $("plus").onclick=()=>{S.len=LENS[Math.min(4,li+1)];S.swap={};plan();};
+    main.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{S.energy=b.dataset.e;S.swap={};plan();});
+    $("build").onclick=()=>{step=3;cardIdx=0;plan();window.scrollTo(0,0);};
+  }else result();
+}
+let cardIdx=0;
+function layoutStack(){
+  const st=$("stack");if(!st)return;const cs=[...st.children],n=cs.length;cardIdx=Math.max(0,Math.min(n-1,cardIdx));
+  cs.forEach((c,i)=>{const d=i-cardIdx;c.style.zIndex=String(50-Math.abs(d));
+    if(d<0){c.style.transform="translateX(-120%) rotate(-10deg)";c.style.opacity="0";}
+    else{const k=Math.min(d,2);c.style.transform=`translateY(${k*16}px) scale(${1-k*.06})`;c.style.opacity=d>2?"0":"1";}
+    c.inert=d!==0;c.setAttribute("aria-hidden",String(d!==0));});
+  $("countC").textContent=`${cardIdx+1} of ${n}`;$("prevC").disabled=cardIdx===0;$("nextC").disabled=cardIdx===n-1;
+}
+function initStack(){
+  const st=$("stack");if(!st)return;layoutStack();
+  $("prevC").onclick=()=>{cardIdx--;layoutStack();};$("nextC").onclick=()=>{cardIdx++;layoutStack();};
+  let sx=0,sy=0,dx=0,card=null,horiz=null;
+  st.addEventListener("pointerdown",e=>{if(e.target.closest("button"))return;card=st.children[cardIdx];if(!card)return;sx=e.clientX;sy=e.clientY;dx=0;horiz=null;});
+  st.addEventListener("pointermove",e=>{if(!card)return;const mx=e.clientX-sx,my=e.clientY-sy;
+    if(horiz===null&&(Math.abs(mx)>8||Math.abs(my)>8)){horiz=Math.abs(mx)>Math.abs(my);if(horiz){card.classList.add("dragging");try{st.setPointerCapture(e.pointerId)}catch(_){}}else{card=null;return;}}
+    if(!horiz)return;dx=mx;const n=st.children.length;const edge=(dx>0&&cardIdx===0)||(dx<0&&cardIdx===n-1);const ddx=edge?dx*.3:dx;
+    card.style.transform=`translateX(${ddx}px) rotate(${ddx/22}deg)`;});
+  let dragged=false;
+  st.addEventListener("click",e=>{if(dragged){e.stopPropagation();e.preventDefault();dragged=false;}},true);
+  const end=()=>{if(!card)return;card.classList.remove("dragging");const n=st.children.length;if(horiz&&Math.abs(dx)>6){dragged=true;setTimeout(()=>dragged=false,350);}
+    if(horiz&&dx<-70&&cardIdx<n-1)cardIdx++;else if(horiz&&dx>70&&cardIdx>0)cardIdx--;card=null;layoutStack();};
+  st.addEventListener("pointerup",end);st.addEventListener("pointercancel",end);
+  st.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){cardIdx++;layoutStack();}if(e.key==="ArrowLeft"){cardIdx--;layoutStack();}
+    if((e.key==="Enter"||e.key===" ")&&e.target.matches(".card[data-open]")){e.preventDefault();openTech(e.target.dataset.open);}});
+}
+function result(){
+  const blocks=buildPlan();const grp=S.setting==="group";const cs=S.concerns.map(id=>concernById[id]);const crisis=S.concerns.includes("crisis");
+  let t0=0;
+  const cards=blocks.map(b=>{const a=t0;t0+=b.m;const when=`<div class="when"><span>${esc(b.kind)}</span><b>${mm(a)}–${mm(t0)}</b></div>`;
+    if(b.fixed)return `<article class="card plain">${when}<h2>${esc(b.kind)}</h2><p class="grow">${esc(b.desc)}</p></article>`;
+    return `<article class="card tap ${ROLECOL[b.kind]||"sky"}" data-open="${b.t.id}" tabindex="0" role="button" aria-label="${esc(b.t.name)}: open steps">${when}<h2>${esc(b.t.name)}</h2><p class="grow">${esc(b.t.sum)}</p>${ev(b.t)}
+      <div class="acts"><span class="taphint">Tap for steps →</span>${b.key?`<button class="small" data-swap="${b.key}">Swap</button>`:""}</div></article>`;}).join("");
+  const qs=grp?cs.flatMap(c=>c.prompts).slice(0,5):cs.flatMap(c=>c.ask).slice(0,5);
+  const ak=S.setting==="facility"?null:S.setting;
+  const ad=ak?blocks.filter(b=>b.t&&b.t.ad[ak]).map(b=>`<li><b>${esc(b.t.name)}:</b> ${esc(b.t.ad[ak])}</li>`).join(""):"";
+  main.innerHTML=progress()+`
+  ${crisis?`<div class="alert"><b>Safety comes first</b><span>If risk may be imminent, don't leave the person alone and follow your crisis protocol now. 988 Suicide &amp; Crisis Lifeline: call or text 988 (Veterans press 1). 911 for immediate danger.</span></div>`:""}
+  <div class="q"><h1>Your ${S.len}-minute plan</h1><p>Swipe left and right through the cards.</p></div>
+  <div class="stack" id="stack">${cards}</div>
+  <div class="stacknav"><button class="iconbtn" id="prevC" aria-label="Previous card"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span id="countC" aria-live="polite"></span><button class="iconbtn" id="nextC" aria-label="Next card"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+  <div class="box"><h3>Focus</h3>${cs.map(c=>`<p><b>${esc(c.name)}:</b> ${esc(c.focus)}.</p>`).join("")}</div>
+  ${qs.length?`<div class="box"><h3>${grp?"Discussion prompts":"Questions to open with"}</h3><ul>${qs.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>`:""}
+  ${ad?`<div class="box"><h3>Adapting for ${grp?"group":S.setting==="nfmh"?"NFMH":"community"}</h3><ul>${ad}</ul></div>`:""}
+  <div class="box"><h3>Watch for</h3><ul>${cs.flatMap(c=>c.watch).map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>
+  <div class="box"><h3>Keep it</h3><div class="row"><input type="text" id="saveName" placeholder="Initials or group name" aria-label="Plan label"><button class="btn" id="saveBtn">Save</button></div>
+  <button class="btn alt" id="noteBtn">Write a note for this session</button></div>`;
+  main.querySelectorAll("[data-swap]").forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.swap,y=window.scrollY;S.swap[k]=(S.swap[k]||0)+1;result();window.scrollTo(0,y);});
+  initStack();
+  $("saveBtn").onclick=()=>{const a=loadSaved();a.unshift({name:($("saveName").value||"").trim()||"Untitled",date:new Date().toLocaleDateString(),setting:S.setting,len:S.len,concerns:[...S.concerns],energy:S.energy,swap:{...S.swap}});storeSaved(a.slice(0,40));$("saveBtn").textContent="Saved";};
+  $("noteBtn").onclick=()=>{draft=noteFromPlan(($("saveName").value||"").trim());saveDraft();noteMode="form";go("#notes");};
+}
+
+
+/* ---------- note summary from plan ---------- */
+function listJoin(a){return a.length<2?(a[0]||""):a.slice(0,-1).join(", ")+" and "+a[a.length-1];}
+function planParts(blocks){const by=k=>blocks.filter(b=>b.t&&b.kind===k).map(b=>b.t.name);return{settle:by("Settle"),focus:[...by("Focus activity"),...by("Practice two")],close:by("Close")};}
+function noteFromPlan(who){const blocks=buildPlan();return{who:who||"",date:today(),setting:S.setting,concerns:[...S.concerns],acts:blocks.filter(b=>b.t).map(b=>b.t.id),parts:planParts(blocks),len:S.len,energy:S.energy,moodA:null,moodB:null,editing:null};}
+function summarizeNote(n){
+  const a=clampMood(n.moodA),b=clampMood(n.moodB);n.moodA=a;n.moodB=b;
+  n.response=a!=null&&b!=null?`Self-rated mood went from ${a} to ${b} (${b>a?"up "+(b-a):b<a?"down "+(a-b):"no change"}).`:a!=null?`Self-rated mood was ${a} at the start.`:b!=null?`Self-rated mood was ${b} at the end.`:"";
+  if(!n.parts)return n;
+  const SL={facility:"facility",community:"community",nfmh:"NFMH",group:"group"};
+  const cs=(n.concerns||[]).map(c=>concernById[c]?concernById[c].name.toLowerCase():c);const p=n.parts;
+  const ENG={low:"low",steady:"steady",high:"activated"}[n.energy];
+  let w=`${n.len?n.len+"-minute ":""}${SL[n.setting]||""} ${n.setting==="group"?"session":"individual session"}`+(cs.length?` focused on ${listJoin(cs)}`:"")+"."+(ENG?` Energy in the room was ${ENG}.`:"");
+  if(p.settle.length)w+=` Opened with ${listJoin(p.settle)} to settle.`;
+  if(p.focus.length)w+=` Main focus: ${listJoin(p.focus)}.`;
+  if(p.close.length)w+=` Closed with ${listJoin(p.close)}.`;
+  n.covered=w;n.next=p.focus.length?`Build on ${listJoin(p.focus)} at the next session.`:"";n.strengths="";
+  if((n.concerns||[]).includes("crisis")){n.safety=true;n.safetyText="Suicidal thoughts were a focus. Crisis resources reviewed: 988, Veterans Crisis Line (988, press 1), and 911. Follow facility protocol and document who was notified.";}
+  else{n.safety=false;n.safetyText="";}
+  return n;}
+function summaryHTML(d){const s=summarizeNote(JSON.parse(JSON.stringify(d)));
+  const rows=[["Focus",(s.concerns||[]).map(c=>concernById[c]?.name||c).join(", ")],["Worked on",s.covered],["Response",s.response||"Add mood above."],["Next step",s.next],["Safety",s.safety?s.safetyText:"None noted"]].filter(r=>r[1]);
+  return `<div class="sumcard"><span class="label">Summary from your plan</span>${rows.map(r=>`<p><b>${r[0]}</b>${esc(r[1])}</p>`).join("")}</div>`;}
+function moodScale(d,k,l){return `<div class="mood" data-mood="${k}" data-rated="${d[k]!=null}"><div class="mood-top"><span class="label">${l}</span><span class="mood-val"><b>${d[k]??"–"}</b><span class="of">${d[k]!=null?"/ 10":"Not rated"}</span></span></div>
+  <input type="range" min="0" max="10" step="any" value="${d[k]??5}" aria-label="${l}, 0 to 10"><div class="mood-ends"><span>0 · Struggling</span><span>10 · Doing great</span></div></div>`;}
+function bindMoods(root,d,onChange){root.querySelectorAll("[data-mood]").forEach(m=>{const k=m.dataset.mood,r=m.querySelector("input[type=range]"),v=m.querySelector(".mood-val b"),of=m.querySelector(".of");
+  let raf=0,tmr=0;
+  const paint=()=>{const on=d[k]!=null;m.dataset.rated=String(on);v.textContent=on?d[k]:"–";of.textContent=on?"/ 10":"Not rated";};
+  const commit=()=>{clearTimeout(tmr);tmr=setTimeout(onChange,140);};
+  r.addEventListener("input",()=>{const x=Math.round(+r.value);if(x!==d[k]){d[k]=x;if(!raf)raf=requestAnimationFrame(()=>{raf=0;paint();});commit();}});
+  r.addEventListener("change",()=>{clearTimeout(tmr);onChange();});
+  r.addEventListener("pointerdown",()=>{(()=>{const ae=document.activeElement;if(ae&&ae.matches&&ae.matches("input[type=text],textarea"))ae.blur();})();if(d[k]==null){d[k]=Math.round(+r.value);paint();commit();}});});}
+
+/* ---------- notes ---------- */
+let draft=null;
+function blankDraft(){return{who:"",date:today(),setting:"facility",concerns:[],acts:[],moodA:null,moodB:null,covered:"",response:"",strengths:"",next:"",safety:false,safetyText:"",editing:null}}
+function saveDraft(){try{localStorage.setItem("cg-draft2",JSON.stringify(draft))}catch(e){}}
+try{draft=JSON.parse(localStorage.getItem("cg-draft2")||"null")}catch(e){}
+if(!draft)draft=blankDraft();
+function notes(){
+  if(noteMode==="form")return noteForm();
+  const all=loadNotes();const people=[...new Set(all.map(n=>n.who))].sort();
+  if(personSel!=="All"&&!people.includes(personSel))personSel="All";
+  const list=all.filter(n=>personSel==="All"||n.who===personSel).sort((a,b)=>b.date.localeCompare(a.date));
+  let stats="";
+  if(personSel!=="All"){const mine=list.slice().reverse();const g=mine.filter(n=>n.moodA!=null&&n.moodB!=null).map(n=>n.moodB-n.moodA);const avg=g.length?g.reduce((s,v)=>s+v,0)/g.length:null;
+    stats=`<div class="box"><div class="row" style="justify-content:space-between"><div><span class="label">Sessions</span><h2>${mine.length}</h2></div><div><span class="label">Avg mood change</span><h2>${avg==null?"–":(avg>0?"+":"")+avg.toFixed(1)}</h2></div></div>
+    ${mine.some(n=>n.moodB!=null)?`<div class="bars" aria-label="Mood at end of each session">${mine.map(n=>`<span style="height:${n.moodB==null?4:Math.max(6,n.moodB*10)}%" title="${esc(n.date)}: ${n.moodB??"-"}"></span>`).join("")}</div><span class="hint">End-of-session mood, oldest to newest. Self-rated.</span>`:""}</div>`;}
+  main.innerHTML=`<div class="q"><p>Dictate with your keyboard's mic. Copy into your agency's system when done.</p></div>
+  <button class="hero sky" id="newNote"><span class="big">${draft.editing||draft.parts?"Finish your note":"New note"}</span><span class="sub">${draft.editing||draft.parts?"Add initials and mood.":"Plan the session first. The note writes itself."}</span><span class="go">+</span></button>
+  ${people.length?`<div class="strip">${["All",...people].map(p=>`<button class="pill" data-p="${esc(p)}" aria-pressed="${p===personSel}">${esc(p)}</button>`).join("")}</div>`:""}
+  ${stats}
+  <div class="form">${list.length?list.map(n=>{const d=n.moodA!=null&&n.moodB!=null?n.moodB-n.moodA:null;
+    return `<div class="nc tapx"><div class="top"><h3>${esc(n.who)}</h3><span class="hint">${esc(n.date)}<span class="chev" aria-hidden="true"></span></span></div>
+    <div class="row"><span class="hint">${SETNAME[n.setting]}</span>${d!=null?`<span class="delta ${d>0?"mint":d<0?"coral":"sun"}">${n.moodA} → ${n.moodB}</span>`:""}${n.safety?`<span class="flag">Safety concern</span>`:""}</div>
+    <div class="ndx"><div class="ndi">${n.acts.length?`<p><b>Activities</b>${n.acts.map(a=>esc(byId[a]?.name||a)).join(", ")}</p>`:""}${n.covered?`<p><b>Worked on</b>${esc(n.covered)}</p>`:""}${n.response?`<p><b>Response</b>${esc(n.response)}</p>`:""}${n.strengths?`<p><b>Strengths</b>${esc(n.strengths)}</p>`:""}${n.next?`<p><b>Next step</b>${esc(n.next)}</p>`:""}${n.safety?`<p><b>Safety</b>${esc(n.safetyText||"Yes")}</p>`:""}</div></div>
+    <div class="row"><button class="small" data-copy="${n.id}">Copy</button><button class="small" data-edit="${n.id}">Edit</button><button class="small" data-del="${n.id}">${pendingDel===n.id?"Tap again to delete":"Delete"}</button></div></div>`}).join(""):`<div class="empty">No notes yet. Finish a plan and tap "Write a note" to start one with the activities filled in.</div>`}</div>`;
+  $("newNote").onclick=()=>{if(draft.editing||draft.parts){noteMode="form";notes();window.scrollTo(0,0);}else{step=0;go("#plan");}};
+  main.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{personSel=b.dataset.p;notes();});
+  main.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copyText(noteText(all.find(n=>n.id===b.dataset.copy)),b));
+  main.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const n=all.find(x=>x.id===b.dataset.edit);draft={...n,editing:n.id};saveDraft();noteMode="form";notes();window.scrollTo(0,0);});
+  main.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{const id=b.dataset.del;if(pendingDel===id){storeNotes(all.filter(n=>n.id!==id));pendingDel=null;}else pendingDel=id;notes();});
+}
+function scale(key,l){const v=draft[key];return `<div class="mood" data-mood="${key}" data-rated="${v!=null}"><div class="mood-top"><span class="label">${l}</span><span class="mood-val"><b>${v??"–"}</b><span class="of">${v!=null?"/ 10":"Not rated"}</span></span></div>
+  <input type="range" min="0" max="10" step="any" value="${v??5}" aria-label="${l}, 0 to 10"><div class="mood-ends"><span>0 · Struggling</span><span>10 · Doing great</span></div></div>`}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);requestAnimationFrame(()=>d.classList.add("on"));setTimeout(()=>{d.classList.remove("on");setTimeout(()=>d.remove(),300);},1600);}
+function noteForm(){
+  main.innerHTML=`<div class="q"><h1>${draft.editing?"Edit note":"Session note"}</h1><p>Add initials and mood. The rest comes from your plan.</p></div>
+  <form class="form" id="nf" autocomplete="off">
+   <div class="field" id="whoField"><label class="label" for="f-who">Initials or group</label><input type="text" id="f-who" value="${esc(draft.who||"")}" maxlength="40" enterkeyhint="done" autocapitalize="words"><p class="whoerr" id="whoErr" hidden>Add initials or a group name to save.</p></div>
+   ${moodScale(draft,"moodA","Mood at start")}
+   ${moodScale(draft,"moodB","Mood at end")}
+   <div id="sumPrev">${summaryHTML(draft)}</div>
+   <button class="cta" type="button" id="saveNoteBtn"><span>${draft.editing?"Update note":"Save note"}</span><span>✓</span></button>
+  </form>`;
+  try{const ae=document.activeElement;if(ae&&ae!==document.body&&ae.blur)ae.blur();}catch(e){}
+  const cta=main.querySelector("#nf .cta");cta.classList.add("cta-hide");
+  const near=()=>{if(!cta.isConnected){window.removeEventListener("scroll",near);window.removeEventListener("resize",near);return;}
+    const doc=document.documentElement;const atEnd=window.innerHeight+window.scrollY>=doc.scrollHeight-140||doc.scrollHeight<=window.innerHeight+10;cta.classList.toggle("cta-on",atEnd);};
+  window.addEventListener("scroll",near,{passive:true});window.addEventListener("resize",near);requestAnimationFrame(near);
+  const upd=()=>{$("sumPrev").innerHTML=summaryHTML(draft);saveDraft();near();};
+  $("f-who").oninput=e=>{draft.who=e.target.value;saveDraft();if(draft.who.trim()){$("whoField").classList.remove("needwho");$("whoErr").hidden=true;}};
+  bindMoods(main,draft,upd);
+  $("saveNoteBtn").onclick=()=>$("nf").onsubmit({preventDefault(){}});
+  $("nf").onsubmit=e=>{e.preventDefault();
+    if(!(draft.who||"").trim()){const f=$("whoField");f.classList.remove("needwho");void f.offsetWidth;f.classList.add("needwho");$("whoErr").hidden=false;f.scrollIntoView({behavior:"smooth",block:"center"});$("f-who").focus({preventScroll:true});return;}
+    const n=summarizeNote({...JSON.parse(JSON.stringify(draft)),id:draft.editing||"n"+Date.now(),who:draft.who.trim()});delete n.editing;
+    const a=loadNotes();const i=a.findIndex(x=>x.id===n.id);i>-1?a[i]=n:a.unshift(n);storeNotes(a);
+    draft=blankDraft();saveDraft();noteMode="list";personSel="All";if((location.hash||"")!=="#notes")go("#notes");else notes();window.scrollTo(0,0);toast(i>-1?"Note updated":"Note saved");};
+}
+
+/* ---------- techniques ---------- */
+function tools(){
+  const GRP=[["DBT","DBT skills","sky"],["CBT","CBT skills","mint"],["ACT","ACT skills","grape"],["Regulate","Calm and ground","sky"],["Reflect","Reflect and learn","grape"],["Act","Action","coral"],["Plan","Plan","sun"],["Connect","Connect","mint"]];
+  const SRC={DBT:1,CBT:1,ACT:1};
+  const inGrp=(t,k)=>SRC[k]?t.src===k:(!t.src&&(t.cat===k||(k==="Reflect"&&t.cat==="Learn")));
+  const colOf=t=>t.src?GRP.find(g=>g[0]===t.src)[2]:t.cat==="Learn"?"grape":CATCOL[t.cat];
+  const label=c=>c==="Act"?"Action":c;
+  const cats=["All",...GRP.map(g=>g[0])];
+  if(!cats.includes(techCat))techCat="All";
+  main.innerHTML=`<div class="q"><p>${TECH.length} activities. Dots show strength of evidence.</p></div>
+  <input type="search" id="ts" placeholder="Search: sleep, anger, DBT..." aria-label="Search techniques">
+  <div class="strip">${cats.map(c=>`<button class="pill" data-cat="${c}" aria-pressed="${c===techCat}">${label(c)}</button>`).join("")}</div>
+  <div id="lib"></div>`;
+  const tile=(t,mini)=>`<button class="lt ${mini?"mini ":""}${colOf(t)}" data-open="${t.id}"><span class="c">${label(t.cat)}</span><b>${esc(t.name)}</b><span class="meta">${t.min} min · ${EVDOTS[t.ev]}</span></button>`;
+  const setCat=c=>{techCat=c;main.querySelectorAll("[data-cat]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.cat===c)));draw();};
+  const draw=()=>{const q=$("ts").value.toLowerCase().trim(),L=$("lib");
+    if(!q&&techCat==="All"){L.className="groups";
+      L.innerHTML=GRP.map(([k,lab,col])=>{const l=TECH.filter(t=>inGrp(t,k));if(!l.length)return"";
+        return `<section class="grp"><div class="gh"><h2>${lab}<span class="${col}">${l.length}</span></h2><button class="gall" data-gall="${k}">See all</button></div><div class="hrow">${l.map(t=>tile(t,true)).join("")}</div></section>`;}).join("");
+      L.querySelectorAll("[data-gall]").forEach(b=>b.onclick=()=>{setCat(b.dataset.gall);window.scrollTo({top:0,behavior:"smooth"});});return;}
+    L.className="lib";
+    const l=TECH.filter(t=>(techCat==="All"||inGrp(t,techCat))&&(!q||(t.name+" "+(t.src||"")+" "+t.sum+" "+bestFor(t,9).join(" ")).toLowerCase().includes(q)));
+    L.innerHTML=l.map(t=>tile(t,false)).join("")||`<div class="empty" style="grid-column:1/-1">Nothing matches. Try a broader word.</div>`;};
+  $("ts").oninput=draw;
+  main.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>setCat(b.dataset.cat));
+  draw();
+}
+const TYPECOL={"Meta-analysis":"coral","Systematic review":"sky","RCT":"mint","Review":"grape","Review of meta-analyses":"grape","Theory":"sun","Cohort study":"sun"};
+function studyHTML(s){return `<article class="study"><div class="st-top"><span class="tagpill ${TYPECOL[s.type]||"sun"}">${esc(s.type)}</span><span class="st-yr">${s.y}</span></div>
+  <h3>${esc(s.t)}</h3><p>${esc(s.f)}</p><p class="cite">${esc(s.a)} <i>${esc(s.j)}</i>, ${esc(s.v)}</p>
+  <div class="st-foot"><div class="st-tags">${s.tags.map(t=>`<span class="st-tag">${esc(t)}</span>`).join("")}</div><a href="${pubmed(s)}" target="_blank" rel="noopener">PubMed ↗</a></div></article>`}
+function research(){
+  const tags=["All","Peer support","Recovery","Anxiety","Depression","Substance use","Crisis","Trauma","Grief","Sleep","Connection","Anger","Stress","Skills"];
+  main.innerHTML=`
+  <input type="search" id="rs" placeholder="Search author, topic, finding..." aria-label="Search studies">
+  <div class="strip">${tags.map(c=>`<button class="pill" data-tag="${c}" aria-pressed="${c===resTag}">${c}</button>`).join("")}</div><div class="form" id="rl"></div>`;
+  const draw=()=>{const q=$("rs").value.toLowerCase().trim();
+    const l=STUDIES.filter(s=>(resTag==="All"||s.tags.includes(resTag))&&(!q||(s.a+s.t+s.j+s.f+s.y).toLowerCase().includes(q))).sort((a,b)=>b.y-a.y);
+    $("rl").innerHTML=l.map(studyHTML).join("")||`<div class="empty">No studies match.</div>`;};
+  $("rs").oninput=draw;
+  main.querySelectorAll("[data-tag]").forEach(b=>b.onclick=()=>{resTag=b.dataset.tag;main.querySelectorAll("[data-tag]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));draw();});
+  draw();
+}
+function guide(){
+  main.innerHTML=`<div class="q"><p>The foundations, for quick reference.</p></div>
+  <div class="form">${GUIDE.map((g,i)=>`<details class="g ${COLS[i%5]}"${i===0?" open":""}><summary>${esc(g.t)}</summary><div class="gb">${g.b}</div></details>`).join("")}</div>`;
+}
+
+/* ---------- sheet ---------- */
+let lastFocus=null;
+function openTech(id){const t=byId[id];if(!t)return;lastFocus=document.activeElement;
+  $("sheet").innerHTML=`<div class="head ${CATCOL[t.cat]}" id="sheetHead"><button class="grabber" id="x" aria-label="Close"></button><span class="label" style="color:inherit;opacity:.75">${t.src?t.src+" · ":""}${t.cat} · ${t.min} min</span><h1>${esc(t.name)}</h1><p>${esc(t.sum)}</p>${ev(t)}</div>
+  <div class="body"><div class="box"><h3>Steps</h3><ol>${t.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>
+  <div class="box"><h3>Why it helps</h3><p>${esc(t.why)}</p><p class="hint">Best for: ${bestFor(t,4).map(esc).join(", ")||"any session"}</p></div>
+  ${t.refs.length?`<div class="field"><span class="label">Research</span>${t.refs.map(r=>studyHTML(studyById[r])).join("")}</div>`:""}</div>`;
+  $("sheet").hidden=false;$("scrim").hidden=false;document.body.style.overflow="hidden";$("sheet").scrollTop=0;$("sheet").style.transform="";$("scrim").style.opacity="";$("x").onclick=closeSheet;$("x").focus();bindSheetDrag();}
+function closeSheet(){$("sheet").hidden=true;$("scrim").hidden=true;$("sheet").style.transform="";$("scrim").style.opacity="";document.body.style.overflow="";if(lastFocus&&!(lastFocus.matches&&lastFocus.matches("input,textarea")))try{lastFocus.focus({preventScroll:true})}catch(e){}}
+function bindSheetDrag(){
+  const sh=$("sheet"),hd=$("sheetHead");let sy=0,dy=0,t0=0,on=false;
+  let cap=false;
+  hd.addEventListener("pointerdown",e=>{if(sh.scrollTop>0)return;on=true;cap=false;sy=e.clientY;dy=0;t0=Date.now();});
+  hd.addEventListener("pointermove",e=>{if(!on)return;dy=Math.max(0,e.clientY-sy);if(!cap){if(dy<6)return;cap=true;sh.classList.add("dragging");try{hd.setPointerCapture(e.pointerId)}catch(_){}}sh.style.transform=`translateY(${dy}px)`;$("scrim").style.opacity=String(Math.max(.2,1-dy/400));});
+  const end=()=>{if(!on)return;on=false;sh.classList.remove("dragging");const fast=dy>40&&dy/(Date.now()-t0)>.5;
+    if(dy>110||fast){sh.style.transform="translateY(100%)";setTimeout(closeSheet,220);}else{sh.style.transform="";$("scrim").style.opacity="";}};
+  hd.addEventListener("pointerup",end);hd.addEventListener("pointercancel",end);
+}
+
+/* swipe down from anywhere on the card, only when scrolled to the top */
+function bodySwipe(scroller,sheetEl,scrim,skip,close){let sx=0,sy=0,st=0,dy=0,drag=false,ok=false,t0=0;
+  scroller.addEventListener("touchstart",e=>{const t=e.touches[0];ok=!(skip&&e.target.closest(skip))&&!e.target.closest("input[type=range]")&&!sheetEl.querySelector("[data-nodrag]");sx=t.clientX;sy=t.clientY;st=scroller.scrollTop;dy=0;drag=false;t0=Date.now();},{passive:true});
+  scroller.addEventListener("touchmove",e=>{if(!ok)return;const t=e.touches[0];dy=t.clientY-sy;const dx=Math.abs(t.clientX-sx);
+    if(!drag){if(st>1||scroller.scrollTop>1||dy<8||dx>dy)return;drag=true;sheetEl.style.transition="none";sheetEl.classList.add("drag","dragging");}
+    if(e.cancelable)e.preventDefault();const d=Math.max(0,dy);sheetEl.style.transform=`translateY(${d}px)`;if(scrim)scrim.style.opacity=String(Math.max(.15,1-d/450));},{passive:false});
+  const end=()=>{if(!drag)return;drag=false;sheetEl.style.transition="";sheetEl.classList.remove("drag","dragging");const fast=dy>40&&dy/(Date.now()-t0)>.5;
+    if(dy>110||fast)close();else{sheetEl.style.transform="";if(scrim)scrim.style.opacity="";}};
+  scroller.addEventListener("touchend",end);scroller.addEventListener("touchcancel",end);}
+bodySwipe($("sheet"),$("sheet"),$("scrim"),"#sheetHead",()=>{const sh=$("sheet");sh.style.transform="translateY(100%)";setTimeout(closeSheet,220);});
+let lastTapOpen=0,tapT=null;
+$("scrim").onclick=()=>{if(Date.now()-lastTapOpen<450)return;closeSheet();};
+document.addEventListener("pointerdown",e=>{tapT=e.pointerType==="mouse"?null:{x:e.clientX,y:e.clientY,t:Date.now(),el:e.target};},{passive:true});
+document.addEventListener("pointercancel",()=>{tapT=null;});
+document.addEventListener("pointerup",e=>{const t=tapT;tapT=null;if(!t||!t.el.closest)return;
+  if(Math.hypot(e.clientX-t.x,e.clientY-t.y)>14||Date.now()-t.t>700)return;
+  if(t.el.closest("[data-swap]"))return;const o=t.el.closest("[data-open]");if(!o||!$("sheet").hidden)return;
+  lastTapOpen=Date.now();openTech(o.dataset.open);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("sheet").hidden)closeSheet();});
+document.addEventListener("click",e=>{const o=e.target.closest("[data-open]");if(o){e.preventDefault();if(Date.now()-lastTapOpen<450||!$("sheet").hidden)return;openTech(o.dataset.open);return;}
+  const g=e.target.closest("[data-go]");if(g){if(g.dataset.go==="plan"&&step===3&&g.classList.contains("hero"))step=0;go("#"+g.dataset.go);}});
+
+/* ---------- routing ---------- */
+const ROUTES={home,plan,notes,tools,research,guide};
+const TITLES={home:"",plan:"Plan a session",notes:"Session notes",tools:"Techniques",research:"Research",guide:"Peer support guide"};
+$("back").onclick=()=>{const h=(location.hash||"#home").slice(1);
+  if(h==="plan"&&step>0){step--;plan();window.scrollTo(0,0);return;}
+  if(h==="notes"&&noteMode==="form"){noteMode="list";notes();return;}
+  go("#home");};
+function route(){try{const ae=document.activeElement;if(ae&&ae.matches&&ae.matches("input,textarea"))ae.blur();}catch(e){}let h=(location.hash||"#home").slice(1);if(!ROUTES[h])h="home";document.documentElement.classList.toggle("homefix",h==="home");$("back").hidden=h==="home";document.querySelector(".logo").hidden=h!=="home";$("ptitle").hidden=h==="home";$("ptitle").textContent=TITLES[h];$("ptitle").setAttribute("aria-label",TITLES[h]+", go home");window.scrollTo(0,0);ROUTES[h]();}
+window.addEventListener("hashchange",route);route();
+
+function showCrisis(onDone){if(document.getElementById("crisisBg"))return;const prev=document.activeElement;const d=document.createElement("div");d.className="crisis-bg";d.id="crisisBg";
+  d.innerHTML=`<div class="crisis-card" role="alertdialog" aria-modal="true" aria-labelledby="crisisT" aria-describedby="crisisD">
+  <div class="crisis-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.3"/></svg><div><h2 id="crisisT">Safety comes first</h2><p id="crisisD">If risk may be imminent, stay with the person, follow your facility's crisis protocol, and bring in clinical staff now.</p></div></div>
+  <div class="crisis-body">
+   <span class="cl">Emergency lines</span>
+   <a class="cline" href="tel:988"><span class="num">988</span><span><b>Suicide &amp; Crisis Lifeline</b><span class="d">Call or text, 24/7. Chat at 988lifeline.org</span></span></a>
+   <a class="cline" href="tel:988"><span class="num">988<small>then press 1</small></span><span><b>Veterans Crisis Line</b><span class="d">Or text 838255</span></span></a>
+   <a class="cline" href="tel:911"><span class="num">911</span><span><b>Immediate danger</b><span class="d">Medical emergency, overdose, or a weapon present</span></span></a>
+   <button class="crisis-ok" id="crisisOk">I understand</button>
+  </div></div>`;
+  document.body.appendChild(d);const ok=d.querySelector("#crisisOk");try{ok.focus({preventScroll:true})}catch(e){ok.focus()}
+  let closing=false;const rmo=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  ok.onclick=()=>{if(closing)return;closing=true;d.classList.add("out");setTimeout(()=>{onDone&&onDone();},rmo?0:170);setTimeout(()=>{d.remove();if(!onDone&&prev&&prev.focus)prev.focus();},rmo?0:270);};}
+
+/* animate only when the screen changes, not when something on it updates */
+(function(){let lastKey=null;const key=()=>(location.hash||"#home")+"|"+step+"|"+noteMode;
+  new MutationObserver(()=>{const k=key();if(k===lastKey)main.classList.add("still");else{main.classList.remove("still");lastKey=k;}}).observe(main,{childList:true});
+  lastKey=key();})();
+
+(function(){const p=$("ptitle");const gh=()=>{if(!$("sheet").hidden)closeSheet();noteMode="list";go("#home");};p.addEventListener("click",gh);p.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();gh();}});})();
+(function(){const h=document.querySelector(".homelink");if(!h)return;const goHome=()=>{if(!$("sheet").hidden)closeSheet();noteMode="list";if((location.hash||"#home")==="#home")window.scrollTo({top:0,behavior:"smooth"});else go("#home");};h.addEventListener("click",goHome);h.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();goHome();}});})();
+</script>
+
+<script>
+(function(){var K="cg-theme",r=document.documentElement;
+ function sys(){try{return matchMedia("(prefers-color-scheme: dark)").matches}catch(e){return false}}
+ function cur(){var t=null;try{t=localStorage.getItem(K)}catch(e){}return t==="dark"||t==="light"?t:(sys()?"dark":"light");}
+ function apply(anim){if(anim){r.classList.add("thx");clearTimeout(apply.t);apply.t=setTimeout(function(){r.classList.remove("thx")},520);}
+  var t=cur();r.setAttribute("data-theme",t);document.querySelectorAll(".thm").forEach(function(b){b.setAttribute("aria-label",t==="dark"?"Switch to light mode":"Switch to dark mode");b.setAttribute("aria-pressed",String(t==="dark"));});}
+ apply(false);
+ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".thm");if(!b)return;e.stopPropagation();var n=cur()==="dark"?"light":"dark";try{localStorage.setItem(K,n)}catch(x){}apply(true);try{parent!==window&&parent.postMessage({cgTheme:n},"*")}catch(x){}},true);
+ window.addEventListener("storage",function(e){if(e.key===K)apply(true);});
+ window.addEventListener("message",function(e){if(e.data&&e.data.cgTheme)apply(true);});
+})();
+
+document.addEventListener("click",e=>{const c=e.target.closest(".nc.tapx");if(!c||e.target.closest("button,a,input,textarea,select,label"))return;c.classList.toggle("open");});
+</script>
+</body></html>
