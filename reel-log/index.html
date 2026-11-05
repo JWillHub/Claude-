@@ -362,6 +362,26 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .hl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .hl div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:12.5px;color:var(--muted);cursor:pointer}
 .hl b{display:block;color:var(--text);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* people */
+.ppl{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:2px 0 6px}
+.ppl::-webkit-scrollbar{display:none}
+.pp{flex:none;width:74px;text-align:center;cursor:pointer;background:none;border:0;padding:0;color:var(--text)}
+.pp img,.pp .pi{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 6px;background:var(--card2);box-shadow:0 6px 14px rgba(0,0,0,.4)}
+.pp .pi{display:grid!important;place-items:center;font-family:var(--disp);font-weight:700;font-size:22px;color:var(--muted)}
+.pp b{display:block;font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pp span{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plink{background:none;border:0;padding:0;color:var(--text);font:inherit;text-decoration:underline;text-decoration-color:rgba(255,181,71,.6);text-underline-offset:3px;cursor:pointer}
+.castsec .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.phead{display:flex;gap:16px;align-items:flex-end;margin-top:6px}
+.phead img,.phead .pi{width:112px;height:150px;border-radius:14px;object-fit:cover;flex:none;background:var(--card2);box-shadow:0 12px 26px rgba(0,0,0,.5)}
+.phead .pi{display:grid!important;place-items:center;font-family:var(--disp);font-size:40px;color:var(--muted)}
+.phead h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:28px;line-height:1.02;margin:0 0 6px}
+.favbtn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;cursor:pointer;color:var(--text)}
+.favbtn.on{border-color:var(--accent2);color:var(--accent2)}
+.favbtn svg{width:14px;height:14px;fill:currentColor}
+.bio{color:#d3cbdb;font-size:14px;margin:14px 0 4px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.bio.open{-webkit-line-clamp:unset;display:block}
+.pbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 12px}
 /* marquee type */
 .logo,.vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
@@ -424,13 +444,20 @@ if(!ratings){            // migrate ratings from older diary-only data
   }
 }catch(e){} })();
 
-const K_WATCH = 'reellog.watch', K_HIDE = 'reellog.hiderated', K_OMDB = 'reellog.omdbkey', K_SEEN = 'reellog.seen';
+const K_WATCH = 'reellog.watch', K_HIDE = 'reellog.hiderated', K_OMDB = 'reellog.omdbkey', K_SEEN = 'reellog.seen', K_FAV = 'reellog.favpeople';
 let watch = store.get(K_WATCH, {});
 let seen = store.get(K_SEEN, {});   // watched, not rated yet
+let favs = store.get(K_FAV, {});    // favorite actors and directors
 let hideRated = store.get(K_HIDE, false);
-const saveAll = () => { const a = store.set(K_LOG, entries), b = store.set(K_RATE, ratings), c = store.set(K_WATCH, watch), d = store.set(K_SEEN, seen); if(!a || !b || !c || !d) toast('Could not save — storage is full or blocked.'); };
+const saveAll = () => { const a = store.set(K_LOG, entries), b = store.set(K_RATE, ratings), c = store.set(K_WATCH, watch), d = store.set(K_SEEN, seen), e = store.set(K_FAV, favs); if(!a || !b || !c || !d || !e) toast('Could not save — storage is full or blocked.'); };
 const TOMATO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.6c5.3 0 9.4 3.4 9.4 8.2 0 4.7-4.1 7.9-9.4 7.9s-9.4-3.2-9.4-7.9c0-4.8 4.1-8.2 9.4-8.2z" fill="#ea3d1c"/><path d="M12 5.6c5.3 0 9.4 3.4 9.4 8.2 0 .9-.1 1.7-.4 2.4-1-4-4.6-6.7-9-6.7s-8 2.7-9 6.7c-.3-.7-.4-1.5-.4-2.4 0-4.8 4.1-8.2 9.4-8.2z" fill="#f2552c"/><ellipse cx="7.6" cy="11.4" rx="2.3" ry="1.3" transform="rotate(-28 7.6 11.4)" fill="#fff" fill-opacity=".38"/><path d="M12 7.9c-1.3-.9-3.4-.9-4.9-.2 1.1-1.1 2.6-1.6 4-1.5-1.1-1-2.6-1.5-3.9-1.4 1.6-.6 3.4-.4 4.8.6.1-1.3.8-2.4 1.8-3-.5 1-.6 2-.3 3 1.3-.9 3.1-1.1 4.7-.6-1.4.1-2.8.7-3.8 1.6 1.4 0 2.9.5 4 1.5-1.6-.6-3.4-.6-4.4 0z" fill="#3d9a3a"/></svg>';
 const SPLAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.8 6.1Q12.9 4.0 13.2 6.2Q13.5 8.5 16.3 6.9Q19.0 5.3 17.9 8.2Q16.8 11.1 18.5 11.5Q20.2 12.0 18.2 12.8Q16.2 13.7 17.6 16.9Q19.0 20.1 16.5 18.2Q14.1 16.3 13.3 18.3Q12.5 20.3 11.2 18.1Q9.9 16.0 7.6 17.6Q5.4 19.1 6.3 16.8Q7.3 14.4 5.9 13.1Q4.4 11.7 6.1 11.4Q7.8 11.1 6.0 8.6Q4.2 6.2 7.4 7.2Q10.6 8.2 11.8 6.1Z" fill="#2fa84f"/><circle cx="2.2" cy="6.6" r="1.2" fill="#2fa84f"/><circle cx="22" cy="19.8" r="1" fill="#2fa84f"/><circle cx="20.8" cy="3.2" r=".8" fill="#2fa84f"/><circle cx="3.8" cy="21.6" r=".7" fill="#2fa84f"/></svg>';
+const HEART = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg>';
+const initials = n => (n || '?').split(' ').map(w => w[0]).slice(0, 2).join('');
+function personHTML(p, sub){
+  return `<button class="pp" data-person="${p.id}">${p.profile ? `<img loading="lazy" src="${IMG}w185${p.profile}" alt="">` : `<span class="pi">${esc(initials(p.name))}</span>`}
+    <b>${esc(p.name)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</button>`;
+}
 const BOOK = '<svg viewBox="0 0 12 15"><path d="M0 0h12v15L6 10.5 0 15z"/></svg>';
 function toggleSeen(f){
   const had = seen[f.id];
@@ -797,6 +824,7 @@ document.addEventListener('click', e => {
   const sg = e.target.closest('[data-saga]'); if(sg){ const s = sagaByK(sg.dataset.saga); if(s) openRun(s); return; }
   const all = e.target.closest('[data-all]'); if(all){ openSeeAll(rowDef(all.dataset.all)); return; }
   const go = e.target.closest('[data-go]'); if(go){ setView(go.dataset.go); return; }
+  const pr = e.target.closest('[data-person]'); if(pr){ openPerson(+pr.dataset.person); return; }
 }, true);
 
 /* ================= views ================= */
@@ -994,12 +1022,20 @@ function discoverDef(f){
   return { title:label.join(' · '), path:'/discover/movie', params:p };
 }
 function openFind(preset = {}, focus){
-  const s = sheet(`<div class="findsaga" style="margin:0 0 14px">${SEARCH_SVG}<input id="fq" type="search" placeholder="Search any film…" autocomplete="off"></div>
-    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg">Type a film's name.</div>`, { tall:true });
-  const b = s.body; let t;
-  $('#fq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(() => {
-    if(q) feed(b, $('.grid', b), $('.sent', b), $('.msg', b), { path:'/search/movie', params:{ query:q } });
-    else { $('.grid', b).innerHTML = ''; $('.msg', b).textContent = "Type a film's name."; }
+  const s = sheet(`<div class="findsaga" style="margin:0 0 14px">${SEARCH_SVG}<input id="fq" type="search" placeholder="Search films, actors or directors…" autocomplete="off"></div>
+    <div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg">Type a film or a person's name.</div>`, { tall:true });
+  const b = s.body; let t, gen = 0;
+  $('#fq', b).oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
+    const my = ++gen;
+    if(!q){ $('.grid', b).innerHTML = ''; $('#fpeople', b).innerHTML = ''; $('.msg', b).textContent = "Type a film or a person's name."; return; }
+    feed(b, $('.grid', b), $('.sent', b), $('.msg', b), { path:'/search/movie', params:{ query:q } });
+    try{
+      const d = await tmdb('/search/person', { query:q, include_adult:'false' });
+      if(my !== gen) return;
+      const ppl = (d.results || []).filter(p => p.known_for_department === 'Acting' || p.known_for_department === 'Directing').slice(0, 10)
+        .map(p => ({ id:p.id, name:p.name, profile:p.profile_path, sub:p.known_for_department === 'Directing' ? 'Director' : 'Actor' }));
+      $('#fpeople', b).innerHTML = ppl.length ? `<div class="castsec" style="margin-bottom:6px"><div class="lbl" style="margin-top:0">People</div><div class="ppl nodrag">${ppl.map(p => personHTML(p, p.sub)).join('')}</div></div>` : '';
+    }catch(err){}
   }, 350); };
   if(focus !== false) setTimeout(() => $('#fq', b).focus(), 350);
 }
@@ -1447,6 +1483,7 @@ async function openShow(id){
       <div class="mact" id="mact"></div></div></div>
     <div id="mwatch"></div>
     <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
+    <div id="mcast"></div>
     <p class="ov" id="mov">${esc(m.overview || '')}</p>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
       <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
@@ -1461,7 +1498,8 @@ async function openShow(id){
   $('#mclr', b).onclick = () => setRating(filmOf(id), 0);
   let d;
   try{
-    d = await cached('tvd2:' + tid, 24*3, () => tmdb('/tv/' + tid, { append_to_response:'external_ids,videos,watch/providers' }).then(x => ({
+    d = await cached('tvd3:' + tid, 24*3, () => tmdb('/tv/' + tid, { append_to_response:'external_ids,videos,watch/providers,aggregate_credits' }).then(x => ({
+      castL:((x.aggregate_credits && x.aggregate_credits.cast) || []).slice(0, 12).map(c => ({ id:c.id, name:c.name, profile:c.profile_path, role:((c.roles || [])[0] || {}).character || '' })),
       trailer:pickTrailer(x.videos), prov:pickProviders(x['watch/providers']),
       ...slimTV(x), seasons:x.number_of_seasons, eps:x.number_of_episodes, end:(x.last_air_date || '').slice(0, 4), status:x.status,
       network:(x.networks || [])[0]?.name || '', gnames:(x.genres || []).map(g => g.name), imdb:x.external_ids && x.external_ids.imdb_id })));
@@ -1472,6 +1510,7 @@ async function openShow(id){
     $('#mm', b).textContent = [yrs, d.seasons ? d.seasons + ' season' + (d.seasons > 1 ? 's' : '') : '', d.network].filter(Boolean).join(' · ');
     $('#md', b).textContent = d.gnames.slice(0, 3).join(', ');
     $('#mov', b).textContent = d.overview;
+    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
     const acts = () => { const box = $('#mact', b); if(!box) return;
       box.innerHTML = `${d.trailer ? `<a href="${esc(trailerURL(d.trailer))}" target="_blank" rel="noopener">▶ Trailer</a>` : ''}<button id="mwl" class="${watch[id] ? 'on' : ''}">${BOOK}${watch[id] ? 'On watchlist' : 'Watchlist'}</button>`;
       $('#mwl', b).onclick = () => toggleWatch(filmOf(id)); };
@@ -1527,7 +1566,7 @@ async function openMovie(id){
   const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
       <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
-    <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div id="mwatch"></div><div class="small" id="mvote"></div><div id="mhist" style="margin-top:14px"></div>
+    <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div id="mwatch"></div><div id="mcast"></div><div class="small" id="mvote" style="margin-top:10px"></div><div id="mhist" style="margin-top:14px"></div>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
       <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
   const b = s.body, s5 = $('.ratebar .s5', b);
@@ -1555,7 +1594,9 @@ async function openMovie(id){
   let trailerKey = null; acts(null);
   const oldRefresh = s.refresh; s.refresh = () => { oldRefresh(); acts(trailerKey); };
   try{
-    const d = await cached('movie2:' + id, 24*3, () => tmdb('/movie/' + id, { append_to_response:'credits,videos,watch/providers' }).then(x => ({
+    const d = await cached('movie3:' + id, 24*3, () => tmdb('/movie/' + id, { append_to_response:'credits,videos,watch/providers' }).then(x => ({
+      dirs:((x.credits && x.credits.crew) || []).filter(c => c.job === 'Director').slice(0, 2).map(c => ({ id:c.id, name:c.name, profile:c.profile_path })),
+      castL:((x.credits && x.credits.cast) || []).slice(0, 12).map(c => ({ id:c.id, name:c.name, profile:c.profile_path, role:c.character })),
       imdb:x.imdb_id || null, trailer:pickTrailer(x.videos), prov:pickProviders(x['watch/providers']),
       ...slim(x), runtime:x.runtime, gnames:(x.genres || []).map(g => g.name),
       director:((x.credits && x.credits.crew) || []).filter(c => c.job === 'Director').map(c => c.name).slice(0, 2).join(', '),
@@ -1566,9 +1607,10 @@ async function openMovie(id){
     if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const rt = d.runtime ? `${Math.floor(d.runtime / 60)}h ${d.runtime % 60}m` : '';
     $('#mm', b).textContent = [d.year, rt, d.gnames.slice(0, 3).join(', ')].filter(Boolean).join(' · ');
-    $('#md', b).textContent = d.director ? 'Directed by ' + d.director : '';
+    $('#md', b).innerHTML = d.dirs && d.dirs.length ? 'Directed by ' + d.dirs.map(p => `<button class="plink" data-person="${p.id}">${esc(p.name)}</button>`).join(', ') : '';
     $('#mov', b).textContent = d.overview;
-    $('#mvote', b).textContent = [d.cast ? 'Starring ' + d.cast : '', d.vote ? `TMDB average ${d.vote.toFixed(1)}/10` : ''].filter(Boolean).join(' · ');
+    $('#mvote', b).textContent = d.vote ? `TMDB average ${d.vote.toFixed(1)}/10` : '';
+    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
     trailerKey = d.trailer; acts(trailerKey);
     $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
     if(d.imdb){
@@ -1619,6 +1661,59 @@ async function imdbMovie(tt){
     const shard = await cached('imdbm:' + tt.slice(-3), 24, () => fetch(`${IMDB_DATA}m/${tt.slice(-3)}.json`).then(r => r.ok ? r.json() : {}));
     return shard[tt] || null;
   }catch(e){ return null; }
+}
+
+/* ---------- Person card ---------- */
+async function openPerson(pid){
+  const f0 = favs[pid];
+  const s = sheet(`<div class="phead">${f0 && f0.profile ? `<img src="${IMG}w342${f0.profile}" alt="">` : `<span class="pi">…</span>`}
+      <div><h2>${esc(f0 ? f0.name : 'Loading…')}</h2><div class="meta" id="pmeta"></div><button class="favbtn" id="pfav">${HEART}Favorite</button></div></div>
+    <p class="bio" id="pbio"></p>
+    <div class="pbar"><div class="seg" id="pseg"></div><div class="seg" id="psort"><button data-s="pop" class="on">Popular</button><button data-s="new">Newest</button></div></div>
+    <div class="grid" id="pgrid"><div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true });
+  const b = s.body;
+  let p;
+  try{
+    p = await cached('person:' + pid, 24*7, () => tmdb('/person/' + pid, { append_to_response:'movie_credits' }).then(x => {
+      const film = m => ({ ...slim(m), pop:m.popularity || 0 });
+      const uniq = list => { const seen2 = new Set(); return list.filter(m => m.title && !seen2.has(m.id) && seen2.add(m.id)); };
+      const cr = x.movie_credits || {};
+      return { id:x.id, name:x.name, profile:x.profile_path, dept:x.known_for_department, bio:x.biography || '', born:x.birthday, place:x.place_of_birth, died:x.deathday,
+        acting:uniq((cr.cast || []).filter(m => !m.adult).map(film)),
+        directing:uniq((cr.crew || []).filter(m => m.job === 'Director').map(film)) };
+    }));
+  }catch(e){ $('#pgrid', b).innerHTML = `<div class="msg" style="grid-column:1/-1">${errText(e)}</div>`; return; }
+  if(!s.el.isConnected) return;
+  remember([...p.acting, ...p.directing]);
+  $('.phead', b).firstElementChild.outerHTML = p.profile ? `<img src="${IMG}w342${p.profile}" alt="">` : `<span class="pi">${esc(initials(p.name))}</span>`;
+  $('.phead h2', b).textContent = p.name;
+  const age = p.born ? Math.floor(((p.died ? new Date(p.died) : new Date()) - new Date(p.born)) / 31557600000) : null;
+  $('#pmeta', b).textContent = [p.dept === 'Directing' ? 'Director' : p.dept === 'Acting' ? 'Actor' : p.dept, p.born ? (p.died ? `${p.born.slice(0, 4)}–${p.died.slice(0, 4)}` : `Age ${age}`) : '', p.place || ''].filter(Boolean).join(' · ');
+  const bio = $('#pbio', b);
+  if(p.bio){ bio.textContent = p.bio; bio.onclick = () => bio.classList.toggle('open'); } else bio.remove();
+  const paintFav = () => { const on = !!favs[pid], btn = $('#pfav', b); btn.classList.toggle('on', on); btn.innerHTML = HEART + (on ? 'Favorite' : 'Add to favorites'); };
+  $('#pfav', b).onclick = () => {
+    if(favs[pid]) delete favs[pid]; else favs[pid] = { name:p.name, profile:p.profile, dept:p.dept, at:Date.now() };
+    saveAll(); paintFav(); if(view === 'films') renderFilms();
+    toast(favs[pid] ? `<span>Added ${esc(p.name)} to favorites</span>` : `<span>Removed ${esc(p.name)} from favorites</span>`);
+  };
+  paintFav();
+  // acting and/or directing, whichever this person has; start with what they're known for
+  const kinds = [['acting', 'Acting'], ['directing', 'Directing']].filter(([k]) => p[k].length);
+  let kind = p.dept === 'Directing' && p.directing.length ? 'directing' : (kinds[0] || ['acting'])[0], sort = 'pop';
+  const seg = $('#pseg', b);
+  if(kinds.length > 1) seg.innerHTML = kinds.map(([k, l]) => `<button data-k="${k}">${l} · ${p[k].length}</button>`).join('');
+  else seg.outerHTML = `<div class="small">${p[kind].length} film${p[kind].length === 1 ? '' : 's'}</div>`;
+  const draw = () => {
+    $$('#pseg button', b).forEach(x => x.classList.toggle('on', x.dataset.k === kind));
+    $$('#psort button', b).forEach(x => x.classList.toggle('on', x.dataset.s === sort));
+    const list = [...p[kind]].sort(sort === 'pop' ? (a, c) => c.pop - a.pop : (a, c) => (c.date || '0').localeCompare(a.date || '0'));
+    $('#pgrid', b).innerHTML = list.length ? list.map(m => cardHTML(m)).join('') : '<div class="msg" style="grid-column:1/-1">No films listed.</div>';
+  };
+  $$('#pseg button', b).forEach(x => x.onclick = () => { kind = x.dataset.k; draw(); });
+  $$('#psort button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; draw(); });
+  s.refresh = () => { paintFav(); refreshBadges(); };
+  draw();
 }
 
 /* ---------- Log sheet ---------- */
@@ -1701,7 +1796,10 @@ function renderFilms(){
   const mx = Math.max(1, ...counts);
   const sorter = { recent:(a, b) => b.at - a.at, rating:(a, b) => b.r - a.r || b.at - a.at, title:(a, b) => a.title.localeCompare(b.title), year:(a, b) => (b.year || 0) - (a.year || 0) }[filmSort];
   films.sort(sorter);
+  const favL = Object.entries(favs).sort((a, b) => b[1].at - a[1].at);
   v.innerHTML = `<h2 class="vt">My Films</h2><p class="vs">Everything you've rated or marked watched. Hold a poster to rate it.</p>
+    ${favL.length ? `<div class="pad" style="margin-bottom:14px"><div class="castsec"><div class="lbl" style="margin-top:0">Favorite people</div>
+      <div class="ppl">${favL.map(([k, f]) => personHTML({ id:k, name:f.name, profile:f.profile }, f.dept === 'Directing' ? 'Director' : 'Actor')).join('')}</div></div></div>` : ''}
     <div class="stats"><div class="stat"><b>${films.length}</b><span>Films</span></div><div class="stat"><b>${avg ? avg.toFixed(1) : '–'}</b><span>Avg rating</span></div>
       <div class="stat"><b>${Object.entries(ratings).filter(([k, r]) => !k.startsWith('tv') && r.at && new Date(r.at).getFullYear() === +yr).length}</b><span>Rated in ${yr}</span></div></div>
     ${rated.length ? `<button class="revbtn" id="rev"><span>Your ${yr} in review</span><b>Open →</b></button>` : ''}
@@ -1810,7 +1908,7 @@ function openSettings(){
   $('#okey', b).onchange = e => { store.set(K_OMDB, e.target.value.trim()); toast(e.target.value.trim() ? 'OMDb key saved' : 'OMDb key removed'); };
   $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.tv = false; setView(view); };
   $('#exp', b).onclick = () => {
-    const blob = new Blob([JSON.stringify({ app:'reellog', v:4, entries, ratings, watch, seen }, null, 1)], { type:'application/json' });
+    const blob = new Blob([JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
     a.download = `reellog-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
@@ -1824,6 +1922,7 @@ function openSettings(){
       for(const e of list) if(e && e.id && e.tmdb && e.date && !ids.has(e.id)){ entries.push(e); n++; }
       if(data.watch) for(const [id, w] of Object.entries(data.watch)) if(!watch[id] && !ratings[id]) watch[id] = w;
       if(data.seen) for(const [id, w] of Object.entries(data.seen)) if(!seen[id] && !ratings[id]) seen[id] = w;
+      if(data.favs) for(const [id, p] of Object.entries(data.favs)) if(!favs[id]) favs[id] = p;
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       if(!data.ratings) list.forEach(e => { if(e.rating && !ratings[e.tmdb]){ ratings[e.tmdb] = { r:e.rating, title:e.title, year:e.year, poster:e.poster, at:e.added || 0 }; rn++; } });
       saveAll(); s.close(); afterChange(); toast(`Imported ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
