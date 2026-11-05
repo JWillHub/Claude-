@@ -268,11 +268,21 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .rp{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(5,4,8,.55);
   backdrop-filter:blur(12px) saturate(1.1);-webkit-backdrop-filter:blur(12px) saturate(1.1);opacity:0;visibility:hidden;transition:opacity .24s ease,visibility 0s linear .24s}
 .rp.on{opacity:1;visibility:visible;transition:opacity .24s ease}
-.rpc{position:relative;overflow:hidden;width:min(92vw,380px);background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:26px;padding:18px 18px 16px;text-align:center;
+.rpc{position:relative;overflow:hidden;width:min(88vw,340px);background:var(--bg2);border:1px solid rgba(255,255,255,.09);border-radius:28px;padding:22px 18px 16px;text-align:center;
   box-shadow:0 30px 80px rgba(0,0,0,.65);transform:translateY(18px) scale(.94);opacity:0;transition:transform .36s cubic-bezier(.2,.9,.25,1.12),opacity .24s ease}
 .rp.on .rpc{transform:none;opacity:1}
-.rpbg{position:absolute;inset:-30px;background:center/cover no-repeat;filter:blur(26px) saturate(1.4);opacity:.32;pointer-events:none}
-.rpc::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,25,.2),var(--bg2) 72%);pointer-events:none}
+.rpbg{position:absolute;inset:-40px;background:center/cover no-repeat;filter:blur(30px) saturate(1.5);opacity:.6;pointer-events:none}
+.rpc::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,25,.15) 0%,rgba(20,17,25,.55) 45%,var(--bg2) 78%);pointer-events:none}
+.rpposter{width:58%;margin:0 auto 14px}
+.rpposter img,.rpposter .ph{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:16px;display:block;background:var(--card2);
+  box-shadow:0 18px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08)}
+.rptitle{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:22px;line-height:1.08;text-wrap:balance}
+.rpyear{color:var(--muted);font-size:13px;margin:3px 0 14px}
+.rpp{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:10px 12px;border-radius:999px;font-weight:800;font-size:13.5px;cursor:pointer;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--text);transition:background .15s,border-color .15s,color .15s}
+.rpp svg{width:11px;height:14px;fill:currentColor}
+.rpp.on{border-color:var(--accent);color:var(--accent);background:rgba(255,181,71,.1)}
+.rpp:active{background:rgba(255,255,255,.14)}
 .rpc>*:not(.rpbg){position:relative;z-index:1}
 .rpc .st .f{transition:width .14s ease-out}
 .rpc .st .f svg{filter:drop-shadow(0 0 7px rgba(255,181,71,.5))}
@@ -283,6 +293,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .rpc .rph img,.rpc .rph .ph{width:62px;aspect-ratio:2/3;border-radius:9px;object-fit:cover;flex:none;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.5)}
 .rpc .rph b{font-family:var(--disp);font-size:19px;line-height:1.15;display:block}
 .rpc .rv{font-family:var(--disp);font-size:17px;color:var(--accent);height:24px;margin-top:8px}
+.rpc .s5{margin:0 auto}
 .rpc .hint{margin-top:6px}
 .rpbtns{display:flex;gap:8px;margin-top:14px}
 .rpbtns .pill{flex:1;justify-content:center}
@@ -357,6 +368,7 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .c6{background:#ef8b2c;color:#1f0f00}.c5{background:#d9443a;color:#fff}.c4{background:#7c3fbf;color:#fff}
 .legend{display:flex;flex-wrap:wrap;gap:6px 10px;justify-content:center;font-size:11px;color:var(--muted);margin-top:8px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.epinfo[hidden]{display:none}
 .epinfo{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:10px;min-height:44px;font-size:13.5px}
 .epinfo b{font-family:var(--disp);font-size:18px}
 .hl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
@@ -751,13 +763,13 @@ function openRatepad(id, tracking, x, y){
   clearTimeout(rp.closeT); clearTimeout(rp.saveT);
   el.classList.remove('on');
   el.innerHTML = `<div class="rpc" id="rpc">${f.poster ? `<div class="rpbg" style="background-image:url(${IMG}w342${f.poster})"></div>` : ''}
-    <div class="wz" id="rpw">${BOOK}${watch[id] ? 'Remove from Watchlist' : 'Add to Watchlist'}${tracking ? ' · slide up' : ''}</div>
-    <div class="rph">${poster(f.poster, '', 'w185', f.title)}<div><b>${esc(f.title)}</b><span class="small">${esc(f.year)}${cur ? ' · you gave it ' + fmtR(cur) + '★' : ''}</span></div></div>
-    ${starsHTML(46, 6)}
+    <div class="rpposter">${poster(f.poster, '', 'w342', f.title)}</div>
+    <div class="rptitle">${esc(f.title)}</div>
+    <div class="rpyear">${esc(f.year)}</div>
+    ${starsHTML(44, 6)}
     <div class="rv" id="rpv">${cur ? esc(RWORDS[cur]) : ''}</div>
-    <div class="hint" id="rph">${tracking ? 'Slide across the stars, let go to save' : 'Tap a star · tap it again for a half star'}</div>
-    <div class="rpbtns"><button class="pill line" id="rpd">Details</button>
-      ${cur ? '<button class="pill line" id="rpx">Clear</button>' : ''}</div></div>`;
+    <div class="rpbtns"><button class="rpp${watch[id] ? ' on' : ''}" id="rpw">${BOOK}<span>${watch[id] ? 'On watchlist' : 'Watchlist'}</span></button>
+      <button class="rpp" id="rpd">Details</button>${cur ? '<button class="rpp" id="rpx" aria-label="Clear rating">Clear</button>' : ''}</div></div>`;
   const card = $('#rpc');
   void card.offsetWidth;            // start from the closed state so the card glides in
   el.classList.add('on');
@@ -777,17 +789,13 @@ function openRatepad(id, tracking, x, y){
   });
   el.onclick = e => { if(e.target === el) closeRatepad(); };
   $('#rpd').onclick = () => { closeRatepad(); openMovie(id); };
-  $('#rpw').onclick = () => { closeRatepad(); toggleWatch(f); };
+  $('#rpw').onclick = () => {
+    toggleWatch(f); const on = !!watch[id], w = $('#rpw');
+    if(w){ w.classList.toggle('on', on); $('span', w).textContent = on ? 'On watchlist' : 'Watchlist'; }
+  };
   const x2 = $('#rpx'); if(x2) x2.onclick = () => { closeRatepad(); setRating(f, 0); };
 }
 function rpTrack(x, y){
-  const zone = $('#rpw')?.getBoundingClientRect();
-  const up = y != null && !!zone && y < rp.startY - 30 && y < zone.bottom + 10;
-  if(up !== rp.wz){
-    rp.wz = up; $('#rpw')?.classList.toggle('on', up); $('#rpc')?.classList.toggle('wzmode', up);
-    if(up) navigator.vibrate && navigator.vibrate(10);
-  }
-  if(up) return;
   if(!rp.moved && Math.abs(x - rp.startX) < 12) return;
   rp.moved = true;
   const s5 = $('#rp .s5'); if(!s5) return;
@@ -799,7 +807,7 @@ function rpRelease(){
   rp.tracking = false;
   if(rp.wz){ const f = rp.film; closeRatepad(); toggleWatch(f); return; }
   if(rp.moved && rp.r) commitRatepad();
-  else { const h = $('#rph'); if(h) h.textContent = 'Tap a star · tap it again for a half star'; }
+
 }
 function setWord(r){
   const w = $('#rpv'); if(!w) return;
@@ -870,10 +878,10 @@ function buildDiscover(){
     <div class="hero" id="hero"></div>
     <div id="wlrow"></div>
     <button class="qs" id="qs"><span class="qi"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.95 6.1 6.65.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.65-.8z"/></svg></span>
-      <span><b>Rate what you've seen</b><span>Swipe through popular films and rate the ones you know</span></span></button>
+      <span><b>Rate what you've seen</b></span></button>
     <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>For you</h3><p id="fysub"></p></div></div><div class="track"></div></section>
     ${rowHTML(0)}
-    <section class="row"><div class="rowhead"><div><h3>Saga Runs</h3><p>Stack up a whole franchise and rate it card by card</p></div><button data-go="sagas">All sagas</button></div>
+    <section class="row"><div class="rowhead"><div><h3>Saga Runs</h3></div><button data-go="sagas">All sagas</button></div>
       <div class="track">${SAGAS.slice(0, 10).map(tileHTML).join('')}</div></section>
     ${ROWS.map((r, i) => i && !r.genre ? rowHTML(i) : '').join('')}`;
   $('#sp').onclick = () => openFind({}, true);
@@ -893,7 +901,7 @@ function buildDiscover(){
 function renderWatchRow(){
   const box = $('#wlrow'); if(!box) return;
   const list = Object.entries(watch).sort((a, b) => b[1].at - a[1].at);
-  box.innerHTML = list.length ? `<section class="row"><div class="rowhead"><div><h3>Your watchlist</h3><p>${list.length} to watch · rate one and it moves off the list</p></div></div>
+  box.innerHTML = list.length ? `<section class="row"><div class="rowhead"><div><h3>Your watchlist</h3><p>${list.length} to watch</p></div></div>
     <div class="track">${list.map(([k, w]) => cardHTML({ id:pid(k), title:w.title, poster:w.poster })).join('')}</div></section>` : '';
 }
 async function loadForYou(){
@@ -998,7 +1006,7 @@ function feed(root, grid, sent, msgEl, def){
   more();
 }
 function openSeeAll(def){
-  const s = sheet(`<h2 class="stitle">${esc(def.title)}</h2>${def.sub ? `<p class="small" style="margin:-6px 0 14px">${esc(def.sub)} · hold a poster to rate it</p>` : '<p class="small" style="margin:-6px 0 14px">Hold a poster to rate it</p>'}
+  const s = sheet(`<h2 class="stitle">${esc(def.title)}</h2>${def.sub ? `<p class="small" style="margin:-6px 0 14px">${esc(def.sub)}</p>` : ''}
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });
   feed(s.body, $('.grid', s.body), $('.sent', s.body), $('.msg', s.body), def);
 }
@@ -1063,8 +1071,7 @@ function openGenres(tv, start){
       <div class="chips gtabs">${list.map(([id, n], i) => `<button class="chip" data-i="${i}">${esc(n)}</button>`).join('')}</div>
       <div class="gopts"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
         <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div></div>
-    <div class="gpane nodrag"><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
-    <div class="hint" style="margin-top:4px">Swipe left or right to change genre</div>`, { tall:true });
+    <div class="gpane nodrag"><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`, { tall:true });
   const b = s.body, pane = $('.gpane', b), grid = $('.grid', b);
   const load = (dir) => {
     $$('.gtabs .chip', b).forEach((c, i) => c.classList.toggle('on', i === gi));
@@ -1272,7 +1279,7 @@ function buildSagas(){
   built.sagas = true;
   const v = $('#v-sagas');
   if(!store.get(K_KEY, '')){ built.sagas = false; v.innerHTML = `<h2 class="vt">Saga Runs</h2><div class="onb"><p>Add your TMDB key in Settings to load the sagas.</p></div>`; return; }
-  v.innerHTML = `<h2 class="vt">Saga Runs</h2><p class="vs">Every film in a franchise, stacked in release order. Rate one, it flies off, the next one's waiting.</p>
+  v.innerHTML = `<h2 class="vt" style="margin-bottom:14px">Saga Runs</h2>
     <div class="findsaga">${SEARCH_SVG}<input id="sq" type="search" placeholder="Find any other film series…" autocomplete="off"></div>
     <div id="sres" class="pad" style="margin-top:10px"></div>
     <div class="sec">Cinematic universes</div><div class="sagas">${SAGAS.filter(s => s.u).map(tileHTML).join('')}</div>
@@ -1334,8 +1341,7 @@ function openRun(saga){
         ${poster(f.poster, '', 'w500', f.title)}<span class="num">${n + 1} / ${rel.length}</span><span class="rb"></span>
         <div class="cap"><b>${esc(f.title)}</b><span>${esc(f.year)}</span></div></div>`).join('')}</div>
       <div class="runctl nodrag">${starsHTML(42, 6)}<div class="rv" id="rrv"></div>
-        <div class="runbtns"><button class="pill line" id="rprev">‹ Previous</button><button class="pill line" id="rskip">Next ›</button></div>
-        <div class="hint">Tap a star, tap it again for a half · swipe the card when you're ready</div></div>`;
+        <div class="runbtns"><button class="pill line" id="rprev">‹ Previous</button><button class="pill line" id="rskip">Next ›</button></div></div>`;
     const s5 = $('.runctl .s5', box);
     bindStars(s5, (r, fin) => {
       paintStars(s5, r); $('#rrv', b).textContent = RWORDS[r];
@@ -1434,7 +1440,7 @@ function buildTV(){
   const v = $('#v-tv');
   if(!store.get(K_KEY, '')){ v.innerHTML = `<h2 class="vt">TV</h2><div class="onb"><p>Add your TMDB key in Settings to load shows.</p></div>`; return; }
   built.tv = true;
-  v.innerHTML = `<h2 class="vt">TV</h2><p class="vs">Every episode's IMDb rating, charted season by season. Hold a poster to rate the show.</p>
+  v.innerHTML = `<h2 class="vt">TV</h2><p class="vs">Every episode's IMDb rating, charted season by season.</p>
     <div class="sbar" style="margin-top:0"><button class="searchpill" id="tsp">${SEARCH_SVG}Search any show</button>
       <button class="gbtn" id="tgb">${GRID_SVG}Genres</button></div>
     <div id="myshows"></div>
@@ -1490,7 +1496,7 @@ async function openShow(id){
   const b = s.body, s5 = $('.ratebar .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Tap a star to rate'; rv.classList.toggle('dim', !r);
+    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : ''; rv.classList.toggle('dim', !r);
     $('#mclr', b).style.visibility = r ? '' : 'hidden';
   };
   s.refresh = paint; paint();
@@ -1548,12 +1554,13 @@ function renderChart(box, d, meta){
     <div class="chartwrap"><table class="hm">${rowsH}</table></div>
     <div class="legend"><span><i class="c9"></i>9+ Absolute cinema</span><span><i class="c8"></i>8+ Great</span><span><i class="c7"></i>7+ Good</span>
       <span><i class="c6"></i>6+ Regular</span><span><i class="c5"></i>5+ Bad</span><span><i class="c4"></i>Garbage</span></div>
-    <div class="epinfo" id="epi"><span class="small">Tap any episode to see its title and votes.</span></div>
+    <div class="epinfo" id="epi" hidden></div>
     <div class="small" style="margin-top:8px;text-align:center">Episode ratings from IMDb, updated ${esc(meta.built)}.</div>`;
   const info = (n, e) => {
     const x = (d.s[n] || []).find(q => q[0] === e); if(!x) return;
     $$('.hm td.sel', box).forEach(c => c.classList.remove('sel'));
     const cell = $(`.hm td[data-s="${n}"][data-e="${e}"]`, box); if(cell){ cell.classList.add('sel'); cell.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' }); }
+    $('#epi', box).hidden = false;
     $('#epi', box).innerHTML = `<b>S${n} E${e}</b> &nbsp;${esc(x[3] || 'Untitled episode')}<br><span class="small">${x[1] == null ? 'Not rated yet' : `IMDb ${x[1].toFixed(1)} · ${x[2].toLocaleString()} votes`}</span>`;
   };
   $$('[data-s][data-e]', box).forEach(c => c.onclick = () => info(+c.dataset.s, +c.dataset.e));
@@ -1572,7 +1579,7 @@ async function openMovie(id){
   const b = s.body, s5 = $('.ratebar .s5', b);
   const paint = () => {
     const r = getR(id); paintStars(s5, r);
-    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : 'Tap a star to rate'; rv.classList.toggle('dim', !r);
+    const rv = $('#mrv', b); rv.textContent = r ? RWORDS[r] : ''; rv.classList.toggle('dim', !r);
     $('#mclr', b).style.visibility = r ? '' : 'hidden';
     const logs = entries.filter(e => e.tmdb === id).sort((a, c) => c.date.localeCompare(a.date) || c.added - a.added);
     $('#mhist', b).innerHTML = logs.length ? `<div class="sec" style="margin:4px 0 4px">Your watches</div>` + logs.map(l => `<div class="hrow" data-e="${l.id}">
@@ -1761,7 +1768,7 @@ function renderDiary(){
     ...Object.entries(ratings).filter(([k, r]) => !k.startsWith('tv') && !logged.has(+k) && r.at > 1e12)
       .map(([k, r]) => ({ kind:'r', id:k, tmdb:+k, title:r.title, year:r.year, poster:r.poster, rating:r.r, date:ymd(r.at), added:r.at }))
   ];
-  if(!items.length){ v.innerHTML = head + `<div class="empty">Nothing here yet.<br>Hold any poster and slide to rate it.</div>`; return; }
+  if(!items.length){ v.innerHTML = head + `<div class="empty">Nothing here yet.</div>`; return; }
   const sorted = items.sort((a, b) => b.date.localeCompare(a.date) || b.added - a.added);
   let html = head + '<div class="pad">', cur = '';
   for(const e of sorted){
@@ -1797,7 +1804,7 @@ function renderFilms(){
   const sorter = { recent:(a, b) => b.at - a.at, rating:(a, b) => b.r - a.r || b.at - a.at, title:(a, b) => a.title.localeCompare(b.title), year:(a, b) => (b.year || 0) - (a.year || 0) }[filmSort];
   films.sort(sorter);
   const favL = Object.entries(favs).sort((a, b) => b[1].at - a[1].at);
-  v.innerHTML = `<h2 class="vt">My Films</h2><p class="vs">Everything you've rated or marked watched. Hold a poster to rate it.</p>
+  v.innerHTML = `<h2 class="vt">My Films</h2><p class="vs">Everything you've rated or marked watched.</p>
     ${favL.length ? `<div class="pad" style="margin-bottom:14px"><div class="castsec"><div class="lbl" style="margin-top:0">Favorite people</div>
       <div class="ppl">${favL.map(([k, f]) => personHTML({ id:k, name:f.name, profile:f.profile }, f.dept === 'Directing' ? 'Director' : 'Actor')).join('')}</div></div></div>` : ''}
     <div class="stats"><div class="stat"><b>${films.length}</b><span>Films</span></div><div class="stat"><b>${avg ? avg.toFixed(1) : '–'}</b><span>Avg rating</span></div>
@@ -1805,7 +1812,7 @@ function renderFilms(){
     ${rated.length ? `<button class="revbtn" id="rev"><span>Your ${yr} in review</span><b>Open →</b></button>` : ''}
     ${rated.length ? `<div class="hist">${counts.map(c => `<i style="height:${c / mx * 100}%" title="${c}"></i>`).join('')}</div><div class="histl"><span>½★</span><span>★★★★★</span></div>` : ''}
     ${films.length ? `<div class="toolbar"><span style="flex:1"></span>Sort <select id="fs"><option value="recent">Recently added</option><option value="rating">Your rating</option><option value="title">Title</option><option value="year">Release year</option></select></div>
-    <div class="grid pad">${films.map(f => cardHTML(f)).join('')}</div>` : '<div class="empty">Nothing yet. Hold any poster to rate it, or start a Saga Run.</div>'}`;
+    <div class="grid pad">${films.map(f => cardHTML(f)).join('')}</div>` : '<div class="empty">Nothing rated yet.</div>'}`;
   const sel = $('#fs'); if(sel){ sel.value = filmSort; sel.onchange = () => { filmSort = sel.value; renderFilms(); }; }
   const rb = $('#rev'); if(rb) rb.onclick = openReview;
 }
@@ -1873,7 +1880,7 @@ async function saveReviewImage(d, btn){
   // sharing isn't available here: show the image so it can be pressed and held to save
   const url = URL.createObjectURL(blob);
   const holder = btn.parentElement.querySelector('.revimg') || btn.insertAdjacentElement('afterend', Object.assign(document.createElement('div'), { className:'revimg' }));
-  holder.innerHTML = `<img src="${url}" alt="Your year in film" style="width:100%;border-radius:14px;margin-top:14px"><div class="small" style="margin-top:6px">Press and hold the image to save it.</div>`;
+  holder.innerHTML = `<img src="${url}" alt="Your year in film" style="width:100%;border-radius:14px;margin-top:14px">`;
 }
 
 /* ---------- Settings ---------- */
