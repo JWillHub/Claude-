@@ -1758,6 +1758,13 @@ async function volDetail(id){
 }
 async function openSeries(id){
   const v0 = vols.get(id) || {};
+  // a one-issue series (one-shots, specials) goes straight to that issue
+  if(v0.count === 1){
+    try{
+      const d = await issuePage({ filter:'volume:' + id, sort:'cover_date:asc' }, 1, { eng:false, ttl:24 * 7 });
+      if(d.results.length === 1){ openIssue(d.results[0].id); return; }
+    }catch(e){}
+  }
   const s = sheet(`<div class="phead">${v0.poster ? `<img src="${esc(v0.poster)}" alt="">` : '<span class="pi">…</span>'}
       <div><h2>${esc(v0.name || 'Loading…')}</h2><div class="meta" id="vmeta">${esc([v0.start, v0.pub].filter(Boolean).join(' · '))}</div>
       <button class="favbtn" id="vrun">${STAR}Rate this run</button></div></div>
@@ -1778,7 +1785,8 @@ async function openSeries(id){
     $('.phead', b).firstElementChild.outerHTML = v.poster ? `<img src="${esc(v.poster)}" alt="">` : `<span class="pi">${esc(initials(v.name))}</span>`;
     $('.phead h2', b).textContent = v.name;
     $('#vmeta', b).textContent = [v.start, v.pub, v.count ? v.count + ' issues' : ''].filter(Boolean).join(' · ');
-    const t = v.deck || v.desc, bio = $('#vdesc', b);
+    const clean = t => t && !/^\s*note:/i.test(t) ? t : '';
+    const t = clean(v.deck) || clean(v.desc), bio = $('#vdesc', b);
     if(t){ bio.textContent = t; bio.onclick = () => bio.classList.toggle('open'); } else bio.remove();
   }catch(e){}
 }
