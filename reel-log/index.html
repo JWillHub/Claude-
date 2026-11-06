@@ -57,6 +57,11 @@ svg{display:block}
 .srch[hidden]{display:none}
 .hact .ib{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.04)}
 .hact .ib[hidden],.top.searching #hcar{display:none}
+#hcar{width:auto;display:flex;align-items:center;gap:6px;padding:0 13px 0 10px;border-radius:17px;border:0;color:#1a1206;
+  background:linear-gradient(135deg,#ffc56b,#ff9f2e);box-shadow:0 4px 14px rgba(255,166,50,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+#hcar svg{width:17px;height:17px}
+#hcar:active{transform:scale(.95)}
 .hact .ib.on{color:var(--accent);border-color:rgba(255,181,71,.5)}
 .hact .ib.gen{width:auto;display:flex;gap:6px;padding:0 12px;font-weight:800;font-size:13.5px;color:var(--text)}
 .hact .ib.gen svg{color:var(--accent);width:17px;height:17px}
@@ -461,7 +466,7 @@ html{touch-action:manipulation}
     <button id="hcancel">Cancel</button>
   </div>
   <div class="hact">
-    <button class="ib" id="hcar" aria-label="Carousel" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7.5" y="4" width="9" height="16" rx="1.8"/><path d="M4.5 6.5v11M19.5 6.5v11"/></svg></button>
+    <button class="ib" id="hcar" aria-label="Rate in carousel" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="7.5" y="4" width="9" height="16" rx="1.8"/><path d="M4 6.5v11M20 6.5v11"/></svg><span>Rate</span></button>
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
   </div>
 </header>
