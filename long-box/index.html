@@ -163,8 +163,8 @@ main{max-width:1100px;margin:0 auto}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px 12px}
 .grid .pc.ranked{padding-left:0}
 /* Stremio-style pickers: a row of pills, each opening a bottom-sheet list */
-.pkbar{display:flex;gap:10px;padding:14px 16px 16px}
-.pkp{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 11px;border-radius:14px;cursor:pointer;
+.pkbar{display:flex;gap:8px;padding:14px 16px 16px}
+.pkp{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:12px 9px 12px 11px;border-radius:14px;cursor:pointer;
   border:1px solid rgba(255,181,71,.35);background:linear-gradient(120deg,rgba(255,111,97,.12),rgba(255,181,71,.08));color:var(--text);font-weight:700}
 .pkp span{white-space:nowrap;overflow:hidden;font-size:15px}
 .pkp svg{flex:none;color:var(--accent)}
@@ -1913,10 +1913,18 @@ function pickSheet(title, opts, cur, onPick){
 }
 const pickPill = (id, label) => `<button class="pkp" id="${id}"><span>${esc(label)}</span>${PICK_CARET}</button>`;
 // every pill in a bar shares one font size, shrunk together until none is cut off
-function fitPills(bar){
+// every pill in a bar shares one font size, small enough that every option each pill can show fits, so it never cuts off or jumps
+function fitPills(bar, lists){
   const ps = $$('.pkp span', bar); if(!ps.length) return;
-  let f = 15; ps.forEach(p => p.style.fontSize = f + 'px');
-  while(f > 11 && ps.some(p => p.scrollWidth > p.clientWidth + 1)){ f -= .5; ps.forEach(p => p.style.fontSize = f + 'px'); }
+  const run = () => {
+    const now = ps.map(p => p.textContent);
+    const fits = () => ps.every((p, i) => (lists && lists[i] || [now[i]]).every(t => { p.textContent = t; return p.scrollWidth <= p.clientWidth; }));
+    let f = 15; ps.forEach(p => p.style.fontSize = f + 'px');
+    while(f > 10 && !fits()){ f -= .5; ps.forEach(p => p.style.fontSize = f + 'px'); }
+    ps.forEach((p, i) => p.textContent = now[i]);
+  };
+  run();
+  document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
 // every character mixed together: a few characters per page, their top series taken in turn
 const ALL_CHARS = { vols:true, load:async (page, low) => {
@@ -1929,12 +1937,13 @@ const ALL_CHARS = { vols:true, load:async (page, low) => {
 const ALL_SERIES = () => ({ vols:true, items:[...CLASSIC_RUNS, ...MODERN_RUNS, ...EVENTS, ...DC_RUNS]
   .filter((x, i, a) => a.findIndex(y => y[0] === x[0] && y[1] === x[1]) === i).map(x => low => resolveVol(...x, low)) });
 const BROWSE_CATS = {
-  chars:() => [{ k:'*', label:'All characters', def:ALL_CHARS }, ...CHARS.map((n, i) => ({ k:n, label:n, def:GROWS[i] }))],
+  chars:() => [{ k:'*', label:'All characters', def:ALL_CHARS }, ...CHARS.map((n, i) => ({ k:n, label:n, short:SHORT_NAMES[n], def:GROWS[i] }))],
   series:() => [{ k:'*', label:'All series', def:ALL_SERIES() },
     ...(mySeries().length ? [{ k:'mine', label:'Your series', def:{ vols:true, items:mySeries().map(v => () => Promise.resolve(v)) } }] : []),
     { k:'classic', label:'Classic runs', def:SROWS[0] }, { k:'modern', label:'Modern favorites', def:SROWS[1] }, { k:'events', label:'Big events', def:SROWS[2] },
     { k:'dcruns', label:'Legendary DC runs', def:{ vols:true, items:DC_RUNS.map(x => low => resolveVol(...x, low)) } }, { k:'ones', label:'New DC #1s', def:SROWS[3] }]
 };
+const SHORT_NAMES = { 'Teenage Mutant Ninja Turtles':'Ninja Turtles' };   // for the pill; the list shows the full name
 const BROWSE_SORTS = [{ k:'def', label:'Default' }, { k:'new', label:'Newest' }, { k:'old', label:'Oldest' }, { k:'most', label:'Most issues' }, { k:'az', label:'A to Z' }];
 const yearOf = m => +(m.start || (m.date || '').slice(0, 4) || 0);
 const SORTERS = {
@@ -1972,7 +1981,7 @@ function buildBrowse(tab){
   const cats = BROWSE_CATS[st.type]();
   if(!cats.some(c => c.k === st.cat)) st.cat = '*';
   const cur = cats.find(c => c.k === st.cat), sl = BROWSE_SORTS.find(s => s.k === st.sort);
-  v.innerHTML = `<div class="pkbar">${pickPill('bktype', types.find(t => t.k === st.type).label)}${pickPill('bkcat', cur.label)}${pickPill('bksort', sl.label)}</div><div class="pad" id="bkbody-${tab}"></div>`;
+  v.innerHTML = `<div class="pkbar">${pickPill('bktype', types.find(t => t.k === st.type).label)}${pickPill('bkcat', cur.short || cur.label)}${pickPill('bksort', sl.label)}</div><div class="pad" id="bkbody-${tab}"></div>`;
   $('#bktype', v).onclick = () => pickSheet('Type', types, st.type, k => { st.type = k; st.cat = '*'; st.sort = 'def'; buildBrowse(tab); });
   $('#bkcat', v).onclick = () => pickSheet(st.type === 'chars' ? 'Character' : 'Catalog', cats, st.cat, k => { st.cat = k; buildBrowse(tab); scrollTo(0, 0); });
   $('#bksort', v).onclick = () => pickSheet('Sort', BROWSE_SORTS, st.sort, k => { st.sort = k; buildBrowse(tab); scrollTo(0, 0); });

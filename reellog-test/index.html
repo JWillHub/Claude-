@@ -161,8 +161,8 @@ main{max-width:1100px;margin:0 auto}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px 12px}
 .grid .pc.ranked{padding-left:0}
 /* Stremio-style pickers: a row of pills, each opening a bottom-sheet list */
-.pkbar{display:flex;gap:10px;padding:14px 16px 16px}
-.pkp{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 11px;border-radius:14px;cursor:pointer;
+.pkbar{display:flex;gap:8px;padding:14px 16px 16px}
+.pkp{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:12px 9px 12px 11px;border-radius:14px;cursor:pointer;
   border:1px solid rgba(255,181,71,.35);background:linear-gradient(120deg,rgba(255,111,97,.12),rgba(255,181,71,.08));color:var(--text);font-weight:700}
 .pkp span{white-space:nowrap;overflow:hidden;font-size:15px}
 .pkp svg{flex:none;color:var(--accent)}
@@ -1379,10 +1379,18 @@ function pickSheet(title, opts, cur, onPick){
   $$('[data-o]', s.body).forEach(b => b.onclick = () => { s.close(); if(b.dataset.o !== cur) setTimeout(() => onPick(b.dataset.o), 60); });
 }
 const pickPill = (id, label) => `<button class="pkp" id="${id}"><span>${esc(label)}</span>${PICK_CARET}</button>`;
-function fitPills(bar){
+// every pill in a bar shares one font size, small enough that every option each pill can show fits, so it never cuts off or jumps
+function fitPills(bar, lists){
   const ps = $$('.pkp span', bar); if(!ps.length) return;
-  let f = 15; ps.forEach(p => p.style.fontSize = f + 'px');
-  while(f > 11 && ps.some(p => p.scrollWidth > p.clientWidth + 1)){ f -= .5; ps.forEach(p => p.style.fontSize = f + 'px'); }
+  const run = () => {
+    const now = ps.map(p => p.textContent);
+    const fits = () => ps.every((p, i) => (lists && lists[i] || [now[i]]).every(t => { p.textContent = t; return p.scrollWidth <= p.clientWidth; }));
+    let f = 15; ps.forEach(p => p.style.fontSize = f + 'px');
+    while(f > 10 && !fits()){ f -= .5; ps.forEach(p => p.style.fontSize = f + 'px'); }
+    ps.forEach((p, i) => p.textContent = now[i]);
+  };
+  run();
+  document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
 const gb = { tv:false, g:'*', sort:'popular' };
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
@@ -2008,7 +2016,7 @@ function bindProv(){}
 async function rtScore(tt){
   const key = store.get(K_OMDB, ''); if(!key) return null;
   try{
-    return await cached('rt:' + tt, 24*7, async () => {
+    return await cached('rt2:' + tt, 24, async () => {
       const r = await fetch(`https://www.omdbapi.com/?i=${encodeURIComponent(tt)}&apikey=${encodeURIComponent(key)}`);
       if(!r.ok) throw new Error('omdb');
       const d = await r.json();
