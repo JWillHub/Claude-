@@ -1,6 +1,6 @@
 {
-  "name": "Rolling Credits Library",
-  "short_name": "RC Library",
+  "name": "Rolling Credits",
+  "short_name": "Rolling Credits",
   "description": "Rolling Credits test copy that plays titles from your own Real-Debrid library",
   "id": "/Claude-/rc-library/",
   "start_url": "./",
