@@ -124,7 +124,7 @@ main{max-width:1100px;margin:0 auto}
 .rowhead h3{margin:0;font-family:var(--disp);font-weight:700;font-size:22px;line-height:1.1}
 .rowhead p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
 .rowhead button{flex:none;background:none;border:0;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:4px 0}
-.track{display:flex;gap:12px;overflow-x:auto;padding:0 16px 6px;scroll-padding:0 16px;scroll-snap-type:x proximity;scrollbar-width:none;min-height:150px}
+.track{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:0 16px 6px;scroll-padding:0 16px;scroll-snap-type:x proximity;scrollbar-width:none;min-height:150px}
 .track>.pc{flex:none;width:112px;scroll-snap-align:start}
 .track>.pc.ranked{width:136px;padding-left:28px}
 .track .msg{padding:50px 0}
@@ -973,8 +973,9 @@ function closeSheet(s, fromPop){
 // Swiping a card down (or tapping above it) clears every open card and puts you back on the page.
 // The phone's Back gesture still steps back one card at a time.
 const closeAllSheets = () => { if(sheetStack.length) closeSheet(sheetStack[0]); };
-// Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it
-addEventListener('touchmove', e => {
+// Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it.
+// It listens only on the cards layer, so ordinary page scrolling never waits on the app.
+$('#sheets').addEventListener('touchmove', e => {
   if(!sheetStack.length || !e.cancelable) return;
   const top = sheetStack[sheetStack.length - 1], body = top.body;
   if(!body.contains(e.target)){ if(!top.el.contains(e.target)) e.preventDefault(); return; }
