@@ -2464,6 +2464,13 @@ async function openTorrent(tid, title, id){
 const pickUrl = o => !o ? null : typeof o === 'string' ? o : o.full || Object.values(o).find(x => typeof x === 'string') || null;
 const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
+// 4K / HEVC files that aren't mp4: phone browsers show a black picture for these, so they go straight to VLC
+const needsVLC = n => /2160p|\b4k\b|\buhd\b|hevc|[xh]\.?265|10.?bit|\bhdr\b|dolby.?vision|\bdv\b/i.test(n || '') && !/\.(mp4|m4v|webm)$/i.test(n || '');
+function vlcLink(url, title, startSec){
+  if(IS_IOS) return 'vlc-x-callback://x-callback-url/stream?url=' + encodeURIComponent(url);
+  if(IS_ANDROID) return `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;type=video/*;package=org.videolan.vlc;S.title=${encodeURIComponent(title)}${startSec > 20 ? ';l.position=' + Math.floor(startSec * 1000) : ''};end`;
+  return url;
+}
 async function playInto(box, link, title, meta = {}){
   box.innerHTML = '<div class="msg">Getting a stream link…</div>';
   let u;
@@ -2471,6 +2478,18 @@ async function playInto(box, link, title, meta = {}){
   catch(e){ box.innerHTML = `<div class="msg">${rdErr(e)}</div>`; return; }
   if(!box.isConnected) return;
   const url = u.download;
+  const startAt = meta.key && prog[meta.key] ? prog[meta.key].t : 0;
+  const vlc = vlcLink(url, title, startAt);
+  const copyBtn = () => { const c = $('#lcopy', box); if(c) c.onclick = async () => { try{ await navigator.clipboard.writeText(url); toast('Stream link copied'); }catch(e){ toast('Could not copy the link'); } }; };
+  if((IS_ANDROID || IS_IOS) && needsVLC(u.filename)){
+    box.innerHTML = `<div class="lplay"><div class="msg">This is a 4K file, which plays best in VLC. Opening VLC${startAt > 20 ? ` at ${clock(startAt)}` : ''}…</div>
+      <div class="small" style="margin-top:4px">${esc(u.filename || '')}${u.filesize ? ' · ' + fmtSize(u.filesize) : ''}</div>
+      <a class="btn" href="${esc(vlc)}" style="display:block;text-align:center;text-decoration:none">Open in VLC</a>
+      <button class="btn ghost" id="lcopy">Copy stream link</button></div>`;
+    copyBtn();
+    location.href = vlc;
+    return;
+  }
   // Real-Debrid can re-encode a file for browsers. Files a browser plays as-is (mp4, webm) are used directly.
   let hls = null, mp4 = null;
   if(u.streamable && u.id) try{ const t = await rd('/streaming/transcode/' + encodeURIComponent(u.id)); hls = pickUrl(t && t.apple); mp4 = pickUrl(t && t.liveMP4); }catch(e){}
@@ -2481,9 +2500,6 @@ async function playInto(box, link, title, meta = {}){
   const srcs = (direct ? [url] : [probe.canPlayType('application/vnd.apple.mpegurl') ? hls : null, mp4, url]).filter(Boolean);
   const kind = s => s === url ? 'original file' : 'converted stream';
   const src = srcs.shift();
-  const vlc = IS_IOS ? 'vlc-x-callback://x-callback-url/stream?url=' + encodeURIComponent(url)
-    : IS_ANDROID ? `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;type=video/*;package=org.videolan.vlc;S.title=${encodeURIComponent(title)};end`
-    : url;
   box.innerHTML = `<div class="lplay"><video controls playsinline preload="metadata" src="${esc(src)}"></video>
     <div class="small" id="lperr" style="margin-top:6px"></div>
     <div class="small" style="margin-top:4px">${esc(u.filename || '')}${u.filesize ? ' · ' + fmtSize(u.filesize) : ''} · <span id="lkind">${kind(src)}</span></div>
@@ -2498,13 +2514,14 @@ async function playInto(box, link, title, meta = {}){
       v.play().catch(() => {}); return;
     }
     const e = $('#lperr', box); if(e) e.textContent = why;
+    if(IS_ANDROID || IS_IOS){ v.pause(); location.href = vlcLink(url, title, v.currentTime || startAt); }   // hand off to VLC automatically
   };
-  v.onerror = () => next("This file's format can't play inside the app. Use Open in VLC.");
+  v.onerror = () => next("This file's format can't play inside the app. Opening VLC…");
   // Sound but a black picture means the browser can't decode this video (common with 4K HEVC). Try the next option.
   v.addEventListener('playing', () => setTimeout(() => {
-    if(v.isConnected && !v.paused && v.readyState >= 2 && !v.videoWidth) next("The sound plays but this browser can't show the picture (usually 4K HEVC video). Use Open in VLC.");
+    if(v.isConnected && !v.paused && v.readyState >= 2 && !v.videoWidth) next("This browser can't show this video's picture. Opening VLC…");
   }, 2500));
-  $('#lcopy', box).onclick = async () => { try{ await navigator.clipboard.writeText(url); toast('Stream link copied'); }catch(e){ toast('Could not copy the link'); } };
+  copyBtn();
 }
 
 function trackProgress(v, box, link, title, meta){
