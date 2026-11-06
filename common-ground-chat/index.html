@@ -277,7 +277,8 @@ details.nd summary::-webkit-details-marker{display:none}
 .spot .k{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
 .spot h3{font-size:28px;font-weight:800;line-height:1.02;margin:6px 0 8px;letter-spacing:-.025em;max-width:85%}
 .spot p{font-size:14.5px;opacity:.92;max-width:88%}
-.spot .acts{display:flex;gap:8px;margin-top:14px;position:relative;z-index:1}
+.spot .acts{display:flex;gap:8px;margin-top:auto;padding-top:14px;justify-content:flex-end;position:relative;z-index:1}
+.spot{cursor:pointer}
 .spot .acts button{appearance:none;border:0;cursor:pointer;font-weight:800;font-size:14px;border-radius:999px;padding:9px 16px;background:#fff;color:var(--c);transition:transform .12s}
 .spot .acts button.ghost{background:rgba(255,255,255,.18);color:#fff}
 .spot .acts button:active{transform:scale(.95)}
@@ -1372,17 +1373,18 @@ function drawLib(anim){
     D.innerHTML=`<div id="spotW"></div><div class="srch">${SRCH}<input type="search" id="ls" placeholder="Search ${TECH.length} skills..." aria-label="Search skills"></div>
     <div class="fchips">${cats.map(c=>`<button class="chip${c==="All"?" all":""}" data-cat="${c}" style="--c:${CATCOL[c]||SRCC[c]||"var(--ink)"}" aria-pressed="${c===catSel}">${c==="All"?"":'<span class="dt"></span>'}${CL(c)}</button>`).join("")}</div><span id="srcHint" hidden></span><div id="ll" class="mason"></div>`;
     const spot=()=>{const W=$("spotW");
-      W.innerHTML=`<div class="spotstack" id="spotStack">${stack.map(id=>{const t=byId[id],c=CATCOL[t.cat];return `<div class="spot" data-id="${id}" style="--c:${c}"><span class="k">Try this today · ${t.min} min</span><h3>${esc(t.name)}</h3><p>${esc(t.sum)}</p><div class="acts"><button data-open="${t.id}">Open</button><span class="swh">Swipe for another</span></div></div>`;}).join("")}</div>`;
+      W.innerHTML=`<div class="spotstack" id="spotStack">${stack.map(id=>{const t=byId[id],c=CATCOL[t.cat];return `<div class="spot" data-id="${id}" data-open="${t.id}" role="button" tabindex="0" style="--c:${c}"><span class="k">Try this today · ${t.min} min</span><h3>${esc(t.name)}</h3><p>${esc(t.sum)}</p><div class="acts"><span class="swh">Swipe for another</span></div></div>`;}).join("")}</div>`;
       const cards=[...W.querySelectorAll(".spot")];
       const lay=()=>{cards.forEach(el=>{const k=stack.indexOf(el.dataset.id);el.style.zIndex=String(20-k);el.classList.toggle("top",k===0);
         el.style.transform=k===0?"":`translateY(${k*9}px) scale(${1-k*.05})`;el.style.opacity=k>2?"0":"1";el.style.filter=k?`brightness(${1-k*.12})`:"";el.style.visibility=k>2?"hidden":"";el.style.pointerEvents=k===0?"":"none";});};
       lay();
-      let x0=0,y0=0,dx=0,id=null,mode=null,el=null;
+      let x0=0,y0=0,dx=0,id=null,mode=null,el=null,sup=0;
+      W.addEventListener("click",e=>{if(Date.now()-sup<450){e.stopPropagation();e.preventDefault();}},true);
       W.addEventListener("pointerdown",e=>{const c=e.target.closest(".spot.top");if(!c||e.target.closest("button"))return;el=c;id=e.pointerId;x0=e.clientX;y0=e.clientY;dx=0;mode=null;});
       W.addEventListener("pointermove",e=>{if(e.pointerId!==id||!el)return;const mx=e.clientX-x0,my=e.clientY-y0;
         if(!mode){if(Math.abs(mx)<8&&Math.abs(my)<8)return;mode=Math.abs(mx)>Math.abs(my)?"x":"y";if(mode==="x"){el.classList.add("drag");try{el.setPointerCapture(id)}catch(_){}}}
         if(mode!=="x")return;dx=mx;el.style.transform=`translateX(${dx}px) rotate(${dx/22}deg)`;});
-      const end=e=>{if(e.pointerId!==id||!el)return;id=null;const c=el;el=null;if(mode!=="x")return;c.classList.remove("drag");
+      const end=e=>{if(e.pointerId!==id||!el)return;id=null;const c=el;el=null;if(mode!=="x")return;sup=Date.now();c.classList.remove("drag");
         if(Math.abs(dx)>70){c.style.transform=`translateX(${dx>0?520:-520}px) rotate(${dx>0?18:-18}deg)`;c.style.opacity="0";
           setTimeout(()=>{stack.push(stack.shift());c.classList.add("snap");lay();requestAnimationFrame(()=>requestAnimationFrame(()=>c.classList.remove("snap")));},260);}
         else lay();};
