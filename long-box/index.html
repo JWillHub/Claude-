@@ -1125,7 +1125,9 @@ const MODERN_RUNS = [['Saga', 2012], ['Invincible', 2003], ['The Walking Dead', 
 const EVENTS = [['Crisis on Infinite Earths', 1985], ['Secret Wars', 1984], ['The Infinity Gauntlet', 1991], ['Kingdom Come', 1996], ['Watchmen', 1986],
   ['Batman: The Long Halloween', 1996], ['Batman: The Dark Knight Returns', 1986], ['Marvels', 1994], ['Civil War', 2006], ['House of M', 2005],
   ['Final Crisis', 2008], ['Blackest Night', 2009], ['Flashpoint', 2011], ['Secret Wars', 2015], ['House of X', 2019], ['All Star Superman', 2005]];
-const CHARS = ['Batman', 'Superman', 'Wonder Woman'];
+const CHARS = ['Spider-Man', 'Batman', 'Superman', 'Wonder Woman', 'X-Men', 'Wolverine', 'Iron Man', 'Captain America', 'Thor', 'Hulk', 'Daredevil',
+  'Deadpool', 'Fantastic Four', 'Avengers', 'Justice League', 'Green Lantern', 'The Flash', 'Aquaman', 'Harley Quinn', 'Venom', 'Punisher',
+  'Black Panther', 'Doctor Strange', 'Moon Knight', 'Teen Titans', 'Teenage Mutant Ninja Turtles', 'Spawn', 'Hellboy', 'Star Wars', 'Transformers'];
 
 /* ---------- Discover ---------- */
 const ROWS = [
@@ -1169,7 +1171,7 @@ const DROWS = [
   ...DC_CHARS.map(n => ({ title:n, charName:n, vols:true, load:onlyDC((p, low) => volSearch(n, p, low)) }))
 ];
 
-const GROWS = CHARS.map(n => ({ title:n, charName:n, vols:true, load:onlyDC((p, low) => volSearch(n, p, low)) }));
+const GROWS = CHARS.map(n => ({ title:n, charName:n, vols:true, load:(p, low) => volSearch(n, p, low) }));
 let rowObs;
 function needKeyHTML(){
   return `<div class="onb"><h2>Your long box awaits</h2><p>Long Box pulls every issue and cover from Comic Vine. Add your free key once to switch it on.</p>
@@ -1721,17 +1723,29 @@ async function openSeries(id){
 }
 
 /* ---------- Issue card ---------- */
+// Comic Vine doesn't bill characters, so the leads are the ones the series is named for, then the most-appearing ones
+async function mainChars(list, x){
+  if(!list.length) return [];
+  const ids = list.slice(0, 100).map(c => c.id);
+  let info = [];
+  try{ info = (await cv('characters/', { filter:'id:' + ids.join('|'), field_list:'id,image,count_of_issue_appearances', limit:100 })).results || []; }catch(e){}
+  const by = new Map(info.map(c => [c.id, c]));
+  info.forEach(c => { avatars['c' + c.id] = img(c.image, 'small_url') || ''; }); store.set(K_AV, avatars);
+  const named = norm((x.volume && x.volume.name || '') + ' ' + (x.name || ''));
+  const score = c => (norm(c.name) && named.includes(norm(c.name)) ? 1e9 : 0) + (+(by.get(c.id) || {}).count_of_issue_appearances || 0);
+  return [...list].sort((a, b) => score(b) - score(a)).slice(0, 3).map(c => ({ id:c.id, name:c.name, image:img((by.get(c.id) || {}).image, 'small_url') }));
+}
 function issueDetails(id){
-  return cached('iss3:' + id, 24 * 7, async () => {
+  return cached('iss4:' + id, 24 * 7, async () => {
     const d = await cv(`issue/4000-${id}/`, { field_list:'id,name,issue_number,volume,cover_date,store_date,image,deck,description,person_credits,character_credits,story_arc_credits' });
     const x = d.results || {};
     return { ...slimIssue(x), deck:x.deck || '', desc:textOf(x.description),
       people:(x.person_credits || []).slice(0, 24).map(p => ({ id:p.id, name:p.name, role:p.role || '' })),
-      chars:(x.character_credits || []).slice(0, 30).map(c => ({ id:c.id, name:c.name })),
+      chars:await mainChars((x.character_credits || []).map(c => ({ id:c.id, name:c.name })), x),
       arcs:(x.story_arc_credits || []).slice(0, 4).map(a => ({ id:a.id, name:a.name })) };
   });
 }
-const detailsCached = id => isCached('iss3:' + id, 24 * 7);
+const detailsCached = id => isCached('iss4:' + id, 24 * 7);
 function prefetchDetails(id){ try{ issueDetails(id).catch(() => {}); }catch(e){} }
 async function waitDetails(id){ if(detailsCached(id)) return; await Promise.race([issueDetails(id).catch(() => {}), sleep(320)]); }
 const roleOf = r => { r = r.toLowerCase(); return r.includes('writer') ? 'Writer' : r.includes('pencil') || r.includes('artist') ? 'Artist' : r.includes('cover') ? 'Cover' : r.includes('ink') ? 'Inker' : r.includes('color') ? 'Colorist' : r.includes('letter') ? 'Letterer' : r.includes('editor') ? 'Editor' : r.split(',')[0]; };
@@ -1754,7 +1768,7 @@ async function fillAvatars(box, kind, list){
 }
 async function openIssue(id){
   await waitDetails(id);
-  const f = issueOf(id), m = mem.get('iss3:' + id) || {};
+  const f = issueOf(id), m = mem.get('iss4:' + id) || {};
   const s = sheet(`<div class="bdrop" style="${(m.big || f.big || f.poster) ? `background-image:url(&quot;${esc(m.big || f.big || f.poster)}&quot;);background-position:center 18%` : ''}"></div>
     <div class="mvhead">${poster(m.poster || f.poster, '', f.title)}<div><h2>${esc(m.title || f.title)}</h2><div class="meta" id="mm">${esc(m.name || f.name || '')}</div>
       <div class="meta" id="md">${esc(fmtDate(m.date || f.date))}</div><div class="meta" id="mcred"></div><div class="mact" id="mact"></div></div></div>
@@ -1762,7 +1776,7 @@ async function openIssue(id){
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
       <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
   const b = s.body, s5 = $('.ratebar .s5', b);
-  const cur = () => ({ ...issueOf(id), ...(mem.get('iss3:' + id) || {}) });
+  const cur = () => ({ ...issueOf(id), ...(mem.get('iss4:' + id) || {}) });
   const acts = () => {
     const box = $('#mact', b); if(!box) return;
     box.innerHTML = `<button id="mwl" class="${watch[id] ? 'on' : ''}">${BOOK}${watch[id] ? 'On reading list' : 'Reading list'}</button>${!getR(id) ? `<button id="mrd" class="${seen[id] ? 'on' : ''}">${seen[id] ? '✓ Read' : 'Mark read'}</button>` : ''}`;
@@ -1803,8 +1817,7 @@ async function openIssue(id){
       fillAvatars($('#mcrew', b), 'person', d.people);
     }
     if(d.chars.length){
-      $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Characters</div><div class="ppl nodrag">${d.chars.map(c => personHTML(c, '', 'char')).join('')}</div></div>`;
-      fillAvatars($('#mcast', b), 'char', d.chars);
+      $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Starring</div><div class="ppl nodrag">${d.chars.map(c => personHTML(c, '', 'char')).join('')}</div></div>`;
     }
     if(d.vol){
       const pub = volPub[d.vol.id] || (vols.get(d.vol.id) || {}).pub;
