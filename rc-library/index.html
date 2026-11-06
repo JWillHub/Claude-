@@ -483,6 +483,14 @@ html{touch-action:manipulation}
 .lunm span{word-break:break-all;color:var(--muted)}
 .lunm button{flex:none;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 11px;font-weight:700;font-size:12.5px;cursor:pointer}
 .lplay video{width:100%;border-radius:12px;background:#000;max-height:60vh}
+.lres{margin-top:6px}.lres button{background:none;border:0;color:var(--accent);font-weight:800;padding:0;cursor:pointer;font-size:inherit}
+.lfile{position:relative;overflow:hidden}.lfile.fin{opacity:.6}
+.lbar{position:absolute;left:0;bottom:0;height:3px;background:var(--good);border-radius:0 2px 2px 0}
+.lcl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.lcrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px}
+.lcw{flex:none;width:118px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;position:relative;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700}
+.lcw img,.lcw .ph{width:118px;height:177px;object-fit:cover;border-radius:10px;background:var(--card2)}
+.lcw .lbar{top:173px;bottom:auto;left:0;height:4px}
 </style>
 </head>
 <body>
@@ -2317,6 +2325,16 @@ const RD_API = 'https://api.real-debrid.com/rest/1.0';
 let rdLib = store.get(K_LIB, null) || { synced:0, items:{} };
 const saveLib = () => { if(!store.set(K_LIB, rdLib)) toast('Could not save the library list — storage is full.'); };
 const VIDEO = /\.(mkv|mp4|m4v|avi|mov|webm|ts|wmv)$/i;
+// Resume points: { "torrentId|file path": { t:seconds, d:duration, at, tid, id, title, label, link } } and finished files
+const K_PROG = 'rclib.progress', K_DONE = 'rclib.done';
+let prog = store.get(K_PROG, {}), done = store.get(K_DONE, {});
+function saveProg(){
+  const ks = Object.keys(prog).sort((a, c) => prog[c].at - prog[a].at);
+  ks.slice(60).forEach(k => delete prog[k]);          // keep the 60 most recent
+  store.set(K_PROG, prog); store.set(K_DONE, done);
+}
+const clock = s => { s = Math.floor(s); const h = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ':' + String(mm).padStart(2, '0') : mm) + ':' + String(ss).padStart(2, '0'); };
+const progOfTorrent = tid => Object.values(prog).filter(p => p.tid === tid).sort((a, c) => c.at - a.at)[0] || null;
 
 async function rd(path, opt = {}){
   const key = store.get(K_RD, ''); if(!key) throw new Error('rdnokey');
@@ -2406,11 +2424,12 @@ function libBlock(b, id){
   if(!list.length || !box) return;
   box.innerHTML = (`<div class="lib fadein"><div class="lbl">In your library</div><div class="lrow">${list
     .sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric:true }))
-    .map(it => `<button data-rdt="${esc(it.tid)}">▶ <b>Play</b> ${esc([seasonOf(it.name), qualOf(it.name), fmtSize(it.bytes)].filter(Boolean).join(' · '))}</button>`).join('')}</div></div>`);
-  $$('[data-rdt]', box).forEach(x => x.onclick = () => openTorrent(x.dataset.rdt, filmOf(id).title));
+    .map(it => { const pr = progOfTorrent(it.tid); return `<button data-rdt="${esc(it.tid)}">▶ <b>${pr ? 'Resume' : 'Play'}</b> ${esc([seasonOf(it.name), qualOf(it.name), fmtSize(it.bytes)].filter(Boolean).join(' · '))}</button>`; }).join('')}</div></div>`);
+  $$('[data-rdt]', box).forEach(x => x.onclick = () => openTorrent(x.dataset.rdt, filmOf(id).title, id));
 }
 
-async function openTorrent(tid, title){
+async function openTorrent(tid, title, id){
+  if(id == null) id = (rdLib.items[tid] && rdLib.items[tid].m || {}).id;
   const it = rdLib.items[tid] || {};
   const s = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="small" style="word-break:break-all">${esc(it.name || '')}</div>
     <div id="lbox" style="margin-top:12px"><div class="msg">Loading files…</div></div>
@@ -2427,22 +2446,24 @@ async function openTorrent(tid, title){
   if(!files.length){ $('#lbox', b).innerHTML = '<div class="msg">No playable video files in this item.</div>'; return; }
   if(files.length === 1 || !files.some(f => epOf(f.path))){
     if(files.length > 1) files.sort((x, y) => y.bytes - x.bytes);   // a film with extras: the biggest file is the film
-    return playInto($('#lbox', b), files[0].link, title);
+    const f = files[0];
+    return playInto($('#lbox', b), f.link, title, { key:tid + '|' + f.path, tid, id, label:'' });
   }
   files.sort((x, y) => { const a = epOf(x.path) || { s:999, e:0 }, c = epOf(y.path) || { s:999, e:0 }; return a.s - c.s || a.e - c.e || x.path.localeCompare(y.path); });
   $('#lbox', b).innerHTML = `<div class="lfiles">${files.map((f, i) => { const ep = epOf(f.path);
-    return `<button class="lfile" data-i="${i}"><span>▶ <b>${ep ? `S${ep.s} E${ep.e}` : ''}</b> ${ep ? '' : esc(baseName(f.path))}</span><span class="sz">${fmtSize(f.bytes)}</span></button>`; }).join('')}</div>`;
+    const k = tid + '|' + f.path, pr = prog[k], fin = done[k];
+    return `<button class="lfile${fin ? ' fin' : ''}" data-i="${i}"><span>${fin ? '✓' : '▶'} <b>${ep ? `S${ep.s} E${ep.e}` : ''}</b> ${ep ? '' : esc(baseName(f.path))}</span><span class="sz">${pr && pr.d ? clock(pr.t) + ' / ' + clock(pr.d) : fmtSize(f.bytes)}</span>${pr && pr.d ? `<i class="lbar" style="width:${Math.min(100, pr.t / pr.d * 100).toFixed(1)}%"></i>` : ''}</button>`; }).join('')}</div>`;
   $$('.lfile', b).forEach(x => x.onclick = () => {
     const f = files[+x.dataset.i], ep = epOf(f.path), t = title + (ep ? ` · S${ep.s} E${ep.e}` : '');
     const p = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
-    playInto($('#lbox', p.body), f.link, t);
+    playInto($('#lbox', p.body), f.link, t, { key:tid + '|' + f.path, tid, id, label:ep ? `S${ep.s} E${ep.e}` : '' });
   });
 }
 
 const pickUrl = o => !o ? null : typeof o === 'string' ? o : o.full || Object.values(o).find(x => typeof x === 'string') || null;
 const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
-async function playInto(box, link, title){
+async function playInto(box, link, title, meta = {}){
   box.innerHTML = '<div class="msg">Getting a stream link…</div>';
   let u;
   try{ u = await rd('/unrestrict/link', { form:{ link } }); }
@@ -2466,11 +2487,48 @@ async function playInto(box, link, title){
     <a class="btn" href="${esc(vlc)}" style="display:block;text-align:center;text-decoration:none">Open in VLC</a>
     <button class="btn ghost" id="lcopy">Copy stream link</button></div>`;
   const v = $('video', box);
+  if(meta.key) trackProgress(v, box, link, title, meta);
   v.onerror = () => {
     if(srcs.length){ v.src = srcs.shift(); return; }
     const e = $('#lperr', box); if(e) e.textContent = "This file's format can't play inside the app. Use Open in VLC.";
   };
   $('#lcopy', box).onclick = async () => { try{ await navigator.clipboard.writeText(url); toast('Stream link copied'); }catch(e){ toast('Could not copy the link'); } };
+}
+
+function trackProgress(v, box, link, title, meta){
+  const k = meta.key, start = prog[k] && prog[k].t > 20 ? prog[k].t : 0;
+  let lastSave = 0, finished = false;
+  if(start){
+    const note = document.createElement('div'); note.className = 'small lres';
+    note.innerHTML = `Resuming from ${clock(start)} · <button>Start over</button>`;
+    v.after(note);
+    $('button', note).onclick = () => { v.currentTime = 0; note.remove(); };
+    v.addEventListener('loadedmetadata', () => { if(v.currentTime < 1) try{ v.currentTime = start; }catch(e){} }, { once:true });
+  }
+  const save = () => {
+    if(finished || !v.duration || !isFinite(v.duration) || v.currentTime < 5) return;
+    prog[k] = { t:v.currentTime, d:v.duration, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link };
+    saveProg();
+  };
+  v.addEventListener('timeupdate', () => {
+    if(finished || !v.duration || !isFinite(v.duration)) return;
+    if(v.currentTime / v.duration >= 0.9){ finished = true; finishWatch(k, meta); return; }
+    if(Date.now() - lastSave > 5000){ lastSave = Date.now(); save(); }
+  });
+  v.addEventListener('pause', save);
+  window.addEventListener('pagehide', save);
+}
+// Past 90%: clear the resume point, tick the file off, and log it in Rolling Credits
+function finishWatch(k, meta){
+  delete prog[k]; done[k] = Date.now(); saveProg();
+  const id = meta.id; if(id == null) return;
+  const f = filmOf(id);
+  if(typeof id === 'number' && !entries.some(e => e.tmdb === id && e.date === today())){
+    entries.push({ id:uid(), added:Date.now(), tmdb:id, title:f.title, year:f.year, poster:f.poster, date:today(), rating:getR(id), rewatch:logCount(id) > 0, note:'' });
+  }
+  if(!ratings[id] && !seen[id]) seen[id] = { title:f.title, year:f.year, poster:f.poster, at:Date.now() };
+  saveAll(); afterChange();
+  toast(typeof id === 'number' ? `Logged · ${esc(f.title)}` : `Marked as watched · ${esc(f.title)}${meta.label ? ' ' + esc(meta.label) : ''}`);
 }
 
 function fixMatch(tid, after){
@@ -2502,7 +2560,7 @@ function fixMatch(tid, after){
 function openLibrary(){
   const s = sheet(`<h2 class="stitle">My library</h2><div class="small" id="lsum"></div>
     <button class="btn" id="lsync">Sync with Real-Debrid</button>
-    <div class="grid" id="lgrid" style="margin-top:16px"></div><div id="lun" style="margin-top:18px"></div>`, { tall:true });
+    <div id="lcont"></div><div class="grid" id="lgrid" style="margin-top:16px"></div><div id="lun" style="margin-top:18px"></div>`, { tall:true });
   const b = s.body;
   const paint = () => {
     if(!b.isConnected) return;
@@ -2517,6 +2575,16 @@ function openLibrary(){
       : rdLib.synced ? `${films.length} title${films.length === 1 ? '' : 's'}${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
       : 'Not synced yet.';
     $('#lsync', b).hidden = !has;
+    const cont = Object.entries(prog).filter(([, p]) => p.link && p.d).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
+    $('#lcont', b).innerHTML = cont.length ? `<div class="lbl lcl">Continue watching</div><div class="lcrow nodrag">${cont.map(([k, p]) => { const f = filmOf(p.id);
+      return `<button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
+        <span>${esc(p.label || f.title)}</span><span class="small">${clock(p.d - p.t)} left</span></button>`; }).join('')}</div>` : '';
+    $$('[data-ck]', b).forEach(x => x.onclick = () => {
+      const k = x.dataset.ck, p = prog[k]; if(!p) return;
+      const t = (p.title || filmOf(p.id).title);
+      const ps = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
+      playInto($('#lbox', ps.body), p.link, t, { key:k, tid:p.tid, id:p.id, label:p.label });
+    });
     $('#lgrid', b).innerHTML = films.map(f => cardHTML(f)).join('');
     $('#lun', b).innerHTML = un.length ? `<div class="lbl" style="font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">Not matched</div>` +
       un.map(([tid, it]) => `<div class="lunm"><span>${esc(it.name)}</span><button data-fix="${esc(tid)}">Match</button></div>`).join('') : '';
