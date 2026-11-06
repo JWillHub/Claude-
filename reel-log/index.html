@@ -992,13 +992,14 @@ let genrePageTitle = null;
 // See all pages: the carousel button runs through whatever the page is showing
 let pageSource = null;
 function setPageSource(src){ pageSource = src; }
-// On a tab, the carousel runs through every title showing on it, in order; on a See all or genre page, through that list
+// On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
 const TAB_NAMES = { discover:'Discover', tv:'TV', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
 $('#hcar').onclick = () => {
   let src = pageSource;
   if(!src){
     const ids = [...new Set($$('#v-' + view + ' .pc[data-id]').map(e => pid(e.dataset.id)))];
     if(!ids.length){ toast('Nothing on this page to go through yet'); return; }
+    for(let j = ids.length - 1; j > 0; j--){ const r = Math.floor(Math.random() * (j + 1)); [ids[j], ids[r]] = [ids[r], ids[j]]; }   // whole-tab runs come in a random order
     src = { title:TAB_NAMES[view] || 'All titles', items:ids.map(id => ({ ...filmOf(id), ...(movies.get(id) || {}), id })) };
   }
   const k = 'pg' + Date.now();
