@@ -81,6 +81,8 @@ vols, issues, arcs, pubs = {}, {}, {}, {}
 def resolve_vol(name, year):
     k = f'{name}:{year}'
     if k in vols: return vols[k]
+    if (PREV.get('vols') or {}).get(k) and not k.startswith('The Saga of the Swamp Thing'):
+        vols[k] = PREV['vols'][k]; pubs[vols[k]['id']] = vols[k]['pub']; return vols[k]
     d = cv('search/', query=name, resources='volume', limit=10, field_list=VOL_F)
     cand = [slim_vol(v) for v in d.get('results') or [] if eng_pub((v.get('publisher') or {}).get('name'))]
     def score(v):
@@ -100,11 +102,13 @@ def resolve_issue(name, year, num):
     v = resolve_vol(name, year)
     k = f'{name}:{year}:{num}'
     if not v: issues[k] = None; return
+    if (PREV.get('issues') or {}).get(k) and ((PREV['issues'][k].get('vol') or {}).get('id') == v['id']): issues[k] = PREV['issues'][k]; return
     d = cv('issues/', filter=f'volume:{v["id"]},issue_number:{num}', field_list=ISSUE_F, limit=5)
     r = d.get('results') or []
     issues[k] = slim_issue(r[0]) if r else None
     print('issue', k, '->', issues[k] and issues[k]['id'])
 def resolve_arc(name, pub):
+    if (PREV.get('arcs') or {}).get(name) and PREV.get('arcfix') == 2: arcs[name] = PREV['arcs'][name]; return
     q = re.sub(r'^the\s+', '', name, flags=re.I).replace(',', '')
     d = cv('story_arcs/', filter='name:' + q, field_list='id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit=50)
     cnt = lambda a: int(a.get('count_of_isssue_appearances') or a.get('count_of_issue_appearances') or 0)
@@ -150,7 +154,35 @@ for n in ['LANDMARKS', 'DC_LANDMARKS']:
 for k, name, pub, g in js_list('ARCS'): safe(resolve_arc, 'arcs', name, name, pub)
 for k, v in (PREV.get('pubs') or {}).items(): pubs.setdefault(int(k), v)
 
+chars, fresh = dict(PREV.get('chars') or {}), {}
+for name in dict.fromkeys(js_list('CHARS') + js_list('DC_CHARS')):
+    try:
+        out, total = [], 1
+        for page in (1, 2):
+            d = cv('search/', query=name, resources='volume', limit=10, page=page, field_list=VOL_F)
+            total = max(1, min(10, -(-int(d.get('number_of_total_results') or 0) // 10)))
+            out += [slim_vol(v) for v in d.get('results') or [] if eng_pub((v.get('publisher') or {}).get('name')) and int(v.get('count_of_issues') or 0) > 0]
+            if page >= total: break
+        seen = set(); out = [v for v in out if not (v['id'] in seen or seen.add(v['id']))]
+        for v in out: pubs[v['id']] = v['pub']
+        chars[name] = {'pages': min(2, total), 'total': total, 'vols': out}
+        print('character', name, len(out))
+    except Limited: print('limit reached - kept last build for', name)
+def new_issues(filt):
+    d = cv('issues/', filter=filt, sort='store_date:desc', field_list=ISSUE_F, limit=100)
+    out = [slim_issue(x) for x in d.get('results') or []]
+    need = sorted({x['vol']['id'] for x in out if x['vol'] and x['vol']['id'] not in pubs})
+    for i in range(0, len(need), 100):
+        for v in cv('volumes/', filter='id:' + '|'.join(map(str, need[i:i + 100])), field_list='id,publisher', limit=100).get('results') or []:
+            pubs[v['id']] = (v.get('publisher') or {}).get('name', '')
+    return [x for x in out if not x['vol'] or eng_pub(pubs.get(x['vol']['id'], ''))]
+day = lambda n: time.strftime('%Y-%m-%d', time.gmtime(time.time() - n * 86400))
+for key, filt in (('week', f'store_date:{day(7)}|{day(-1)}'), ('ones', f'store_date:{day(30)}|{day(-1)},issue_number:1')):
+    try: fresh[key] = new_issues(filt); print(key, len(fresh[key]))
+    except Limited: print('limit reached - no', key)
+
 os.makedirs(sys.argv[1], exist_ok=True)
 with open(os.path.join(sys.argv[1], 'curated.json'), 'w') as f:
-    json.dump({'built': time.strftime('%Y-%m-%d'), 'vols': vols, 'issues': issues, 'arcs': arcs, 'pubs': {str(k): v for k, v in pubs.items()}}, f, separators=(',', ':'))
+    json.dump({'built': time.strftime('%Y-%m-%d'), 'arcfix': 2, 'vols': vols, 'issues': issues, 'arcs': arcs, 'chars': chars, 'fresh': fresh,
+               'pubs': {str(k): v for k, v in pubs.items()}}, f, separators=(',', ':'))
 print('done', len(vols), 'series', len(issues), 'issues', len(arcs), 'arcs')

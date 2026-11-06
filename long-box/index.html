@@ -728,6 +728,7 @@ async function engOnly(list, low){
 }
 
 const CURATED = 'https://raw.githubusercontent.com/JWillHub/Claude-/comics-data/curated.json';
+let bundle = null;
 const bundleReady = (async () => {
   if(window.CV_MOCK) return;
   try{
@@ -738,6 +739,9 @@ const bundleReady = (async () => {
       if(r.ok){ b = { t:Date.now(), d:await r.json() }; cacheSet('bundle', b); }
     }
     const d = b && b.d; if(!d) return;
+    bundle = d;
+    Object.values(d.chars || {}).forEach(c => rememberVols(c.vols || []));
+    Object.values(d.fresh || {}).forEach(l => remember(l || []));
     Object.entries(d.pubs || {}).forEach(([id, p]) => { if(volPub[id] == null) volPub[id] = p; });
     Object.entries(d.vols || {}).forEach(([k, v]) => { const [name, year] = k.split(/:(?=\d+$)/); mem.set('rv:' + name + ':' + year, v); if(v) rememberVols([v]); });
     Object.entries(d.issues || {}).forEach(([k, m]) => {
@@ -768,6 +772,9 @@ async function searchPage(q, resources, page, ttl = 12, low = false){
   }, low);
 }
 async function volSearch(q, page, low){
+  await bundleReady;
+  const c = bundle && bundle.chars && bundle.chars[q];
+  if(c && page <= c.pages) return { page:c.pages, total:c.total, results:c.vols, vols:true };
   const d = await searchPage(q, 'volume', page, 72, low);
   const results = d.results.map(slimVol).filter(v => engPub(v.pub) && v.count > 0);
   rememberVols(results);
@@ -1190,11 +1197,18 @@ const SROWS = [
 ];
 /* ---------- DC ---------- */
 const DC_PUBS = ['dc comics', 'vertigo', 'wildstorm', 'black label'];
+// this week's and this month's new issues: the nightly file if it's recent, otherwise live
+const freshOr = (key, live) => async (p, low) => {
+  await bundleReady;
+  const l = bundle && bundle.fresh && bundle.fresh[key];
+  if(p === 1 && l && bundle.built >= daysAgo(2)) return { page:1, total:1, results:l };
+  return live(p, low);
+};
 const isDC = n => !!n && DC_PUBS.some(k => n.toLowerCase().includes(k));
 // keep paging until a filtered row has enough to show
 const onlyDC = load => async (p, low) => {
   let d = await load(p, low), results = d.results.filter(x => x.vol ? isDC(volPub[x.vol.id]) : isDC(x.pub));
-  while(results.length < 8 && d.page < d.total && d.page < p + 3){ d = await load(d.page + 1, low); results = results.concat(d.results.filter(x => x.vol ? isDC(volPub[x.vol.id]) : isDC(x.pub))); }
+  while(results.length < 6 && d.page < d.total && d.page < p + 1){ d = await load(d.page + 1, low); results = results.concat(d.results.filter(x => x.vol ? isDC(volPub[x.vol.id]) : isDC(x.pub))); }
   return { ...d, results };
 };
 const DC_LANDMARKS = [['Action Comics', 1938, '1'], ['Detective Comics', 1937, '27'], ['Showcase', 1956, '4'], ['The Flash', 1959, '123'], ['Justice League of America', 1960, '1'],
@@ -1210,11 +1224,11 @@ const DC_RUNS = [['Batman', 1940], ['Detective Comics', 1937], ['Action Comics',
 const DC_CHARS = ['Batman', 'Superman', 'Wonder Woman', 'Justice League', 'The Flash', 'Green Lantern', 'Aquaman', 'Nightwing', 'Harley Quinn', 'Catwoman', 'Joker',
   'Teen Titans', 'Green Arrow', 'Supergirl', 'Batgirl', 'Shazam', 'Swamp Thing', 'Constantine', 'Martian Manhunter', 'Suicide Squad'];
 const DROWS = [
-  { title:'New from DC this week', page:'New from DC', load:onlyDC((p, low) => issuePage({ filter:`store_date:${daysAgo(7)}|${today()}`, sort:'store_date:desc' }, p, { low })) },
+  { title:'New from DC this week', page:'New from DC', load:onlyDC(freshOr('week', (p, low) => issuePage({ filter:`store_date:${daysAgo(7)}|${today()}`, sort:'store_date:desc' }, p, { low }))) },
   { title:'Absolute Universe', page:'Absolute Universe', vols:true, items:DC_ABSOLUTE.map(x => low => resolveVol(...x, low)) },
   { title:'DC essential issues', page:'DC essentials', sub:'Landmark DC comics', items:DC_LANDMARKS.map(x => low => resolveIssue(...x, low)) },
   { title:'Legendary DC runs', page:'DC runs', vols:true, items:DC_RUNS.map(x => low => resolveVol(...x, low)) },
-  { title:'New DC #1s', page:'New DC #1s', sub:'First issues from the last month', load:onlyDC((p, low) => issuePage({ filter:`store_date:${daysAgo(30)}|${today()},issue_number:1`, sort:'store_date:desc' }, p, { low })) },
+  { title:'New DC #1s', page:'New DC #1s', sub:'First issues from the last month', load:onlyDC(freshOr('ones', (p, low) => issuePage({ filter:`store_date:${daysAgo(30)}|${today()},issue_number:1`, sort:'store_date:desc' }, p, { low }))) },
   ...DC_CHARS.map(n => ({ title:n, charName:n, vols:true, load:onlyDC((p, low) => volSearch(n, p, low)) }))
 ];
 
@@ -1343,7 +1357,7 @@ async function loadRow(sec){
   track.onscroll = () => { if(track.scrollLeft + track.clientWidth > track.scrollWidth - 500) more(); };
   await more();
   // a row too short to scroll would never ask for more, so keep filling until every row is about as full as the rest
-  for(let k = 0; k < 4 && page < total && $$('.pc', track).length < 10; k++){ const before = page; await more(); if(page === before) break; }
+  for(let k = 0; k < 2 && page < total && $$('.pc', track).length < 8; k++){ const before = page; await more(); if(page === before) break; }
   if(!$$('.pc', track).length && !$('.msg', track)) sec.hidden = true;
 }
 
@@ -1424,6 +1438,7 @@ function closeSearch(fromPop){
 }
 {
   let t, gen = 0;
+  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); clearTimeout(t); $('#hq').oninput({ target:e.target, now:true }); } };
   $('#hq').oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
     const my = ++gen, panel = $('#srch');
     if(!q){ panel.hidden = true; return; }
@@ -1445,7 +1460,7 @@ function closeSearch(fromPop){
         + (vs.length ? `<div class="castsec" style="margin-bottom:6px"><div class="lbl">Series</div><div class="track" style="margin:0 -16px;min-height:0">${vs.map(volHTML).join('')}</div></div>` : '')
         + (ppl || vs.length ? '<div class="castsec"><div class="lbl">Issues</div></div>' : '');
     }catch(err){}
-  }, 450); };
+  }, e.now ? 0 : 450); };
 }
 
 /* ---------- Characters ---------- */
