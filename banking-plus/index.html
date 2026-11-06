@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-cPbndjDZBaOENJ+emCLrXu8MqpEfu92wkJJGpjeTxNA=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Rqo01s267n9yedY4a68+mXWhxv1mtJra0zGAn4WWgB0=' 'sha256-tHbIPEfsFIEDD1pXsS/jjo58y06g9N4QJ3wv7tQmDjM=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-Sp+B+WH5XqXryD4rfZnGdPRtqZbX8bhu/oB5ctGLeuc='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-cPbndjDZBaOENJ+emCLrXu8MqpEfu92wkJJGpjeTxNA=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Rqo01s267n9yedY4a68+mXWhxv1mtJra0zGAn4WWgB0=' 'sha256-tHbIPEfsFIEDD1pXsS/jjo58y06g9N4QJ3wv7tQmDjM=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-Sp+B+WH5XqXryD4rfZnGdPRtqZbX8bhu/oB5ctGLeuc=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -941,6 +941,28 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 :root[data-look="pop"] :is(#pl input[type=date],#pl input[type=time],#pl select,.sheet select,.sheet input[type=date],.field select,.field input[type=date]){background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%23111111%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M6%209l6%206%206-6%27/%3E%3C/svg%3E")!important}
 :is(#pl,.sheet,.field) input::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer}
 :is(#pl,.sheet,.field) input[type=date]::-webkit-date-and-time-value,:is(#pl,.sheet,.field) input[type=time]::-webkit-date-and-time-value{text-align:left}
+/* month / day / year scroll wheel */
+.dw-ov{position:fixed;inset:0;z-index:300;background:rgba(10,14,30,.38);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.dw-ov.open{opacity:1;pointer-events:auto}
+.dw-sheet{width:100%;max-width:520px;background:var(--bg);color:var(--text);border-radius:26px 26px 0 0;padding:8px 14px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.9,.25,1);font:15px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;box-shadow:0 -14px 40px rgba(0,0,0,.25)}
+:root[data-look="glass"] .dw-sheet{background:#EAF4FD}
+:root[data-look="glass-dark"] .dw-sheet{background:#121214}
+.dw-ov.open .dw-sheet{transform:none}
+.dw-grab{width:42px;height:5px;border-radius:99px;background:currentColor;opacity:.25;margin:2px auto 8px}
+.dw-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
+.dw-head b{font-size:16px;font-weight:700}
+.dw-head button{border:0;background:none;font:600 15px/1 inherit;padding:10px 6px;cursor:pointer;color:var(--muted)}
+.dw-head .dw-done{color:var(--accent-text,var(--accent));font-weight:700}
+:root[data-look="glass-dark"] .dw-head .dw-done{color:#fff}
+.dw-wheels{position:relative;display:grid;grid-template-columns:1.6fr .8fr 1fr;height:200px;
+ -webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent)}
+.dw-band{position:absolute;left:0;right:0;top:80px;height:40px;border-radius:12px;background:var(--input);pointer-events:none}
+.dw-col{position:relative;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.dw-col::-webkit-scrollbar{display:none}
+.dw-it,.dw-pad{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:17px;color:var(--muted);transition:color .15s,transform .15s;cursor:pointer;font-variant-numeric:tabular-nums}
+.dw-it.on{color:var(--text);font-weight:700;transform:scale(1.06)}
+.dw-it.off{opacity:.3}
+@media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
 /* ===== calendar redesign (every look but Pop) ===== */
 :root:not([data-look="pop"]) #pl .calhead{margin:2px 2px 14px;justify-content:flex-start}
 :root:not([data-look="pop"]) #pl .calhead .title{order:-1;text-align:left;font-size:min(24px,6.4vw);font-weight:300;letter-spacing:-.01em}
@@ -2723,6 +2745,88 @@ document.addEventListener('touchend',function(){
     setTimeout(function(){closeIt(s);s.style.transition='';s.style.transform='';},230);
   } else { s.style.transform=''; setTimeout(function(){s.style.transition='';},280); }
 });
+})();</script>
+<script>(function(){
+/* date fields open a small month / day / year scroll wheel instead of the big calendar */
+var MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var H=40, ov=null, cols, target=null, sel={m:0,d:1,y:2026}, Y0=0;
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function pad(n){return (n<10?'0':'')+n}
+function build(){
+  ov=document.createElement('div');ov.className='dw-ov';
+  ov.innerHTML='<div class="dw-sheet" role="dialog" aria-label="Choose a date"><div class="dw-grab"></div>'+
+    '<div class="dw-head"><button type="button" class="dw-clear">Clear</button><b class="dw-title"></b><button type="button" class="dw-done">Done</button></div>'+
+    '<div class="dw-wheels"><div class="dw-band"></div><div class="dw-col" data-k="m"></div><div class="dw-col" data-k="d"></div><div class="dw-col" data-k="y"></div></div></div>';
+  document.body.appendChild(ov);
+  cols={m:ov.querySelector('[data-k=m]'),d:ov.querySelector('[data-k=d]'),y:ov.querySelector('[data-k=y]')};
+  ov.addEventListener('click',function(e){
+    if(e.target===ov)close();
+    else if(e.target.closest('.dw-done'))commit(true);
+    else if(e.target.closest('.dw-clear'))commit(false);
+    else{var it=e.target.closest('.dw-it');if(it){var c=it.parentElement;c.scrollTo({top:+it.dataset.i*H,behavior:'smooth'});}}
+  });
+  Object.keys(cols).forEach(function(k){
+    var t=null;cols[k].addEventListener('scroll',function(){clearTimeout(t);t=setTimeout(function(){settle(k)},90);mark(k);},{passive:true});
+  });
+  // swipe down on the header to close
+  var y0=null,dy=0,sh=ov.querySelector('.dw-sheet');
+  sh.addEventListener('touchstart',function(e){if(!e.target.closest('.dw-head,.dw-grab'))return;y0=e.touches[0].clientY;dy=0;sh.style.transition='none';},{passive:true});
+  sh.addEventListener('touchmove',function(e){if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);sh.style.transform='translateY('+dy+'px)';},{passive:true});
+  sh.addEventListener('touchend',function(){if(y0===null)return;y0=null;sh.style.transition='';sh.style.transform='';if(dy>80)close();});
+}
+function fill(k,items){
+  var pads='<div class="dw-pad"></div><div class="dw-pad"></div>';
+  cols[k].innerHTML=pads+items.map(function(t,i){return '<div class="dw-it" data-i="'+i+'">'+t+'</div>'}).join('')+pads;
+}
+function mark(k){
+  var i=Math.round(cols[k].scrollTop/H);
+  [].forEach.call(cols[k].querySelectorAll('.dw-it'),function(el){el.classList.toggle('on',+el.dataset.i===i)});
+}
+function settle(k){
+  var i=Math.round(cols[k].scrollTop/H);
+  if(k==='m')sel.m=i;else if(k==='d')sel.d=i+1;else sel.y=Y0+i;
+  var max=dim(sel.y,sel.m);
+  [].forEach.call(cols.d.querySelectorAll('.dw-it'),function(el){el.classList.toggle('off',+el.dataset.i+1>max)});
+  if(sel.d>max){sel.d=max;cols.d.scrollTo({top:(max-1)*H,behavior:'smooth'});}
+  title();
+}
+function title(){ov.querySelector('.dw-title').textContent=MON[sel.m].slice(0,3)+' '+sel.d+', '+sel.y;}
+function open(input){
+  if(!ov)build();
+  target=input;
+  var v=/^(\d{4})-(\d{2})-(\d{2})$/.exec(input.value||''),now=new Date();
+  sel=v?{y:+v[1],m:+v[2]-1,d:+v[3]}:{y:now.getFullYear(),m:now.getMonth(),d:now.getDate()};
+  Y0=Math.min(sel.y,now.getFullYear())-5;var years=[];for(var y=Y0;y<=Math.max(sel.y,now.getFullYear())+10;y++)years.push(y);
+  var days=[];for(var d=1;d<=31;d++)days.push(d);
+  fill('m',MON);fill('d',days);fill('y',years);
+  ov.classList.add('open');
+  requestAnimationFrame(function(){
+    cols.m.scrollTop=sel.m*H;cols.d.scrollTop=(sel.d-1)*H;cols.y.scrollTop=(sel.y-Y0)*H;
+    ['m','d','y'].forEach(mark);settle('d');
+  });
+}
+function close(){if(ov)ov.classList.remove('open');target=null;}
+function commit(set){
+  if(target){
+    target.value=set?sel.y+'-'+pad(sel.m+1)+'-'+pad(sel.d):'';
+    target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  close();
+}
+function isDate(t){return t&&t.tagName==='INPUT'&&t.type==='date'&&!t.disabled&&!t.readOnly}
+// take over taps on date fields before the phone's own calendar can open
+var tx=0,ty=0;
+document.addEventListener('touchstart',function(e){if(isDate(e.target)){tx=e.touches[0].clientX;ty=e.touches[0].clientY;}},{passive:true,capture:true});
+document.addEventListener('touchend',function(e){
+  var t=e.target;if(!isDate(t))return;var c=e.changedTouches[0];
+  if(Math.abs(c.clientX-tx)>10||Math.abs(c.clientY-ty)>10)return;
+  e.preventDefault();t.blur();open(t);
+},{capture:true,passive:false});
+document.addEventListener('click',function(e){if(isDate(e.target)){e.preventDefault();if(!ov||!ov.classList.contains('open'))open(e.target);}},true);
+document.addEventListener('keydown',function(e){
+  if(isDate(e.target)&&(e.key==='Enter'||e.key===' ')){e.preventDefault();open(e.target);}
+  else if(e.key==='Escape'&&ov&&ov.classList.contains('open'))close();
+},true);
 })();</script>
 
 </body>
