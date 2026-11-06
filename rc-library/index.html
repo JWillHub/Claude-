@@ -470,7 +470,7 @@ html{touch-action:manipulation}
 /* marquee type */
 .vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
-.logo .libtag{font-size:9px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#1a1206;background:var(--good);border-radius:5px;padding:2px 5px;margin-left:6px;vertical-align:middle;font-family:system-ui,sans-serif}
+.logo .libtag{font-style:normal;color:var(--good)}
 .lib{margin:10px 0 4px}
 .lib .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:10px 0 7px}
 .lib .lrow{display:flex;gap:8px;flex-wrap:wrap}
@@ -495,7 +495,7 @@ html{touch-action:manipulation}
     <path d="M29 22.5 L36 20 L36 31 L29 28.5 Z" fill="#ffb547"/><circle cx="36" cy="25.5" r="2.4" fill="#fff3d6"/>
     <path d="M9 32 L7 37 M23 32 L25 37" stroke="#ffb547" stroke-width="2" stroke-linecap="round"/>
   </svg>
-  <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span><span class="libtag">Library</span></h1>
+  <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling <i class="libtag">Library</i></span><span class="w2">Credits</span></h1>
   <div class="hsearch" id="hsbar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     <input id="hq" type="search" autocomplete="off" enterkeyhint="search">
@@ -546,7 +546,7 @@ const store = {
     const v = localStorage.getItem('reellog.' + k);
     if(v != null && localStorage.getItem('rclib.' + k) == null) localStorage.setItem('rclib.' + k, v);
   });
-  localStorage.setItem('rclib.imported', String(Date.now()));
+  if(localStorage.getItem('rclib.tmdbkey')) localStorage.setItem('rclib.imported', String(Date.now()));   // keep checking until there's something to copy
 }catch(e){} })();
 // TMDB responses are cached for this tab only (sessionStorage), so this copy never eats into the storage space the main app needs
 const cstore = {
@@ -1086,7 +1086,7 @@ function setHeaderTitle(t){
   $('#hback').hidden = !t;
   $('#hproj').toggleAttribute('hidden', !!t);
   if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); }
-  else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); }
+  else { $('.w1', lg).innerHTML = 'Rolling <i class="libtag">Library</i>'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); }
 }
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
 $('#hcancel').onclick = () => history.back();
