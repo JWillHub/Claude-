@@ -268,7 +268,8 @@ label.f{display:block;color:var(--muted);font-size:13px;margin:14px 0 6px}
 .acts .pill{flex:1;justify-content:center;padding:12px}
 .sagachip{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:12px 14px;border-radius:16px;cursor:pointer;text-align:left;
   background:linear-gradient(120deg,rgba(255,111,97,.18),rgba(255,181,71,.12));border:1px solid rgba(255,181,71,.35)}
-.sagachip b{color:var(--accent);margin-left:auto;white-space:nowrap}
+.sagachip>span{flex:1;min-width:0}
+.sagachip>b{color:var(--accent);margin-left:auto;white-space:nowrap;flex-shrink:0}
 .ov{color:#d3cbdb;font-size:14.5px;margin:14px 0 4px}
 .hrow{border-top:1px solid var(--line);padding:11px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:10px}
 .note{white-space:pre-wrap;color:var(--muted);font-size:13px;margin-top:3px}
