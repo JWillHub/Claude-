@@ -6,8 +6,10 @@
 <meta name="theme-color" content="#0c0a0f">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Rolling Credits</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rolling Credits">
 <link rel="icon" href="../reel-log/icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="../reel-log/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
@@ -462,7 +464,7 @@ html{touch-action:manipulation}
     <button id="hcancel">Cancel</button>
   </div>
   <div class="hact">
-    <button class="ib" id="hcar" aria-label="Carousel" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="7.5" y="4" width="9" height="16" rx="1.8"/><path d="M4 6.5v11M20 6.5v11"/></svg></button>
+    <button class="ib" id="hcar" aria-label="Carousel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="7.5" y="4" width="9" height="16" rx="1.8"/><path d="M4 6.5v11M20 6.5v11"/></svg></button>
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
   </div>
 </header>
@@ -987,11 +989,18 @@ $('#hproj').onclick = () => $('#logo').click();
 let genrePageTitle = null;
 // See all pages: the carousel button runs through whatever the page is showing
 let pageSource = null;
-function setPageSource(src){ pageSource = src; $('#hcar').hidden = !src; }
+function setPageSource(src){ pageSource = src; }
+// On a tab, the carousel runs through every title showing on it, in order; on a See all or genre page, through that list
+const TAB_NAMES = { discover:'Discover', tv:'TV', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
 $('#hcar').onclick = () => {
-  if(!pageSource) return;
+  let src = pageSource;
+  if(!src){
+    const ids = [...new Set($$('#v-' + view + ' .pc[data-id]').map(e => pid(e.dataset.id)))];
+    if(!ids.length){ toast('Nothing on this page to go through yet'); return; }
+    src = { title:TAB_NAMES[view] || 'All titles', items:ids.map(id => ({ ...filmOf(id), ...(movies.get(id) || {}), id })) };
+  }
   const k = 'pg' + Date.now();
-  adhoc[k] = { k, name:pageSource.title, src:pageSource };
+  adhoc[k] = { k, name:src.title, src };
   openRun(adhoc[k]);
 };
 function setHeaderTitle(t){
