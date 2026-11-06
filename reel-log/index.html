@@ -618,7 +618,12 @@ async function cached(k, ttlH, fn){
   const c = store.get(CK + k, null);
   if(c && Date.now() - c.t < ttlH*3600e3){ mem.set(k, c.d); return c.d; }
   if(inflight.has(k)) return inflight.get(k);
-  const pr = (async () => { const d = await fn(); mem.set(k, d); store.set(CK + k, { t:Date.now(), d }); return d; })();
+  const pr = (async () => {
+    let d;
+    try{ d = await fn(); }
+    catch(e){ if(c && c.d != null){ mem.set(k, c.d); return c.d; } throw e; }   // out of date beats nothing
+    mem.set(k, d); store.set(CK + k, { t:Date.now(), d }); return d;
+  })();
   inflight.set(k, pr); pr.finally(() => inflight.delete(k)).catch(() => {});
   return pr;
 }
@@ -739,23 +744,28 @@ function sheet(html, opt = {}){
   history.pushState({ rl:sheetStack.length }, '');
   requestAnimationFrame(() => requestAnimationFrame(() => { bk.classList.add('in'); sh.classList.add('in'); }));
   const opened = Date.now();
-  bk.onclick = () => { if(Date.now() - opened > 450) s.close(); };
+  bk.onclick = () => { if(Date.now() - opened > 450) closeAllSheets(); };
   makeDraggable(s);
   return s;
 }
 function closeSheet(s, fromPop){
   const i = sheetStack.indexOf(s); if(i < 0) return;
   // close any sheets above it too
+  let n = 0;
   while(sheetStack.length > i){
     const t = sheetStack.pop();
     t.el.classList.remove('in'); t.el.style.transform = ''; t.bk.classList.remove('in');
     setTimeout(() => { t.el.remove(); t.bk.remove(); }, 330);
     t.onClose && t.onClose();
-    if(!fromPop){ popSkip++; history.back(); }
-    fromPop = false;
+    n++;
   }
+  const steps = fromPop ? n - 1 : n;
+  if(steps > 0){ popSkip++; history.go(-steps); }
   if(!sheetStack.length) document.body.classList.remove('locked');
 }
+// Swiping a card down (or tapping above it) clears every open card and puts you back on the page.
+// The phone's Back gesture still steps back one card at a time.
+const closeAllSheets = () => { if(sheetStack.length) closeSheet(sheetStack[0]); };
 // Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it
 addEventListener('touchmove', e => {
   if(!sheetStack.length || !e.cancelable) return;
@@ -799,7 +809,7 @@ function makeDraggable(s){
     if(!dragging) return;
     dragging = false; sh.classList.remove('drag'); s.bk.style.opacity = '';
     const v = dy / Math.max(1, Date.now() - t0);
-    if(dy > 120 || (dy > 40 && v > 0.6)) s.close();
+    if(dy > 120 || (dy > 40 && v > 0.6)) closeAllSheets();
     else sh.style.transform = '';
   };
   sh.addEventListener('touchstart', e => { if(e.touches.length === 1) start(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive:true });
@@ -1066,6 +1076,9 @@ async function loadRow(sec){
   };
   track.onscroll = () => { if(track.scrollLeft + track.clientWidth > track.scrollWidth - 500) more(); };
   await more();
+  // with rated titles hidden a page can come back empty: keep going a little, then hide the row if there's still nothing
+  for(let k = 0; k < 2 && page < total && !$$('.pc', track).length && !$('.msg', track); k++) await more();
+  if(!$$('.pc', track).length && !$('.msg', track)) sec.hidden = true;
 }
 
 /* IMDb-ranked lists come from the nightly IMDb build; each title is matched to TMDB for its poster */
@@ -1178,6 +1191,7 @@ function closeSearch(fromPop){
 }
 {
   let t, gen = 0;
+  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); clearTimeout(t); $('#hq').oninput({ target:e.target, now:true }); } };
   $('#hq').oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
     const my = ++gen, panel = $('#srch');
     if(!q){ panel.hidden = true; return; }
@@ -1192,7 +1206,7 @@ function closeSearch(fromPop){
         .map(p => ({ id:p.id, name:p.name, profile:p.profile_path, sub:p.known_for_department === 'Directing' ? 'Director' : 'Actor' }));
       $('#fpeople').innerHTML = ppl.length ? `<div class="castsec" style="margin-bottom:6px"><div class="lbl" style="margin-top:0">People</div><div class="ppl">${ppl.map(p => personHTML(p, p.sub)).join('')}</div></div>` : '';
     }catch(err){}
-  }, 300); };
+  }, e.now ? 0 : 300); };
 }
 const openFind = () => openSearch(false);
 
