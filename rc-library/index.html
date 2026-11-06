@@ -536,15 +536,23 @@ const IMG = 'https://image.tmdb.org/t/p/';
 const K_LOG = 'rclib.entries', K_RATE = 'rclib.ratings', K_KEY = 'rclib.tmdbkey', CK = 'rclib.c3.';
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } },
+  set(k, v){
+    const j = JSON.stringify(v);
+    try{ localStorage.setItem(k, j); return true; }catch(e){}
+    try{
+      for(let i = localStorage.length - 1; i >= 0; i--){ const x = localStorage.key(i); if(x && /^(reellog\.c\d?\.|rclib\.c\d?\.|longbox\.c\d+\.)/.test(x)) localStorage.removeItem(x); }
+      localStorage.setItem(k, j); return true;
+    }catch(e){ return false; }
+  },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
 // First launch: copy the main Rolling Credits data into this app's own keys. The main app's keys are only read, never changed.
 (function importMain(){ try{
+  // the copy below can fail if this site's storage is full; the save helper further down clears cached data and retries
   if(localStorage.getItem('rclib.imported')) return;
   ['entries','ratings','watch','seen','favpeople','tmdbkey','omdbkey','hiderated'].forEach(k => {
     const v = localStorage.getItem('reellog.' + k);
-    if(v != null && localStorage.getItem('rclib.' + k) == null) localStorage.setItem('rclib.' + k, v);
+    if(v != null && localStorage.getItem('rclib.' + k) == null) store.set('rclib.' + k, JSON.parse(v));
   });
   if(localStorage.getItem('rclib.tmdbkey')) localStorage.setItem('rclib.imported', String(Date.now()));   // keep checking until there's something to copy
 }catch(e){} })();
@@ -2547,7 +2555,7 @@ function openSettings(){
     <p class="small" style="margin-top:18px">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. IMDb ratings: information courtesy of IMDb (imdb.com), used with permission for personal, non-commercial use. Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb.</p>`);
   const b = s.body;
   $('#saveKey', b).onclick = async () => {
-    const k = $('#key', b).value.trim(); store.set(K_KEY, k);
+    const k = $('#key', b).value.trim(); if(!store.set(K_KEY, k)){ $('#saveKey', b).textContent = 'Could not save — storage is full'; return; }
     const done = () => { s.close(); if(!hadKey || !k){ built.discover = built.genres = built.tv = false; setView(view); } };
     if(!k){ done(); return; }
     $('#saveKey', b).textContent = 'Checking…';
