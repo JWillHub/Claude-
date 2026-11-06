@@ -160,6 +160,19 @@ main{max-width:1100px;margin:0 auto}
 .pc.ranked .pw{z-index:1}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px 12px}
 .grid .pc.ranked{padding-left:0}
+/* Stremio-style pickers: a row of pills, each opening a bottom-sheet list */
+.pkbar{display:flex;gap:10px;padding:14px 16px 16px}
+.pkp{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 11px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(255,181,71,.35);background:linear-gradient(120deg,rgba(255,111,97,.12),rgba(255,181,71,.08));color:var(--text);font-weight:700}
+.pkp span{white-space:nowrap;overflow:hidden;font-size:15px}
+.pkp svg{flex:none;color:var(--accent)}
+.pkhd{margin:2px 4px 10px}
+.pklist{display:flex;flex-direction:column;margin:0 -18px}
+.pklist button{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:17px 22px;border:0;border-top:1px solid var(--line);
+  background:none;color:var(--text);font-size:16px;text-align:left;cursor:pointer}
+.pklist button.on{color:var(--accent);font-weight:750}
+.grid.browse{grid-template-columns:repeat(3,1fr);gap:14px 12px}
+.grid.browse .cap2{display:none}
 .grid .rk{font-size:30px;left:-2px;bottom:auto;top:-8px;z-index:2;color:var(--accent);-webkit-text-stroke:0;text-shadow:0 2px 8px rgba(0,0,0,.8)}
 
 /* saga tiles */
@@ -1284,6 +1297,7 @@ const TVGENRES = [[10759,'Action & Adventure'],[16,'Animation'],[35,'Comedy'],[8
   [10762,'Kids'],[9648,'Mystery'],[10764,'Reality'],[10765,'Sci-Fi & Fantasy'],[10768,'War & Politics'],[37,'Western']];
 function genreDef(tv, g, sort, decade){
   const d = tv ? 'first_air_date' : 'primary_release_date', p = { with_genres:g, 'vote_count.gte':tv ? 60 : 50, with_original_language:'en|ko' };
+  if(!g) delete p.with_genres;
   let lte = null;
   if(decade){
     if(decade === 'Older') lte = '1949-12-31';
@@ -1300,6 +1314,7 @@ let genreKind = 'film', gObs;
 function buildGenres(){
   const v = $('#v-genres');
   if(!store.get(K_KEY, '')){ v.innerHTML = `<div class="onb"><p>Add your TMDB key in Settings to load genres.</p></div>`; return; }
+  if(window.GENRE_TEST){ buildGenreBrowse(); return; }
   built.genres = true;
   v.innerHTML = `<div class="gk"><div class="seg"><button data-k="film">Films</button><button data-k="tv">TV</button></div></div><div id="grows"></div>`;
   $$('.gk button', v).forEach(x => x.onclick = () => { if(genreKind !== x.dataset.k){ genreKind = x.dataset.k; drawGenreRows(); } });
@@ -1342,7 +1357,41 @@ function openGenrePage(def){
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
 }
-const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; setView('genres'); if(built.genres) drawGenreRows(); };
+const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; setView('genres'); if(built.genres) window.GENRE_TEST ? buildGenreBrowse() : drawGenreRows(); };
+
+/* Stremio-style Genres: Type / Genre / Sort over a three-across poster grid */
+const PICK_CHECK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const PICK_CARET = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6z" fill="currentColor"/></svg>';
+function pickSheet(title, opts, cur, onPick){
+  const s = sheet(`<h2 class="stitle pkhd">${esc(title)}</h2><div class="pklist">${opts.map(o =>
+    `<button data-o="${esc(o.k)}" class="${o.k === cur ? 'on' : ''}"><span>${esc(o.label)}</span>${o.k === cur ? PICK_CHECK : ''}</button>`).join('')}</div>`);
+  $$('[data-o]', s.body).forEach(b => b.onclick = () => { s.close(); if(b.dataset.o !== cur) setTimeout(() => onPick(b.dataset.o), 60); });
+}
+const pickPill = (id, label) => `<button class="pkp" id="${id}"><span>${esc(label)}</span>${PICK_CARET}</button>`;
+function fitPills(bar){
+  const ps = $$('.pkp span', bar); if(!ps.length) return;
+  let f = 15; ps.forEach(p => p.style.fontSize = f + 'px');
+  while(f > 11 && ps.some(p => p.scrollWidth > p.clientWidth + 1)){ f -= .5; ps.forEach(p => p.style.fontSize = f + 'px'); }
+}
+const gb = { tv:false, g:'*', sort:'popular' };
+const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
+function buildGenreBrowse(){
+  const v = $('#v-genres'); built.genres = true;
+  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'TV' }];
+  const list = gb.tv ? TVGENRES : GENRES;
+  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
+  if(!genres.some(g => g.k === gb.g)) gb.g = '*';
+  const gl = genres.find(g => g.k === gb.g);
+  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'TV' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
+    <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
+  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
+  $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
+  $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
+  fitPills($('.pkbar', v));
+  const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
+  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'TV' : 'Films') : gl.label), def });
+  feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
+}
 
 /* ---------- Sagas ---------- */
 const SAGAS = [

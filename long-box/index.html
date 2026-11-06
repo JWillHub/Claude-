@@ -162,6 +162,19 @@ main{max-width:1100px;margin:0 auto}
 .pc.ranked .pw{z-index:1}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px 12px}
 .grid .pc.ranked{padding-left:0}
+/* Stremio-style pickers: a row of pills, each opening a bottom-sheet list */
+.pkbar{display:flex;gap:10px;padding:14px 16px 16px}
+.pkp{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 11px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(255,181,71,.35);background:linear-gradient(120deg,rgba(255,111,97,.12),rgba(255,181,71,.08));color:var(--text);font-weight:700}
+.pkp span{white-space:nowrap;overflow:hidden;font-size:15px}
+.pkp svg{flex:none;color:var(--accent)}
+.pkhd{margin:2px 4px 10px}
+.pklist{display:flex;flex-direction:column;margin:0 -18px}
+.pklist button{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:17px 22px;border:0;border-top:1px solid var(--line);
+  background:none;color:var(--text);font-size:16px;text-align:left;cursor:pointer}
+.pklist button.on{color:var(--accent);font-weight:750}
+.grid.browse{grid-template-columns:repeat(3,1fr);gap:14px 12px}
+.grid.browse .cap2{display:none}
 .grid .rk{font-size:30px;left:-2px;bottom:auto;top:-8px;z-index:2;color:var(--accent);-webkit-text-stroke:0;text-shadow:0 2px 8px rgba(0,0,0,.8)}
 
 /* saga tiles */
@@ -1602,15 +1615,7 @@ async function issueMatches(q){
 
 /* ---------- Characters ---------- */
 let gObs;
-function buildChars(){
-  const v = $('#v-genres');
-  if(!hasAccess()){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
-  built.genres = true;
-  v.innerHTML = `<div style="height:4px"></div>` + GROWS.map((r, i) => rowHTML('g' + i)).join('');
-  gObs?.disconnect();
-  gObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ gObs.unobserve(e.target); loadRow(e.target); } }), { rootMargin:'300px 300px' });
-  $$('.row[data-row]', v).forEach(r => gObs.observe(r));
-}
+function buildChars(){ buildBrowse('genres'); }
 function openCharPage(def){
   genrePageTitle = { small:'Character', big:def.title };
   setView('genre');
@@ -1896,15 +1901,83 @@ function mySeries(){
   Object.values(ratings).forEach(r => { if(!r.vol) return; const c = m.get(r.vol.id) || { id:r.vol.id, name:r.vol.name, poster:r.poster, n:0, at:0 }; c.n++; if((r.at || 0) > c.at){ c.at = r.at || 0; c.poster = r.poster || c.poster; } m.set(r.vol.id, c); });
   return [...m.values()].sort((a, b) => b.at - a.at).map(v => ({ ...(vols.get(v.id) || {}), id:v.id, name:v.name, poster:(vols.get(v.id) || {}).poster || v.poster, start:(vols.get(v.id) || {}).start || '', count:(vols.get(v.id) || {}).count || 0 }));
 }
-function buildSeries(){
-  const v = $('#v-series');
-  if(!hasAccess()){ v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
-  built.series = true;
-  v.innerHTML = `<div style="height:6px"></div><div id="myseries"></div>${SROWS.map((r, i) => rowHTML('s' + i)).join('')}`;
-  renderMySeries();
-  sObs?.disconnect();
-  sObs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ sObs.unobserve(e.target); loadRow(e.target); } }), { rootMargin:'400px 300px' });
-  $$('.row[data-row]', v).forEach(s => sObs.observe(s));
+function buildSeries(){ buildBrowse('series'); }
+/* ---------- Characters & Series: Type / Catalog / Sort over a three-across grid ---------- */
+const PICK_CHECK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const PICK_CARET = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6z" fill="currentColor"/></svg>';
+// a bottom-sheet list, the current choice ticked
+function pickSheet(title, opts, cur, onPick){
+  const s = sheet(`<h2 class="stitle pkhd">${esc(title)}</h2><div class="pklist">${opts.map(o =>
+    `<button data-o="${esc(o.k)}" class="${o.k === cur ? 'on' : ''}"><span>${esc(o.label)}</span>${o.k === cur ? PICK_CHECK : ''}</button>`).join('')}</div>`);
+  $$('[data-o]', s.body).forEach(b => b.onclick = () => { s.close(); if(b.dataset.o !== cur) setTimeout(() => onPick(b.dataset.o), 60); });
+}
+const pickPill = (id, label) => `<button class="pkp" id="${id}"><span>${esc(label)}</span>${PICK_CARET}</button>`;
+// every pill in a bar shares one font size, shrunk together until none is cut off
+function fitPills(bar){
+  const ps = $$('.pkp span', bar); if(!ps.length) return;
+  let f = 15; ps.forEach(p => p.style.fontSize = f + 'px');
+  while(f > 11 && ps.some(p => p.scrollWidth > p.clientWidth + 1)){ f -= .5; ps.forEach(p => p.style.fontSize = f + 'px'); }
+}
+// every character mixed together: a few characters per page, their top series taken in turn
+const ALL_CHARS = { vols:true, load:async (page, low) => {
+  const per = 6, names = CHARS.slice((page - 1) * per, page * per);
+  const lists = await Promise.all(names.map(n => volSearch(n, 1, low).then(d => d.results.slice(0, 5)).catch(() => [])));
+  const out = [], seen = new Set();
+  for(let i = 0; i < 5; i++) lists.forEach(l => { const v = l[i]; if(v && !seen.has(v.id)){ seen.add(v.id); out.push(v); } });
+  return { page, total:Math.ceil(CHARS.length / per), results:out, vols:true };
+} };
+const ALL_SERIES = () => ({ vols:true, items:[...CLASSIC_RUNS, ...MODERN_RUNS, ...EVENTS, ...DC_RUNS]
+  .filter((x, i, a) => a.findIndex(y => y[0] === x[0] && y[1] === x[1]) === i).map(x => low => resolveVol(...x, low)) });
+const BROWSE_CATS = {
+  chars:() => [{ k:'*', label:'All characters', def:ALL_CHARS }, ...CHARS.map((n, i) => ({ k:n, label:n, def:GROWS[i] }))],
+  series:() => [{ k:'*', label:'All series', def:ALL_SERIES() },
+    ...(mySeries().length ? [{ k:'mine', label:'Your series', def:{ vols:true, items:mySeries().map(v => () => Promise.resolve(v)) } }] : []),
+    { k:'classic', label:'Classic runs', def:SROWS[0] }, { k:'modern', label:'Modern favorites', def:SROWS[1] }, { k:'events', label:'Big events', def:SROWS[2] },
+    { k:'dcruns', label:'Legendary DC runs', def:{ vols:true, items:DC_RUNS.map(x => low => resolveVol(...x, low)) } }, { k:'ones', label:'New DC #1s', def:SROWS[3] }]
+};
+const BROWSE_SORTS = [{ k:'def', label:'Default' }, { k:'new', label:'Newest' }, { k:'old', label:'Oldest' }, { k:'most', label:'Most issues' }, { k:'az', label:'A to Z' }];
+const yearOf = m => +(m.start || (m.date || '').slice(0, 4) || 0);
+const SORTERS = {
+  new:(a, b) => yearOf(b) - yearOf(a), old:(a, b) => (yearOf(a) || 9999) - (yearOf(b) || 9999),
+  most:(a, b) => (b.count || 0) - (a.count || 0), az:(a, b) => (a.name || a.title || '').localeCompare(b.name || b.title || '')
+};
+const browseState = { genres:{ type:'chars', cat:'*', sort:'def' }, series:{ type:'series', cat:'*', sort:'def' } };
+// one list as a grid; a sorted list loads its first few pages, then sorts them together
+function browseGrid(box, def, sort){
+  box.innerHTML = `<div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`;
+  const grid = $('.grid', box), sent = $('.sent', box), msg = $('.msg', box);
+  if(sort === 'def'){ feed(null, grid, sent, msg, def); return; }
+  const gen = (grid._gen = (grid._gen || 0) + 1);
+  msg.textContent = 'Loading…';
+  (async () => {
+    let list = [];
+    if(def.items) list = (await Promise.all(def.items.map(fn => fn().catch(() => null)))).filter(Boolean);
+    else {
+      const first = await def.load(1); list = first.results.slice();
+      const pages = Math.min(first.total || 1, 3);
+      for(let p = 2; p <= pages; p++){ try{ list.push(...(await def.load(p)).results); }catch(e){ break; } }
+    }
+    const seen = new Set(); list = list.filter(m => !seen.has(m.id) && seen.add(m.id));
+    if(gen !== grid._gen) return;
+    if(SORTERS[sort]) list.sort(SORTERS[sort]);
+    grid.innerHTML = list.map(m => itemHTML(def, m)).join('');
+    msg.textContent = list.length ? '' : 'Nothing found.';
+  })().catch(e => { if(gen === grid._gen) msg.innerHTML = errText(e); });
+}
+function buildBrowse(tab){
+  const v = $('#v-' + tab);
+  if(!hasAccess()){ built[tab] = false; v.innerHTML = needKeyHTML(); $('.needKey', v).onclick = openSettings; return; }
+  built[tab] = true;
+  const st = browseState[tab], types = [{ k:'chars', label:'Characters' }, { k:'series', label:'Series' }];
+  const cats = BROWSE_CATS[st.type]();
+  if(!cats.some(c => c.k === st.cat)) st.cat = '*';
+  const cur = cats.find(c => c.k === st.cat), sl = BROWSE_SORTS.find(s => s.k === st.sort);
+  v.innerHTML = `<div class="pkbar">${pickPill('bktype', types.find(t => t.k === st.type).label)}${pickPill('bkcat', cur.label)}${pickPill('bksort', sl.label)}</div><div class="pad" id="bkbody-${tab}"></div>`;
+  $('#bktype', v).onclick = () => pickSheet('Type', types, st.type, k => { st.type = k; st.cat = '*'; st.sort = 'def'; buildBrowse(tab); });
+  $('#bkcat', v).onclick = () => pickSheet(st.type === 'chars' ? 'Character' : 'Catalog', cats, st.cat, k => { st.cat = k; buildBrowse(tab); scrollTo(0, 0); });
+  $('#bksort', v).onclick = () => pickSheet('Sort', BROWSE_SORTS, st.sort, k => { st.sort = k; buildBrowse(tab); scrollTo(0, 0); });
+  fitPills($('.pkbar', v));
+  browseGrid($('#bkbody-' + tab, v), cur.def, st.sort);
 }
 function renderMySeries(){
   const box = $('#myseries'); if(!box) return;
