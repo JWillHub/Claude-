@@ -1799,13 +1799,33 @@ function pickTrailer(v){
 }
 function pickProviders(p){
   const us = p && p.results && p.results.US; if(!us) return null;
-  const sl = a => (a || []).slice(0, 8).map(x => ({ n:x.provider_name, l:x.logo_path }));
+  const sl = a => (a || []).slice(0, 20).map(x => ({ n:x.provider_name, l:x.logo_path }));
   const rent = sl([...(us.rent || []), ...(us.buy || [])].filter((x, i, a) => a.findIndex(y => y.provider_id === x.provider_id) === i));
   return { link:us.link, stream:sl([...(us.flatrate || []), ...(us.free || []), ...(us.ads || [])]), rent };
 }
+// One logo per service: "Paramount+ Premium", "Paramount+ Essential", "Paramount+ Amazon Channel" and
+// "Paramount+ Roku Premium Channel" all count as Paramount+. The plainest name's logo is the one kept.
+const PROV_EXTRA = new Set(['premium','essential','basic','standard','with','ads','ad','supported','showtime','amazon','apple','tv','channel','channels','roku','plus','kids','the']);
+function provKey(n){
+  const w = (n || '').toLowerCase().replace(/\+/g, ' plus ').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean);
+  while(w.length > 1 && PROV_EXTRA.has(w[w.length - 1])) w.pop();
+  // "Amazon Channel", "Apple TV Channel" and similar in the middle: cut at the first add-on word after the brand
+  const cut = w.findIndex((x, i) => i > 0 && ['amazon','apple','roku','with','premium','essential','basic','standard'].includes(x));
+  return (cut > 0 ? w.slice(0, cut) : w).filter((x, i, a) => !(i === a.length - 1 && x === 'plus' && a.length > 1)).join(' ') || n;
+}
+function uniqProv(list){
+  const out = [], at = new Map();
+  (list || []).forEach(x => {
+    const k = provKey(x.n);
+    if(!at.has(k)){ at.set(k, out.length); out.push(x); }
+    else if(x.n.length < out[at.get(k)].n.length) out[at.get(k)] = x;
+  });
+  return out;
+}
 function provHTML(p){
+  if(p) p = { ...p, stream:uniqProv(p.stream), rent:uniqProv(p.rent) };
   if(!p || (!p.stream.length && !p.rent.length)) return '';
-  const row = a => `<div class="plogos">${a.map(x => `<img src="${IMG}w92${x.l}" alt="${esc(x.n)}" title="${esc(x.n)}">`).join('')}</div>`;
+  const row = a => `<div class="plogos">${a.slice(0, 8).map(x => `<img src="${IMG}w92${x.l}" alt="${esc(x.n)}" title="${esc(x.n)}">`).join('')}</div>`;
   return `<div class="prov fadein">${p.stream.length ? '<div class="lbl">Stream it on</div>' + row(p.stream) : ''}
     ${p.rent.length ? '<div class="lbl">Rent or buy</div>' + row(p.rent) : ''}<div class="small" style="margin-top:8px">US availability from JustWatch</div></div>`;
 }
