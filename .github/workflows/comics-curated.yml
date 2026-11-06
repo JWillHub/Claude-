@@ -1,5 +1,5 @@
 # Rebuilds Final Panel's curated rows (hand-picked series, landmark issues, story arcs) every night
-# and publishes them to the comics-data branch. Needs the CV_KEY repository secret.
+# and publishes them to the comics-data branch. Goes through the Final Panel shared server (or a CV_KEY secret if one is added).
 name: Final Panel curated data
 on:
   schedule:

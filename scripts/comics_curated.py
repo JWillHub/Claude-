@@ -1,11 +1,11 @@
 """Builds Final Panel's curated data once a night: every hand-picked series, landmark issue and story arc,
 already matched to Comic Vine, so the app shows those rows from one small file instead of hundreds of lookups.
 Reads the lists straight from long-box/index.html so the app and this script never drift apart.
-Needs the CV_KEY repository secret (a Comic Vine API key)."""
+Uses the CV_KEY repository secret if there is one; otherwise it goes through the shared server, which holds the key."""
 import ast, json, os, re, sys, time, urllib.parse, urllib.request
 
 KEY = os.environ.get('CV_KEY', '')
-if not KEY: sys.exit('CV_KEY secret is missing')
+SHARED = 'https://long-box19c4.jwill-personalacc.workers.dev/'
 SRC = open('long-box/index.html', encoding='utf-8').read()
 
 def js_list(name):
@@ -33,7 +33,8 @@ def cv(path, **q):
         wait = last[0] + 1.2 - time.time()
         if wait > 0: time.sleep(wait)
         last[0] = time.time()
-        url = 'https://comicvine.gamespot.com/api/' + path + '?' + urllib.parse.urlencode({**q, 'api_key': KEY, 'format': 'json'})
+        url = ('https://comicvine.gamespot.com/api/' + path + '?' + urllib.parse.urlencode({**q, 'api_key': KEY, 'format': 'json'})) if KEY \
+            else SHARED + path + '?' + urllib.parse.urlencode(q)
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'FinalPanel/1.0 (nightly curated build)'}), timeout=40) as r:
                 d = json.load(r)
