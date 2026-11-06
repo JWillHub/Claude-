@@ -1159,7 +1159,6 @@ function afterConcerns(){
   askTime();
 }
 function askTime(){stage="time";bot(`<b>How much time do you have?</b>`,{chips:[15,30,45,60,90].map(n=>({v:n,l:n+" min"})),onPick:(v,l)=>{me(l);S.len=+v;S.swap={};showPlan();}});}
-function askEnergy(){stage="energy";bot(`<b>How's the energy in the room?</b>`,{chips:[{v:"low",l:"Low"},{v:"steady",l:"Steady"},{v:"high",l:"Activated"}],onPick:(v,l)=>{me(l);S.energy=v;S.swap={};showPlan();}});}
 function planHTML(){
   const blocks=buildPlan();lastBlocks=blocks;let t0=0;
   const steps=blocks.map(b=>{const a=t0;t0+=b.m;
@@ -1280,14 +1279,14 @@ function handle(t){
   if(stage==="concerns"&&found.length){S.concerns=found.slice(0,3);const fin=()=>{retire();bot(`Got it: <b>${S.concerns.map(c=>concernById[c].name).join(", ")}</b>.`);afterConcerns();};if(S.concerns.includes("crisis"))showCrisis(fin);else fin();return;}
   if(/^(new|plan|start|restart)/.test(low)){retire();start(false);return;}
   if(/note/.test(low)){retire();startNote(!!lastBlocks);return;}
-  if(found.length&&stage!=="setting"&&stage!=="time"&&stage!=="energy"){
+  if(found.length&&stage!=="setting"&&stage!=="time"){
     const ts=TECH.map(x=>({x,s:found.reduce((a,c)=>a+(x.fit[c]||0),0)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).slice(0,4).map(o=>o.x);
     bot(`For <b>${found.map(c=>concernById[c].name.toLowerCase()).join(" and ")}</b>, these fit well:<ul>${ts.map(x=>`<li><button class="mini" data-open="${x.id}">${esc(x.name)}</button> ${esc(x.sum)}</li>`).join("")}</ul>`);
     bot("Want a full session plan built around it?",{chips:[{v:"y",l:"Yes, plan it"},{v:"n",l:"No thanks"}],onPick:(v,l)=>{me(l);if(v==="y"){S.concerns=found.slice(0,3);askTime();}}});return;}
   const q=low.replace(/^(help with|show me|find|search)\s+/,"");
   const hits=TECH.filter(x=>(x.name+" "+x.sum).toLowerCase().includes(q)).slice(0,4);
   if(hits.length){bot(`Here's what I found:<ul>${hits.map(x=>`<li><button class="mini" data-open="${x.id}">${esc(x.name)}</button> ${esc(x.sum)}</li>`).join("")}</ul>`);return;}
-  bot(stage==="setting"||stage==="time"||stage==="energy"?"I didn't catch that. Tap an option, or type one, like \"Facility\", \"30\", or \"Steady\".":`I didn't catch that. Try a concern like "grief" or "cravings", or say "new plan" or "write a note".`);
+  bot(stage==="setting"||stage==="time"?"I didn't catch that. Tap an option, or type one, like \"Facility\" or \"30\".":`I didn't catch that. Try a concern like "grief" or "cravings", or say "new plan" or "write a note".`);
 }
 
 /* ---------- library ---------- */
