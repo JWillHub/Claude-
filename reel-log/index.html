@@ -56,6 +56,7 @@ svg{display:block}
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
 .srch[hidden]{display:none}
 .hact .ib{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.04)}
+.hact .ib[hidden],.top.searching #hcar{display:none}
 .hact .ib.on{color:var(--accent);border-color:rgba(255,181,71,.5)}
 .hact .ib.gen{width:auto;display:flex;gap:6px;padding:0 12px;font-weight:800;font-size:13.5px;color:var(--text)}
 .hact .ib.gen svg{color:var(--accent);width:17px;height:17px}
@@ -460,6 +461,7 @@ html{touch-action:manipulation}
     <button id="hcancel">Cancel</button>
   </div>
   <div class="hact">
+    <button class="ib" id="hcar" aria-label="Carousel" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7.5" y="4" width="9" height="16" rx="1.8"/><path d="M4.5 6.5v11M19.5 6.5v11"/></svg></button>
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
   </div>
 </header>
@@ -963,8 +965,18 @@ $('#logo').onclick = () => setView('discover');
 $('#hback').onclick = () => history.back();
 $('#hproj').onclick = () => $('#logo').click();
 let genrePageTitle = null;
+// See all pages: the carousel button runs through whatever the page is showing
+let pageSource = null;
+function setPageSource(src){ pageSource = src; $('#hcar').hidden = !src; }
+$('#hcar').onclick = () => {
+  if(!pageSource) return;
+  const k = 'pg' + Date.now();
+  adhoc[k] = { k, name:pageSource.title, src:pageSource };
+  openRun(adhoc[k]);
+};
 function setHeaderTitle(t){
   const lg = $('#logo');
+  if(!t) setPageSource(null);
   $('#hback').hidden = !t;
   $('#hproj').toggleAttribute('hidden', !!t);
   if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); }
@@ -1137,21 +1149,25 @@ function openListPage(title, sub){
 }
 function openSeeAll(def){
   const b = openListPage(def.page || def.title, def.sub);
+  setPageSource({ title:def.page || def.title, def });
   feed(null, $('.grid', b), $('.sent', b), $('.msg', b), def);
 }
 function openStaticList(kind){
   if(kind === 'foryou'){
     const b = openListPage('For you', $('#fysub') ? $('#fysub').textContent : '');
     $('.grid', b).innerHTML = forYouList.map(m => cardHTML(m)).join('');
+    setPageSource({ title:'For you', items:forYouList });
   } else if(kind === 'watch'){
     const b = openListPage('Watchlist');
     const list = Object.entries(watch).sort((a, c) => c[1].at - a[1].at);
     $('.grid', b).innerHTML = list.length ? list.map(([k, w]) => cardHTML({ id:pid(k), title:w.title, poster:w.poster })).join('') : '';
     $('.msg', b).textContent = list.length ? '' : 'Nothing on your watchlist.';
+    setPageSource(list.length ? { title:'Watchlist', items:list.map(([k, w]) => ({ ...filmOf(pid(k)), id:pid(k) })) } : null);
   } else if(kind === 'shows'){
     const b = openListPage('Your shows');
     const mine = Object.entries(ratings).filter(([k]) => k.startsWith('tv')).sort((a, c) => (c[1].at || 0) - (a[1].at || 0));
     $('.grid', b).innerHTML = mine.map(([k, r]) => cardHTML({ id:k, title:r.title, poster:r.poster })).join('');
+    setPageSource({ title:'Your shows', items:mine.map(([k]) => ({ ...filmOf(k), id:k })) });
   }
 }
 
@@ -1269,7 +1285,7 @@ function openGenrePage(def){
   b.innerHTML = `<div class="pad"><div class="gopts" style="margin:14px 0"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
       <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
-  const load = () => feed(null, $('.grid', b), $('.sent', b), $('.msg', b), genreDef(def.tv, def.genreId, sort, decade));
+  const load = () => { const gd = genreDef(def.tv, def.genreId, sort, decade); setPageSource({ title:def.title, def:gd }); feed(null, $('.grid', b), $('.sent', b), $('.msg', b), gd); };
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); scrollTo(0, 0); load(); });
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
@@ -1362,6 +1378,19 @@ async function resolveKeyword(name){
 const QUICK = { k:'quick', name:"Rate what you've seen", quick:true };
 function loadSaga(s){
   if(sagaData[s.k]) return sagaData[s.k];
+  if(s.src){
+    sagaData[s.k] = (async () => {
+      if(s.src.items) return s.src.items.filter(Boolean).map(m => ({ ...m, date:m.date || '0000' }));   // saved titles may not carry a date
+      const def = s.src.def, cap = def.max || 60, out = [], dup = new Set();
+      for(let page = 1, total = 1; page <= total && out.length < cap; page++){
+        const d = await pageOf(def, page); total = d.total;
+        d.results.forEach(m => { if(!dup.has(m.id) && out.length < cap){ dup.add(m.id); out.push(m); } });
+      }
+      remember(out);
+      return out;
+    })();
+    return sagaData[s.k];
+  }
   if(s.quick){
     sagaData[s.k] = (async () => {
       const pages = await Promise.all([1, 2, 3, 4].flatMap(p => [listPage('/movie/popular', {}, p), listPage('/movie/top_rated', {}, p)]));
