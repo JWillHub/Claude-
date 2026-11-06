@@ -450,7 +450,10 @@ html{touch-action:manipulation}
 .pc.vol .pw::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),3px 3px 0 -1px var(--card2),5px 5px 0 -2px rgba(255,255,255,.08);pointer-events:none}
 .mvsheet #mm{min-height:17px}.mvsheet #md{min-height:19px}.mvsheet #mcred{min-height:19px;margin-top:2px}.mvsheet #mact{min-height:30px}
 .mvsheet .mvhead > div:last-child{min-height:206px}
-.mvsheet .ov.bio{white-space:pre-line}
+.mvsheet .ov.syn{white-space:pre-line}
+.mvsheet #mcast .pp{width:58px}
+.mvsheet #mcast .pp img,.mvsheet #mcast .pp .pi{width:46px;height:46px;margin-bottom:5px;font-size:17px}
+.mvsheet #mcast .pp b{font-size:11.5px}
 .bio{white-space:pre-line}
 .sagachip+.sagachip{margin-top:8px}
 .phead .favbtn svg{width:14px;height:14px;fill:currentColor}
@@ -771,14 +774,14 @@ async function volsByIds(ids){
   const d = await cv('volumes/', { filter:'id:' + ids.slice(0, 100).join('|'), field_list:VOL_F, limit:100 });
   const out = (d.results || []).map(slimVol); rememberVols(out); return out;
 }
-function textOf(html){
+function textOf(html, max = 1600){
   if(!html) return '';
   try{
     const doc = new DOMParser().parseFromString(html, 'text/html');
     $$('table,figure,img,h1,h2,h3,h4,script,style', doc).forEach(n => n.remove());
     const ps = $$('p', doc).map(p => p.textContent.trim()).filter(Boolean);
     const t = (ps.length ? ps.join('\n\n') : doc.body.textContent).trim();
-    return t.length > 1600 ? t.slice(0, 1600).replace(/\s+\S*$/, '') + '…' : t;
+    return max && t.length > max ? t.slice(0, max).replace(/\s+\S*$/, '') + '…' : t;
   }catch(e){ return ''; }
 }
 function issueOf(id){
@@ -1738,16 +1741,16 @@ async function mainChars(list, x){
   return [...list].sort((a, b) => score(b) - score(a)).slice(0, 3).map(c => ({ id:c.id, name:c.name, image:img((by.get(c.id) || {}).image, 'small_url') }));
 }
 function issueDetails(id){
-  return cached('iss4:' + id, 24 * 7, async () => {
+  return cached('iss5:' + id, 24 * 7, async () => {
     const d = await cv(`issue/4000-${id}/`, { field_list:'id,name,issue_number,volume,cover_date,store_date,image,deck,description,person_credits,character_credits,story_arc_credits' });
     const x = d.results || {};
-    return { ...slimIssue(x), deck:x.deck || '', desc:textOf(x.description),
+    return { ...slimIssue(x), deck:x.deck || '', desc:textOf(x.description, 0),
       people:(x.person_credits || []).slice(0, 24).map(p => ({ id:p.id, name:p.name, role:p.role || '' })),
       chars:await mainChars((x.character_credits || []).map(c => ({ id:c.id, name:c.name })), x),
       arcs:(x.story_arc_credits || []).slice(0, 4).map(a => ({ id:a.id, name:a.name })) };
   });
 }
-const detailsCached = id => isCached('iss4:' + id, 24 * 7);
+const detailsCached = id => isCached('iss5:' + id, 24 * 7);
 function prefetchDetails(id){ try{ issueDetails(id).catch(() => {}); }catch(e){} }
 async function waitDetails(id){ if(detailsCached(id)) return; await Promise.race([issueDetails(id).catch(() => {}), sleep(320)]); }
 const roleOf = r => { r = r.toLowerCase(); return r.includes('writer') ? 'Writer' : r.includes('pencil') || r.includes('artist') ? 'Artist' : r.includes('cover') ? 'Cover' : r.includes('ink') ? 'Inker' : r.includes('color') ? 'Colorist' : r.includes('letter') ? 'Letterer' : r.includes('editor') ? 'Editor' : r.split(',')[0]; };
@@ -1770,15 +1773,15 @@ async function fillAvatars(box, kind, list){
 }
 async function openIssue(id){
   await waitDetails(id);
-  const f = issueOf(id), m = mem.get('iss4:' + id) || {};
+  const f = issueOf(id), m = mem.get('iss5:' + id) || {};
   const s = sheet(`<div class="bdrop" style="${(m.big || f.big || f.poster) ? `background-image:url(&quot;${esc(m.big || f.big || f.poster)}&quot;);background-position:center 18%` : ''}"></div>
     <div class="mvhead">${poster(m.poster || f.poster, '', f.title)}<div><h2>${esc(m.title || f.title)}</h2><div class="meta" id="mm">${esc(m.name || f.name || '')}</div>
       <div class="meta" id="md">${esc(fmtDate(m.date || f.date))}</div><div class="meta" id="mcred"></div><div class="mact" id="mact"></div></div></div>
-    <div id="msaga"></div><p class="ov bio" id="mov"></p><div id="mcrew"></div><div id="mcast"></div><div style="height:16px"></div>
+    <div id="msaga"></div><p class="ov syn" id="mov"></p><div id="mcast"></div><div style="height:16px"></div>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
       <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
   const b = s.body, s5 = $('.ratebar .s5', b);
-  const cur = () => ({ ...issueOf(id), ...(mem.get('iss4:' + id) || {}) });
+  const cur = () => ({ ...issueOf(id), ...(mem.get('iss5:' + id) || {}) });
   const acts = () => {
     const box = $('#mact', b); if(!box) return;
     box.innerHTML = `<button id="mwl" class="${watch[id] ? 'on' : ''}">${BOOK}${watch[id] ? 'On reading list' : 'Reading list'}</button>${!getR(id) ? `<button id="mrd" class="${seen[id] ? 'on' : ''}">${seen[id] ? '✓ Read' : 'Mark read'}</button>` : ''}`;
@@ -1809,15 +1812,11 @@ async function openIssue(id){
     const link = p => `<button class="plink" data-person="${p.id}">${esc(p.name)}</button>`;
     $('#mcred', b).innerHTML = [writers.length ? 'Written by ' + writers.map(link).join(', ') : '', artists.length ? 'Art by ' + artists.map(link).join(', ') : ''].filter(Boolean).join('<br>');
     const t = d.deck && d.desc && !d.desc.startsWith(d.deck) ? d.deck + '\n\n' + d.desc : d.desc || d.deck, ov = $('#mov', b);
-    if(t){ ov.textContent = t; ov.onclick = () => ov.classList.toggle('open'); } else ov.remove();
+    if(t) ov.textContent = t; else ov.remove();
     const chips = [];
     d.arcs.slice(0, 2).forEach(a => chips.push(`<button class="sagachip" data-arc="${a.id}" data-name="${esc(a.name)}"><span>Part of <b style="color:var(--text);margin:0">${esc(a.name)}</b></span><b>Rate the arc →</b></button>`));
     if(d.vol) chips.push(`<button class="sagachip" data-vol="${d.vol.id}"><span>From <b style="color:var(--text);margin:0">${esc(d.vol.name)}</b></span><b>Series →</b></button>`);
     $('#msaga', b).innerHTML = chips.join('');
-    if(d.people.length){
-      $('#mcrew', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Creators</div><div class="ppl nodrag">${d.people.map(p => personHTML(p, roleOf(p.role))).join('')}</div></div>`;
-      fillAvatars($('#mcrew', b), 'person', d.people);
-    }
     if(d.chars.length){
       $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Starring</div><div class="ppl nodrag">${d.chars.map(c => personHTML(c, '', 'char')).join('')}</div></div>`;
     }

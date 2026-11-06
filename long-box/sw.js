@@ -1,6 +1,6 @@
 // Long Box offline support for the app's own files only. Comic data and covers always come live from Comic Vine.
 const PREFIX = 'long-box-';
-const CACHE = PREFIX + 'v8:' + self.registration.scope;
+const CACHE = PREFIX + 'v9:' + self.registration.scope;
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
