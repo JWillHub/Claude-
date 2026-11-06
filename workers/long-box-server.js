@@ -8,10 +8,33 @@ const ALLOW = /^(issues|volumes|characters|people|story_arcs|search|issue\/4000-
 // how long a saved answer is reused: single items a week, searches 12 hours, lists (like New this week) 6 hours
 const TTL = p => /^(issue|volume|story_arc|character|person)\//.test(p) ? 604800 : p.startsWith('search') ? 43200 : 21600;
 
+// Rolling Credits library relay: browsers can't call the Real-Debrid API directly, so /rd/... is passed through to it.
+// The person's own token rides along in the Authorization header and is never stored or logged here.
+const RD_ALLOW = /^(torrents|torrents\/info\/[A-Za-z0-9]+|unrestrict\/link|streaming\/transcode\/[A-Za-z0-9]+)$/;
+async function rdRelay(req, url, cors) {
+  const json = (body, status) => new Response(body, { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...cors } });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: { ...cors, 'Access-Control-Allow-Methods': 'GET, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '86400' } });
+  const path = url.pathname.replace(/^\/rd\//, '');
+  if (!RD_ALLOW.test(path) || !['GET', 'POST'].includes(req.method)) return json('{"error":"Not allowed"}', 404);
+  const auth = req.headers.get('Authorization');
+  if (!auth) return json('{"error":"No token","error_code":8}', 401);
+  const headers = { Authorization: auth };
+  if (req.method === 'POST') headers['Content-Type'] = 'application/x-www-form-urlencoded';
+  let up;
+  try { up = await fetch('https://api.real-debrid.com/rest/1.0/' + path + url.search, { method: req.method, headers, body: req.method === 'POST' ? await req.text() : undefined }); }
+  catch (e) { return json('{"error":"Real-Debrid unreachable"}', 502); }
+  return new Response(up.status === 204 ? null : up.body, { status: up.status, headers: { 'Content-Type': up.headers.get('Content-Type') || 'application/json', 'Cache-Control': 'no-store', ...cors } });
+}
+
 export default {
   async fetch(req, env, ctx) {
     const origin = req.headers.get('Origin') || '';
     const cors = { 'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0], 'Vary': 'Origin' };
+    const u0 = new URL(req.url);
+    if (u0.pathname.startsWith('/rd/')) {
+      if (origin && !ORIGINS.includes(origin)) return new Response('{"error":"Not allowed"}', { status: 403, headers: { 'Content-Type': 'application/json', ...cors } });
+      return rdRelay(req, u0, cors);
+    }
     const reply = (body, status, extra = {}) => new Response(body, { status, headers: { 'Content-Type': 'application/json', ...cors, ...extra } });
     if (req.method === 'OPTIONS') return new Response(null, { headers: { ...cors, 'Access-Control-Allow-Methods': 'GET', 'Access-Control-Max-Age': '86400' } });
     if (req.method !== 'GET') return reply('{"status_code":0,"error":"GET only"}', 405);
