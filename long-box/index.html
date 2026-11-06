@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0c0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Long Box</title>
+<title>Final Panel</title>
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Long Box">
+<meta name="apple-mobile-web-app-title" content="Final Panel">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -472,7 +472,7 @@ html{touch-action:manipulation}
     <path d="M6 7h28a3.5 3.5 0 0 1 3.5 3.5v15a3.5 3.5 0 0 1-3.5 3.5H18l-8 7.5V29H6a3.5 3.5 0 0 1-3.5-3.5v-15A3.5 3.5 0 0 1 6 7z" fill="#ffb547"/>
     <path d="M22.6 10.5l-6.8 9.6h4.6l-2.3 7.4 7.6-10.4h-4.7l2.6-6.6z" fill="#0c0a0f"/>
   </svg>
-  <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Long</span><span class="w2">Box</span></h1>
+  <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Final</span><span class="w2">Panel</span></h1>
   <div class="hsearch" id="hsbar">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
     <input id="hq" type="search" autocomplete="off" enterkeyhint="search">
@@ -1104,7 +1104,7 @@ function setHeaderTitle(t){
   $('#hback').hidden = !t;
   $('#hicon').toggleAttribute('hidden', !!t);
   if(t){ $('.w1', lg).textContent = t.small; $('.w2', lg).textContent = t.big; lg.classList.add('sub'); }
-  else { $('.w1', lg).textContent = 'Long'; $('.w2', lg).textContent = 'Box'; lg.classList.remove('sub'); }
+  else { $('.w1', lg).textContent = 'Final'; $('.w2', lg).textContent = 'Panel'; lg.classList.remove('sub'); }
 }
 $('#hsearch').onclick = () => openSearch();
 $('#hcancel').onclick = () => history.back();
@@ -1182,7 +1182,7 @@ const DROWS = [
 const GROWS = CHARS.map(n => ({ title:n, charName:n, vols:true, load:(p, low) => volSearch(n, p, low) }));
 let rowObs;
 function needKeyHTML(){
-  return `<div class="onb"><h2>Your long box awaits</h2><p>Long Box pulls every issue and cover from Comic Vine. Add your free key once to switch it on.</p>
+  return `<div class="onb"><h2>Your next panel awaits</h2><p>Final Panel pulls every issue and cover from Comic Vine. Add your free key once to switch it on.</p>
     <button class="btn needKey">Add Comic Vine key</button></div>`;
 }
 function buildDiscover(){
@@ -1987,7 +1987,7 @@ async function saveReviewImage(d, btn){
   try{ await document.fonts.load('700 100px "Barlow Condensed"'); }catch(e){}
   const disp = sz => `700 ${sz}px "Barlow Condensed", "Arial Narrow", sans-serif`;
   x.textAlign = 'center';
-  x.fillStyle = '#ffb547'; x.font = disp(54); x.fillText('LONG BOX', W / 2, 110);
+  x.fillStyle = '#ffb547'; x.font = disp(54); x.fillText('FINAL PANEL', W / 2, 110);
   x.fillStyle = '#9c93a9'; x.font = '600 34px system-ui, sans-serif'; x.fillText(d.thisYear ? `MY ${d.yr} IN COMICS` : 'MY COMICS SO FAR', W / 2, 165);
   x.fillStyle = '#ffb547'; x.font = disp(230); x.fillText(String(d.count), W / 2, 390);
   x.fillStyle = '#f4efe9'; x.font = '600 38px system-ui, sans-serif'; x.fillText('issues rated', W / 2, 445);
@@ -2010,7 +2010,7 @@ async function saveReviewImage(d, btn){
   let blob = null;
   try{ blob = await new Promise(r => c.toBlob(r, 'image/png')); }catch(e){}
   if(!blob){ btn.textContent = 'Could not make the image'; return; }
-  const file = new File([blob], `long-box-${d.yr}.png`, { type:'image/png' });
+  const file = new File([blob], `final-panel-${d.yr}.png`, { type:'image/png' });
   btn.textContent = 'Save as image';
   if(navigator.canShare && navigator.canShare({ files:[file] })){ try{ await navigator.share({ files:[file], title:'My year in comics' }); return; }catch(e){ if(e.name === 'AbortError') return; } }
   const url = URL.createObjectURL(blob);
@@ -2024,14 +2024,14 @@ function openSettings(){
   const s = sheet(`<h2 class="stitle">Settings</h2>
     <label class="f">${SHARED ? 'Your own Comic Vine key (optional)' : 'Comic Vine API key'}</label>
     <input id="key" value="${esc(store.get(K_KEY, ''))}" placeholder="Paste your key" autocomplete="off">
-    <div class="small" style="margin-top:6px">${SHARED ? 'Long Box works without one. Your own key gives you a private hourly allowance.' : 'Free at comicvine.gamespot.com/api — sign in and copy your key.'}</div>
+    <div class="small" style="margin-top:6px">${SHARED ? 'Final Panel works without one. Your own key gives you a private hourly allowance.' : 'Free at comicvine.gamespot.com/api — sign in and copy your key.'}</div>
     <button class="btn" id="saveKey">Save key</button>
     <label class="toggle"><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}> Hide issues I've rated while browsing</label>
     <label class="f">Backup</label>
     <button class="btn ghost" id="exp" style="margin-top:0">Export ratings (.json)</button>
     <button class="btn ghost" id="imp">Import backup</button>
     <input type="file" id="file" accept=".json,application/json" hidden>
-    <p class="small" style="margin-top:18px">Comic data and covers from Comic Vine (comicvine.gamespot.com). Long Box is not endorsed by Comic Vine or GameSpot.</p>`);
+    <p class="small" style="margin-top:18px">Comic data and covers from Comic Vine (comicvine.gamespot.com). Final Panel is not endorsed by Comic Vine or GameSpot.</p>`);
   const b = s.body;
   const reset = () => { built.discover = built.genres = built.series = false; Object.keys(sagaData).forEach(k => delete sagaData[k]); setView(view); };
   $('#saveKey', b).onclick = async () => {
@@ -2049,7 +2049,7 @@ function openSettings(){
   $('#exp', b).onclick = () => {
     const blob = new Blob([JSON.stringify({ app:'longbox', v:1, ratings, watch, seen, favs }, null, 1)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `long-box-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    a.download = `final-panel-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
   $('#imp', b).onclick = () => $('#file', b).click();
   $('#file', b).onchange = async ev => {
@@ -2063,7 +2063,7 @@ function openSettings(){
       if(data.favs) for(const [id, p] of Object.entries(data.favs)) if(!favs[id]) favs[id] = p;
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       saveAll(); s.close(); afterChange(); toast(`Imported ${rn} rating${rn === 1 ? '' : 's'}`);
-    }catch(e){ toast('That file is not a Long Box backup.'); }
+    }catch(e){ toast('That file is not a Final Panel backup.'); }
   };
 }
 

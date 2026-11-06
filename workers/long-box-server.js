@@ -1,4 +1,4 @@
-// Long Box shared server (Cloudflare Worker).
+// Final Panel shared server (Cloudflare Worker).
 // Keeps the Comic Vine key private and saves every answer, so a list fetched for one person is handed to everyone else
 // without using the hourly Comic Vine allowance again.
 // Setup: add a secret named CV_KEY (your Comic Vine API key) in the Worker's Settings → Variables and Secrets.
