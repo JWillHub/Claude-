@@ -578,11 +578,13 @@ const getR = id => ratings[id]?.r || 0;
 let cvN = 0, cvActive = 0, cvActiveBg = 0, cvLast = 0, cvTimer = 0;
 const cvQ = [];
 function cvSlot(bg){ return new Promise(res => { cvQ.push({ res, bg:!!bg }); cvPump(); }); }
+const viaShared = () => !!SHARED && !store.get(K_KEY, '');
 function cvPump(){
-  if(cvActive >= 2 || !cvQ.length) return;
+  const max = viaShared() ? 5 : 2, maxBg = viaShared() ? 3 : 1, gap = viaShared() ? 90 : 350;
+  if(cvActive >= max || !cvQ.length) return;
   let i = cvQ.findIndex(x => !x.bg);
-  if(i < 0){ if(cvActiveBg >= 1) return; i = 0; }
-  const wait = cvLast + 350 - Date.now();
+  if(i < 0){ if(cvActiveBg >= maxBg) return; i = 0; }
+  const wait = cvLast + gap - Date.now();
   if(wait > 0){ clearTimeout(cvTimer); cvTimer = setTimeout(cvPump, wait); return; }
   const x = cvQ.splice(i, 1)[0];
   cvActive++; if(x.bg) cvActiveBg++; cvLast = Date.now(); x.res(() => { cvActive--; if(x.bg) cvActiveBg--; cvPump(); });
@@ -715,6 +717,27 @@ async function engOnly(list, low){
   return list.filter(x => !x.vol || engPub(volPub[x.vol.id]));
 }
 
+const CURATED = 'https://raw.githubusercontent.com/JWillHub/Claude-/comics-data/curated.json';
+const bundleReady = (async () => {
+  if(window.CV_MOCK) return;
+  try{
+    let b = store.get(CK + 'bundle', null);
+    if(!b || Date.now() - b.t > 12 * 3600e3){
+      const ctl = new AbortController(); setTimeout(() => ctl.abort(), 6000);
+      const r = await fetch(CURATED, { cache:'no-cache', signal:ctl.signal });
+      if(r.ok){ b = { t:Date.now(), d:await r.json() }; cacheSet('bundle', b); }
+    }
+    const d = b && b.d; if(!d) return;
+    Object.entries(d.pubs || {}).forEach(([id, p]) => { if(volPub[id] == null) volPub[id] = p; });
+    Object.entries(d.vols || {}).forEach(([k, v]) => { const [name, year] = k.split(/:(?=\d+$)/); mem.set('rv:' + name + ':' + year, v); if(v) rememberVols([v]); });
+    Object.entries(d.issues || {}).forEach(([k, m]) => {
+      const [, name, year, num] = k.match(/^(.*):(\d+):([^:]*)$/) || [];
+      const v = mem.get('rv:' + name + ':' + year);
+      if(v && m){ mem.set('ri:' + v.id + ':' + num, m); remember([m]); }
+    });
+    Object.entries(d.arcs || {}).forEach(([name, a]) => { mem.set('arcid2:' + name, a ? a.id : null); if(a) mem.set('arc:' + a.id, a.issues); });
+  }catch(e){}
+})();
 const PER = 50;
 async function issuePage(params, page, opt = {}){
   const k = 'ip:' + JSON.stringify(params) + ':' + page;
@@ -743,6 +766,7 @@ async function volSearch(q, page, low){
 const norm = s => (s || '').toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]+/g, ' ').trim();
 // a series by its name and start year, e.g. ["Batman", 1940]
 async function resolveVol(name, year, low){
+  await bundleReady;
   const v = await cached('rv:' + name + ':' + year, 24 * 30, async () => {
     const d = await cv('search/', { query:name, resources:'volume', limit:10, field_list:VOL_F }, low);
     const list = (d.results || []).map(slimVol).filter(v => engPub(v.pub));
@@ -1444,8 +1468,9 @@ const sagaByK = k => ARCS.find(s => s.k === k) || adhoc[k] || (k === 'quick' ? Q
 const sagaData = {};
 const QUICK = { k:'quick', name:"Rate what you've read", kind:'quick' };
 async function resolveArc(name, pub, low){
-  return cached('arcid:' + name, 24 * 30, async () => {
-    const d = await cv('story_arcs/', { filter:'name:' + name.replace(/,/g, ''), field_list:'id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit:50 }, low);
+  await bundleReady;
+  return cached('arcid2:' + name, 24 * 30, async () => {
+    const d = await cv('story_arcs/', { filter:'name:' + name.replace(/^the\s+/i, '').replace(/,/g, ''), field_list:'id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit:50 }, low);
     const res = d.results || [];
     const cnt = a => +(a.count_of_isssue_appearances ?? a.count_of_issue_appearances ?? 0);
     const score = a => (norm(a.name) === norm(name) ? 1000 : norm(a.name).includes(norm(name)) ? 300 : 0)
@@ -1455,6 +1480,7 @@ async function resolveArc(name, pub, low){
   }, low);
 }
 async function arcIssues(id, low){
+  await bundleReady;
   return cached('arc:' + id, 24 * 14, async () => {
     const d = await cv(`story_arc/4045-${id}/`, { field_list:'id,name,issues,image,deck,publisher' }, low);
     const ids = ((d.results && d.results.issues) || []).map(x => x.id).slice(0, 300);

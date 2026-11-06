@@ -1,0 +1,35 @@
+# Rebuilds Final Panel's curated rows (hand-picked series, landmark issues, story arcs) every night
+# and publishes them to the comics-data branch. Needs the CV_KEY repository secret.
+name: Final Panel curated data
+on:
+  schedule:
+    - cron: '41 8 * * *'          # daily, ~2-3 AM Central
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/comics-curated.yml', 'scripts/comics_curated.py', 'long-box/index.html']
+permissions:
+  contents: write
+concurrency: comics-curated
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build curated data
+        env:
+          CV_KEY: ${{ secrets.CV_KEY }}
+        run: python scripts/comics_curated.py out
+      - name: Publish to the comics-data branch
+        run: |
+          cd out
+          git init -q -b comics-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Curated comics $(date -u +%F)"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" comics-data
