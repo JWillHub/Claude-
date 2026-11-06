@@ -747,7 +747,7 @@ const bundleReady = (async () => {
       if(r.ok){ b = { t:Date.now(), d:await r.json() }; cacheSet('bundle', b); }
     }
     const d = b && b.d; if(!d) return;
-    bundle = d;
+    bundle = d; bundle.detSet = new Set(d.det || []);
     Object.values(d.chars || {}).forEach(c => rememberVols(c.vols || []));
     Object.values(d.fresh || {}).forEach(l => remember(l || []));
     Object.entries(d.pubs || {}).forEach(([id, p]) => { if(volPub[id] == null) volPub[id] = p; });
@@ -1840,6 +1840,11 @@ async function mainChars(list, x){
 }
 function issueDetails(id){
   return cached('iss5:' + id, 24 * 7, async () => {
+    // preloaded overnight for the issues people tap most: no Comic Vine call at all
+    await bundleReady;
+    if(bundle && bundle.detSet && bundle.detSet.has(id)){
+      try{ const r = await fetch(CURATED.replace('curated.json', 'details/' + id + '.json')); if(r.ok) return await r.json(); }catch(e){}
+    }
     const d = await cv(`issue/4000-${id}/`, { field_list:'id,name,issue_number,volume,cover_date,store_date,image,deck,description,person_credits,character_credits,story_arc_credits' });
     const x = d.results || {};
     return { ...slimIssue(x), deck:x.deck || '', desc:textOf(x.description, 0),
@@ -1922,7 +1927,7 @@ async function openIssue(id){
       $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Starring</div><div class="ppl nodrag">${d.chars.map(c => personHTML(c, '', 'char')).join('')}</div></div>`;
     }
     if(d.vol){
-      const pub = volPub[d.vol.id] || (vols.get(d.vol.id) || {}).pub;
+      const pub = d.pub || volPub[d.vol.id] || (vols.get(d.vol.id) || {}).pub;
       const setMd = p => { $('#md', b).textContent = [p, fmtDate(d.store || d.date)].filter(Boolean).join(' · '); };
       if(pub) setMd(pub); else volDetail(d.vol.id).then(v => { if(s.el.isConnected) setMd(v.pub); }).catch(() => setMd(''));
     }

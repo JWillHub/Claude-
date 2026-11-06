@@ -20,6 +20,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Start from last night's files (keeps the issue details built so far)
+        run: |
+          git clone -q --depth 1 -b comics-data "https://github.com/${{ github.repository }}.git" out || mkdir -p out
+          rm -rf out/.git
       - name: Build curated data
         env:
           CV_KEY: ${{ secrets.CV_KEY }}

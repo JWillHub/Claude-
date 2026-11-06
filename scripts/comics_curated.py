@@ -2,7 +2,7 @@
 already matched to Comic Vine, so the app shows those rows from one small file instead of hundreds of lookups.
 Reads the lists straight from long-box/index.html so the app and this script never drift apart.
 Uses the CV_KEY repository secret if there is one; otherwise it goes through the shared server, which holds the key."""
-import ast, json, os, re, sys, time, urllib.parse, urllib.request
+import ast, html.parser, json, os, re, sys, time, urllib.parse, urllib.request
 
 KEY = os.environ.get('CV_KEY', '')
 SHARED = 'https://long-box19c4.jwill-personalacc.workers.dev/'
@@ -181,8 +181,57 @@ for key, filt in (('week', f'store_date:{day(7)}|{day(-1)}'), ('ones', f'store_d
     try: fresh[key] = new_issues(filt); print(key, len(fresh[key]))
     except Limited: print('limit reached - no', key)
 
+# Full card details for the issues people tap most (curated rows, new releases, story arcs), so those cards open
+# with no Comic Vine call. Up to 150 new ones a night stay inside the hourly allowance; earlier nights' files are kept.
+class Text(html.parser.HTMLParser):
+    SKIP = {'table', 'figure', 'h1', 'h2', 'h3', 'h4', 'script', 'style'}
+    def __init__(self): super().__init__(); self.paras, self.cur, self.skip, self.inp = [], [], 0, False
+    def handle_starttag(self, t, a):
+        if t in self.SKIP: self.skip += 1
+        if t == 'p': self.inp, self.cur = True, []
+    def handle_endtag(self, t):
+        if t in self.SKIP: self.skip = max(0, self.skip - 1)
+        if t == 'p' and self.inp:
+            txt = ' '.join(''.join(self.cur).split())
+            if txt: self.paras.append(txt)
+            self.inp = False
+    def handle_data(self, d):
+        if self.inp and not self.skip: self.cur.append(d)
+def text_of(h):
+    if not h: return ''
+    t = Text(); t.feed(h); return '\n\n'.join(t.paras)
+def details(iid):
+    x = cv(f'issue/4000-{iid}/', field_list='id,name,issue_number,volume,cover_date,store_date,image,deck,description,person_credits,character_credits,story_arc_credits')['results'] or {}
+    chars = [{'id': c['id'], 'name': c['name']} for c in x.get('character_credits') or []]
+    info = {}
+    if chars:
+        for c in cv('characters/', filter='id:' + '|'.join(str(c['id']) for c in chars[:100]), field_list='id,image,count_of_issue_appearances', limit=100).get('results') or []:
+            info[c['id']] = c
+    named = norm(((x.get('volume') or {}).get('name') or '') + ' ' + (x.get('name') or ''))
+    score = lambda c: (1e9 if norm(c['name']) and norm(c['name']) in named else 0) + int((info.get(c['id']) or {}).get('count_of_issue_appearances') or 0)
+    top = sorted(chars, key=score, reverse=True)[:3]
+    vid = (x.get('volume') or {}).get('id')
+    if vid and vid not in pubs:
+        for v in cv('volumes/', filter=f'id:{vid}', field_list='id,publisher', limit=1).get('results') or []: pubs[vid] = (v.get('publisher') or {}).get('name', '')
+    return {**slim_issue(x), 'pub': pubs.get(vid, ''), 'deck': x.get('deck') or '', 'desc': text_of(x.get('description')),
+            'people': [{'id': p['id'], 'name': p['name'], 'role': p.get('role') or ''} for p in (x.get('person_credits') or [])[:24]],
+            'chars': [{'id': c['id'], 'name': c['name'], 'image': img((info.get(c['id']) or {}).get('image'), 'small_url')} for c in top],
+            'arcs': [{'id': a['id'], 'name': a['name']} for a in (x.get('story_arc_credits') or [])[:4]]}
+ddir = os.path.join(sys.argv[1], 'details'); os.makedirs(ddir, exist_ok=True)
+have = {int(f[:-5]) for f in os.listdir(ddir) if f.endswith('.json')}
+want = [m['id'] for m in issues.values() if m] + [m['id'] for m in fresh.get('week', [])] + [m['id'] for m in fresh.get('ones', [])] \
+     + [m['id'] for a in arcs.values() if a for m in a['issues']]
+todo = [i for i in dict.fromkeys(want) if i not in have][:150]
+for iid in todo:
+    try:
+        with open(os.path.join(ddir, f'{iid}.json'), 'w') as f: json.dump(details(iid), f, separators=(',', ':'))
+        have.add(iid)
+    except Limited: print('limit reached - more details tomorrow'); break
+    except SystemExit as e: print('skipped', iid, e)
+print('details on file:', len(have), '| added tonight:', len(todo))
+
 os.makedirs(sys.argv[1], exist_ok=True)
 with open(os.path.join(sys.argv[1], 'curated.json'), 'w') as f:
-    json.dump({'built': time.strftime('%Y-%m-%d'), 'arcfix': 2, 'vols': vols, 'issues': issues, 'arcs': arcs, 'chars': chars, 'fresh': fresh,
+    json.dump({'built': time.strftime('%Y-%m-%d'), 'arcfix': 2, 'det': sorted(have), 'vols': vols, 'issues': issues, 'arcs': arcs, 'chars': chars, 'fresh': fresh,
                'pubs': {str(k): v for k, v in pubs.items()}}, f, separators=(',', ':'))
 print('done', len(vols), 'series', len(issues), 'issues', len(arcs), 'arcs')
