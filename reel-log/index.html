@@ -508,7 +508,6 @@ html{touch-action:manipulation}
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Genres</button>
-  <button class="tb" data-v="tv"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M8 2.5l4 3.5 4-3.5"/></svg>TV</button>
   <button class="tb" data-v="diary" hidden><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Diary</button>
   <button class="tb" data-v="films"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>My Films</button>
   <button class="tb" id="setTab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
@@ -662,7 +661,10 @@ async function listPage(path, params, page, tv){
   const k = path + '?' + new URLSearchParams(p);
   const run = async () => {
     const d = await tmdb(path, p);
-    return { page:d.page, total:Math.min(d.total_pages||1, 500), results:(d.results||[]).filter(m => tv ? m.name : m.title).map(tv ? slimTV : slim).filter(keep) };
+    // search/multi mixes films and series (people are dropped here; they have their own row)
+    const rows = path === '/search/multi' ? (d.results||[]).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m))
+      : (d.results||[]).filter(m => tv ? m.name : m.title).map(tv ? slimTV : slim);
+    return { page:d.page, total:Math.min(d.total_pages||1, 500), results:rows.filter(keep) };
   };
   const out = page === 1 && !params.query ? await cached(k, 6, run) : (mem.get(k) || await run().then(d => (mem.set(k, d), d)));
   remember(out.results);
@@ -748,7 +750,7 @@ function afterChange(){
   sheetStack.forEach(s => s.refresh && s.refresh());
   if(view === 'diary') renderDiary();
   if(view === 'films') renderFilms();
-  if(built.tv) renderMyShows();
+  renderMyShows();
   if(built.discover) renderWatchRow();
 }
 function badge(id){
@@ -1023,7 +1025,7 @@ let genrePageTitle = null;
 let pageSource = null;
 function setPageSource(src){ pageSource = src; }
 // On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
-const TAB_NAMES = { discover:'Discover', tv:'TV', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
+const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
 $('#hcar').onclick = () => {
   let src = pageSource;
   if(!src){
@@ -1070,15 +1072,16 @@ function buildDiscover(){
   built.discover = true;
   v.innerHTML = `<div class="hero" id="hero" style="margin-top:16px"></div>
     <div id="wlrow"></div>
+    <div id="myshows"></div>
     <button class="qs" id="qs"><span class="qi"><svg viewBox="0 0 24 24"><path d="M12 2.4l2.95 6.1 6.65.8-4.9 4.6 1.3 6.6L12 17.2l-6 3.3 1.3-6.6-4.9-4.6 6.65-.8z"/></svg></span>
       <span><b>Rate what you've seen</b></span></button>
     <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>For you</h3><p id="fysub"></p></div><button data-list="foryou">See all</button></div><div class="track"></div></section>
     ${rowHTML(0)}
     <section class="row"><div class="rowhead"><div><h3>Franchises</h3></div><button data-franchises="1">All franchises</button></div>
       <div class="track">${SAGAS.slice(0, 10).map(tileHTML).join('')}</div></section>
-    ${ROWS.map((r, i) => i && !r.genre ? rowHTML(i) : '').join('')}`;
+    ${weaveRows()}`;
   $('#qs').onclick = () => { delete sagaData.quick; openRun(QUICK); };
-  renderWatchRow(); loadForYou();
+  renderWatchRow(); renderMyShows(); loadForYou();
   loadHero();
   rowObs?.disconnect();
   rowObs = new IntersectionObserver(es => es.forEach(e => {
@@ -1088,6 +1091,14 @@ function buildDiscover(){
   }), { rootMargin:'500px 400px' });
   $$('.row[data-row]', v).forEach(s => rowObs.observe(s));
   $$('.saga', v).forEach(t => rowObs.observe(t));
+}
+// film rows and series rows take turns down the page
+function weaveRows(){
+  const films = ROWS.map((r, i) => i && !r.genre ? rowHTML(i) : '').filter(Boolean);
+  const series = TVROWS.map((r, i) => r.genre ? '' : rowHTML('t' + i)).filter(Boolean);
+  const out = [];
+  for(let i = 0; i < Math.max(films.length, series.length); i++){ if(films[i]) out.push(films[i]); if(series[i]) out.push(series[i]); }
+  return out.join('');
 }
 function renderWatchRow(){
   const box = $('#wlrow'); if(!box) return;
@@ -1263,7 +1274,7 @@ function openSearch(tv){
   searchOn = true; searchTV = tv;
   history.pushState({ search:1 }, '');
   $('.top').classList.add('searching');
-  const q = $('#hq'); q.value = ''; q.placeholder = tv ? 'Search any show…' : 'Search films, actors or directors…';
+  const q = $('#hq'); q.value = ''; q.placeholder = tv ? 'Search any series…' : 'Search films, series or people…';
   const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
   q.focus();
 }
@@ -1281,7 +1292,7 @@ function closeSearch(fromPop){
     if(!q){ panel.hidden = true; return; }
     panel.hidden = false;
     const tv = searchTV;
-    feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), tv ? { path:'/search/tv', params:{ query:q }, tv:true } : { path:'/search/movie', params:{ query:q } });
+    feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), tv ? { path:'/search/tv', params:{ query:q }, tv:true } : { path:'/search/multi', params:{ query:q } });
     if(tv){ $('#fpeople').innerHTML = ''; return; }
     try{
       const d = await tmdb('/search/person', { query:q, include_adult:'false' });
@@ -1316,7 +1327,7 @@ let genreKind = 'film', gObs;
 function buildGenres(){
   const v = $('#v-genres');
   if(!store.get(K_KEY, '')){ v.innerHTML = `<div class="onb"><p>Add your TMDB key in Settings to load genres.</p></div>`; return; }
-  if(window.GENRE_TEST){ buildGenreBrowse(); return; }
+  buildGenreBrowse(); return;
   built.genres = true;
   v.innerHTML = `<div class="gk"><div class="seg"><button data-k="film">Films</button><button data-k="tv">TV</button></div></div><div id="grows"></div>`;
   $$('.gk button', v).forEach(x => x.onclick = () => { if(genreKind !== x.dataset.k){ genreKind = x.dataset.k; drawGenreRows(); } });
@@ -1336,7 +1347,7 @@ function drawGenreRows(){
 }
 function openGenreSheet(def){
   let sort = 'popular', decade = '';
-  const s = sheet(`<h2 class="stitle">${esc(def.title)}${def.tv ? ' <span class="small" style="font-family:inherit;letter-spacing:0">TV</span>' : ''}</h2>
+  const s = sheet(`<h2 class="stitle">${esc(def.title)}${def.tv ? ' <span class="small" style="font-family:inherit;letter-spacing:0">Series</span>' : ''}</h2>
     <div class="gopts" style="margin:0 0 14px"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
       <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });
@@ -1348,7 +1359,7 @@ function openGenreSheet(def){
 }
 function openGenrePage(def){
   let sort = 'popular', decade = '';
-  genrePageTitle = { small:def.tv ? 'TV genre' : 'Genre', big:def.title };
+  genrePageTitle = { small:def.tv ? 'Series genre' : 'Genre', big:def.title };
   setView('genre');
   const b = $('#v-genre');
   b.innerHTML = `<div class="pad"><div class="gopts" style="margin:14px 0"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
@@ -1359,7 +1370,7 @@ function openGenrePage(def){
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
 }
-const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; setView('genres'); if(built.genres) window.GENRE_TEST ? buildGenreBrowse() : drawGenreRows(); };
+const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; setView('genres'); if(built.genres) buildGenreBrowse(); };
 
 /* Stremio-style Genres: Type / Genre / Sort over a three-across poster grid */
 const PICK_CHECK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -1379,19 +1390,19 @@ const gb = { tv:false, g:'*', sort:'popular' };
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
-  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'TV' }];
+  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'Series' }];
   const list = gb.tv ? TVGENRES : GENRES;
   const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
   if(!genres.some(g => g.k === gb.g)) gb.g = '*';
   const gl = genres.find(g => g.k === gb.g);
-  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'TV' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
+  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
     <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
   fitPills($('.pkbar', v));
   const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
-  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'TV' : 'Films') : gl.label), def });
+  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });
   feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
 }
 
@@ -1721,10 +1732,10 @@ function openRun(saga){
 
 /* ---------- TV ---------- */
 const TVROWS = [
-  { title:'Trending TV this week', page:'Trending TV', path:'/trending/tv/week', tv:true },
-  { title:'Top rated shows', page:'Top shows', sub:'Ranked by IMDb voters', imdbTop:'tv', path:'/tv/top_rated', tv:true, ranked:true, max:100 },
-  { title:'Popular right now', page:'Popular TV', path:'/tv/popular', tv:true },
-  { title:'On the air', path:'/tv/on_the_air', tv:true },
+  { title:'Trending series this week', page:'Trending series', path:'/trending/tv/week', tv:true },
+  { title:'Top rated series', page:'Top series', sub:'Ranked by IMDb voters', imdbTop:'tv', path:'/tv/top_rated', tv:true, ranked:true, max:100 },
+  { title:'Popular series', page:'Popular series', path:'/tv/popular', tv:true },
+  { title:'Series on the air', page:'On the air', path:'/tv/on_the_air', tv:true },
   { title:'Drama', genre:true, path:'/discover/tv', tv:true, params:{ with_genres:18, sort_by:'popularity.desc', 'vote_count.gte':200 } },
   { title:'Comedy', genre:true, path:'/discover/tv', tv:true, params:{ with_genres:35, sort_by:'popularity.desc', 'vote_count.gte':200 } },
   { title:'Crime', genre:true, path:'/discover/tv', tv:true, params:{ with_genres:80, sort_by:'popularity.desc', 'vote_count.gte':200 } },
@@ -1747,7 +1758,7 @@ function buildTV(){
 function renderMyShows(){
   const box = $('#myshows'); if(!box) return;
   const mine = Object.entries(ratings).filter(([k]) => k.startsWith('tv')).sort((a, b) => (b[1].at || 0) - (a[1].at || 0));
-  box.innerHTML = mine.length ? `<section class="row" style="margin-top:6px"><div class="rowhead"><div><h3>Your shows</h3></div><button data-list="shows">See all</button></div>
+  box.innerHTML = mine.length ? `<section class="row" style="margin-top:6px"><div class="rowhead"><div><h3>Your series</h3></div><button data-list="shows">See all</button></div>
     <div class="track">${mine.map(([k, r]) => cardHTML({ id:k, title:r.title, poster:r.poster })).join('')}</div></section>` : '';
 }
 const openFindTV = () => openSearch(true);
