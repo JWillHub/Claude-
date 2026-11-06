@@ -76,13 +76,15 @@ main{max-width:1100px;margin:0 auto}
 
 /* tab bar */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;justify-content:space-around;
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:rgba(20,17,25,.98);border-top:1px solid var(--line)}
+  padding:14px 8px calc(8px + env(safe-area-inset-bottom));pointer-events:none;
+  background:linear-gradient(to top,rgba(12,10,15,.85),rgba(12,10,15,.4) 60%,rgba(12,10,15,0))}
 .tb{flex:1;max-width:110px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--muted);font-size:11px;font-weight:650;cursor:pointer;padding:4px 0;position:relative}
-.tb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  color:rgba(236,232,242,.78);font-size:11px;font-weight:650;cursor:pointer;padding:4px 0;position:relative;pointer-events:auto;
+  text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.6)}
+.tb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(0,0,0,.5))}
 .tb.on{color:var(--accent)}
 .tb[hidden]{display:none}
-.tb.on::after{content:"";position:absolute;top:-8px;width:26px;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
 
 /* hero */
 .hero{position:relative;margin:0 16px;border-radius:22px;overflow:hidden;aspect-ratio:16/10;max-height:420px;width:calc(100% - 32px);
