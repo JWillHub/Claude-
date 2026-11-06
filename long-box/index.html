@@ -131,7 +131,14 @@ main{max-width:1100px;margin:0 auto}
 .rowhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:0 16px 10px}
 .rowhead h3{margin:0;font-family:var(--disp);font-weight:700;font-size:22px;line-height:1.1}
 .rowhead p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
-.rowhead button{flex:none;background:none;border:0;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:4px 0}
+/* rows that open a full page: the title itself is the link, with a chevron after it */
+.rowhead button{display:none}
+.rowhead:has(button){cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rowhead:has(button) h3{display:inline-flex;align-items:center;gap:6px}
+.rowhead:has(button) h3::after{content:"";flex:none;width:18px;height:18px;margin-top:-1px;background:var(--accent);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 5l7 7-7 7'/%3E%3C/svg%3E") center/contain no-repeat}
+.rowhead:has(button):active h3{opacity:.7}
 .track{display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;padding:0 16px 6px;scroll-padding:0 16px;scroll-snap-type:x proximity;scrollbar-width:none;min-height:150px}
 .track>.pc{flex:none;width:112px;scroll-snap-align:start}
 .track>.pc.ranked{width:136px;padding-left:28px}
@@ -1384,6 +1391,11 @@ async function loadForYou(){
     sec.hidden = false;
   }catch(e){ sec.hidden = true; }
 }
+// Tapping a row's title opens its full page (the row's hidden See all button)
+document.addEventListener('click', e => {
+  const rh = e.target.closest('.rowhead'); if(!rh || e.target.closest('button')) return;
+  const btn = rh.querySelector('button'); if(btn){ e.stopPropagation(); btn.click(); }
+}, true);
 const rowDef = key => { const k = String(key); return k[0] === 's' ? SROWS[+k.slice(1)] : k[0] === 'g' ? GROWS[+k.slice(1)] : k[0] === 'd' ? DROWS[+k.slice(1)] : ROWS[+k]; };
 function rowHTML(i){
   if(i === 'screen') return freeRowHTML();
