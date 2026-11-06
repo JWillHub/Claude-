@@ -735,7 +735,7 @@ const bundleReady = (async () => {
       const v = mem.get('rv:' + name + ':' + year);
       if(v && m){ mem.set('ri:' + v.id + ':' + num, m); remember([m]); }
     });
-    Object.entries(d.arcs || {}).forEach(([name, a]) => { mem.set('arcid2:' + name, a ? a.id : null); if(a) mem.set('arc:' + a.id, a.issues); });
+    Object.entries(d.arcs || {}).forEach(([name, a]) => { mem.set('arcid2:' + name, a ? a.id : null); if(a) mem.set('arc2:' + a.id, a.issues); });
   }catch(e){}
 })();
 const PER = 50;
@@ -1481,10 +1481,14 @@ async function resolveArc(name, pub, low){
 }
 async function arcIssues(id, low){
   await bundleReady;
-  return cached('arc:' + id, 24 * 14, async () => {
+  return cached('arc2:' + id, 24 * 14, async () => {
     const d = await cv(`story_arc/4045-${id}/`, { field_list:'id,name,issues,image,deck,publisher' }, low);
     const ids = ((d.results && d.results.issues) || []).map(x => x.id).slice(0, 300);
-    const list = await engOnly(await issuesByIds(ids, low), low);
+    let list = (await engOnly(await issuesByIds(ids, low), low))
+      .filter(x => !/deluxe|anniversary|omnibus|from the dc vault|facsimile|giant|treasury|collect|tpb|hc\b|edition/i.test((x.vol && x.vol.name) || ''));
+    // leave out reprints filed under the arc years later
+    const yrs = list.map(x => +x.year).filter(Boolean).sort((a, b) => a - b), mid = yrs[yrs.length >> 1];
+    if(mid) list = list.filter(x => !+x.year || Math.abs(+x.year - mid) <= 3);
     return list.sort(byDate);
   }, low);
 }

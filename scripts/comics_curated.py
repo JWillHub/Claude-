@@ -76,6 +76,11 @@ def resolve_vol(name, year):
         n = norm(v['name']); w = norm(name)
         return (1000 if n == w else 200 if w in n else 0) - abs(int(v['start'] or 0) - year) * 10 + min(v['count'], 100) / 10
     best = max(cand, key=score, default=None)
+    if not best or abs(int(best['start'] or 0) - year) > 1:
+        q = re.sub(r'^the\s+', '', name, flags=re.I).replace(',', '')
+        more = cv('volumes/', filter='name:' + q, field_list=VOL_F, limit=100).get('results') or []
+        cand += [slim_vol(v) for v in more if eng_pub((v.get('publisher') or {}).get('name'))]
+        best = max(cand, key=score, default=None)
     vols[k] = best if best and score(best) > 100 else None
     if vols[k]: pubs[vols[k]['id']] = vols[k]['pub']
     print('series', k, '->', vols[k] and vols[k]['id'])
@@ -96,6 +101,10 @@ def resolve_arc(name, pub):
         return (1000 if norm(a['name']) == norm(name) else 300 if norm(name) in norm(a['name']) else 0) \
             + (200 if pub.lower() in ((a.get('publisher') or {}).get('name') or '').lower() else 0) + min(cnt(a), 150)
     best = max(d.get('results') or [], key=score, default=None)
+    if not best or score(best) < 300:
+        word = max(re.findall(r"[A-Za-z']+", q), key=len)
+        d = cv('story_arcs/', filter='name:' + word, field_list='id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit=100)
+        best = max(d.get('results') or [], key=score, default=None)
     if not best or score(best) < 300: arcs[name] = None; print('arc', name, '-> not found'); return
     det = cv(f'story_arc/4045-{best["id"]}/', field_list='id,name,issues')
     ids = [x['id'] for x in (det.get('results') or {}).get('issues') or []][:300]
@@ -107,6 +116,11 @@ def resolve_arc(name, pub):
         for v in cv('volumes/', filter='id:' + '|'.join(map(str, need[i:i + 100])), field_list='id,publisher', limit=100).get('results') or []:
             pubs[v['id']] = (v.get('publisher') or {}).get('name', '')
     out = [x for x in out if not x['vol'] or eng_pub(pubs.get(x['vol']['id'], ''))]
+    out = [x for x in out if not re.search(r'deluxe|anniversary|omnibus|from the dc vault|facsimile|giant|treasury|collect|tpb|hc\b|edition', (x['vol'] or {}).get('name') or '', re.I)]
+    years = sorted(int(x['date'][:4]) for x in out if x['date'][:4].isdigit())
+    if years:
+        mid = years[len(years) // 2]
+        out = [x for x in out if not x['date'][:4].isdigit() or abs(int(x['date'][:4]) - mid) <= 3]
     out.sort(key=lambda x: (x['date'] or '9999', num_of(x['num'])))
     arcs[name] = {'id': best['id'], 'issues': out}
     print('arc', name, '->', best['id'], len(out), 'issues')
