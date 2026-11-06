@@ -170,8 +170,11 @@ for name in ([] if LIGHT else dict.fromkeys(js_list('CHARS') + js_list('DC_CHARS
         print('character', name, len(out))
     except Limited: print('limit reached - kept last build for', name)
 def new_issues(filt):
-    d = cv('issues/', filter=filt, sort='store_date:desc', field_list=ISSUE_F, limit=100)
-    out = [slim_issue(x) for x in d.get('results') or []]
+    out = []
+    for page in range(3):   # a week of new comics runs to a few hundred issues
+        d = cv('issues/', filter=filt, sort='store_date:desc', field_list=ISSUE_F, limit=100, offset=page * 100)
+        out += [slim_issue(x) for x in d.get('results') or []]
+        if len(out) >= int(d.get('number_of_total_results') or 0): break
     need = sorted({x['vol']['id'] for x in out if x['vol'] and x['vol']['id'] not in pubs})
     for i in range(0, len(need), 100):
         for v in cv('volumes/', filter='id:' + '|'.join(map(str, need[i:i + 100])), field_list='id,publisher', limit=100).get('results') or []:

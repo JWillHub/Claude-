@@ -447,6 +447,10 @@ html{touch-action:manipulation}
 .cap2 span{display:block;font-size:11px;color:var(--muted)}
 .track{min-height:200px}
 .track>.pc{width:116px}
+.recent{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.rq{display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:18px;background:var(--card);border:1px solid var(--line);color:var(--text);font:inherit;font-size:14px;white-space:nowrap}
+.rq svg{width:14px;height:14px;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round}
+.rclear{background:none;border:0;color:var(--accent);font:inherit;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
 .cinfo{margin:6px 0 4px;font-size:15px;line-height:1.55;white-space:pre-line}
 .chip2{display:flex;align-items:center;gap:10px;width:100%;height:44px;padding:0 14px 0 5px;margin:0 0 8px;border-radius:22px;white-space:nowrap;
   background:linear-gradient(90deg,rgba(255,181,71,.09),rgba(255,255,255,.025));border:1px solid rgba(255,181,71,.26);color:var(--text);font:inherit;cursor:pointer;text-align:left}
@@ -505,7 +509,7 @@ html{touch-action:manipulation}
   <section id="v-franchises" hidden></section>
   <section id="v-list" hidden></section>
 </main>
-<div class="srch" id="srch" hidden><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
+<div class="srch" id="srch" hidden><div id="fmatch"></div><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c.6-3.9 3.4-6.2 7-6.2s6.4 2.3 7 6.2"/><path d="M8.6 5.6L6.2 3.4M15.4 5.6l2.4-2.2"/></svg>Characters</button>
@@ -1253,12 +1257,13 @@ function buildDiscover(){
   built.discover = true;
   v.innerHTML = `<div class="hero" id="hero" style="margin-top:16px"></div>
     <div id="wlrow"></div>
+    <section class="row" id="newmine" hidden><div class="rowhead"><div><h3>New in your series</h3><p>Out this week</p></div></div><div class="track"></div></section>
     <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>Keep reading</h3><p id="fysub"></p></div><button data-list="foryou">See all</button></div><div class="track"></div></section>
     ${rowHTML('d0')}
     <section class="row"><div class="rowhead"><div><h3>DC story arcs</h3></div><button data-arcs="1">All story arcs</button></div>
       <div class="track">${ARCS.filter(a => a.g === 'dc').map(tileHTML).join('')}</div></section>
     ${discoverOrder().map(rowHTML).join('')}`;
-  renderWatchRow(); loadForYou(); loadHero();
+  renderWatchRow(); loadNewMine(); loadForYou(); loadHero();
   rowObs?.disconnect();
   rowObs = new IntersectionObserver(es => es.forEach(e => {
     if(!e.isIntersecting) return;
@@ -1286,6 +1291,18 @@ function renderWatchRow(){
     <div class="track">${list.map(([k, w]) => cardHTML({ id:pid(k), ...w })).join('')}</div></section>`
     : `<button class="qs2" id="qs">${STAR}<span>Rate what you've read</span><i>›</i></button>`;
   const q = $('#qs', box); if(q) q.onclick = () => { delete sagaData.quick; openRun(QUICK); };
+}
+// a pull list: this week's releases from series you've rated or saved, from the nightly file (no extra Comic Vine calls)
+async function loadNewMine(){
+  const sec = $('#newmine'); if(!sec) return;
+  await bundleReady;
+  const week = (bundle && bundle.fresh && bundle.fresh.week) || [];
+  const mine = new Set([...Object.values(ratings), ...Object.values(watch), ...Object.values(seen)].map(r => r.vol && r.vol.id).filter(Boolean));
+  const list = week.filter(m => m.vol && mine.has(m.vol.id) && !getR(m.id));
+  if(!list.length){ sec.hidden = true; return; }
+  remember(list);
+  $('.track', sec).innerHTML = list.map(cardHTML).join('');
+  sec.hidden = false;
 }
 let forYouList = [];
 // next issues after the ones you rated highest, in the same series
@@ -1430,13 +1447,31 @@ function openStaticList(kind){
 
 /* search opens in the header and lays results over the page you're on; Cancel or Back puts you right back */
 let searchOn = false;
+const K_RECENT = 'longbox.recent';
+let recent = store.get(K_RECENT, []);
+function saveRecent(q){
+  q = (q || '').trim(); if(q.length < 2) return;
+  recent = [q, ...recent.filter(x => x.toLowerCase() !== q.toLowerCase())].slice(0, 8);
+  store.set(K_RECENT, recent);
+}
+// with nothing typed, the panel shows your recent searches
+function showRecent(){
+  const panel = $('#srch');
+  $('.grid', panel).innerHTML = ''; $('.grid', panel)._gen = ($('.grid', panel)._gen || 0) + 1; $('.msg', panel).textContent = ''; $('#fmatch').innerHTML = '';
+  if(!recent.length){ panel.hidden = true; $('#fpeople').innerHTML = ''; return; }
+  panel.hidden = false;
+  $('#fpeople').innerHTML = `<div class="castsec"><div class="lbl" style="margin-top:0;display:flex;justify-content:space-between">Recent<button class="rclear" id="rclear">Clear</button></div>
+    <div class="recent">${recent.map(q => `<button class="rq" data-q="${esc(q)}">${SEARCH_SVG}<span>${esc(q)}</span></button>`).join('')}</div></div>`;
+  $$('.rq', panel).forEach(x => x.onclick = () => { const i = $('#hq'); i.value = x.dataset.q; i.blur(); i.oninput({ target:i, now:true }); saveRecent(x.dataset.q); });
+  $('#rclear').onclick = () => { recent = []; store.set(K_RECENT, recent); showRecent(); };
+}
 function openSearch(){
   if(searchOn){ $('#hq').focus(); return; }
   searchOn = true;
   history.pushState({ search:1 }, '');
   $('.top').classList.add('searching');
   const q = $('#hq'); q.value = ''; q.placeholder = 'Search issues, series, characters, creators…';
-  const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  showRecent();
   q.focus();
 }
 function closeSearch(fromPop){
@@ -1445,19 +1480,42 @@ function closeSearch(fromPop){
   $('.top').classList.remove('searching'); $('#srch').hidden = true; $('#hq').blur();
   if(!fromPop){ popSkip++; history.back(); }
 }
+// "Batman 497" or "Saga #1": find that issue in the best-matching series
+async function issueMatches(q){
+  const m = q.match(/^(.*?[a-z].*?)\s*#?\s*(\d+(?:\.\d+)?[a-z]?)$/i);
+  if(!m || m[1].trim().length < 2) return [];
+  const name = m[1].trim().replace(/[#\s]+$/, ''), num = m[2];
+  const d = await searchPage(name, 'volume', 1);
+  const vs = d.results.map(slimVol).filter(v => engPub(v.pub) && v.count > 0);
+  const score = v => (norm(v.name) === norm(name) ? 1e6 : norm(v.name).startsWith(norm(name)) ? 1e5 : 0) + v.count;
+  const top = vs.sort((a, b) => score(b) - score(a)).slice(0, 4);
+  rememberVols(top);
+  const got = await Promise.all(top.map(v => cached('ri:' + v.id + ':' + num, 24 * 30, async () => {
+    const r = await cv('issues/', { filter:`volume:${v.id},issue_number:${num}`, field_list:ISSUE_F, limit:5 });
+    const x = (r.results || [])[0]; return x ? slimIssue(x) : null;
+  }).catch(() => null)));
+  const out = got.filter(Boolean); remember(out);
+  return out;
+}
 {
   let t, gen = 0;
-  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); clearTimeout(t); $('#hq').oninput({ target:e.target, now:true }); } };
+  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); clearTimeout(t); saveRecent(e.target.value); $('#hq').oninput({ target:e.target, now:true }); } };
+  // tapping any result counts the search as one worth remembering
+  $('#srch').addEventListener('click', e => { if(e.target.closest('.pc,.pp,[data-vol]')) saveRecent($('#hq').value); }, true);
   $('#hq').oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
     const my = ++gen, panel = $('#srch');
-    if(!q){ panel.hidden = true; return; }
+    if(!q){ showRecent(); return; }
     panel.hidden = false;
-    $('#fpeople').innerHTML = '';
+    $('#fpeople').innerHTML = ''; $('#fmatch').innerHTML = '';
     feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), { load:async p => {
       const d = await searchPage(q, 'issue', p);
       const results = await engOnly(d.results.map(slimIssue)); remember(results);
       return { page:p, total:d.total, results };
     } });
+    issueMatches(q).then(list => {
+      if(my !== gen || !list.length) return;
+      $('#fmatch').innerHTML = `<div class="castsec"><div class="lbl" style="margin-top:0">Best match</div></div><div class="track" style="margin:0 -16px 6px;min-height:0">${list.map(cardHTML).join('')}</div>`;
+    }).catch(() => {});
     try{
       const d = await searchPage(q, 'volume,character,person', 1);
       if(my !== gen) return;
