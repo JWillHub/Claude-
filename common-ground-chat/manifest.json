@@ -1,0 +1,25 @@
+{
+  "name": "Common Ground Chat",
+  "short_name": "CG Chat",
+  "description": "Peer support skills library and chat-style session planner",
+  "id": "/Claude-/common-ground-chat/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#E8553D",
+  "theme_color": "#E8553D",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

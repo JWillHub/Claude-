@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}</style></head><body>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" href="icon-192.png"><meta name="theme-color" content="#1B1530"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CG Deck"><meta name="apple-mobile-web-app-status-bar-style" content="default"><style>[hidden]{display:none!important}</style></head><body>
 <title>Common Ground Deck</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
@@ -1316,4 +1316,5 @@ function showCrisis(onDone){if(document.getElementById("crisisBg"))return;const 
 
 document.addEventListener("click",e=>{const c=e.target.closest(".nc.tapx");if(!c||e.target.closest("button,a,input,textarea,select,label"))return;c.classList.toggle("open");});
 </script>
+<script>if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
 </body></html>
