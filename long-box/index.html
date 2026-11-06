@@ -447,6 +447,12 @@ html{touch-action:manipulation}
 .cap2 span{display:block;font-size:11px;color:var(--muted)}
 .track{min-height:200px}
 .track>.pc{width:116px}
+.qs2{display:flex;align-items:center;gap:10px;margin:18px 16px 4px;width:calc(100% - 32px);height:46px;padding:0 16px;border-radius:23px;
+  border:1px solid rgba(255,181,71,.45);background:linear-gradient(90deg,rgba(255,181,71,.12),rgba(255,181,71,.02));color:var(--text);font:inherit;cursor:pointer}
+.qs2 svg{width:17px;height:17px;fill:var(--accent);flex:none}
+.qs2 span{flex:1;text-align:left;font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.06em;text-transform:uppercase}
+.qs2 i{font-style:normal;color:var(--accent);font-size:22px;line-height:1}
+.qs2:active{transform:scale(.98)}
 /* fixed-list rows: covers keep their own proportions, within a size range */
 .track>div>.pc{flex:none;width:auto;min-width:132px;max-width:220px;scroll-snap-align:start}
 .track>div>.pc img{width:100%;aspect-ratio:auto;max-height:330px;min-height:180px;object-fit:cover}
@@ -462,7 +468,6 @@ html{touch-action:manipulation}
 .phead .favbtn svg{width:14px;height:14px;fill:currentColor}
 .mact button.on{border-color:var(--accent);color:var(--accent)}
 #mrd.on{border-color:var(--good);color:var(--good)}
-.qs .qi svg{width:24px;height:24px;fill:#1a1206}
 </style>
 </head>
 <body>
@@ -672,7 +677,12 @@ async function cached(k, ttlH, fn, low = false){
   const f = inflight.get(k);
   // the same data already loading in the background: a request you made doesn't wait behind it
   if(f && (low || !f.low)) return f.pr;
-  const pr = (async () => { const d = await fn(); mem.set(k, d); cacheSet(k, { t:Date.now(), d }); return d; })();
+  const pr = (async () => {
+    let d;
+    try{ d = await fn(); }
+    catch(e){ if(c && c.d != null){ mem.set(k, c.d); return c.d; } throw e; }   // out of date beats nothing
+    mem.set(k, d); cacheSet(k, { t:Date.now(), d }); return d;
+  })();
   const me = { pr, low };
   inflight.set(k, me); pr.finally(() => { if(inflight.get(k) === me) inflight.delete(k); }).catch(() => {});
   return pr;
@@ -1215,13 +1225,11 @@ function buildDiscover(){
   built.discover = true;
   v.innerHTML = `<div class="hero" id="hero" style="margin-top:16px"></div>
     <div id="wlrow"></div>
-    <button class="qs" id="qs"><span class="qi">${STAR}</span><span><b>Rate what you've read</b></span></button>
     <section class="row" id="foryou" hidden><div class="rowhead"><div><h3>Keep reading</h3><p id="fysub"></p></div><button data-list="foryou">See all</button></div><div class="track"></div></section>
     ${rowHTML('d0')}
     <section class="row"><div class="rowhead"><div><h3>DC story arcs</h3></div><button data-arcs="1">All story arcs</button></div>
       <div class="track">${ARCS.filter(a => a.g === 'dc').map(tileHTML).join('')}</div></section>
     ${DROWS.slice(1).map((r, i) => rowHTML('d' + (i + 1))).join('')}`;
-  $('#qs').onclick = () => { delete sagaData.quick; openRun(QUICK); };
   renderWatchRow(); loadForYou(); loadHero();
   rowObs?.disconnect();
   rowObs = new IntersectionObserver(es => es.forEach(e => {
@@ -1236,7 +1244,9 @@ function renderWatchRow(){
   const box = $('#wlrow'); if(!box) return;
   const list = Object.entries(watch).sort((a, b) => b[1].at - a[1].at);
   box.innerHTML = list.length ? `<section class="row"><div class="rowhead"><div><h3>Your reading list</h3><p>${list.length} to read</p></div><button data-list="watch">See all</button></div>
-    <div class="track">${list.map(([k, w]) => cardHTML({ id:pid(k), ...w })).join('')}</div></section>` : '';
+    <div class="track">${list.map(([k, w]) => cardHTML({ id:pid(k), ...w })).join('')}</div></section>`
+    : `<button class="qs2" id="qs">${STAR}<span>Rate what you've read</span><i>›</i></button>`;
+  const q = $('#qs', box); if(q) q.onclick = () => { delete sagaData.quick; openRun(QUICK); };
 }
 let forYouList = [];
 // next issues after the ones you rated highest, in the same series
@@ -1306,7 +1316,12 @@ async function loadRow(sec){
       page = d.page; total = d.total;
       track.insertAdjacentHTML('beforeend', d.results.map(m => itemHTML(def, m)).join(''));
       if(page === 1 && !d.results.length) track.innerHTML = '<div class="msg">Nothing here right now.</div>';
-    }catch(e){ if(page === 0) track.innerHTML = `<div class="msg">${errText(e)}</div>`; }
+    }catch(e){
+      if(page === 0){
+        track.innerHTML = `<div class="msg">${e && e.message === 'limit' ? 'More on the way — Comic Vine is catching up. This row fills in on its own.' : errText(e)}</div>`;
+        if(e && (e.message === 'limit' || e.message === 'blocked' || e.message === 'timeout')) setTimeout(() => { if(sec.isConnected) loadRow(sec); }, 5 * 60e3);
+      }
+    }
     busy = false;
   };
   track.onscroll = () => { if(track.scrollLeft + track.clientWidth > track.scrollWidth - 500) more(); };
@@ -1609,7 +1624,7 @@ function openRun(saga){
 
   function renderStack(){
     const box = $('#rbody', b);
-    box.innerHTML = `<div class="car nodrag">${rel.map((f, n) => `<div class="card cc" data-n="${n}">
+    box.innerHTML = `<div class="car">${rel.map((f, n) => `<div class="card cc" data-n="${n}">
         ${Math.abs(n - i) < 6 ? poster(f.big || f.poster, '', f.title) : '<div class="ph"></div>'}<span class="num">${n + 1} / ${rel.length}</span><span class="rb"></span>
         <div class="cap"><b>${esc(f.title)}</b><span>${esc([f.name, f.year].filter(Boolean).join(' · '))}</span></div></div>`).join('')}</div>
       <div class="runctl nodrag">${starsHTML(42, 6)}<div class="rv" id="rrv"></div>
