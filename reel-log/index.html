@@ -664,7 +664,7 @@ async function listPage(path, params, page, tv){
     // search/multi mixes films and series (people are dropped here; they have their own row)
     const rows = path === '/search/multi' ? (d.results||[]).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m))
       : (d.results||[]).filter(m => tv ? m.name : m.title).map(tv ? slimTV : slim);
-    return { page:d.page, total:Math.min(d.total_pages||1, 500), results:rows.filter(keep) };
+    return { page:d.page, total:Math.min(d.total_pages||1, 500), count:d.total_results, results:rows.filter(keep) };
   };
   const out = page === 1 && !params.query ? await cached(k, 6, run) : (mem.get(k) || await run().then(d => (mem.set(k, d), d)));
   remember(out.results);
@@ -1187,7 +1187,7 @@ async function imdbTopPage(kind, page){
     return hit ? (kind === 'tv' ? slimTV(hit) : slim(hit)) : null;
   }).then(m => m && { ...m, rank:(page - 1) * per + i + 1 }).catch(() => null)));
   const results = found.filter(m => m && keep(m)); remember(results);
-  return { page, total:Math.ceil(list.length / per), results };
+  return { page, total:Math.ceil(list.length / per), count:list.length, results };
 }
 
 /* generic infinite grid inside a sheet or page */
@@ -1490,17 +1490,32 @@ async function resolveKeyword(name){
   });
 }
 const QUICK = { k:'quick', name:"Rate what you've seen", quick:true };
+async function moreOf(list){
+  const m = list._more;
+  if(!m || m.page >= m.total || list.length >= m.cap) return false;
+  if(m.busy) return m.busy;
+  m.busy = (async () => {
+    try{
+      const d = await pageOf(m.def, m.page + 1);
+      m.page = d.page; m.total = d.total; if(d.count) m.count = Math.min(d.count, m.cap);
+      const add = d.results.filter(x => !m.dup.has(x.id) && m.dup.add(x.id)).slice(0, m.cap - list.length);
+      remember(add); list.push(...add);
+      return add.length > 0 || m.page < m.total;
+    }catch(e){ m.total = m.page; return false; }
+    finally{ m.busy = null; }
+  })();
+  return m.busy;
+}
+const hasMore = list => !!(list._more && list._more.page < list._more.total && list.length < list._more.cap);
 function loadSaga(s){
   if(sagaData[s.k]) return sagaData[s.k];
   if(s.src){
     sagaData[s.k] = (async () => {
       if(s.src.items) return s.src.items.filter(Boolean).map(m => ({ ...m, date:m.date || '0000' }));   // saved titles may not carry a date
-      const def = s.src.def, cap = def.max || 60, out = [], dup = new Set();
-      for(let page = 1, total = 1; page <= total && out.length < cap; page++){
-        const d = await pageOf(def, page); total = d.total;
-        d.results.forEach(m => { if(!dup.has(m.id) && out.length < cap){ dup.add(m.id); out.push(m); } });
-      }
-      remember(out);
+      // a whole list: the first pages now, the rest fetched as the carousel nears the end
+      const def = s.src.def, out = [];
+      out._more = { def, page:0, total:1, cap:def.max || Infinity, dup:new Set(), count:0 };
+      await moreOf(out); await moreOf(out);
       return out;
     })();
     return sagaData[s.k];
@@ -1624,7 +1639,8 @@ function openRun(saga){
   let films = [], rel = [], up = [], i = 0;
   const setProg = () => {
     const done = rel.filter(f => getR(f.id)).length, w = rel.filter(f => !getR(f.id) && seen[f.id]).length;
-    $('#rprog', b).textContent = `${rel.length} films · ${done} rated` + (w ? ` · ${w} watched` : '') + (up.length ? ` · ${up.length} coming` : '');
+    const n = hasMore(films) && films._more.count > rel.length ? films._more.count.toLocaleString() : rel.length;
+    $('#rprog', b).textContent = `${n} films · ${done} rated` + (w ? ` · ${w} watched` : '') + (up.length ? ` · ${up.length} coming` : '');
   };
   const paintWatched = () => {
     const wb = $('#rwatched', b), f = rel[i];
@@ -1674,10 +1690,21 @@ function openRun(saga){
     });
     const p = $('#rprev', b); if(p) p.style.opacity = pos <= 0 ? .35 : 1;
   }
-  function go(n){
+  // long lists grow as you go: the next page loads a few cards before the end
+  async function extend(){
+    if(!hasMore(films)) return false;
+    const before = rel.length, got = await moreOf(films);
+    rel = films.filter(released); up = films.filter(x => !released(x));
+    if(rel.length !== before && i < rel.length && $('#rbody .car', b)) renderStack();
+    setProg();
+    return got;
+  }
+  async function go(n){
     if(n < 0) n = 0;
+    if(n >= rel.length && hasMore(films)){ while(n >= rel.length && await extend()); }
     if(n >= rel.length){ i = rel.length; renderDone(); setProg(); paintWatched(); return; }
     i = n; layout(i, true); paintTop(); paintWatched();
+    if(rel.length - i < 8) extend();
   }
   function paintTop(){
     const s5 = $('#rbody .runctl .s5', b); if(!s5 || !rel[i]) return;
@@ -1722,10 +1749,12 @@ function openRun(saga){
     $('#rback', box).onclick = () => { i = rel.length - 1; render(); };
     $('#rclose', box).onclick = () => s.close();
   }
-  loadSaga(saga).then(f => {
+  loadSaga(saga).then(async f => {
     films = f; rel = films.filter(released); up = films.filter(x => !released(x));
     if(!rel.length){ $('#rbody', b).innerHTML = '<div class="msg">No released films found for this series.</div>'; setProg(); return; }
-    i = rel.findIndex(x => !getR(x.id) && !seen[x.id]); if(i < 0) i = rel.length;
+    i = rel.findIndex(x => !getR(x.id) && !seen[x.id]);
+    if(i < 0 && hasMore(films)){ while(i < 0 && await extend()) i = rel.findIndex(x => !getR(x.id) && !seen[x.id]); }
+    if(i < 0) i = rel.length;
     render(); fillTile(saga.k);
   }).catch(e => { $('#rbody', b).innerHTML = `<div class="msg">${e && e.message ? errText(e) : 'Could not find this series.'}</div>`; $('#rprog', b).textContent = ''; });
 }
