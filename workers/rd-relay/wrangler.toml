@@ -1,5 +1,5 @@
 # Real-Debrid relay for the Rolling Credits library copy (rc-library).
-# Cloudflare: Create application → Import a repository → this repo, root directory "workers/rd-relay".
-name = "rc-relay"
+# Created by hand in the Cloudflare dashboard (Hello World → pasted this file). Keep this file in sync with the live worker.
+name = "rc-relay-3cfe"
 main = "rd-relay.js"
 compatibility_date = "2025-10-01"

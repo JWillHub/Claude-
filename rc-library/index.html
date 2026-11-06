@@ -2322,7 +2322,7 @@ async function saveReviewImage(d, btn){
 // and adds a Play button to that title's card. It never searches for or adds anything new.
 const K_RD = 'rclib.rdkey', K_LIB = 'rclib.rdlib';
 // Real-Debrid doesn't allow browsers to call it directly, so requests go through your small rc-relay Cloudflare worker
-const RD_API = 'https://rc-relay.jwill-personalacc.workers.dev/rd';
+const RD_API = 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
 let rdLib = store.get(K_LIB, null) || { synced:0, items:{} };
 const saveLib = () => { if(!store.set(K_LIB, rdLib)) toast('Could not save the library list — storage is full.'); };
 const VIDEO = /\.(mkv|mp4|m4v|avi|mov|webm|ts|wmv)$/i;
