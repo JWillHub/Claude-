@@ -1192,9 +1192,10 @@ const EVENTS = [['Crisis on Infinite Earths', 1985], ['Secret Wars', 1984], ['Th
   ['Batman: The Long Halloween', 1996], ['Batman: The Dark Knight Returns', 1986], ['Marvels', 1994], ['Civil War', 2006], ['House of M', 2005],
   ['Final Crisis', 2008], ['Blackest Night', 2009], ['Flashpoint', 2011], ['Secret Wars', 2015], ['House of X', 2019], ['All Star Superman', 2005]];
 const CHARS = ['Spider-Man', 'Batman', 'Superman', 'Wonder Woman', 'Teenage Mutant Ninja Turtles', 'X-Men', 'Wolverine', 'Iron Man', 'Uncle Scrooge',
-  'Captain America', 'Thor', 'Hulk', 'The Shadow', 'Daredevil', 'Deadpool', 'Fantastic Four', 'Howard the Duck', 'Avengers', 'Justice League',
-  'Green Lantern', 'Donald Duck', 'The Flash', 'Aquaman', 'Harley Quinn', 'Green Lama', 'Venom', 'Punisher', 'Black Panther', 'Doctor Strange',
-  'Moon Knight', 'Teen Titans', 'Spawn', 'Hellboy', 'Star Wars', 'Transformers'];
+  'Captain America', 'Justice League', 'Thor', 'Hulk', 'The Shadow', 'Daredevil', 'The Flash', 'Deadpool', 'Nightwing', 'Fantastic Four', 'Howard the Duck',
+  'Avengers', 'Green Lantern', 'Catwoman', 'Donald Duck', 'Joker', 'Aquaman', 'Harley Quinn', 'Green Lama', 'Venom', 'Punisher', 'Green Arrow', 'Black Panther',
+  'Supergirl', 'Doctor Strange', 'Batgirl', 'Moon Knight', 'Shazam', 'Teen Titans', 'Swamp Thing', 'Spawn', 'Constantine', 'Hellboy', 'Martian Manhunter',
+  'Suicide Squad', 'Star Wars', 'Transformers'];
 
 /* ---------- Discover ---------- */
 const ROWS = [
@@ -1241,8 +1242,7 @@ const DROWS = [
   { title:'Absolute Universe', page:'Absolute Universe', vols:true, items:DC_ABSOLUTE.map(x => low => resolveVol(...x, low)) },
   { title:'DC essential issues', page:'DC essentials', sub:'Landmark DC comics', items:DC_LANDMARKS.map(x => low => resolveIssue(...x, low)) },
   { title:'Legendary DC runs', page:'DC runs', vols:true, items:DC_RUNS.map(x => low => resolveVol(...x, low)) },
-  { title:'New DC #1s', page:'New DC #1s', sub:'First issues from the last month', load:onlyDC(freshOr('ones', (p, low) => issuePage({ filter:`store_date:${daysAgo(30)}|${today()},issue_number:1`, sort:'store_date:desc' }, p, { low }))) },
-  ...DC_CHARS.map(n => ({ title:n, charName:n, vols:true, load:onlyDC((p, low) => volSearch(n, p, low)) }))
+  { title:'New DC #1s', page:'New DC #1s', sub:'First issues from the last month', load:onlyDC(freshOr('ones', (p, low) => issuePage({ filter:`store_date:${daysAgo(30)}|${today()},issue_number:1`, sort:'store_date:desc' }, p, { low }))) }
 ];
 
 const GROWS = CHARS.map(n => ({ title:n, charName:n, vols:true, load:(p, low) => volSearch(n, p, low) }));
@@ -1273,17 +1273,10 @@ function buildDiscover(){
   $$('.row[data-row]', v).forEach(s => rowObs.observe(s));
   $$('.saga', v).forEach(t => rowObs.observe(t));
 }
-// Discover is DC, with Jimmy's picks mixed in between
-const JIMMY = { 2:'Teenage Mutant Ninja Turtles', 3:'Uncle Scrooge', 4:'The Shadow', 5:'Howard the Duck', 8:'Donald Duck', 12:'Green Lama' };
-function discoverOrder(){
-  const out = [];
-  DROWS.slice(1).forEach((r, i) => {
-    const n = i + 1;
-    if(JIMMY[n]) out.push('g' + CHARS.indexOf(JIMMY[n]));
-    out.push('d' + n);
-  });
-  return out;
-}
+// Discover: the DC rows, then a few characters (DC, Marvel and Jimmy's picks); the rest live in the Characters tab
+const DISCOVER_ROWS = ['d1', 'Teenage Mutant Ninja Turtles', 'd2', 'd3', 'Uncle Scrooge', 'd4',
+  'Batman', 'Spider-Man', 'Superman', 'X-Men', 'The Shadow', 'Wonder Woman', 'Avengers'];
+const discoverOrder = () => DISCOVER_ROWS.map(x => /^d\d+$/.test(x) ? x : 'g' + CHARS.indexOf(x));
 function renderWatchRow(){
   const box = $('#wlrow'); if(!box) return;
   const list = Object.entries(watch).sort((a, b) => b[1].at - a[1].at);
