@@ -27,8 +27,17 @@ ENG = js_list('ENG')
 eng_pub = lambda n: not n or any(k in n.lower() for k in ENG)
 norm = lambda s: re.sub(r'[^a-z0-9]+', ' ', re.sub(r'^the\s+', '', (s or '').lower())).strip()
 
+class Limited(Exception): pass
+PREV = {}
+try:
+    with urllib.request.urlopen('https://raw.githubusercontent.com/JWillHub/Claude-/comics-data/curated.json', timeout=30) as r: PREV = json.load(r)
+except Exception as e: print('no previous build', e)
+limited = set()   # Comic Vine resources that hit the hourly limit this run
+
 last = [0.0]
 def cv(path, **q):
+    res = path.split('/')[0]
+    if res in limited: raise Limited(res)
     for attempt in range(4):
         wait = last[0] + 1.2 - time.time()
         if wait > 0: time.sleep(wait)
@@ -40,7 +49,9 @@ def cv(path, **q):
                 d = json.load(r)
         except Exception as e:
             print('retry', path, e); time.sleep(10 * (attempt + 1)); continue
-        if d.get('status_code') == 107: print('rate limited, waiting'); time.sleep(120); continue
+        if d.get('status_code') == 107:
+            if attempt >= 1: limited.add(res); raise Limited(res)
+            print('rate limited, waiting'); time.sleep(90); continue
         if d.get('status_code') != 1: raise SystemExit(f'Comic Vine error {d.get("status_code")} {d.get("error")}')
         return d
     raise SystemExit('Comic Vine unreachable')
@@ -125,12 +136,19 @@ def resolve_arc(name, pub):
     arcs[name] = {'id': best['id'], 'issues': out}
     print('arc', name, '->', best['id'], len(out), 'issues')
 
+def safe(fn, kind, k, *a):
+    try: fn(*a)
+    except Limited as e:
+        prev = (PREV.get(kind) or {}).get(k)
+        {'vols': vols, 'issues': issues, 'arcs': arcs}[kind][k] = prev
+        print('limit reached for', e, '- kept last build for', k)
 for n in ['CLASSIC_RUNS', 'MODERN_RUNS', 'EVENTS', 'DC_ABSOLUTE', 'DC_RUNS']:
-    for name, year in js_list(n): resolve_vol(name, year)
+    for name, year in js_list(n): safe(resolve_vol, 'vols', f'{name}:{year}', name, year)
 for n in ['LANDMARKS', 'DC_LANDMARKS']:
     for name, year, num in js_list(n):
-        if f'{name}:{year}:{num}' not in issues: resolve_issue(name, year, num)
-for k, name, pub, g in js_list('ARCS'): resolve_arc(name, pub)
+        if f'{name}:{year}:{num}' not in issues: safe(resolve_issue, 'issues', f'{name}:{year}:{num}', name, year, num)
+for k, name, pub, g in js_list('ARCS'): safe(resolve_arc, 'arcs', name, name, pub)
+for k, v in (PREV.get('pubs') or {}).items(): pubs.setdefault(int(k), v)
 
 os.makedirs(sys.argv[1], exist_ok=True)
 with open(os.path.join(sys.argv[1], 'curated.json'), 'w') as f:

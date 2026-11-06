@@ -4,10 +4,7 @@ name: Final Panel curated data
 on:
   schedule:
     - cron: '41 8 * * *'          # daily, ~2-3 AM Central
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/comics-curated.yml', 'scripts/comics_curated.py', 'long-box/index.html']
+  workflow_dispatch:     # runs only overnight (or by hand), so it never competes with people using the app
 permissions:
   contents: write
 concurrency: comics-curated
