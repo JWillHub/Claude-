@@ -1234,7 +1234,7 @@ function buildDiscover(){
     ${rowHTML('d0')}
     <section class="row"><div class="rowhead"><div><h3>DC story arcs</h3></div><button data-arcs="1">All story arcs</button></div>
       <div class="track">${ARCS.filter(a => a.g === 'dc').map(tileHTML).join('')}</div></section>
-    ${DROWS.slice(1).map((r, i) => rowHTML('d' + (i + 1))).join('')}`;
+    ${discoverOrder().map(rowHTML).join('')}`;
   renderWatchRow(); loadForYou(); loadHero();
   rowObs?.disconnect();
   rowObs = new IntersectionObserver(es => es.forEach(e => {
@@ -1244,6 +1244,17 @@ function buildDiscover(){
   }), { rootMargin:'400px 300px' });
   $$('.row[data-row]', v).forEach(s => rowObs.observe(s));
   $$('.saga', v).forEach(t => rowObs.observe(t));
+}
+// Discover is DC, with Jimmy's picks mixed in between
+const JIMMY = { 2:'Teenage Mutant Ninja Turtles', 3:'Uncle Scrooge', 4:'The Shadow', 5:'Howard the Duck', 8:'Donald Duck', 12:'Green Lama' };
+function discoverOrder(){
+  const out = [];
+  DROWS.slice(1).forEach((r, i) => {
+    const n = i + 1;
+    if(JIMMY[n]) out.push('g' + CHARS.indexOf(JIMMY[n]));
+    out.push('d' + n);
+  });
+  return out;
 }
 function renderWatchRow(){
   const box = $('#wlrow'); if(!box) return;
