@@ -924,22 +924,27 @@ function sheet(html, opt = {}){
   history.pushState({ rl:sheetStack.length }, '');
   requestAnimationFrame(() => requestAnimationFrame(() => { bk.classList.add('in'); sh.classList.add('in'); }));
   const opened = Date.now();
-  bk.onclick = () => { if(Date.now() - opened > 450) s.close(); };
+  bk.onclick = () => { if(Date.now() - opened > 450) closeAllSheets(); };
   makeDraggable(s);
   return s;
 }
 function closeSheet(s, fromPop){
   const i = sheetStack.indexOf(s); if(i < 0) return;
+  let n = 0;
   while(sheetStack.length > i){
     const t = sheetStack.pop();
     t.el.classList.remove('in'); t.el.style.transform = ''; t.bk.classList.remove('in');
     setTimeout(() => { t.el.remove(); t.bk.remove(); }, 330);
     t.onClose && t.onClose();
-    if(!fromPop){ popSkip++; history.back(); }
-    fromPop = false;
+    n++;
   }
+  const steps = fromPop ? n - 1 : n;
+  if(steps > 0){ popSkip++; history.go(-steps); }
   if(!sheetStack.length) document.body.classList.remove('locked');
 }
+// Swiping a card down (or tapping above it) clears every open card and puts you back on the page.
+// The phone's Back gesture still steps back one card at a time.
+const closeAllSheets = () => { if(sheetStack.length) closeSheet(sheetStack[0]); };
 // Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it
 addEventListener('touchmove', e => {
   if(!sheetStack.length || !e.cancelable) return;
@@ -983,7 +988,7 @@ function makeDraggable(s){
     if(!dragging) return;
     dragging = false; sh.classList.remove('drag'); s.bk.style.opacity = '';
     const v = dy / Math.max(1, Date.now() - t0);
-    if(dy > 120 || (dy > 40 && v > 0.6)) s.close();
+    if(dy > 120 || (dy > 40 && v > 0.6)) closeAllSheets();
     else sh.style.transform = '';
   };
   sh.addEventListener('touchstart', e => { if(e.touches.length === 1) start(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive:true });
@@ -1303,7 +1308,7 @@ async function loadRow(sec){
     const wait = document.createElement('div'); wait.className = 'msg'; wait.textContent = 'Loading…'; track.appendChild(wait);
     await Promise.all(def.items.map((fn, i) => fn(true).then(m => { if(m){ slots[i].innerHTML = itemHTML(def, m); shown++; wait.remove(); } }).catch(() => {})));
     wait.remove();
-    if(!shown) track.innerHTML = '<div class="msg">Nothing found right now.</div>';
+    if(!shown) sec.hidden = true;
     return;
   }
   let page = 0, total = 1, busy = false;
@@ -1315,7 +1320,7 @@ async function loadRow(sec){
       if(page === 0) track.innerHTML = '';
       page = d.page; total = d.total;
       track.insertAdjacentHTML('beforeend', d.results.map(m => itemHTML(def, m)).join(''));
-      if(page === 1 && !d.results.length) track.innerHTML = '<div class="msg">Nothing here right now.</div>';
+      if(page === 1 && !d.results.length && d.total <= 1) sec.hidden = true;
     }catch(e){
       if(page === 0){
         track.innerHTML = `<div class="msg">${e && e.message === 'limit' ? 'More on the way — Comic Vine is catching up. This row fills in on its own.' : errText(e)}</div>`;
@@ -1328,6 +1333,7 @@ async function loadRow(sec){
   await more();
   // a row too short to scroll would never ask for more, so keep filling until every row is about as full as the rest
   for(let k = 0; k < 4 && page < total && $$('.pc', track).length < 10; k++){ const before = page; await more(); if(page === before) break; }
+  if(!$$('.pc', track).length && !$('.msg', track)) sec.hidden = true;
 }
 
 /* generic infinite grid inside a sheet or page */
