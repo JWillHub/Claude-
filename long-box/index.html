@@ -1279,6 +1279,8 @@ async function loadRow(sec){
   };
   track.onscroll = () => { if(track.scrollLeft + track.clientWidth > track.scrollWidth - 500) more(); };
   await more();
+  // a row too short to scroll would never ask for more, so keep filling until every row is about as full as the rest
+  for(let k = 0; k < 4 && page < total && $$('.pc', track).length < 10; k++){ const before = page; await more(); if(page === before) break; }
 }
 
 /* generic infinite grid inside a sheet or page */
