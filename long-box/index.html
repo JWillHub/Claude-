@@ -56,6 +56,12 @@ svg{display:block}
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
 .srch[hidden]{display:none}
 .hact .ib{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.04)}
+.hact .ib[hidden],#hcar[hidden],.top.searching #hcar{display:none}
+#hcar{width:34px;display:grid;place-items:center;padding:0;border-radius:10px;border:0;color:#1a1206;
+  background:linear-gradient(135deg,#ffc56b,#ff9f2e);box-shadow:0 4px 14px rgba(255,166,50,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+#hcar svg{width:19px;height:19px}
+#hcar:active{transform:scale(.95)}
 .hact .ib.on{color:var(--accent);border-color:rgba(255,181,71,.5)}
 .hact .ib.gen{width:auto;display:flex;gap:6px;padding:0 12px;font-weight:800;font-size:13.5px;color:var(--text)}
 .hact .ib.gen svg{color:var(--accent);width:17px;height:17px}
@@ -972,7 +978,14 @@ function closeSheet(s, fromPop){
 }
 // Swiping a card down (or tapping above it) clears every open card and puts you back on the page.
 // The phone's Back gesture still steps back one card at a time.
-const closeAllSheets = () => { if(sheetStack.length) closeSheet(sheetStack[0]); };
+// A carousel holds its place: cards opened on top of one clear back to it, not past it.
+const closeAllSheets = () => {
+  if(!sheetStack.length) return;
+  const top = sheetStack.length - 1;
+  let to = 0;
+  for(let n = top - 1; n >= 0; n--) if(sheetStack[n].anchor){ to = n + 1; break; }
+  closeSheet(sheetStack[to]);
+};
 // Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it.
 // It listens only on the cards layer, so ordinary page scrolling never waits on the app.
 $('#sheets').addEventListener('touchmove', e => {
@@ -1743,6 +1756,7 @@ function openRun(saga){
   const s = sheet(`<div class="runhead"><div><h2>${esc(saga.name)}</h2><div class="prog" id="rprog">Loading…</div></div>
     <button class="wbtn" id="rwatched">✓ Read</button></div>
     <div id="rbody"><div class="msg" style="padding-top:80px">Stacking the issues…</div></div>`, { tall:true });
+  s.anchor = true;
   const b = s.body;
   let rel = [], up = [], i = 0;
   const setProg = () => {

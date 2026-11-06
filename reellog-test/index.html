@@ -789,7 +789,14 @@ function closeSheet(s, fromPop){
 }
 // Swiping a card down (or tapping above it) clears every open card and puts you back on the page.
 // The phone's Back gesture still steps back one card at a time.
-const closeAllSheets = () => { if(sheetStack.length) closeSheet(sheetStack[0]); };
+// A carousel holds its place: cards opened on top of one clear back to it, not past it.
+const closeAllSheets = () => {
+  if(!sheetStack.length) return;
+  const top = sheetStack.length - 1;
+  let to = 0;
+  for(let n = top - 1; n >= 0; n--) if(sheetStack[n].anchor){ to = n + 1; break; }
+  closeSheet(sheetStack[to]);
+};
 // Keep the page behind an open card from scrolling: block touch scrolls that would fall through to it.
 // It listens only on the cards layer, so ordinary page scrolling never waits on the app.
 $('#sheets').addEventListener('touchmove', e => {
@@ -1535,6 +1542,7 @@ function openRun(saga){
   const s = sheet(`<div class="runhead"><div><h2>${esc(saga.name)}</h2><div class="prog" id="rprog">Loading…</div></div>
     <button class="wbtn" id="rwatched">✓ Watched</button></div>
     <div id="rbody"><div class="msg" style="padding-top:80px">Stacking the films…</div></div>`, { tall:true });
+  s.anchor = true;
   const b = s.body;
   let films = [], rel = [], up = [], i = 0;
   const setProg = () => {
