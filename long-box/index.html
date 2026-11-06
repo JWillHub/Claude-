@@ -447,6 +447,7 @@ html{touch-action:manipulation}
 .cap2 span{display:block;font-size:11px;color:var(--muted)}
 .track{min-height:200px}
 .track>.pc{width:116px}
+.cinfo{margin:6px 0 4px;font-size:15px;line-height:1.55;white-space:pre-line}
 .chip2{display:flex;align-items:center;gap:10px;width:100%;height:44px;padding:0 14px 0 5px;margin:0 0 8px;border-radius:22px;white-space:nowrap;
   background:linear-gradient(90deg,rgba(255,181,71,.09),rgba(255,255,255,.025));border:1px solid rgba(255,181,71,.26);color:var(--text);font:inherit;cursor:pointer;text-align:left}
 .chip2 i{flex:none;font-style:normal;width:62px;height:34px;padding:0;border-radius:17px;background:var(--accent);color:#1a1206;display:grid;place-items:center;
@@ -1171,14 +1172,14 @@ const LANDMARKS = [
   ['The Amazing Spider-Man', 1963, '121'], ['X-Men', 1963, '137'], ['Giant-Size X-Men', 1975, '1'], ['Watchmen', 1986, '1'],
   ['Batman: The Dark Knight Returns', 1986, '1'], ['Batman', 1940, '404'], ['Batman: The Killing Joke', 1988, '1'], ['Batman', 1940, '497'],
   ['Superman', 1987, '75'], ['Crisis on Infinite Earths', 1985, '7'], ['The Sandman', 1989, '1'], ['Daredevil', 1964, '227'],
-  ['The Saga of the Swamp Thing', 1982, '21'], ['Saga', 2012, '1'], ['The Walking Dead', 2003, '1'], ['Invincible', 2003, '1'],
+  ['Swamp Thing', 1982, '21'], ['Saga', 2012, '1'], ['The Walking Dead', 2003, '1'], ['Invincible', 2003, '1'],
   ['Spawn', 1992, '1'], ['Teenage Mutant Ninja Turtles', 1984, '1'], ['Kingdom Come', 1996, '1'], ['Marvels', 1994, '1'],
   ['The New Mutants', 1983, '98'], ['The Incredible Hulk', 1962, '1'], ['Tales of Suspense', 1959, '39'], ['House of X', 2019, '1'],
   ['Batman', 2011, '1'], ['Immortal Hulk', 2018, '1'], ['Something is Killing the Children', 2019, '1'], ['Absolute Batman', 2024, '1'],
   ['Ultimate Spider-Man', 2024, '1'], ['Y: The Last Man', 2002, '1'], ['Preacher', 1995, '1'], ['The Amazing Spider-Man', 1963, '1']
 ];
 const CLASSIC_RUNS = [['The Amazing Spider-Man', 1963], ['Fantastic Four', 1961], ['X-Men', 1963], ['Batman', 1940], ['Detective Comics', 1937], ['Daredevil', 1964],
-  ['The Avengers', 1963], ['The Sandman', 1989], ['The Saga of the Swamp Thing', 1982], ['Superman', 1987], ['The New Teen Titans', 1980], ['Preacher', 1995],
+  ['The Avengers', 1963], ['The Sandman', 1989], ['Swamp Thing', 1982], ['Superman', 1987], ['The New Teen Titans', 1980], ['Preacher', 1995],
   ['Y: The Last Man', 2002], ['Fables', 2002], ['Transmetropolitan', 1997], ['Hellblazer', 1988]];
 const MODERN_RUNS = [['Saga', 2012], ['Invincible', 2003], ['The Walking Dead', 2003], ['Something is Killing the Children', 2019], ['Immortal Hulk', 2018],
   ['Absolute Batman', 2024], ['Ultimate Spider-Man', 2024], ['Monstress', 2015], ['Paper Girls', 2015], ['East of West', 2013], ['Descender', 2015],
@@ -1220,13 +1221,13 @@ const onlyDC = load => async (p, low) => {
   return { ...d, results };
 };
 const DC_LANDMARKS = [['Action Comics', 1938, '1'], ['Detective Comics', 1937, '27'], ['Showcase', 1956, '4'], ['The Flash', 1959, '123'], ['Justice League of America', 1960, '1'],
-  ['Green Lantern', 1960, '76'], ['The New Teen Titans', 1980, '1'], ['The Saga of the Swamp Thing', 1982, '21'], ['Crisis on Infinite Earths', 1985, '7'], ['Watchmen', 1986, '1'],
+  ['Green Lantern', 1960, '76'], ['The New Teen Titans', 1980, '1'], ['Swamp Thing', 1982, '21'], ['Crisis on Infinite Earths', 1985, '7'], ['Watchmen', 1986, '1'],
   ['Batman: The Dark Knight Returns', 1986, '1'], ['Batman', 1940, '404'], ['Batman: The Killing Joke', 1988, '1'], ['The Sandman', 1989, '1'], ['Batman', 1940, '497'],
   ['Superman', 1987, '75'], ['Kingdom Come', 1996, '1'], ['Batman: The Long Halloween', 1996, '1'], ['All Star Superman', 2005, '1'], ['Batman', 2011, '1'],
   ['Mister Miracle', 2017, '1'], ['Absolute Batman', 2024, '1'], ['Absolute Wonder Woman', 2024, '1'], ['Absolute Superman', 2024, '1']];
 const DC_ABSOLUTE = [['Absolute Batman', 2024], ['Absolute Wonder Woman', 2024], ['Absolute Superman', 2024], ['Absolute Flash', 2025], ['Absolute Martian Manhunter', 2025], ['Absolute Green Lantern', 2025]];
 const DC_RUNS = [['Batman', 1940], ['Detective Comics', 1937], ['Action Comics', 1938], ['Superman', 1987], ['Wonder Woman', 1987], ['The Sandman', 1989],
-  ['The Saga of the Swamp Thing', 1982], ['The New Teen Titans', 1980], ['Green Lantern', 2005], ['Justice League', 2011], ['Batman', 2011], ['Nightwing', 2016],
+  ['Swamp Thing', 1982], ['The New Teen Titans', 1980], ['Green Lantern', 2005], ['Justice League', 2011], ['Batman', 2011], ['Nightwing', 2016],
   ['Mister Miracle', 2017], ['Batman: The Long Halloween', 1996], ['Kingdom Come', 1996], ['Watchmen', 1986], ['Crisis on Infinite Earths', 1985], ['Final Crisis', 2008],
   ['Blackest Night', 2009], ['Flashpoint', 2011], ['All Star Superman', 2005]];
 const DC_CHARS = ['Batman', 'Superman', 'Wonder Woman', 'Justice League', 'The Flash', 'Green Lantern', 'Aquaman', 'Nightwing', 'Harley Quinn', 'Catwoman', 'Joker',
@@ -1511,24 +1512,24 @@ const ARCS = [
   ['owls', 'The Court of Owls', 'DC', 'dc'], ['hush', 'Hush', 'DC', 'dc'], ['dotf', 'Death of the Family', 'DC', 'dc'], ['bn', 'Blackest Night', 'DC', 'dc'],
   ['scw', 'Sinestro Corps War', 'DC', 'dc'], ['utrh', 'Under the Hood', 'DC', 'dc'], ['nml', "No Man's Land", 'DC', 'dc'], ['judas', 'The Judas Contract', 'DC', 'dc'],
   ['gds', 'The Great Darkness Saga', 'DC', 'dc'],
-  ['dps', 'The Dark Phoenix Saga', 'Marvel', 'marvel'], ['dofp', 'Days of Future Past', 'Marvel', 'marvel'], ['gwen', 'The Night Gwen Stacy Died', 'Marvel', 'marvel'],
+  ['dps', 'The Dark Phoenix Saga', 'Marvel', 'marvel'], ['dofp', 'Days of Future Past', 'Marvel', 'marvel'], ['gwen', 'The Night Gwen Stacy Died', 'Marvel', 'marvel', 'Gwen Stacy'],
   ['klh', "Kraven's Last Hunt", 'Marvel', 'marvel'], ['born', 'Born Again', 'Marvel', 'marvel'], ['galactus', 'The Galactus Trilogy', 'Marvel', 'marvel'],
   ['aoa', 'Age of Apocalypse', 'Marvel', 'marvel'], ['olm', 'Old Man Logan', 'Marvel', 'marvel'], ['planet', 'Planet Hulk', 'Marvel', 'marvel'],
   ['wwh', 'World War Hulk', 'Marvel', 'marvel'], ['ann', 'Annihilation', 'Marvel', 'marvel'], ['sv', 'Spider-Verse', 'Marvel', 'marvel'],
   ['mm', 'Mutant Massacre', 'Marvel', 'marvel'], ['carnage', 'Maximum Carnage', 'Marvel', 'marvel'], ['ad', 'Avengers Disassembled', 'Marvel', 'marvel'],
   ['ks', 'Kree-Skrull War', 'Marvel', 'marvel']
-].map(([k, name, pub, g]) => ({ k, name, pub, g, kind:'arc' }));
+].map(([k, name, pub, g, alt]) => ({ k, name, pub, g, alt, kind:'arc' }));
 const adhoc = {};
 const sagaByK = k => ARCS.find(s => s.k === k) || adhoc[k] || (k === 'quick' ? QUICK : null);
 const sagaData = {};
 const QUICK = { k:'quick', name:"Rate what you've read", kind:'quick' };
-async function resolveArc(name, pub, low){
+async function resolveArc(name, pub, low, alt){
   await bundleReady;
   return cached('arcid2:' + name, 24 * 30, async () => {
-    const d = await cv('story_arcs/', { filter:'name:' + name.replace(/^the\s+/i, '').replace(/,/g, ''), field_list:'id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit:50 }, low);
+    const d = await cv('story_arcs/', { filter:'name:' + (alt || name).replace(/^the\s+/i, '').replace(/,/g, ''), field_list:'id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit:50 }, low);
     const res = d.results || [];
     const cnt = a => +(a.count_of_isssue_appearances ?? a.count_of_issue_appearances ?? 0);
-    const score = a => (norm(a.name) === norm(name) ? 1000 : norm(a.name).includes(norm(name)) ? 300 : 0)
+    const score = a => (norm(a.name) === norm(name) ? 1000 : norm(a.name).includes(norm(name)) || (alt && norm(a.name).includes(norm(alt))) ? 300 : 0)
       + ((a.publisher && a.publisher.name || '').toLowerCase().includes(pub.toLowerCase()) ? 200 : 0) + Math.min(cnt(a), 150);
     const best = res.sort((a, b) => score(b) - score(a))[0];
     return best && score(best) >= 300 ? best.id : null;
@@ -1567,7 +1568,7 @@ function loadSaga(s, low){
     }, low);
   } else {
     p = (async () => {
-      const id = s.id || await resolveArc(s.name, s.pub, low);
+      const id = s.id || await resolveArc(s.name, s.pub, low, s.alt);
       if(!id) throw 0;
       return arcIssues(id, low);
     })();
@@ -2001,38 +2002,39 @@ async function openCreator(pid){
   s.refresh = () => refreshBadges();
   draw();
 }
+// an info page: who the character is and who created them, plus where they first appeared
 async function openCharacter(cid){
   const f0 = favs['c' + cid];
   const s = sheet(`<div class="phead">${f0 && f0.image ? `<img src="${esc(f0.image)}" alt="">` : `<span class="pi">…</span>`}
       <div><h2>${esc(f0 ? f0.name : 'Loading…')}</h2><div class="meta" id="pmeta"></div><button class="favbtn" id="pfav">${HEART}Favorite</button></div></div>
-    <p class="bio" id="pbio"></p><div id="cfirst"></div><div id="carcs"></div>
-    <div class="castsec"><div class="lbl">Series</div></div><div class="grid" id="pgrid"><div class="msg" style="grid-column:1/-1">Loading…</div></div>`, { tall:true });
+    <div id="cmade"></div><div id="cfirst"></div><div id="cbio"></div><div style="height:24px"></div>`, { tall:true });
   const b = s.body;
   let c;
   try{
-    c = await cached('char:' + cid, 24 * 7, async () => {
-      const d = await cv(`character/4005-${cid}/`, { field_list:'id,name,real_name,image,deck,description,publisher,first_appeared_in_issue,count_of_issue_appearances,story_arc_credits' });
+    c = await cached('char2:' + cid, 24 * 14, async () => {
+      const d = await cv(`character/4005-${cid}/`, { field_list:'id,name,real_name,aliases,image,deck,description,publisher,first_appeared_in_issue,count_of_issue_appearances,creators,origin,birth' });
       const x = d.results || {};
-      return { id:x.id, name:x.name, real:x.real_name || '', image:img(x.image, 'small_url'), bio:x.deck || textOf(x.description), pub:x.publisher ? x.publisher.name : '',
-        n:x.count_of_issue_appearances || 0, first:x.first_appeared_in_issue ? { id:x.first_appeared_in_issue.id, name:x.first_appeared_in_issue.name, num:x.first_appeared_in_issue.issue_number } : null,
-        arcs:(x.story_arc_credits || []).slice(0, 40).map(a => ({ id:a.id, name:a.name })) };
+      return { id:x.id, name:x.name, real:x.real_name || '', image:img(x.image, 'small_url'), deck:x.deck || '', bio:textOf(x.description, 3500), pub:x.publisher ? x.publisher.name : '',
+        n:x.count_of_issue_appearances || 0, origin:x.origin ? x.origin.name : '', creators:(x.creators || []).map(p => p.name).slice(0, 6),
+        first:x.first_appeared_in_issue ? { id:x.first_appeared_in_issue.id, name:x.first_appeared_in_issue.name, num:x.first_appeared_in_issue.issue_number } : null };
     });
-  }catch(e){ $('#pgrid', b).innerHTML = `<div class="msg" style="grid-column:1/-1">${errText(e)}</div>`; return; }
+  }catch(e){ $('#cbio', b).innerHTML = `<div class="msg">${errText(e)}</div>`; return; }
   if(!s.el.isConnected) return;
   $('.phead', b).firstElementChild.outerHTML = c.image ? `<img src="${esc(c.image)}" alt="">` : `<span class="pi">${esc(initials(c.name))}</span>`;
   $('.phead h2', b).textContent = c.name;
   $('#pmeta', b).textContent = [c.real, c.pub, c.n ? c.n.toLocaleString() + ' appearances' : ''].filter(Boolean).join(' · ');
-  const bio = $('#pbio', b);
-  if(c.bio){ bio.textContent = c.bio; bio.onclick = () => bio.classList.toggle('open'); } else bio.remove();
   favButton(b, 'c' + cid, () => ({ kind:'char', id:cid, name:c.name, image:c.image }));
-  if(c.first) $('#cfirst', b).innerHTML = `<div class="castsec"><div class="lbl">First appearance</div></div><div class="lrow" data-issue="${c.first.id}"><span class="pi" style="width:46px;height:69px;border-radius:7px;display:grid;place-items:center;background:var(--card2);flex:none">#${esc(c.first.num || '')}</span>
-    <div class="li"><div class="lt">${esc(c.first.name || 'Issue #' + (c.first.num || ''))}</div><div class="ls">Open the issue →</div></div></div>`;
-  if(c.arcs.length) $('#carcs', b).innerHTML = `<div class="castsec"><div class="lbl">Story arcs</div></div>${c.arcs.slice(0, 12).map(a => `<div class="lrow" data-arc="${a.id}" data-name="${esc(a.name)}" style="padding:12px 14px">
-    <div class="li"><div class="lt">${esc(a.name)}</div></div><span class="mini">Rate →</span></div>`).join('')}`;
-  try{
-    const d = await volSearch(c.name, 1);
-    if(s.el.isConnected) $('#pgrid', b).innerHTML = d.results.length ? d.results.map(volHTML).join('') : '<div class="msg" style="grid-column:1/-1">No series found.</div>';
-  }catch(e){ $('#pgrid', b).innerHTML = `<div class="msg" style="grid-column:1/-1">${errText(e)}</div>`; }
+  const list = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  if(c.creators.length) $('#cmade', b).innerHTML = `<div class="castsec"><div class="lbl">Created by</div></div><p class="cinfo">${esc(list(c.creators))}</p>`;
+  if(c.first){
+    const fi = await issuesByIds([c.first.id]).then(l => l[0]).catch(() => null);
+    if(!s.el.isConnected) return;
+    $('#cfirst', b).innerHTML = `<div class="castsec"><div class="lbl">First appearance</div></div><div class="lrow" data-issue="${c.first.id}">
+      ${fi && fi.poster ? poster(fi.poster, 'thumb', fi.title) : `<span class="pi" style="width:46px;height:69px;border-radius:7px;display:grid;place-items:center;background:var(--card2);flex:none">#${esc(c.first.num || '')}</span>`}
+      <div class="li"><div class="lt">${esc(fi ? fi.title : 'Issue #' + (c.first.num || ''))}</div><div class="ls">${esc([fi && fi.year, c.first.name].filter(Boolean).join(' · '))}</div></div><span class="mini">›</span></div>`;
+  }
+  const bio = [c.deck, c.bio].filter(Boolean).filter((t, i, a) => !(i && a[0] && t.startsWith(a[0]))).join('\n\n');
+  if(bio) $('#cbio', b).innerHTML = `<div class="castsec"><div class="lbl">Background</div></div><p class="ov syn cinfo">${esc(bio)}</p>`;
 }
 
 /* ---------- My Comics ---------- */

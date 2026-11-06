@@ -81,7 +81,7 @@ vols, issues, arcs, pubs = {}, {}, {}, {}
 def resolve_vol(name, year):
     k = f'{name}:{year}'
     if k in vols: return vols[k]
-    if (PREV.get('vols') or {}).get(k) and not k.startswith('The Saga of the Swamp Thing'):
+    if (PREV.get('vols') or {}).get(k):
         vols[k] = PREV['vols'][k]; pubs[vols[k]['id']] = vols[k]['pub']; return vols[k]
     d = cv('search/', query=name, resources='volume', limit=10, field_list=VOL_F)
     cand = [slim_vol(v) for v in d.get('results') or [] if eng_pub((v.get('publisher') or {}).get('name'))]
@@ -107,13 +107,13 @@ def resolve_issue(name, year, num):
     r = d.get('results') or []
     issues[k] = slim_issue(r[0]) if r else None
     print('issue', k, '->', issues[k] and issues[k]['id'])
-def resolve_arc(name, pub):
+def resolve_arc(name, pub, alt=None):
     if (PREV.get('arcs') or {}).get(name) and PREV.get('arcfix') == 2: arcs[name] = PREV['arcs'][name]; return
-    q = re.sub(r'^the\s+', '', name, flags=re.I).replace(',', '')
+    q = re.sub(r'^the\s+', '', alt or name, flags=re.I).replace(',', '')
     d = cv('story_arcs/', filter='name:' + q, field_list='id,name,publisher,count_of_isssue_appearances,count_of_issue_appearances', limit=50)
     cnt = lambda a: int(a.get('count_of_isssue_appearances') or a.get('count_of_issue_appearances') or 0)
     def score(a):
-        return (1000 if norm(a['name']) == norm(name) else 300 if norm(name) in norm(a['name']) else 0) \
+        return (1000 if norm(a['name']) == norm(name) else 300 if norm(name) in norm(a['name']) or (alt and norm(alt) in norm(a['name'])) else 0) \
             + (200 if pub.lower() in ((a.get('publisher') or {}).get('name') or '').lower() else 0) + min(cnt(a), 150)
     best = max(d.get('results') or [], key=score, default=None)
     if not best or score(best) < 300:
@@ -151,11 +151,12 @@ for n in ['CLASSIC_RUNS', 'MODERN_RUNS', 'EVENTS', 'DC_ABSOLUTE', 'DC_RUNS']:
 for n in ['LANDMARKS', 'DC_LANDMARKS']:
     for name, year, num in js_list(n):
         if f'{name}:{year}:{num}' not in issues: safe(resolve_issue, 'issues', f'{name}:{year}:{num}', name, year, num)
-for k, name, pub, g in js_list('ARCS'): safe(resolve_arc, 'arcs', name, name, pub)
+for k, name, pub, g, *alt in js_list('ARCS'): safe(resolve_arc, 'arcs', name, name, pub, *alt[:1])
 for k, v in (PREV.get('pubs') or {}).items(): pubs.setdefault(int(k), v)
 
-chars, fresh = dict(PREV.get('chars') or {}), {}
-for name in dict.fromkeys(js_list('CHARS') + js_list('DC_CHARS')):
+LIGHT = os.environ.get('GITHUB_EVENT_NAME') == 'push'
+chars, fresh = dict(PREV.get('chars') or {}), dict(PREV.get('fresh') or {})
+for name in ([] if LIGHT else dict.fromkeys(js_list('CHARS') + js_list('DC_CHARS'))):
     try:
         out, total = [], 1
         for page in (1, 2):
@@ -177,7 +178,7 @@ def new_issues(filt):
             pubs[v['id']] = (v.get('publisher') or {}).get('name', '')
     return [x for x in out if not x['vol'] or eng_pub(pubs.get(x['vol']['id'], ''))]
 day = lambda n: time.strftime('%Y-%m-%d', time.gmtime(time.time() - n * 86400))
-for key, filt in (('week', f'store_date:{day(7)}|{day(-1)}'), ('ones', f'store_date:{day(30)}|{day(-1)},issue_number:1')):
+for key, filt in (() if LIGHT else (('week', f'store_date:{day(7)}|{day(-1)}'), ('ones', f'store_date:{day(30)}|{day(-1)},issue_number:1'))):
     try: fresh[key] = new_issues(filt); print(key, len(fresh[key]))
     except Limited: print('limit reached - no', key)
 
@@ -221,7 +222,7 @@ ddir = os.path.join(sys.argv[1], 'details'); os.makedirs(ddir, exist_ok=True)
 have = {int(f[:-5]) for f in os.listdir(ddir) if f.endswith('.json')}
 want = [m['id'] for m in issues.values() if m] + [m['id'] for m in fresh.get('week', [])] + [m['id'] for m in fresh.get('ones', [])] \
      + [m['id'] for a in arcs.values() if a for m in a['issues']]
-todo = [i for i in dict.fromkeys(want) if i not in have][:150]
+todo = [] if LIGHT else [i for i in dict.fromkeys(want) if i not in have][:150]
 for iid in todo:
     try:
         with open(os.path.join(ddir, f'{iid}.json'), 'w') as f: json.dump(details(iid), f, separators=(',', ':'))
