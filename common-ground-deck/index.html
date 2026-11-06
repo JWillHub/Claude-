@@ -308,9 +308,9 @@ main.still>*{animation:none!important}
 .sumcard p{margin:0;font-size:14.5px;line-height:1.45}
 .sumcard p b{display:block;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 
-.needwho input{border-color:var(--warn)!important}
+.needwho input,.needwho .seg{border-color:var(--warn)!important;box-shadow:0 0 0 2px var(--warn)}
 .whoerr{color:var(--warn);font-size:13.5px;font-weight:700;margin:0}
-@media (prefers-reduced-motion: no-preference){.needwho input{animation:nudge .32s ease}@keyframes nudge{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}}
+@media (prefers-reduced-motion: no-preference){.needwho input,.needwho .seg{animation:nudge .32s ease}@keyframes nudge{20%{transform:translateX(-6px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}}
 
 html.homefix,html.homefix body{height:100%;overflow:hidden;overscroll-behavior:none}
 html.homefix body{padding-bottom:0}
@@ -1081,19 +1081,20 @@ function result(){
   ${qs.length?`<div class="box"><h3>${grp?"Discussion prompts":"Questions to open with"}</h3><ul>${qs.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>`:""}
   ${ad?`<div class="box"><h3>Adapting for ${grp?"group":S.setting==="nfmh"?"NFMH":"community"}</h3><ul>${ad}</ul></div>`:""}
   <div class="box"><h3>Watch for</h3><ul>${cs.flatMap(c=>c.watch).map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>
-  <div class="box"><h3>Keep it</h3><div class="row"><input type="text" id="saveName" placeholder="Initials or group name" aria-label="Plan label"><button class="btn" id="saveBtn">Save</button></div>
+  <div class="box"><h3>Keep it</h3><div class="row"><input type="text" id="saveName" placeholder="Plan name" aria-label="Plan name"><button class="btn" id="saveBtn">Save</button></div>
   <button class="btn alt" id="noteBtn">Write a note for this session</button></div>`;
   main.querySelectorAll("[data-swap]").forEach(b=>b.onclick=e=>{e.stopPropagation();const k=b.dataset.swap,y=window.scrollY;S.swap[k]=(S.swap[k]||0)+1;result();window.scrollTo(0,y);});
   initStack();
   $("saveBtn").onclick=()=>{const a=loadSaved();a.unshift({name:($("saveName").value||"").trim()||"Untitled",date:new Date().toLocaleDateString(),setting:S.setting,len:S.len,concerns:[...S.concerns],energy:S.energy,swap:{...S.swap}});storeSaved(a.slice(0,40));$("saveBtn").textContent="Saved";};
-  $("noteBtn").onclick=()=>{draft=noteFromPlan(($("saveName").value||"").trim());saveDraft();noteMode="form";go("#notes");};
+  $("noteBtn").onclick=()=>{draft=noteFromPlan();saveDraft();noteMode="form";go("#notes");};
 }
 
 
 /* ---------- note summary from plan ---------- */
 function listJoin(a){return a.length<2?(a[0]||""):a.slice(0,-1).join(", ")+" and "+a[a.length-1];}
 function planParts(blocks){const by=k=>blocks.filter(b=>b.t&&b.kind===k).map(b=>b.t.name);return{settle:by("Settle"),focus:[...by("Focus activity"),...by("Practice two")],close:by("Close")};}
-function noteFromPlan(who){const blocks=buildPlan();return{who:who||"",date:today(),setting:S.setting,concerns:[...S.concerns],acts:blocks.filter(b=>b.t).map(b=>b.t.id),parts:planParts(blocks),len:S.len,energy:S.energy,moodA:null,moodB:null,editing:null};}
+const WHO_OPTS=["Individual","Group","NFMH"];const whoDefault=()=>S.setting==="group"?"Group":S.setting==="nfmh"?"NFMH":"Individual";
+function noteFromPlan(){const blocks=buildPlan();return{who:whoDefault(),date:today(),setting:S.setting,concerns:[...S.concerns],acts:blocks.filter(b=>b.t).map(b=>b.t.id),parts:planParts(blocks),len:S.len,energy:S.energy,moodA:null,moodB:null,editing:null};}
 function summarizeNote(n){
   const a=clampMood(n.moodA),b=clampMood(n.moodB);n.moodA=a;n.moodB=b;
   n.response=a!=null&&b!=null?`Self-rated mood went from ${a} to ${b} (${b>a?"up "+(b-a):b<a?"down "+(a-b):"no change"}).`:a!=null?`Self-rated mood was ${a} at the start.`:b!=null?`Self-rated mood was ${b} at the end.`:"";
@@ -1138,7 +1139,7 @@ function notes(){
     stats=`<div class="box"><div class="row" style="justify-content:space-between"><div><span class="label">Sessions</span><h2>${mine.length}</h2></div><div><span class="label">Avg mood change</span><h2>${avg==null?"–":(avg>0?"+":"")+avg.toFixed(1)}</h2></div></div>
     ${mine.some(n=>n.moodB!=null)?`<div class="bars" aria-label="Mood at end of each session">${mine.map(n=>`<span style="height:${n.moodB==null?4:Math.max(6,n.moodB*10)}%" title="${esc(n.date)}: ${n.moodB??"-"}"></span>`).join("")}</div><span class="hint">End-of-session mood, oldest to newest. Self-rated.</span>`:""}</div>`;}
   main.innerHTML=`<div class="q"><p>Dictate with your keyboard's mic. Copy into your agency's system when done.</p></div>
-  <button class="hero sky" id="newNote"><span class="big">${draft.editing||draft.parts?"Finish your note":"New note"}</span><span class="sub">${draft.editing||draft.parts?"Add initials and mood.":"Plan the session first. The note writes itself."}</span><span class="go">+</span></button>
+  <button class="hero sky" id="newNote"><span class="big">${draft.editing||draft.parts?"Finish your note":"New note"}</span><span class="sub">${draft.editing||draft.parts?"Add session type and mood.":"Plan the session first. The note writes itself."}</span><span class="go">+</span></button>
   ${people.length?`<div class="strip">${["All",...people].map(p=>`<button class="pill" data-p="${esc(p)}" aria-pressed="${p===personSel}">${esc(p)}</button>`).join("")}</div>`:""}
   ${stats}
   <div class="form">${list.length?list.map(n=>{const d=n.moodA!=null&&n.moodB!=null?n.moodB-n.moodA:null;
@@ -1156,9 +1157,10 @@ function scale(key,l){const v=draft[key];return `<div class="mood" data-mood="${
   <input type="range" min="0" max="10" step="any" value="${v??5}" aria-label="${l}, 0 to 10"><div class="mood-ends"><span>0 · Struggling</span><span>10 · Doing great</span></div></div>`}
 function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);requestAnimationFrame(()=>d.classList.add("on"));setTimeout(()=>{d.classList.remove("on");setTimeout(()=>d.remove(),300);},1600);}
 function noteForm(){
-  main.innerHTML=`<div class="q"><h1>${draft.editing?"Edit note":"Session note"}</h1><p>Add initials and mood. The rest comes from your plan.</p></div>
+  if(!WHO_OPTS.includes(draft.who))draft.who=draft.editing?"":whoDefault();
+  main.innerHTML=`<div class="q"><h1>${draft.editing?"Edit note":"Session note"}</h1><p>Add session type and mood. The rest comes from your plan.</p></div>
   <form class="form" id="nf" autocomplete="off">
-   <div class="field" id="whoField"><label class="label" for="f-who">Initials or group</label><input type="text" id="f-who" value="${esc(draft.who||"")}" maxlength="40" enterkeyhint="done" autocapitalize="words"><p class="whoerr" id="whoErr" hidden>Add initials or a group name to save.</p></div>
+   <div class="field" id="whoField"><span class="label" id="whoLbl">Session type</span><div class="seg whoseg" style="--n:3" role="radiogroup" aria-labelledby="whoLbl">${WHO_OPTS.map(o=>`<button type="button" role="radio" data-who="${o}" aria-checked="${draft.who===o}" aria-pressed="${draft.who===o}">${o}</button>`).join("")}</div><p class="whoerr" id="whoErr" hidden>Choose Individual, Group, or NFMH to save.</p></div>
    ${moodScale(draft,"moodA","Mood at start")}
    ${moodScale(draft,"moodB","Mood at end")}
    <div id="sumPrev">${summaryHTML(draft)}</div>
@@ -1170,11 +1172,11 @@ function noteForm(){
     const doc=document.documentElement;const atEnd=window.innerHeight+window.scrollY>=doc.scrollHeight-140||doc.scrollHeight<=window.innerHeight+10;cta.classList.toggle("cta-on",atEnd);};
   window.addEventListener("scroll",near,{passive:true});window.addEventListener("resize",near);requestAnimationFrame(near);
   const upd=()=>{$("sumPrev").innerHTML=summaryHTML(draft);saveDraft();near();};
-  $("f-who").oninput=e=>{draft.who=e.target.value;saveDraft();if(draft.who.trim()){$("whoField").classList.remove("needwho");$("whoErr").hidden=true;}};
+  main.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{draft.who=b.dataset.who;saveDraft();main.querySelectorAll("[data-who]").forEach(x=>{const on=x===b;x.setAttribute("aria-checked",String(on));x.setAttribute("aria-pressed",String(on));});$("whoField").classList.remove("needwho");$("whoErr").hidden=true;});
   bindMoods(main,draft,upd);
   $("saveNoteBtn").onclick=()=>$("nf").onsubmit({preventDefault(){}});
   $("nf").onsubmit=e=>{e.preventDefault();
-    if(!(draft.who||"").trim()){const f=$("whoField");f.classList.remove("needwho");void f.offsetWidth;f.classList.add("needwho");$("whoErr").hidden=false;f.scrollIntoView({behavior:"smooth",block:"center"});$("f-who").focus({preventScroll:true});return;}
+    if(!WHO_OPTS.includes(draft.who)){const f=$("whoField");f.classList.remove("needwho");void f.offsetWidth;f.classList.add("needwho");$("whoErr").hidden=false;f.scrollIntoView({behavior:"smooth",block:"center"});return;}
     const n=summarizeNote({...JSON.parse(JSON.stringify(draft)),id:draft.editing||"n"+Date.now(),who:draft.who.trim()});delete n.editing;
     const a=loadNotes();const i=a.findIndex(x=>x.id===n.id);i>-1?a[i]=n:a.unshift(n);storeNotes(a);
     draft=blankDraft();saveDraft();noteMode="list";personSel="All";if((location.hash||"")!=="#notes")go("#notes");else notes();window.scrollTo(0,0);toast(i>-1?"Note updated":"Note saved");};

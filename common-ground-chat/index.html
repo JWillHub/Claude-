@@ -1185,13 +1185,13 @@ function menu(q){
   bot(q,{chips:[{v:"note",l:"Write a session note"},{v:"save",l:"Save this plan"},{v:"time",l:"Change the time"},{v:"new",l:"Plan another"}],onPick:(v,l)=>{me(l);
     if(v==="note")startNote(true);else if(v==="save")askSave();else if(v==="time"){askTime();}else start(false);}});
 }
-function askSave(){stage="save";bot("What should I call it? Initials or a group name is best.");}
+function askSave(){stage="save";bot("What should I call this plan?");}
 function loadSaved(){try{return JSON.parse(localStorage.getItem("cg-saved")||"[]")}catch(e){return[]}}
 function storeSaved(a){try{localStorage.setItem("cg-saved",JSON.stringify(a))}catch(e){}}
 
 /* ---------- note interview ---------- */
 const NQ=[
- {k:"who",q:"Who was the session with? <b>Initials or group name.</b>",type:"text"},
+ {k:"who",q:"What kind of session was it?",type:"who"},
  {k:"moodA",q:"Mood at the <b>start</b>, 0 to 10?",type:"scale"},
  {k:"moodB",q:"And at the <b>end</b>?",type:"scale"},
 ];
@@ -1210,6 +1210,7 @@ function askNote(){
     r.addEventListener("pointerdown",()=>{(()=>{const ae=document.activeElement;if(ae&&ae.matches&&ae.matches("input[type=text],textarea"))ae.blur();})();});r.addEventListener("input",()=>{const x=Math.round(+r.value);v.textContent=x;ok.textContent="Use "+x;});
     ok.onclick=()=>{const x=Math.round(+r.value);w.classList.add("done");me(String(x));note[q.k]=x;nqi++;askNote();};
     w.querySelector("[data-skip]").onclick=()=>{w.classList.add("done");me("Skip");note[q.k]=null;nqi++;askNote();};}});
+  else if(q.type==="who")bot(q.q,{chips:[{v:"Individual",l:"Individual"},{v:"Group",l:"Group"},{v:"NFMH",l:"NFMH"}],onPick:(v,l)=>{me(l);note.who=v;nqi++;askNote();}});
   else if(q.type==="yn")bot(q.q,{chips:[{v:"no",l:"No"},{v:"yes",l:"Yes"}],onPick:(v,l)=>{me(l);note.safety=v==="yes";nqi++;askNote();}});
   else bot(q.q,q.skip?{chips:[{v:"skip",l:"Skip"}],onPick:()=>{me("Skip");nqi++;askNote();}}:{});
 }
@@ -1418,7 +1419,7 @@ function drawLib(anim){
     let st="";if(personSel!=="All"&&list.length){const g=list.filter(n=>n.moodA!=null&&n.moodB!=null).map(n=>n.moodB-n.moodA);const avg=g.length?g.reduce((s,v)=>s+v,0)/g.length:null;st=`<div class="stat" style="--c:${hue(personSel)}"><div><div class="v">${list.length}</div><div class="l">sessions with ${esc(personSel)}</div></div><div><div class="v">${avg==null?"–":(avg>0?"+":"")+avg.toFixed(1)}</div><div class="l">average mood change</div></div>${list[0].next?`<p>Last next step: ${esc(list[0].next)}</p>`:""}</div>`;}
     const mood=n=>{if(n.moodA==null&&n.moodB==null)return"";const a=n.moodA??n.moodB,b=n.moodB??n.moodA,lo=Math.min(a,b),hi=Math.max(a,b),mc=b>a?"#16A36A":b<a?"#E8553D":"var(--muted)";
       return `<div class="mt" style="--mc:${mc}" aria-label="Mood ${n.moodA??"–"} at start, ${n.moodB??"–"} at end"><span>${n.moodA??"–"}</span><span class="tr"><span class="ln" style="left:${lo*10}%;width:${(hi-lo)*10}%"></span><span class="pt" style="left:${a*10}%"></span><span class="pt e" style="left:${b*10}%"></span></span><span>${n.moodB??"–"}</span></div>`;};
-    D.innerHTML=`<button class="newnote" id="nn"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></span><span><b>Write a note</b><span>Mood check and initials. The summary writes itself.</span></span></button>
+    D.innerHTML=`<button class="newnote" id="nn"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg></span><span><b>Write a note</b><span>Session type and mood. The summary writes itself.</span></span></button>
     ${saved.length?`<span class="label">Saved plans</span><div class="tix">${saved.slice(0,12).map((p,i)=>`<button data-sp="${i}" style="--c:${hue(p.name)}"><b>${esc(p.name)}</b><span>${SETNAME[p.setting]||""} · ${p.len} min</span></button>`).join("")}</div>`:""}
     ${people.length?`<span class="label">Session notes</span><div class="fchips">${["All",...people].map(p=>`<button class="chip${p==="All"?" all":""}" data-p="${esc(p)}" style="--c:${p==="All"?"var(--ink)":hue(p)}" aria-pressed="${p===personSel}">${p==="All"?"":'<span class="dt"></span>'}${esc(p)}</button>`).join("")}</div>`:""}${st}
     ${list.map((n,i)=>{const c=hue(n.who);return editId===n.id?`<div class="item static edit" data-form="${n.id}"><h3>Edit ${esc(n.who)}</h3>${["covered","response","strengths","next"].map(k=>`<label class="label" for="e-${k}">${{covered:"Worked on",response:"Response",strengths:"Strengths",next:"Next step"}[k]}</label><textarea id="e-${k}" data-k="${k}">${esc(n[k]||"")}</textarea>`).join("")}<div class="row"><button class="btn" data-esave="${n.id}">Save</button><button class="mini" data-ecancel>Cancel</button></div></div>`:
