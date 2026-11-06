@@ -2321,8 +2321,8 @@ async function saveReviewImage(d, btn){
 // Lists what is already in your own Real-Debrid account, matches each item to a TMDB title,
 // and adds a Play button to that title's card. It never searches for or adds anything new.
 const K_RD = 'rclib.rdkey', K_LIB = 'rclib.rdlib';
-// Real-Debrid doesn't allow browsers to call it directly, so requests go through the small relay on your Cloudflare worker
-const RD_API = 'https://long-box19c4.jwill-personalacc.workers.dev/rd';
+// Real-Debrid doesn't allow browsers to call it directly, so requests go through your small rc-relay Cloudflare worker
+const RD_API = 'https://rc-relay.jwill-personalacc.workers.dev/rd';
 let rdLib = store.get(K_LIB, null) || { synced:0, items:{} };
 const saveLib = () => { if(!store.set(K_LIB, rdLib)) toast('Could not save the library list — storage is full.'); };
 const VIDEO = /\.(mkv|mp4|m4v|avi|mov|webm|ts|wmv)$/i;
