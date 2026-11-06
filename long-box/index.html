@@ -447,6 +447,9 @@ html{touch-action:manipulation}
 .cap2 span{display:block;font-size:11px;color:var(--muted)}
 .track{min-height:200px}
 .track>.pc{width:116px}
+/* fixed-list rows: covers keep their own proportions, within a size range */
+.track>div>.pc{flex:none;width:auto;min-width:132px;max-width:220px;scroll-snap-align:start}
+.track>div>.pc img{width:100%;aspect-ratio:auto;max-height:330px;min-height:180px;object-fit:cover}
 .pc.vol .pw::after{content:"";position:absolute;inset:0;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),3px 3px 0 -1px var(--card2),5px 5px 0 -2px rgba(255,255,255,.08);pointer-events:none}
 .mvsheet #mm{min-height:17px}.mvsheet #md{min-height:19px}.mvsheet #mcred{min-height:19px;margin-top:2px}.mvsheet #mact{min-height:30px}
 .mvsheet .mvhead > div:last-child{min-height:206px}
@@ -695,7 +698,8 @@ const ENG = ['marvel','dc comics','image','dark horse','idw','boom!','dynamite',
   'avatar press','aftershock','mad cave','awa','vault','ahoy','black mask','aspen','zenescope','top cow','skybound','rebellion','2000 ad','drawn & quarterly',
   'abrams','first second','scholastic','graphix','ize press','webtoon','tapas','tappytoon','mirage','eclipse','first comics','dell','gold key','charlton',
   'harvey','epic','milestone','malibu','acclaim','kitchen sink','sirius','slave labor','lion forge','dc','dstlry','bad idea','massive','scout','source point',
-  'storm king','upshot','humanoids inc','tokyopop','ablaze','behemoth','a wave blue world','band of bards','whatnot','bliss on tap','american mythology'];
+  'storm king','upshot','humanoids inc','tokyopop','ablaze','behemoth','a wave blue world','band of bards','whatnot','bliss on tap','american mythology',
+  'gladstone','gemstone','whitman','western publishing','disney comics','street & smith','spark publications','moonstone','hermes press','lion forge'];
 const engPub = n => !n || ENG.some(k => n.toLowerCase().includes(k));
 async function engOnly(list, low){
   const need = [...new Set(list.map(x => x.vol && x.vol.id).filter(id => id && volPub[id] == null))];
@@ -1130,7 +1134,8 @@ const EVENTS = [['Crisis on Infinite Earths', 1985], ['Secret Wars', 1984], ['Th
   ['Final Crisis', 2008], ['Blackest Night', 2009], ['Flashpoint', 2011], ['Secret Wars', 2015], ['House of X', 2019], ['All Star Superman', 2005]];
 const CHARS = ['Spider-Man', 'Batman', 'Superman', 'Wonder Woman', 'X-Men', 'Wolverine', 'Iron Man', 'Captain America', 'Thor', 'Hulk', 'Daredevil',
   'Deadpool', 'Fantastic Four', 'Avengers', 'Justice League', 'Green Lantern', 'The Flash', 'Aquaman', 'Harley Quinn', 'Venom', 'Punisher',
-  'Black Panther', 'Doctor Strange', 'Moon Knight', 'Teen Titans', 'Teenage Mutant Ninja Turtles', 'Spawn', 'Hellboy', 'Star Wars', 'Transformers'];
+  'Black Panther', 'Doctor Strange', 'Moon Knight', 'Teen Titans', 'Teenage Mutant Ninja Turtles', 'Spawn', 'Hellboy', 'Star Wars', 'Transformers',
+  'Donald Duck', 'Uncle Scrooge', 'Howard the Duck', 'The Shadow', 'Green Lama'];
 
 /* ---------- Discover ---------- */
 const ROWS = [
