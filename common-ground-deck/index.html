@@ -999,7 +999,7 @@ try{document.fonts.ready.then(()=>fitHome());}catch(e){}window.addEventListener(
 function home(){
   const saved=loadSaved();
   main.innerHTML=`<section class="hello"><p class="kicker">${greet()}</p><h1>Who are we showing up for today?</h1></section>
-  <button class="hero coral" data-go="plan"><span class="big">Plan a session</span><span class="sub">Four taps: where, what, how long, how's the energy.</span><span class="go">→</span></button>
+  <button class="hero coral" data-go="plan"><span class="big">Plan a session</span><span class="sub">Three taps: where, what, and how long.</span><span class="go">→</span></button>
   <div class="bento">
     <button class="tile sky" data-go="notes"><b>${loadNotes().length}</b><span>Session notes</span></button>
     <button class="tile mint" data-go="tools"><b>${TECH.length}</b><span>Techniques</span></button>
@@ -1027,12 +1027,9 @@ function plan(){
     const LENS=[15,30,45,60,90];const li=LENS.indexOf(S.len);
     main.innerHTML=progress()+`<div class="q"><h1>How long do you have?</h1></div>
     <div class="dial"><button id="minus" aria-label="Shorter">−</button><div><b>${S.len}</b><small>minutes</small></div><button id="plus" aria-label="Longer">+</button></div>
-    <div class="q"><h2>How's the energy in the room?</h2></div>
-    <div class="grid3">${[["low","Low","sun"],["steady","Steady","mint"],["high","Activated","coral"]].map(([k,n,c])=>`<button class="pick ${c}" data-e="${k}" aria-pressed="${S.energy===k}">${IC[k]}<b>${n}</b></button>`).join("")}</div>
     <button class="cta" id="build"><span>Build my plan</span><span>→</span></button>`;
     $("minus").onclick=()=>{S.len=LENS[Math.max(0,li-1)];S.swap={};plan();};
     $("plus").onclick=()=>{S.len=LENS[Math.min(4,li+1)];S.swap={};plan();};
-    main.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{S.energy=b.dataset.e;S.swap={};plan();});
     $("build").onclick=()=>{step=3;cardIdx=0;plan();window.scrollTo(0,0);};
   }else result();
 }
@@ -1102,7 +1099,7 @@ function summarizeNote(n){
   const SL={facility:"facility",community:"community",nfmh:"NFMH",group:"group"};
   const cs=(n.concerns||[]).map(c=>concernById[c]?concernById[c].name.toLowerCase():c);const p=n.parts;
   const ENG={low:"low",steady:"steady",high:"activated"}[n.energy];
-  let w=`${n.len?n.len+"-minute ":""}${SL[n.setting]||""} ${n.setting==="group"?"session":"individual session"}`+(cs.length?` focused on ${listJoin(cs)}`:"")+"."+(ENG?` Energy in the room was ${ENG}.`:"");
+  let w=`${n.len?n.len+"-minute ":""}${SL[n.setting]||""} ${n.setting==="group"?"session":"individual session"}`+(cs.length?` focused on ${listJoin(cs)}`:"")+".";
   if(p.settle.length)w+=` Opened with ${listJoin(p.settle)} to settle.`;
   if(p.focus.length)w+=` Main focus: ${listJoin(p.focus)}.`;
   if(p.close.length)w+=` Closed with ${listJoin(p.close)}.`;

@@ -1158,7 +1158,7 @@ function afterConcerns(){
   if(S.concerns.includes("crisis"))bot(`<div class="alert"><b>Safety comes first.</b> If risk may be imminent, don't leave the person alone and follow your crisis protocol now. 988 Suicide &amp; Crisis Lifeline: call or text 988 (Veterans press 1). 911 for immediate danger.</div>`,{raw:true});
   askTime();
 }
-function askTime(){stage="time";bot(`<b>How much time do you have?</b>`,{chips:[15,30,45,60,90].map(n=>({v:n,l:n+" min"})),onPick:(v,l)=>{me(l);S.len=+v;S.swap={};askEnergy();}});}
+function askTime(){stage="time";bot(`<b>How much time do you have?</b>`,{chips:[15,30,45,60,90].map(n=>({v:n,l:n+" min"})),onPick:(v,l)=>{me(l);S.len=+v;S.swap={};showPlan();}});}
 function askEnergy(){stage="energy";bot(`<b>How's the energy in the room?</b>`,{chips:[{v:"low",l:"Low"},{v:"steady",l:"Steady"},{v:"high",l:"Activated"}],onPick:(v,l)=>{me(l);S.energy=v;S.swap={};showPlan();}});}
 function planHTML(){
   const blocks=buildPlan();lastBlocks=blocks;let t0=0;
@@ -1166,7 +1166,7 @@ function planHTML(){
     if(b.fixed)return `<div class="step fixed"><div class="tm">${mm(a)}<small>${b.m} min</small></div><div><span class="k">${esc(b.kind)}</span><p>${esc(b.desc)}</p></div></div>`;
     return `<div class="step"><div class="tm">${mm(a)}<small>${b.m} min</small></div><div><span class="k">${esc(b.kind)}</span><h4>${esc(b.t.name)}</h4><p>${esc(b.t.sum)}</p>
     <div class="acts"><span class="ev"><i>${EVD[b.t.ev]}</i> ${EVLABEL[b.t.ev]}</span><button class="stepsbtn" data-open="${b.t.id}">Steps<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div></div></div>`;}).join("");
-  return `<div class="plan"><div class="ph"><h3>${S.len}-minute plan</h3><span>${SETNAME[S.setting]} · ${S.concerns.map(c=>concernById[c].name).join(", ")} · ${{low:"Low",steady:"Steady",high:"Activated"}[S.energy]} energy</span></div>${steps}</div>`;
+  return `<div class="plan"><div class="ph"><h3>${S.len}-minute plan</h3><span>${SETNAME[S.setting]} · ${S.concerns.map(c=>concernById[c].name).join(", ")}</span></div>${steps}</div>`;
 }
 function bindPlan(m){planEl=m;m.querySelectorAll("[data-swap]").forEach(b=>b.onclick=()=>{S.swap[b.dataset.swap]=(S.swap[b.dataset.swap]||0)+1;m.innerHTML=planHTML();bindPlan(m);});}
 function showPlan(){
@@ -1222,7 +1222,7 @@ function summarize(n){
   const by=k=>(lastBlocks||[]).filter(b=>b.t&&b.kind===k).map(b=>b.t.name);
   const settle=by("Settle"),focus=[...by("Focus activity"),...by("Practice two")],close=by("Close");
   const ENG={low:"low",steady:"steady",high:"activated"}[S.energy];
-  let w=`${S.len}-minute ${SL[n.setting]} ${n.setting==="group"?"session":"individual session"}`+(cs.length?` focused on ${listJoin(cs)}`:"")+`. Energy in the room was ${ENG}.`;
+  let w=`${S.len}-minute ${SL[n.setting]} ${n.setting==="group"?"session":"individual session"}`+(cs.length?` focused on ${listJoin(cs)}`:"")+".";
   if(settle.length)w+=` Opened with ${listJoin(settle)} to settle.`;
   if(focus.length)w+=` Main focus: ${listJoin(focus)}.`;
   if(close.length)w+=` Closed with ${listJoin(close)}.`;
