@@ -1024,6 +1024,15 @@ let genrePageTitle = null;
 // See all pages: the carousel button runs through whatever the page is showing
 let pageSource = null;
 function setPageSource(src){ pageSource = src; }
+// where each carousel was left: the card's id, by carousel
+const K_CARPOS = 'reellog.carpos';
+function savePos(key, val){
+  const all = store.get(K_CARPOS, {});
+  all[key] = { ...(all[key] || {}), ...val, at:Date.now() };
+  const keys = Object.keys(all); if(keys.length > 300) keys.sort((a, b) => all[a].at - all[b].at).slice(0, keys.length - 300).forEach(x => delete all[x]);
+  store.set(K_CARPOS, all);
+}
+const posOf = key => (store.get(K_CARPOS, {})[key] || {}).id;
 // On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
 const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
 $('#hcar').onclick = () => {
@@ -1031,11 +1040,16 @@ $('#hcar').onclick = () => {
   if(!src){
     const ids = [...new Set($$('#v-' + view + ' .pc[data-id]').map(e => pid(e.dataset.id)))];
     if(!ids.length){ toast('Nothing on this page to go through yet'); return; }
-    for(let j = ids.length - 1; j > 0; j--){ const r = Math.floor(Math.random() * (j + 1)); [ids[j], ids[r]] = [ids[r], ids[j]]; }   // whole-tab runs come in a random order
-    src = { title:TAB_NAMES[view] || 'All titles', items:ids.map(id => ({ ...filmOf(id), ...(movies.get(id) || {}), id })) };
+    // whole-tab runs come in a random order, kept between visits so you pick up where you were; new titles join in random spots
+    const ok = 'carorder:' + view, kept = (store.get(K_CARPOS, {})[ok] || {}).order || [], have = new Set(ids);
+    // titles from the last visit stay in place even if their row hasn't loaded yet this time
+    const order = kept.filter(id => have.has(id) || (movies.get(id) || {}).poster);
+    ids.filter(id => !order.includes(id)).forEach(id => order.splice(Math.floor(Math.random() * (order.length + 1)), 0, id));
+    savePos(ok, { order });
+    src = { title:TAB_NAMES[view] || 'All titles', items:order.map(id => ({ ...filmOf(id), ...(movies.get(id) || {}), id })) };
   }
   const k = 'pg' + Date.now();
-  adhoc[k] = { k, name:src.title, src };
+  adhoc[k] = { k, name:src.title, src, pos:pageSource ? 'page:' + src.title + ':' + (src.def ? src.def.path + JSON.stringify(src.def.params || {}) : '') : 'tab:' + view };
   openRun(adhoc[k]);
 };
 function setHeaderTitle(t){
@@ -1707,11 +1721,13 @@ function openRun(saga){
     setProg();
     return got;
   }
+  const posKey = 'pos:' + (saga.pos || saga.k);
+  const keepPos = () => { if(rel[i]) savePos(posKey, { id:rel[i].id }); };
   async function go(n){
     if(n < 0) n = 0;
     if(n >= rel.length && hasMore(films)){ while(n >= rel.length && await extend()); }
     if(n >= rel.length){ i = rel.length; renderDone(); setProg(); paintWatched(); return; }
-    i = n; layout(i, true); paintTop(); paintWatched();
+    i = n; layout(i, true); paintTop(); paintWatched(); keepPos();
     if(rel.length - i < 8) extend();
   }
   function paintTop(){
@@ -1760,6 +1776,13 @@ function openRun(saga){
   loadSaga(saga).then(async f => {
     films = f; rel = films.filter(released); up = films.filter(x => !released(x));
     if(!rel.length){ $('#rbody', b).innerHTML = '<div class="msg">No released films found for this series.</div>'; setProg(); return; }
+    // back to the card you left off on, if it's still in the list (long lists load ahead to find it)
+    const last = posOf(posKey);
+    if(last != null){
+      let at = rel.findIndex(x => String(x.id) === String(last));
+      for(let tries = 0; at < 0 && tries < 15 && hasMore(films) && await extend(); tries++) at = rel.findIndex(x => String(x.id) === String(last));
+      if(at >= 0){ i = at; render(); fillTile(saga.k); return; }
+    }
     i = rel.findIndex(x => !getR(x.id) && !seen[x.id]);
     if(i < 0 && hasMore(films)){ while(i < 0 && await extend()) i = rel.findIndex(x => !getR(x.id) && !seen[x.id]); }
     if(i < 0) i = rel.length;

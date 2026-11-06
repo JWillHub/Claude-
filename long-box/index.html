@@ -1772,6 +1772,15 @@ function openArcById(id, name){
 }
 
 /* the carousel */
+// where each carousel was left: the issue's id, by carousel
+const K_CARPOS = 'longbox.carpos';
+function savePos(key, val){
+  const all = store.get(K_CARPOS, {});
+  all[key] = { ...(all[key] || {}), ...val, at:Date.now() };
+  const keys = Object.keys(all); if(keys.length > 300) keys.sort((a, b) => all[a].at - all[b].at).slice(0, keys.length - 300).forEach(x => delete all[x]);
+  store.set(K_CARPOS, all);
+}
+const posOf = key => (store.get(K_CARPOS, {})[key] || {}).id;
 function openRun(saga){
   const s = sheet(`<div class="runhead"><div><h2>${esc(saga.name)}</h2><div class="prog" id="rprog">Loading…</div></div>
     <button class="wbtn" id="rwatched">✓ Read</button></div>
@@ -1839,10 +1848,12 @@ function openRun(saga){
     });
     const p = $('#rprev', b); if(p) p.style.opacity = pos <= 0 ? .35 : 1;
   }
+  const posKey = 'pos:' + (saga.pos || saga.k);
   function go(n){
     if(n < 0) n = 0;
     if(n >= rel.length){ i = rel.length; renderDone(); setProg(); paintWatched(); return; }
     i = n; fillNear(i); layout(i, true); paintTop(); paintWatched();
+    savePos(posKey, { id:rel[i].id });
   }
   function paintTop(){
     const s5 = $('#rbody .runctl .s5', b); if(!s5 || !rel[i]) return;
@@ -1889,7 +1900,9 @@ function openRun(saga){
   loadSaga(saga).then(list => {
     rel = list.filter(released); up = list.filter(x => !released(x));
     if(!rel.length){ $('#rbody', b).innerHTML = '<div class="msg">No released issues found here.</div>'; setProg(); return; }
-    i = rel.findIndex(x => !getR(x.id) && !seen[x.id]); if(i < 0) i = rel.length;
+    // back to the issue you left off on, if it's still there
+    const last = posOf(posKey), at = last == null ? -1 : rel.findIndex(x => String(x.id) === String(last));
+    i = at >= 0 ? at : rel.findIndex(x => !getR(x.id) && !seen[x.id]); if(i < 0) i = rel.length;
     render(); fillTile(saga.k);
   }).catch(e => { $('#rbody', b).innerHTML = `<div class="msg">${e && e.message ? errText(e) : 'Could not find this story on Comic Vine.'}</div>`; $('#rprog', b).textContent = ''; });
 }
