@@ -56,7 +56,7 @@ svg{display:block}
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
 .srch[hidden]{display:none}
 .hact .ib{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.04)}
-.hact .ib[hidden],.top.searching #hcar{display:none}
+.hact .ib[hidden],#hcar[hidden],.top.searching #hcar{display:none}
 #hcar{width:34px;display:grid;place-items:center;padding:0;border-radius:10px;border:0;color:#1a1206;
   background:linear-gradient(135deg,#ffc56b,#ff9f2e);box-shadow:0 4px 14px rgba(255,166,50,.35),inset 0 1px 0 rgba(255,255,255,.35);
   font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
@@ -646,9 +646,27 @@ async function listPage(path, params, page, tv){
   return out;
 }
 function filmOf(id){
-  const m = movies.get(id), r = ratings[id], e = entries.find(x => x.tmdb === id);
-  return { id, title:m?.title || r?.title || e?.title || 'Untitled', year:m?.year || r?.year || e?.year || '',
-    poster:m?.poster || r?.poster || e?.poster || null, backdrop:m?.backdrop || null };
+  const m = movies.get(id), r = ratings[id], w = watch[id], s0 = seen[id], e = entries.find(x => x.tmdb === id);
+  return { id, title:m?.title || r?.title || w?.title || s0?.title || e?.title || 'Untitled', year:m?.year || r?.year || w?.year || s0?.year || e?.year || '',
+    poster:m?.poster || r?.poster || w?.poster || s0?.poster || e?.poster || null, backdrop:m?.backdrop || null };
+}
+// Fill in any saved title that's missing its name or poster (shown as "Untitled"), quietly, from TMDB
+let repairing = false;
+async function repairTitles(){
+  if(repairing) return; repairing = true;
+  try{
+    const lists = [ratings, watch, seen];
+    const need = [...new Set(lists.flatMap(l => Object.entries(l).filter(([, v]) => v && (!v.title || v.title === 'Untitled' || !v.poster)).map(([k]) => k)))].slice(0, 25);
+    let fixed = 0;
+    for(const k of need){
+      const id = pid(k);
+      const d = await (typeof id === 'string' ? showDetails(+id.slice(2)) : movieDetails(id)).catch(() => null);
+      if(!d || !d.title) continue;
+      lists.forEach(l => { if(l[k]) l[k] = { ...l[k], title:d.title, year:l[k].year || d.year, poster:l[k].poster || d.poster }; });
+      remember([d]); fixed++;
+    }
+    if(fixed){ saveAll(); afterChange(); }
+  }finally{ repairing = false; }
 }
 function poster(p, cls = '', size = 'w185', title = ''){
   return p ? `<img class="${cls}" loading="lazy" decoding="async" draggable="false" src="${IMG}${size}${p}" alt="${esc(title)}">`
@@ -692,7 +710,8 @@ let changeHooks = [];
 function setRating(f, r, quiet){
   const prev = ratings[f.id] ? { ...ratings[f.id] } : null;
   const prevW = watch[f.id];
-  if(r > 0){ ratings[f.id] = { r, title:f.title, year:f.year, poster:f.poster, at:Date.now(), g:(movies.get(f.id) || {}).genres || prev?.g || [] }; delete watch[f.id]; delete seen[f.id]; }
+  const good = f.title && f.title !== 'Untitled';
+  if(r > 0){ ratings[f.id] = { r, title:good ? f.title : prev?.title || f.title, year:f.year || prev?.year || '', poster:f.poster || prev?.poster || null, at:Date.now(), g:(movies.get(f.id) || {}).genres || prev?.g || [] }; delete watch[f.id]; delete seen[f.id]; }
   else delete ratings[f.id];
   saveAll(); afterChange();
   if(!quiet) toast(r > 0 ? `<span>${starTxt(r)}&nbsp; ${esc(f.title)}</span>` : `<span>Rating removed · ${esc(f.title)}</span>`, () => {
@@ -2157,6 +2176,7 @@ function openSettings(){
 /* ================= go ================= */
 history.replaceState({ rl:0 }, '');
 setView('discover');
+setTimeout(() => { if(store.get(K_KEY, '')) repairTitles(); }, 2500);
 if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
