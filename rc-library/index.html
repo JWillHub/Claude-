@@ -2339,14 +2339,27 @@ function saveProg(){
 const clock = s => { s = Math.floor(s); const h = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ':' + String(mm).padStart(2, '0') : mm) + ':' + String(ss).padStart(2, '0'); };
 const progOfTorrent = tid => Object.values(prog).filter(p => p.tid === tid).sort((a, c) => c.at - a.at)[0] || null;
 
+// The token goes in the address so the browser can send each request straight away (a custom header would make it
+// ask the relay for permission first, an extra round trip). If the relay is an older copy that only reads the header, fall back.
+let rdHeaderMode = false;
 async function rd(path, opt = {}){
   const key = store.get(K_RD, ''); if(!key) throw new Error('rdnokey');
-  const url = new URL(RD_API + path);
-  Object.entries(opt.q || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+  const base = new URL(RD_API + path);
+  Object.entries(opt.q || {}).forEach(([k, v]) => base.searchParams.set(k, v));
+  const send = hdr => {
+    const u = new URL(base), init = {};
+    if(hdr) init.headers = { Authorization:'Bearer ' + key }; else u.searchParams.set('auth_token', key);
+    if(opt.form){ init.method = 'POST'; init.body = new URLSearchParams(opt.form); }
+    return fetch(u, init);
+  };
   let r;
-  const headers = { Authorization:'Bearer ' + key };
-  try{ r = await fetch(url, opt.form ? { method:'POST', headers, body:new URLSearchParams(opt.form) } : { headers }); }
-  catch(e){ throw new Error('rdblocked'); }
+  try{
+    r = await send(rdHeaderMode);
+    if(!rdHeaderMode && r.status === 401){
+      const j = await r.clone().json().catch(() => ({}));
+      if(j.error === 'No token'){ rdHeaderMode = true; r = await send(true); }
+    }
+  }catch(e){ throw new Error('rdblocked'); }
   if(r.status === 401) throw new Error('rdbadkey');
   if(r.status === 403) throw new Error('rddenied');
   if(r.status === 204) return null;
@@ -2408,6 +2421,7 @@ function syncLib(){
       items[t.id] = old && old.name === t.filename ? old : { name:t.filename, bytes:t.bytes, added:t.added };
     }
     rdLib.items = items;
+    Object.keys(infoCache).forEach(t => { if(!items[t]) delete infoCache[t]; }); store.set(K_TINFO, infoCache);
     let fatal = null;
     await Promise.all(Object.values(items).filter(it => it.m === undefined).map(async it => {
       if(fatal) return;
@@ -2440,6 +2454,65 @@ const libSort = (list, sort) => list.sort(sort === 'rated' ? (a, c) => (c.vote |
   : sort === 'newest' ? (a, c) => (c.date || '').localeCompare(a.date || '')
   : sort === 'popular' ? (a, c) => (c.votes || 0) - (a.votes || 0)
   : (a, c) => a.title.localeCompare(c.title, undefined, { numeric:true }));
+// Remembered file lists (a day) and stream links (3 hours), so replaying or resuming skips the slow lookups
+const K_LINKS = 'rclib.links', K_TINFO = 'rclib.tinfo', LINK_TTL = 3 * 3600e3, INFO_TTL = 24 * 3600e3;
+let linkCache = store.get(K_LINKS, {}), infoCache = store.get(K_TINFO, {});
+function trimCache(c, ttl, max){
+  const now = Date.now(); Object.keys(c).forEach(k => { if(!c[k] || now - c[k].at > ttl) delete c[k]; });
+  Object.keys(c).sort((a, b) => c[b].at - c[a].at).slice(max).forEach(k => delete c[k]);
+}
+const inflightInfo = new Map();
+function torrentFiles(tid, fresh){
+  const c = infoCache[tid];
+  if(!fresh && c && Date.now() - c.at < INFO_TTL) return Promise.resolve(c.files);
+  if(inflightInfo.has(tid)) return inflightInfo.get(tid);
+  const p = (async () => {
+    const info = await rd('/torrents/info/' + encodeURIComponent(tid));
+    const sel = (info.files || []).filter(f => f.selected), links = info.links || [];
+    let files = sel.length === links.length ? sel.map((f, i) => ({ path:f.path, bytes:f.bytes, link:links[i] })) : links.length === 1 ? [{ path:info.filename, bytes:info.bytes, link:links[0] }] : [];
+    files = files.filter(f => VIDEO.test(f.path) && !/(^|[\W_])sample([\W_]|$)/i.test(f.path));
+    infoCache[tid] = { files, at:Date.now() }; trimCache(infoCache, INFO_TTL, 80); store.set(K_TINFO, infoCache);
+    return files;
+  })();
+  inflightInfo.set(tid, p); p.finally(() => inflightInfo.delete(tid)).catch(() => {});
+  return p;
+}
+const isDirect = n => /\.(mp4|m4v|webm)$/i.test(n || '');
+const isH264 = n => /x\.?264|h\.?264|\bavc\b/i.test(n || '');
+const inflightLinks = new Map();
+async function addTranscode(s){
+  s.tc = true;
+  if(!(s.u.streamable && s.u.id)) return;
+  try{ const t = await rd('/streaming/transcode/' + encodeURIComponent(s.u.id)); s.hls = pickUrl(t && t.apple); s.mp4 = pickUrl(t && t.liveMP4); }catch(e){}
+}
+function getStream(link, fresh){
+  const c = linkCache[link];
+  if(!fresh && c && Date.now() - c.at < LINK_TTL) return Promise.resolve(c);
+  if(inflightLinks.has(link)) return inflightLinks.get(link);
+  const p = (async () => {
+    const u = await rd('/unrestrict/link', { form:{ link } });
+    const s = { u:{ download:u.download, filename:u.filename, filesize:u.filesize, id:u.id, streamable:u.streamable }, hls:null, mp4:null, tc:false, at:Date.now() };
+    // only ask for a converted stream up front when the original almost certainly won't play in the browser
+    if(!isDirect(s.u.filename) && !isH264(s.u.filename) && !needsVLC(s.u.filename)) await addTranscode(s);
+    linkCache[link] = s; trimCache(linkCache, LINK_TTL, 60); store.set(K_LINKS, linkCache);
+    return s;
+  })();
+  inflightLinks.set(link, p); p.finally(() => inflightLinks.delete(link)).catch(() => {});
+  return p;
+}
+const pickFilm = files => files.slice().sort((x, y) => y.bytes - x.bytes)[0];
+const isEpisodes = files => files.length > 1 && files.some(f => epOf(f.path));
+// Opening a title's card warms up its stream in the background, so Play starts right away
+function prefetchLib(list){
+  const it = list.slice().sort((a, c) => (progOfTorrent(c.tid) ? 1 : 0) - (progOfTorrent(a.tid) ? 1 : 0) || (c.bytes || 0) - (a.bytes || 0))[0];
+  if(!it || !store.get(K_RD, '')) return;
+  torrentFiles(it.tid).then(files => {
+    if(!files.length) return;
+    if(!isEpisodes(files)) return getStream(pickFilm(files).link);
+    const pr = progOfTorrent(it.tid); if(pr && pr.link) return getStream(pr.link);
+  }).catch(() => {});
+}
+
 const libFor = id => Object.entries(rdLib.items).filter(([, it]) => it.m && it.m.id === id).map(([tid, it]) => ({ tid, ...it }));
 
 // Detail card: "In your library" above the streaming logos (shown even if TMDB is slow or offline)
@@ -2450,6 +2523,7 @@ function libBlock(b, id){
     .sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric:true }))
     .map(it => { const pr = progOfTorrent(it.tid); return `<button data-rdt="${esc(it.tid)}">▶ <b>${pr ? 'Resume' : 'Play'}</b> ${esc([seasonOf(it.name), qualOf(it.name), fmtSize(it.bytes)].filter(Boolean).join(' · '))}</button>`; }).join('')}</div></div>`);
   $$('[data-rdt]', box).forEach(x => x.onclick = () => openTorrent(x.dataset.rdt, filmOf(id).title, id));
+  prefetchLib(list);
 }
 
 async function openTorrent(tid, title, id){
@@ -2460,27 +2534,28 @@ async function openTorrent(tid, title, id){
     <button class="btn ghost" id="lfix">Wrong title? Fix the match</button>`, { tall:true });
   const b = s.body;
   $('#lfix', b).onclick = () => fixMatch(tid, () => s.close());
-  let info;
-  try{ info = await rd('/torrents/info/' + encodeURIComponent(tid)); }
+  let files;
+  try{ files = await torrentFiles(tid); }
   catch(e){ $('#lbox', b).innerHTML = `<div class="msg">${rdErr(e)}</div>`; return; }
   if(!s.el.isConnected) return;
-  const sel = (info.files || []).filter(f => f.selected), links = info.links || [];
-  let files = sel.length === links.length ? sel.map((f, i) => ({ ...f, link:links[i] })) : links.length === 1 ? [{ path:info.filename, bytes:info.bytes, link:links[0] }] : [];
-  files = files.filter(f => VIDEO.test(f.path) && !/(^|[\W_])sample([\W_]|$)/i.test(f.path));
   if(!files.length){ $('#lbox', b).innerHTML = '<div class="msg">No playable video files in this item.</div>'; return; }
-  if(files.length === 1 || !files.some(f => epOf(f.path))){
-    if(files.length > 1) files.sort((x, y) => y.bytes - x.bytes);   // a film with extras: the biggest file is the film
-    const f = files[0];
+  if(!isEpisodes(files)){
+    const f = pickFilm(files);   // a film with extras: the biggest file is the film
     return playInto($('#lbox', b), f.link, title, { key:tid + '|' + f.path, tid, id, label:'' });
   }
-  files.sort((x, y) => { const a = epOf(x.path) || { s:999, e:0 }, c = epOf(y.path) || { s:999, e:0 }; return a.s - c.s || a.e - c.e || x.path.localeCompare(y.path); });
+  files = files.slice().sort((x, y) => { const a = epOf(x.path) || { s:999, e:0 }, c = epOf(y.path) || { s:999, e:0 }; return a.s - c.s || a.e - c.e || x.path.localeCompare(y.path); });
   $('#lbox', b).innerHTML = `<div class="lfiles">${files.map((f, i) => { const ep = epOf(f.path);
     const k = tid + '|' + f.path, pr = prog[k], fin = done[k];
     return `<button class="lfile${fin ? ' fin' : ''}" data-i="${i}"><span>${fin ? '✓' : '▶'} <b>${ep ? `S${ep.s} E${ep.e}` : ''}</b> ${ep ? '' : esc(baseName(f.path))}</span><span class="sz">${pr && pr.d ? clock(pr.t) + ' / ' + clock(pr.d) : fmtSize(f.bytes)}</span>${pr && pr.d ? `<i class="lbar" style="width:${Math.min(100, pr.t / pr.d * 100).toFixed(1)}%"></i>` : ''}</button>`; }).join('')}</div>`;
-  $$('.lfile', b).forEach(x => x.onclick = () => {
-    const f = files[+x.dataset.i], ep = epOf(f.path), t = title + (ep ? ` · S${ep.s} E${ep.e}` : '');
-    const p = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
-    playInto($('#lbox', p.body), f.link, t, { key:tid + '|' + f.path, tid, id, label:ep ? `S${ep.s} E${ep.e}` : '' });
+  $$('.lfile', b).forEach(x => {
+    const f = files[+x.dataset.i];
+    // a press is a strong hint: start getting that episode's link before the finger lifts
+    x.addEventListener('pointerdown', () => { getStream(f.link).catch(() => {}); }, { once:true });
+    x.onclick = () => {
+      const ep = epOf(f.path), t = title + (ep ? ` · S${ep.s} E${ep.e}` : '');
+      const p = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
+      playInto($('#lbox', p.body), f.link, t, { key:tid + '|' + f.path, tid, id, label:ep ? `S${ep.s} E${ep.e}` : '' });
+    };
   });
 }
 
@@ -2494,13 +2569,13 @@ function vlcLink(url, title, startSec){
   if(IS_ANDROID) return `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;type=video/*;package=org.videolan.vlc;S.title=${encodeURIComponent(title)}${startSec > 20 ? ';l.position=' + Math.floor(startSec * 1000) : ''};end`;
   return url;
 }
-async function playInto(box, link, title, meta = {}){
+async function playInto(box, link, title, meta = {}, retry = false){
   box.innerHTML = '<div class="msg">Getting a stream link…</div>';
-  let u;
-  try{ u = await rd('/unrestrict/link', { form:{ link } }); }
+  let s;
+  try{ s = await getStream(link, retry); }
   catch(e){ box.innerHTML = `<div class="msg">${rdErr(e)}</div>`; return; }
   if(!box.isConnected) return;
-  const url = u.download;
+  const u = s.u, url = u.download, remembered = !retry && Date.now() - s.at > 10000;
   const startAt = meta.key && prog[meta.key] ? prog[meta.key].t : 0;
   const vlc = vlcLink(url, title, startAt);
   const copyBtn = () => { const c = $('#lcopy', box); if(c) c.onclick = async () => { try{ await navigator.clipboard.writeText(url); toast('Stream link copied'); }catch(e){ toast('Could not copy the link'); } }; };
@@ -2513,16 +2588,13 @@ async function playInto(box, link, title, meta = {}){
     location.href = vlc;
     return;
   }
-  // Real-Debrid can re-encode a file for browsers. Files a browser plays as-is (mp4, webm) are used directly.
-  let hls = null, mp4 = null;
-  if(u.streamable && u.id) try{ const t = await rd('/streaming/transcode/' + encodeURIComponent(u.id)); hls = pickUrl(t && t.apple); mp4 = pickUrl(t && t.liveMP4); }catch(e){}
-  if(!box.isConnected) return;
-  const probe = document.createElement('video');
-  const direct = /\.(mp4|m4v|webm)$/i.test(u.filename || url);
-  // try the best option first and fall back if the browser can't play it
-  const srcs = (direct ? [url] : [probe.canPlayType('application/vnd.apple.mpegurl') ? hls : null, mp4, url]).filter(Boolean);
-  const kind = s => s === url ? 'original file' : 'converted stream';
-  const src = srcs.shift();
+  // Order: files a browser can usually play as-is (mp4, H.264) start with the original; others with Real-Debrid's converted stream
+  const hlsOk = !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl');
+  const conv = () => [hlsOk ? s.hls : null, s.mp4];
+  const tried = new Set();
+  const srcs = [...new Set(((isDirect(u.filename) || isH264(u.filename)) ? [url, ...conv()] : [...conv(), url]).filter(Boolean))];
+  const kind = x => x === url ? 'original file' : 'converted stream';
+  const src = srcs.shift(); tried.add(src);
   box.innerHTML = `<div class="lplay"><video controls playsinline preload="metadata" src="${esc(src)}"></video>
     <div class="small" id="lperr" style="margin-top:6px"></div>
     <div class="small" style="margin-top:4px">${esc(u.filename || '')}${u.filesize ? ' · ' + fmtSize(u.filesize) : ''} · <span id="lkind">${kind(src)}</span></div>
@@ -2530,12 +2602,19 @@ async function playInto(box, link, title, meta = {}){
     <button class="btn ghost" id="lcopy">Copy stream link</button></div>`;
   const v = $('video', box);
   if(meta.key) trackProgress(v, box, link, title, meta);
-  const next = why => {
-    if(srcs.length){
-      const at = v.currentTime; v.src = srcs.shift(); $('#lkind', box).textContent = kind(v.src);
-      if(at > 1) v.addEventListener('loadedmetadata', () => { try{ v.currentTime = at; }catch(e){} }, { once:true });
-      v.play().catch(() => {}); return;
+  let busy = false;
+  const next = async why => {
+    if(busy || !v.isConnected) return; busy = true;
+    if(!srcs.length && !s.tc){   // the converted stream wasn't fetched up front: get it now
+      await addTranscode(s); store.set(K_LINKS, linkCache);
+      conv().filter(x => x && !tried.has(x)).forEach(x => srcs.push(x));
     }
+    if(srcs.length){
+      const at = v.currentTime; v.src = srcs.shift(); tried.add(v.src); $('#lkind', box).textContent = kind(v.src);
+      if(at > 1) v.addEventListener('loadedmetadata', () => { try{ v.currentTime = at; }catch(e){} }, { once:true });
+      v.play().catch(() => {}); busy = false; return;
+    }
+    if(remembered){ delete linkCache[link]; store.set(K_LINKS, linkCache); return playInto(box, link, title, meta, true); }   // the remembered link may have expired
     const e = $('#lperr', box); if(e) e.textContent = why;
     if(IS_ANDROID || IS_IOS){ v.pause(); location.href = vlcLink(url, title, v.currentTime || startAt); }   // hand off to VLC automatically
   };
@@ -2648,7 +2727,7 @@ function drawLibrary(b){
   };
   $('#lsync', b).onclick = sync;
   paint();
-  if(store.get(K_RD, '') && Date.now() - rdLib.synced > 6 * 3600e3) sync();
+  if(store.get(K_RD, '') && Date.now() - rdLib.synced > 5 * 60e3) sync();   // every visit, once 5 minutes have passed
   else backfillMeta().then(ch => ch && paint());
   return paint;
 }

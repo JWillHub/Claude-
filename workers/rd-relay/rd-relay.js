@@ -1,7 +1,7 @@
 // Real-Debrid relay for Rolling Credits (Cloudflare Worker).
 // Browsers can't call the Real-Debrid API directly, so the app sends /rd/... here and this passes it through.
 // Only the four calls the library uses are allowed, only for jwillhub.github.io, and the person's own token
-// rides along in the Authorization header. Nothing is stored or logged.
+// rides along with each request. Nothing is stored here.
 
 const ORIGINS = ['https://jwillhub.github.io'];
 const RD_ALLOW = /^(torrents|torrents\/info\/[A-Za-z0-9]+|unrestrict\/link|streaming\/transcode\/[A-Za-z0-9]+)$/;
@@ -17,10 +17,11 @@ export default {
     const url = new URL(req.url);
     const path = url.pathname.replace(/^\/rd\//, '').replace(/^\/+/, '');
     if (!RD_ALLOW.test(path) || !['GET', 'POST'].includes(req.method)) return json('{"error":"Not allowed"}', 404);
+    // the token comes either in the address (?auth_token=, which Real-Debrid reads directly) or in an Authorization header
     const auth = req.headers.get('Authorization');
-    if (!auth) return json('{"error":"No token","error_code":8}', 401);
+    if (!auth && !url.searchParams.get('auth_token')) return json('{"error":"No token","error_code":8}', 401);
 
-    const headers = { Authorization: auth };
+    const headers = auth ? { Authorization: auth } : {};
     if (req.method === 'POST') headers['Content-Type'] = 'application/x-www-form-urlencoded';
     let up;
     try {
