@@ -2347,6 +2347,8 @@ function saveProg(){
   store.set(K_PROG, prog); store.set(K_DONE, done);
 }
 const clock = s => { s = Math.floor(s); const h = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60; return (h ? h + ':' + String(mm).padStart(2, '0') : mm) + ':' + String(ss).padStart(2, '0'); };
+// The library's own match for a resume point (title, poster), not whatever happens to be loaded
+const progMeta = meta => { const it = rdLib.items[meta.tid]; const mm = it && it.m || {}; return { name:mm.title || '', poster:mm.poster || null, year:mm.year || '' }; };
 const progOfTorrent = tid => Object.values(prog).filter(p => p.tid === tid).sort((a, c) => c.at - a.at)[0] || null;
 
 // The token goes in the address so the browser can send each request straight away (a custom header would make it
@@ -2432,6 +2434,10 @@ function syncLib(){
     }
     rdLib.items = items;
     Object.keys(infoCache).forEach(t => { if(!items[t]) delete infoCache[t]; }); store.set(K_TINFO, infoCache);
+    // things removed from Real-Debrid also leave Continue watching
+    const goneLinks = new Set();
+    Object.keys(prog).forEach(k => { const p = prog[k]; if(p.tid && !items[p.tid]){ if(p.link) goneLinks.add(p.link); delete prog[k]; } });
+    goneLinks.forEach(l => delete linkCache[l]); store.set(K_LINKS, linkCache); saveProg();
     let fatal = null;
     await Promise.all(Object.values(items).filter(it => it.m === undefined).map(async it => {
       if(fatal) return;
@@ -2648,7 +2654,7 @@ async function nativePlay(box, s, link, title, meta, startAt, remembered){
   const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
   if(meta.key && d > 0){
     if(r.ended || t / d >= 0.9) finishWatch(meta.key, meta);
-    else if(t > 5){ prog[meta.key] = { t, d, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link }; saveProg(); afterChange(); }
+    else if(t > 5){ prog[meta.key] = { t, d, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link, ...progMeta(meta) }; saveProg(); afterChange(); }
   }
   if(!box.isConnected) return;
   const fin = !prog[meta.key];
@@ -2671,7 +2677,7 @@ function trackProgress(v, box, link, title, meta){
   }
   const save = () => {
     if(finished || !v.duration || !isFinite(v.duration) || v.currentTime < 5) return;
-    prog[k] = { t:v.currentTime, d:v.duration, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link };
+    prog[k] = { t:v.currentTime, d:v.duration, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link, ...progMeta(meta) };
     saveProg();
   };
   v.addEventListener('timeupdate', () => {
@@ -2686,7 +2692,8 @@ function trackProgress(v, box, link, title, meta){
 function finishWatch(k, meta){
   delete prog[k]; done[k] = Date.now(); saveProg();
   const id = meta.id; if(id == null) return;
-  const f = filmOf(id);
+  const f0 = filmOf(id), lm = (rdLib.items[meta.tid] && rdLib.items[meta.tid].m) || {};
+  const f = { ...f0, title:f0.title !== 'Untitled' ? f0.title : (lm.title || f0.title), year:f0.year || lm.year || '', poster:f0.poster || lm.poster || null };
   if(typeof id === 'number' && !entries.some(e => e.tmdb === id && e.date === today())){
     entries.push({ id:uid(), added:Date.now(), tmdb:id, title:f.title, year:f.year, poster:f.poster, date:today(), rating:getR(id), rewatch:logCount(id) > 0, note:'' });
   }
@@ -2737,8 +2744,9 @@ function drawLibrary(b){
       : rdLib.synced ? `${all} title${all === 1 ? '' : 's'}${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
       : 'Not synced yet.';
     $('#lsync', b).hidden = !has;
-    const cont = Object.entries(prog).filter(([, p]) => p.link && p.d).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
-    $('#lcont', b).innerHTML = cont.length ? `<div class="lbl lcl">Continue watching</div><div class="lcrow nodrag">${cont.map(([k, p]) => { const f = filmOf(p.id);
+    const cont = Object.entries(prog).filter(([, p]) => p.link && p.d && (!p.tid || rdLib.items[p.tid])).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
+    $('#lcont', b).innerHTML = cont.length ? `<div class="lbl lcl">Continue watching</div><div class="lcrow nodrag">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
+      const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled', poster:mm.poster || p.poster || f0.poster };
       return `<button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
         <span>${esc(p.label || f.title)}</span><span class="small">${clock(p.d - p.t)} left</span></button>`; }).join('')}</div>` : '';
     $$('[data-ck]', b).forEach(x => x.onclick = () => {
@@ -2760,7 +2768,7 @@ function drawLibrary(b){
   };
   $('#lsync', b).onclick = sync;
   paint();
-  if(store.get(K_RD, '') && Date.now() - rdLib.synced > 5 * 60e3) sync();   // every visit, once 5 minutes have passed
+  if(store.get(K_RD, '') && Date.now() - rdLib.synced > 20e3) sync();   // every visit (one quick request), so removals and additions show right away
   else backfillMeta().then(ch => ch && paint());
   return paint;
 }
