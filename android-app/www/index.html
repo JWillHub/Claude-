@@ -470,6 +470,7 @@ html{touch-action:manipulation}
 /* marquee type */
 .vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
+#setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}
 .logo .libtag{font-style:normal;color:var(--good)}
 .lib{margin:10px 0 4px}
 .lib .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:10px 0 7px}
@@ -2331,13 +2332,45 @@ const K_RD = 'rclib.rdkey', K_LIB = 'rclib.rdlib';
 // Running inside the Android app? There, requests go straight to Real-Debrid and Play opens the native player.
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 // The native player, found when it's needed (the app's bridge may finish setting up after this page loads)
-function playerPlay(opts){
+function callNative(plugin, method, opts){
   const C = window.Capacitor || {};
-  if(C.Plugins && C.Plugins.RCPlayer && typeof C.Plugins.RCPlayer.play === 'function') return C.Plugins.RCPlayer.play(opts);
-  if(typeof C.registerPlugin === 'function') return C.registerPlugin('RCPlayer').play(opts);
-  if(typeof C.nativePromise === 'function') return C.nativePromise('RCPlayer', 'play', opts);
-  return Promise.reject(new Error('the player is not available'));
+  if(C.Plugins && C.Plugins[plugin] && typeof C.Plugins[plugin][method] === 'function') return C.Plugins[plugin][method](opts);
+  if(typeof C.registerPlugin === 'function') return C.registerPlugin(plugin)[method](opts);
+  if(typeof C.nativePromise === 'function') return C.nativePromise(plugin, method, opts);
+  return Promise.reject(new Error('this part of the app is not available'));
 }
+const playerPlay = opts => callNative('RCPlayer', 'play', opts);
+
+// ---- App updates (Android app only): a dot on Settings when a newer build is out, and an Update button there ----
+const APP_BUILD = parseInt('__BUILDNUM__', 10);
+const REL = 'https://github.com/JWillHub/Claude-/releases/download/android-latest/';
+let latestBuild = 0;
+async function checkForUpdate(){
+  if(!NATIVE || !APP_BUILD) return;
+  try{
+    const r = await fetch(REL + 'version.json?t=' + Date.now());
+    const j = JSON.parse(await r.text());
+    latestBuild = +j.build || 0;
+  }catch(e){ return; }
+  $('#setTab')?.classList.toggle('upd', latestBuild > APP_BUILD);
+  const box = document.getElementById('appupd'); if(box) fillUpdate(box.closest('.sbody') || document);
+}
+function fillUpdate(b){
+  const box = $('#appupd', b); if(!box || !NATIVE) return;
+  const newer = latestBuild > APP_BUILD;
+  box.innerHTML = `App build ${APP_BUILD || '?'}${newer ? ` · <b style="color:var(--good)">build ${latestBuild} is available</b>` : latestBuild ? ' · up to date' : ''}
+    ${newer ? '<button class="btn" id="appupdbtn" style="margin-top:8px">Update</button>' : ''}`;
+  const btn = $('#appupdbtn', box); if(!btn) return;
+  btn.onclick = async () => {
+    btn.disabled = true; btn.textContent = 'Downloading…';
+    try{
+      const r = await callNative('RCUpdate', 'install', { url:REL + 'rolling-credits.apk' });
+      if(r && r.needsPermission){ btn.disabled = false; btn.textContent = 'Update'; toast('Turn on "Allow from this source", come back, then tap Update again'); return; }
+      btn.textContent = 'Opening the installer…';
+    }catch(e){ btn.disabled = false; btn.textContent = 'Update'; toast('Update failed: ' + esc(e.message || String(e))); }
+  };
+}
+if(NATIVE){ setTimeout(checkForUpdate, 2500); document.addEventListener('visibilitychange', () => { if(!document.hidden) checkForUpdate(); }); }
 // In a browser, Real-Debrid doesn't allow direct calls, so requests go through your small rc-relay Cloudflare worker
 const RD_API = NATIVE ? 'https://api.real-debrid.com/rest/1.0' : 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
 let rdLib = store.get(K_LIB, null) || { synced:0, items:{} };
@@ -2886,7 +2919,7 @@ function openSettings(){
     <input id="rdkey" type="password" value="${esc(store.get(K_RD, ''))}" placeholder="Paste your Real-Debrid API token" autocomplete="off">
     <div class="small" style="margin-top:6px">From real-debrid.com/apitoken. Stored only on this device, in this app.</div>
     <button class="btn ghost" id="rdopen">Open my library</button>
-    <div class="small" style="margin-top:10px">App build __BUILD__</div>
+    <div class="small" id="appupd" style="margin-top:10px">App build __BUILD__</div>
     <label class="toggle"><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}> Hide films and shows I've rated while browsing</label>
     <label class="f">Backup</label>
     <button class="btn ghost" id="exp" style="margin-top:0">Export ratings & diary (.json)</button>
@@ -2907,6 +2940,7 @@ function openSettings(){
   };
   $('#rdkey', b).onchange = e => { const v = e.target.value.trim(); store.set(K_RD, v); if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } toast(v ? 'Real-Debrid token saved' : 'Real-Debrid token removed'); };
   $('#rdopen', b).onclick = () => { s.close(); setTimeout(openLibrary, 60); };
+  fillUpdate(b); checkForUpdate();
   $('#okey', b).onchange = e => { store.set(K_OMDB, e.target.value.trim()); toast(e.target.value.trim() ? 'OMDb key saved' : 'OMDb key removed'); };
   $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
   $('#exp', b).onclick = () => {

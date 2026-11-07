@@ -2,3 +2,4 @@ node_modules/
 android/
 package-lock.json
 rolling-credits.apk
+version.json

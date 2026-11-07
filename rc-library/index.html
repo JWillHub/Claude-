@@ -2331,13 +2331,45 @@ const K_RD = 'rclib.rdkey', K_LIB = 'rclib.rdlib';
 // Running inside the Android app? There, requests go straight to Real-Debrid and Play opens the native player.
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 // The native player, found when it's needed (the app's bridge may finish setting up after this page loads)
-function playerPlay(opts){
+function callNative(plugin, method, opts){
   const C = window.Capacitor || {};
-  if(C.Plugins && C.Plugins.RCPlayer && typeof C.Plugins.RCPlayer.play === 'function') return C.Plugins.RCPlayer.play(opts);
-  if(typeof C.registerPlugin === 'function') return C.registerPlugin('RCPlayer').play(opts);
-  if(typeof C.nativePromise === 'function') return C.nativePromise('RCPlayer', 'play', opts);
-  return Promise.reject(new Error('the player is not available'));
+  if(C.Plugins && C.Plugins[plugin] && typeof C.Plugins[plugin][method] === 'function') return C.Plugins[plugin][method](opts);
+  if(typeof C.registerPlugin === 'function') return C.registerPlugin(plugin)[method](opts);
+  if(typeof C.nativePromise === 'function') return C.nativePromise(plugin, method, opts);
+  return Promise.reject(new Error('this part of the app is not available'));
 }
+const playerPlay = opts => callNative('RCPlayer', 'play', opts);
+
+// ---- App updates (Android app only): a dot on Settings when a newer build is out, and an Update button there ----
+const APP_BUILD = parseInt('__BUILDNUM__', 10);
+const REL = 'https://github.com/JWillHub/Claude-/releases/download/android-latest/';
+let latestBuild = 0;
+async function checkForUpdate(){
+  if(!NATIVE || !APP_BUILD) return;
+  try{
+    const r = await fetch(REL + 'version.json?t=' + Date.now());
+    const j = JSON.parse(await r.text());
+    latestBuild = +j.build || 0;
+  }catch(e){ return; }
+  $('#setTab')?.classList.toggle('upd', latestBuild > APP_BUILD);
+  const box = document.getElementById('appupd'); if(box) fillUpdate(box.closest('.sbody') || document);
+}
+function fillUpdate(b){
+  const box = $('#appupd', b); if(!box || !NATIVE) return;
+  const newer = latestBuild > APP_BUILD;
+  box.innerHTML = `App build ${APP_BUILD || '?'}${newer ? ` · <b style="color:var(--good)">build ${latestBuild} is available</b>` : latestBuild ? ' · up to date' : ''}
+    ${newer ? '<button class="btn" id="appupdbtn" style="margin-top:8px">Update</button>' : ''}`;
+  const btn = $('#appupdbtn', box); if(!btn) return;
+  btn.onclick = async () => {
+    btn.disabled = true; btn.textContent = 'Downloading…';
+    try{
+      const r = await callNative('RCUpdate', 'install', { url:REL + 'rolling-credits.apk' });
+      if(r && r.needsPermission){ btn.disabled = false; btn.textContent = 'Update'; toast('Turn on "Allow from this source", come back, then tap Update again'); return; }
+      btn.textContent = 'Opening the installer…';
+    }catch(e){ btn.disabled = false; btn.textContent = 'Update'; toast('Update failed: ' + esc(e.message || String(e))); }
+  };
+}
+if(NATIVE){ setTimeout(checkForUpdate, 2500); document.addEventListener('visibilitychange', () => { if(!document.hidden) checkForUpdate(); }); }
 // In a browser, Real-Debrid doesn't allow direct calls, so requests go through your small rc-relay Cloudflare worker
 const RD_API = NATIVE ? 'https://api.real-debrid.com/rest/1.0' : 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
 let rdLib = store.get(K_LIB, null) || { synced:0, items:{} };

@@ -5,6 +5,8 @@ PKG=io/github/jwillhub/rollingcredits
 SRC=android/app/src/main/java/$PKG
 mkdir -p "$SRC"
 cp native/*.java "$SRC/"
+mkdir -p android/app/src/main/res/xml
+cp native/res/xml/update_paths.xml android/app/src/main/res/xml/
 
 # Player libraries: Media3 ExoPlayer + UI, and Jellyfin's prebuilt FFmpeg audio decoder for DTS / TrueHD
 cat >> android/app/build.gradle <<'GRADLE'
@@ -45,8 +47,14 @@ act = ('        <activity android:name="io.github.jwillhub.rollingcredits.Player
        '            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"\n'
        '            android:screenOrientation="sensorLandscape"\n'
        '            android:exported="false" />\n')
-assert '</application>' in s
-s = s.replace('</application>', act + '    </application>', 1)
+prov = ('        <provider android:name="io.github.jwillhub.rollingcredits.UpdateFileProvider"\n'
+        '            android:authorities="io.github.jwillhub.rollingcredits.updates"\n'
+        '            android:exported="false" android:grantUriPermissions="true">\n'
+        '            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_paths" />\n'
+        '        </provider>\n')
+assert '</application>' in s and '<application' in s
+s = s.replace('</application>', act + prov + '    </application>', 1)
+s = s.replace('<application', '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n    <application', 1)
 open(p, 'w').write(s)
 PY
 

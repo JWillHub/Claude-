@@ -31,7 +31,9 @@ jobs:
       - name: Create the Android project
         run: |
           cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
+          sed -i "s/__BUILDNUM__/${GITHUB_RUN_NUMBER}/g" www/index.html
           sed -i "s/__BUILD__/${GITHUB_RUN_NUMBER} · $(TZ=America/Chicago date '+%b %-d, %-I:%M %p')/" www/index.html
+          echo "{\"build\": ${GITHUB_RUN_NUMBER}}" > version.json
           npx cap add android
           ./scripts/patch-android.sh
           npx cap sync android
@@ -57,4 +59,6 @@ jobs:
           body: "Latest build from ${{ github.sha }}. Download rolling-credits.apk on your phone and open it to install or update."
           prerelease: false
           make_latest: false
-          files: android-app/rolling-credits.apk
+          files: |
+            android-app/rolling-credits.apk
+            android-app/version.json
