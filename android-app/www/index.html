@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Rolling Credits</title>
-
+<script src="capacitor.js"></script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rolling Credits">
 <link rel="icon" href="icon-192.png">
@@ -2325,7 +2325,14 @@ async function saveReviewImage(d, btn){
 const K_RD = 'rclib.rdkey', K_LIB = 'rclib.rdlib';
 // Running inside the Android app? There, requests go straight to Real-Debrid and Play opens the native player.
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-const RCPlayer = NATIVE && window.Capacitor.registerPlugin ? window.Capacitor.registerPlugin('RCPlayer') : null;
+// The native player, found when it's needed (the app's bridge may finish setting up after this page loads)
+function playerPlay(opts){
+  const C = window.Capacitor || {};
+  if(C.Plugins && C.Plugins.RCPlayer && typeof C.Plugins.RCPlayer.play === 'function') return C.Plugins.RCPlayer.play(opts);
+  if(typeof C.registerPlugin === 'function') return C.registerPlugin('RCPlayer').play(opts);
+  if(typeof C.nativePromise === 'function') return C.nativePromise('RCPlayer', 'play', opts);
+  return Promise.reject(new Error('the player is not available'));
+}
 // In a browser, Real-Debrid doesn't allow direct calls, so requests go through your small rc-relay Cloudflare worker
 const RD_API = NATIVE ? 'https://api.real-debrid.com/rest/1.0' : 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
 let rdLib = store.get(K_LIB, null) || { synced:0, items:{} };
@@ -2635,7 +2642,7 @@ async function nativePlay(box, s, link, title, meta, startAt, remembered){
   const u = s.u;
   box.innerHTML = `<div class="msg">Playing…</div><div class="small" style="margin-top:4px">${esc(u.filename || '')}${u.filesize ? ' · ' + fmtSize(u.filesize) : ''}</div>`;
   let r;
-  try{ r = await RCPlayer.play({ url:u.download, title, startMs:startAt > 20 ? Math.floor(startAt * 1000) : 0 }); }
+  try{ r = await playerPlay({ url:u.download, title, startMs:startAt > 20 ? Math.floor(startAt * 1000) : 0 }); }
   catch(e){ box.innerHTML = `<div class="msg">Could not open the player (${esc(e.message || e)}).</div>`; return; }
   if(r.error && remembered){ delete linkCache[link]; store.set(K_LINKS, linkCache); return playInto(box, link, title, meta, true); }   // the remembered link may have expired
   const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
