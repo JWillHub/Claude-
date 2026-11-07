@@ -471,6 +471,7 @@ html{touch-action:manipulation}
 .vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
 #setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}
+.setpage{padding:4px 16px 40px}.setpage>.stitle{margin:8px 4px 0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:30px}
 .sgroup{margin-top:20px}
 .sgh{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}
 .scard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
@@ -555,6 +556,7 @@ html{touch-action:manipulation}
   <section id="v-franchises" hidden></section>
   <section id="v-list" hidden></section>
   <section id="v-library" hidden></section>
+  <section id="v-settings" hidden></section>
 </main>
 <div class="srch" id="srch" hidden><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
 <nav class="tabbar">
@@ -563,7 +565,7 @@ html{touch-action:manipulation}
   <button class="tb" data-v="diary" hidden><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Diary</button>
   <button class="tb" data-v="films"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>My Films</button>
   <button class="tb" data-v="library"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/></svg>Library</button>
-  <button class="tb" id="setTab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+  <button class="tb" data-v="settings" id="setTab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
 </nav>
 <div id="sheets"></div>
 <div class="rp" id="rp"></div>
@@ -1083,7 +1085,7 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   setHeaderTitle(v === 'genre' ? genrePageTitle : v === 'franchises' ? { small:'', big:'Franchises' } : v === 'list' ? { small:'', big:listPageTitle } : null);
-  ['discover','sagas','tv','diary','films','genres','genre','franchises','list','library'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  ['discover','sagas','tv','diary','films','genres','genre','franchises','list','library','settings'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'genres' && !built.genres) buildGenres();
@@ -1091,6 +1093,7 @@ function setView(v, o = {}){
   if(v === 'diary') renderDiary();
   if(v === 'films') renderFilms();
   if(v === 'library') renderLibraryTab();
+  if(v === 'settings') renderSettings();
   scrollTo(0, 0);
 }
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
@@ -1111,7 +1114,7 @@ function savePos(key, val){
 }
 const posOf = key => (store.get(K_CARPOS, {})[key] || {}).id;
 // On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
-const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', library:'My library', diary:'Diary', franchises:'Franchises' };
+const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', library:'My library', settings:'Settings', diary:'Diary', franchises:'Franchises' };
 $('#hcar').onclick = () => {
   let src = pageSource;
   if(!src){
@@ -1139,7 +1142,6 @@ function setHeaderTitle(t){
 }
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
 $('#hcancel').onclick = () => history.back();
-$('#setTab').onclick = openSettings;
 
 /* ---------- Discover ---------- */
 const ROWS = [
@@ -2930,9 +2932,12 @@ function renderLibraryTab(){
 function openLibrary(){ setView('library'); }
 
 /* ---------- Settings ---------- */
-function openSettings(){
-  const s = sheet(`<h2 class="stitle">Settings</h2><div id="setbody"></div>`, { tall:true });
-  const b = s.body;
+// Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
+function openSettings(){ setView('settings'); }
+function renderSettings(){
+  const v = $('#v-settings');
+  v.innerHTML = '<div class="setpage"><h2 class="stitle">Settings</h2><div id="setbody"></div></div>';
+  const b = v;
   const IC = {
     film:'<path d="M4 5h16v14H4z"/><path d="M8 5v14M16 5v14M4 9h4M4 15h4M16 9h4M16 15h4"/>',
     cloud:'<path d="M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/>',
@@ -2971,7 +2976,7 @@ function openSettings(){
       how:'real-debrid.com/apitoken → copy your API token.', link:'https://real-debrid.com/apitoken', key:K_RD, placeholder:'Paste your API token', secret:true,
       extra:'<button class="btn ghost" id="ks-lib">Open my library</button>',
       onSave:v => { if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } },
-      wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); s.close(); setTimeout(openLibrary, 60); }; } });
+      wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); setTimeout(openLibrary, 60); }; } });
     $('#s-omdb', b).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
       how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
     $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
@@ -3031,7 +3036,7 @@ function openSettings(){
       if(data.favs) for(const [id, p] of Object.entries(data.favs)) if(!favs[id]) favs[id] = p;
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       if(!data.ratings) list.forEach(e => { if(e.rating && !ratings[e.tmdb]){ ratings[e.tmdb] = { r:e.rating, title:e.title, year:e.year, poster:e.poster, at:e.added || 0 }; rn++; } });
-      saveAll(); s.close(); afterChange(); toast(`Restored ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
+      saveAll(); afterChange(); paint(); toast(`Restored ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
     }catch(e){ toast('That file is not a Rolling Credits backup.'); }
   }
   paint();
