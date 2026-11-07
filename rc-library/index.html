@@ -518,6 +518,18 @@ html{touch-action:manipulation}
 .lcw .lbar{top:173px;bottom:auto;left:0;height:4px}
 .lcwrap{position:relative;flex:none}
 .lcx{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;padding:0;cursor:pointer}
+.lcw{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.apmode>.stitle,.apmode>.small{display:none}
+.apbd{border-radius:18px;overflow:hidden;background:var(--card2) center/cover no-repeat;min-height:190px;display:flex;align-items:flex-end;margin-top:4px}
+.apbdin{display:flex;align-items:flex-end;gap:14px;padding:14px;width:100%}
+.apposter{flex:none;width:78px}.apposter img,.apposter .ph{width:78px;aspect-ratio:2/3;height:auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,.5);background:var(--card)}
+.aptxt{min-width:0}.apname{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:26px;line-height:1.05}
+.apsub{color:#d8d2e0;font-size:13.5px;margin-top:4px}
+.approg{height:5px;border-radius:3px;background:var(--line);margin:16px 0 8px;overflow:hidden}.approg i{display:block;height:100%;background:var(--good);border-radius:3px}
+.aptime{font-size:13.5px;color:var(--muted);font-weight:600}
+.aprate{margin-top:20px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.aprate .lbl{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.aprate .s5{margin:0 auto}.aprate .rv2{margin-top:8px;min-height:18px;font-weight:700}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -2716,17 +2728,82 @@ async function nativePlay(box, s, link, title, meta, startAt, remembered){
   catch(e){ box.innerHTML = `<div class="msg">Could not open the player (${esc(e.message || e)}).</div>`; return; }
   if(r.error && remembered){ delete linkCache[link]; store.set(K_LINKS, linkCache); return playInto(box, link, title, meta, true); }   // the remembered link may have expired
   const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
+  const finished = !!(d > 0 && (r.ended || t / d >= 0.9));
   if(meta.key && d > 0){
-    if(r.ended || t / d >= 0.9) finishWatch(meta.key, meta);
+    if(finished) finishWatch(meta.key, meta);
     else if(t > 5){ prog[meta.key] = { t, d, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link, ...progMeta(meta) }; saveProg(); afterChange(); }
   }
   if(!box.isConnected) return;
-  const fin = !prog[meta.key];
-  box.innerHTML = `${r.error ? `<div class="msg">The player couldn't play this file (${esc(r.error)}).</div>` : ''}
-    <div class="msg">${fin && d ? 'Finished' : t > 5 ? `Stopped at ${clock(t)}${d ? ' of ' + clock(d) : ''}` : ''}</div>
-    <div class="small" style="margin-top:4px">${esc(u.filename || '')}${u.filesize ? ' · ' + fmtSize(u.filesize) : ''}</div>
-    <button class="btn" id="lagain">${!fin && t > 5 ? 'Resume' : 'Play again'}</button>`;
-  $('#lagain', box).onclick = () => playInto(box, link, title, meta);
+  afterPlay(box, { link, title, meta, t, d, finished, error:r.error });
+}
+
+const fmtDur = sec => { sec = Math.max(0, Math.round(sec / 60)); const h = Math.floor(sec / 60), mm = sec % 60; return h ? `${h} hr${mm ? ' ' + mm + ' min' : ''}` : `${mm} min`; };
+// TMDB episode names and stills for one season (for the screen after an episode)
+const seasonEps = (tid, sn) => cached(`tvsea:${tid}:${sn}`, 72, () => tmdb(`/tv/${tid}/season/${sn}`).then(x => (x.episodes || []).map(e => ({ e:e.episode_number, name:e.name, still:e.still_path }))));
+// The episode after this one in your library (same season, or the next season you have)
+async function nextEpisode(id, key){
+  try{
+    const all = seasonsCache.get(id) || await showEpisodes(id); seasonsCache.set(id, all);
+    const flat = [...all.keys()].filter(Boolean).sort((a, c) => a - c).flatMap(sn => all.get(sn));
+    const i = flat.findIndex(x => x.tid + '|' + x.path === key);
+    return i >= 0 ? flat[i + 1] || null : null;
+  }catch(e){ return null; }
+}
+async function afterPlay(box, c){
+  const { link, title, meta, t, d, finished } = c;
+  const id = meta.id, isTV = typeof id === 'string';
+  const lm = (rdLib.items[meta.tid] && rdLib.items[meta.tid].m) || {}, f0 = filmOf(id);
+  const name = lm.title || (f0.title !== 'Untitled' ? f0.title : '') || title;
+  const sheetBody = box.closest('.sbody'); if(sheetBody) sheetBody.classList.add('apmode');
+  const ep = isTV && meta.label ? (meta.label.match(/S(\d+)\s*E(\d+)/) || []) : [];
+  const resumeAt = prog[meta.key] ? prog[meta.key].t : 0;
+  box.innerHTML = `<div class="ap fadein">
+    <div class="apbd"><div class="apbdin">
+      <div class="apposter">${poster(lm.poster || f0.poster, '', 'w185', name)}</div>
+      <div class="aptxt"><div class="apname">${esc(name)}</div><div class="apsub" id="apsub">${esc([lm.year || f0.year, meta.label].filter(Boolean).join(' · '))}</div></div>
+    </div></div>
+    ${c.error ? `<div class="msg" style="padding:14px 0 0">The player couldn't play this file (${esc(c.error)}).</div>` : ''}
+    <div class="approg"><i style="width:${d ? Math.min(100, (finished ? 1 : t / d) * 100).toFixed(1) : 0}%"></i></div>
+    <div class="aptime">${finished ? (isTV ? 'Finished this episode' : 'Finished') : d && t > 5 ? `${fmtDur(t)} watched · ${fmtDur(d - t)} left` : d ? fmtDur(d) : ''}</div>
+    <div id="apbtns"></div>
+    <div id="aprate"></div>
+  </div>`;
+  // backdrop: the episode's still for shows, the film's backdrop for movies
+  const setBd = path => { const el = $('.apbd', box); if(el && path) el.style.backgroundImage = `linear-gradient(180deg,rgba(12,10,15,.15),rgba(12,10,15,.92)),url(${IMG}w780${path})`; };
+  detailsFor(id).then(dd => { if(!box.isConnected) return; if(!(isTV && ep[1])) setBd(dd.backdrop); else if(!$('.apbd', box).style.backgroundImage) setBd(dd.backdrop); }).catch(() => {});
+  if(isTV && ep[1]) seasonEps(+String(id).slice(2), +ep[1]).then(list => {
+    if(!box.isConnected) return;
+    const e = list.find(x => x.e === +ep[2]); if(!e) return;
+    const sub = $('#apsub', box); if(sub) sub.textContent = [meta.label, e.name].filter(Boolean).join(' · ');
+    if(e.still) setBd(e.still);
+  }).catch(() => {});
+  // buttons
+  const btns = $('#apbtns', box);
+  const play = (lnk, m2) => { if(sheetBody) sheetBody.classList.remove('apmode'); playInto(box, lnk, title, m2); };
+  const draw = next => {
+    if(!box.isConnected) return;
+    const out = [];
+    if(!finished && resumeAt > 5) out.push(['ap-resume', 'btn', `▶ Resume from ${clock(resumeAt)}`]);
+    if(next) out.push(['ap-next', finished || !(resumeAt > 5) ? 'btn' : 'btn ghost', `Next episode · S${next.ep.s} E${next.ep.e}`]);
+    out.push(['ap-start', out.length ? 'btn ghost' : 'btn', finished ? (isTV ? 'Watch again' : 'Watch again') : 'Start over']);
+    btns.innerHTML = out.map(([bid, cls, txt]) => `<button class="${cls}" id="${bid}">${esc(txt)}</button>`).join('');
+    const rb = $('#ap-resume', btns); if(rb) rb.onclick = () => play(link, meta);
+    const sb = $('#ap-start', btns); if(sb) sb.onclick = () => { delete prog[meta.key]; saveProg(); play(link, meta); };
+    const nb = $('#ap-next', btns); if(nb) nb.onclick = () => play(next.link, { key:next.tid + '|' + next.path, tid:next.tid, id, label:`S${next.ep.s} E${next.ep.e}` });
+  };
+  draw(null);
+  if(isTV) nextEpisode(id, meta.key).then(n => n && n.ep && draw(n));
+  // finished a movie: rate it right here
+  if(finished && !isTV){
+    const fobj = { ...f0, id, title:name, year:lm.year || f0.year, poster:lm.poster || f0.poster };
+    const rb = $('#aprate', box);
+    rb.innerHTML = `<div class="aprate"><div class="lbl">${getR(id) ? 'Your rating' : 'How was it?'}</div>${starsHTML(36, 6)}<div class="rv2" id="aprv"></div>
+      <div class="small" style="margin-top:8px">Logged in your diary for today.</div></div>`;
+    const s5 = $('.s5', rb), rv = $('#aprv', rb);
+    const paintR = r => { paintStars(s5, r); rv.textContent = r ? RWORDS[r] : ''; };
+    paintR(getR(id));
+    bindStars(s5, (r, fin) => { paintR(r); if(fin && r !== getR(id)) setRating(fobj, r); });
+  }
 }
 
 function trackProgress(v, box, link, title, meta){
@@ -2792,6 +2869,25 @@ function fixMatch(tid, after){
   run();
 }
 
+// Press and hold (about half a second) without moving: runs fn instead of the normal tap
+function longPress(el, fn){
+  let tmr = null, sx = 0, sy = 0;
+  const cancel = () => { clearTimeout(tmr); tmr = null; };
+  el.addEventListener('pointerdown', e => { el._held = false; sx = e.clientX; sy = e.clientY; cancel(); tmr = setTimeout(() => { el._held = true; tmr = null; navigator.vibrate && navigator.vibrate(12); fn(); }, 480); });
+  el.addEventListener('pointermove', e => { if(tmr && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) cancel(); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => el.addEventListener(t, cancel));
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+function confirmRemoveCont(k, after){
+  const p = prog[k]; if(!p) return;
+  const it = rdLib.items[p.tid], name = (it && it.m && it.m.title) || p.name || p.title || 'this';
+  const s = sheet(`<h2 class="stitle">Remove from Continue watching?</h2>
+    <p class="kswhat"><b>${esc(name)}</b>${p.label ? ' · ' + esc(p.label) : ''}. Your spot (${clock(p.t)}) will be forgotten. It stays in your library.</p>
+    <button class="btn" id="cr-yes">Remove</button><button class="btn ghost" id="cr-no">Cancel</button>`);
+  $('#cr-yes', s.body).onclick = () => { delete prog[k]; saveProg(); s.close(); after && after(); };
+  $('#cr-no', s.body).onclick = () => s.close();
+}
+
 // ---- Library page: Netflix-style rows of only your own titles ----
 // TMDB season list for a show (season posters, episode counts)
 const showSeasons = tid => cached('tvs:' + tid, 72, () => tmdb('/tv/' + tid).then(x => (x.seasons || []).map(s => ({ n:s.season_number, poster:s.poster_path, eps:s.episode_count, name:s.name }))));
@@ -2840,9 +2936,10 @@ function drawLibrary(b){
       const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled', poster:mm.poster || p.poster || f0.poster };
       return `<div class="lcwrap"><button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
         <span>${esc(f.title)}</span><span class="small">${p.label ? esc(p.label) + ' · ' : ''}${clock(p.d - p.t)} left</span></button>
-        <button class="lcx" data-cx="${esc(k)}" aria-label="Remove from Continue watching">✕</button></div>`; }).join('')}</div></section>` : '';
-    $$('[data-cx]', b).forEach(x => x.onclick = e => { e.stopPropagation(); delete prog[x.dataset.cx]; saveProg(); paint(); });
-    $$('[data-ck]', b).forEach(x => x.onclick = () => {
+        </div>`; }).join('')}</div></section>` : '';
+    $$('[data-ck]', b).forEach(x => longPress(x, () => confirmRemoveCont(x.dataset.ck, paint)));
+    $$('[data-ck]', b).forEach(x => x.onclick = e => {
+      if(x._held){ x._held = false; e.preventDefault(); return; }
       const k = x.dataset.ck, p = prog[k]; if(!p) return;
       const t = (p.name || p.title || filmOf(p.id).title) + (p.label ? ' · ' + p.label : '');
       const ps = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
