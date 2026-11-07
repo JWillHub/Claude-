@@ -530,6 +530,25 @@ html{touch-action:manipulation}
 .aprate{margin-top:20px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 .aprate .lbl{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .aprate .s5{margin:0 auto}.aprate .rv2{margin-top:8px;min-height:18px;font-weight:700}
+.epnext{margin:14px 0 6px}
+.sehd{border-radius:18px;overflow:hidden;background:var(--card2) center/cover no-repeat;min-height:170px;display:flex;align-items:flex-end;gap:14px;padding:14px;margin-top:4px}
+.sehp{flex:none;width:74px}.sehp img,.sehp .ph{width:74px;aspect-ratio:2/3;height:auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,.5);background:var(--card)}
+.seht{min-width:0}
+.eplist{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.epc{display:flex;gap:12px;align-items:flex-start;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.epc:active{background:var(--card2)}
+.epc.fin .epth img,.epc.fin .epph{opacity:.55}
+.epth{position:relative;flex:none;width:132px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--card2)}
+.epth img{width:100%;height:100%;object-fit:cover;display:block}
+.epph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:15px}
+.epth .lbar{bottom:0;top:auto;height:4px}
+.epchk{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--good);color:#06150e;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.eptx{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.ept{font-weight:750;font-size:14.5px;line-height:1.25}.ept b{color:var(--accent);margin-right:2px}
+.epm{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.epir{font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px}
+.epo{font-size:12.5px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.epo.open{-webkit-line-clamp:unset;display:block}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -2635,20 +2654,7 @@ async function openTorrent(tid, title, id){
     const f = pickFilm(files);   // a film with extras: the biggest file is the film
     return playInto($('#lbox', b), f.link, title, { key:tid + '|' + f.path, tid, id, label:'' });
   }
-  files = files.slice().sort((x, y) => { const a = epOf(x.path) || { s:999, e:0 }, c = epOf(y.path) || { s:999, e:0 }; return a.s - c.s || a.e - c.e || x.path.localeCompare(y.path); });
-  $('#lbox', b).innerHTML = `<div class="lfiles">${files.map((f, i) => { const ep = epOf(f.path);
-    const k = tid + '|' + f.path, pr = prog[k], fin = done[k];
-    return `<button class="lfile${fin ? ' fin' : ''}" data-i="${i}"><span>${fin ? '✓' : '▶'} <b>${ep ? `S${ep.s} E${ep.e}` : ''}</b> ${ep ? '' : esc(baseName(f.path))}</span><span class="sz">${pr && pr.d ? clock(pr.t) + ' / ' + clock(pr.d) : fmtSize(f.bytes)}</span>${pr && pr.d ? `<i class="lbar" style="width:${Math.min(100, pr.t / pr.d * 100).toFixed(1)}%"></i>` : ''}</button>`; }).join('')}</div>`;
-  $$('.lfile', b).forEach(x => {
-    const f = files[+x.dataset.i];
-    // a press is a strong hint: start getting that episode's link before the finger lifts
-    x.addEventListener('pointerdown', () => { getStream(f.link).catch(() => {}); }, { once:true });
-    x.onclick = () => {
-      const ep = epOf(f.path), t = title + (ep ? ` · S${ep.s} E${ep.e}` : '');
-      const p = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
-      playInto($('#lbox', p.body), f.link, t, { key:tid + '|' + f.path, tid, id, label:ep ? `S${ep.s} E${ep.e}` : '' });
-    };
-  });
+  renderEpisodes($('#lbox', b), files.map(f => ({ ...f, tid, ep:epOf(f.path) })), id, title);
 }
 
 const pickUrl = o => !o ? null : typeof o === 'string' ? o : o.full || Object.values(o).find(x => typeof x === 'string') || null;
@@ -2739,7 +2745,76 @@ async function nativePlay(box, s, link, title, meta, startAt, remembered){
 
 const fmtDur = sec => { sec = Math.max(0, Math.round(sec / 60)); const h = Math.floor(sec / 60), mm = sec % 60; return h ? `${h} hr${mm ? ' ' + mm + ' min' : ''}` : `${mm} min`; };
 // TMDB episode names and stills for one season (for the screen after an episode)
-const seasonEps = (tid, sn) => cached(`tvsea:${tid}:${sn}`, 72, () => tmdb(`/tv/${tid}/season/${sn}`).then(x => (x.episodes || []).map(e => ({ e:e.episode_number, name:e.name, still:e.still_path }))));
+// One season from TMDB: its poster and year, and every episode's name, still, summary, runtime and air date
+const seasonInfo = (tid, sn) => cached(`tvsea2:${tid}:${sn}`, 72, () => tmdb(`/tv/${tid}/season/${sn}`).then(x => ({
+  name:x.name, poster:x.poster_path, year:(x.air_date || '').slice(0, 4),
+  eps:(x.episodes || []).map(e => ({ e:e.episode_number, name:e.name, still:e.still_path, overview:e.overview || '', runtime:e.runtime || 0, air:e.air_date || '' })) })));
+const seasonEps = (tid, sn) => seasonInfo(tid, sn).then(x => x.eps);
+// IMDb episode ratings (the same nightly data as the episode chart): season -> episode -> rating
+async function imdbEpisodeRatings(tid){
+  try{
+    const d = await showDetails(tid); if(!d.imdb) return null;
+    const res = await imdbFile(d.imdb); if(res.state !== 'ok') return null;
+    const out = {}; Object.entries(res.d.s).forEach(([sn, list]) => { out[sn] = {}; list.forEach(e => { if(e[1] != null) out[sn][e[0]] = e[1]; }); });
+    return out;
+  }catch(e){ return null; }
+}
+const fmtAir = s => { if(!s) return ''; const d = new Date(s + 'T12:00:00'); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }); };
+
+// Episode cards: still, progress, title, runtime, air date, IMDb rating, summary. An "Up next" button on top.
+function renderEpisodes(box, files, id, title, opt = {}){
+  const tid = +String(id).slice(2);
+  files = files.slice().sort((x, c) => { const a = x.ep || { s:999, e:999 }, d = c.ep || { s:999, e:999 }; return a.s - d.s || a.e - d.e || x.path.localeCompare(c.path); });
+  const seasons = [...new Set(files.map(f => f.ep ? f.ep.s : 0))];
+  const info = {}; let imdb = null;
+  const key = f => f.tid + '|' + f.path;
+  const play = f => {
+    const label = f.ep ? `S${f.ep.s} E${f.ep.e}` : '';
+    const p = sheet(`<h2 class="stitle">${esc(title)}${label ? ' · ' + label : ''}</h2><div id="lbox"></div>`, { tall:true });
+    p.onClose = () => setTimeout(draw, 50);
+    playInto($('#lbox', p.body), f.link, title, { key:key(f), tid:f.tid, id, label });
+  };
+  // the episode to offer first: the one you're partway through, else the one after the last you finished
+  const upNext = () => {
+    const started = files.filter(f => prog[key(f)] && prog[key(f)].d).sort((a, c) => prog[key(c)].at - prog[key(a)].at)[0];
+    if(started) return { f:started, resume:prog[key(started)] };
+    let last = -1; files.forEach((f, i) => { if(done[key(f)]) last = i; });
+    const f = files[last + 1] || (last < 0 ? files[0] : null);
+    return f ? { f } : null;
+  };
+  const draw = () => {
+    if(!box.isConnected) return;
+    const nx = upNext(), watched = files.filter(f => done[key(f)]).length;
+    const head = opt.head ? opt.head(watched, files.length) : '';
+    box.innerHTML = head + (nx ? `<button class="btn epnext" id="epnext">▶ ${nx.resume ? 'Resume' : watched ? 'Play' : 'Start'} ${nx.f.ep ? `S${nx.f.ep.s} E${nx.f.ep.e}` : ''}${nx.resume ? ` · ${fmtDur(nx.resume.d - nx.resume.t)} left` : ''}</button>` : '')
+      + seasons.map(sn => {
+        const si = info[sn], list = files.filter(f => (f.ep ? f.ep.s : 0) === sn);
+        return `${seasons.length > 1 ? `<div class="lbl lcl">${sn ? 'Season ' + sn : 'Extras'}${si && si.year ? ' · ' + si.year : ''}</div>` : ''}<div class="eplist">${list.map(f => {
+          const i = files.indexOf(f), k = key(f), pr = prog[k], fin = done[k];
+          const te = f.ep && si ? si.eps.find(x => x.e === f.ep.e) : null;
+          const ir = f.ep && imdb && imdb[f.ep.s] ? imdb[f.ep.s][f.ep.e] : null;
+          const meta = [te && te.runtime ? te.runtime + ' min' : '', te ? fmtAir(te.air) : '', !te ? fmtSize(f.bytes) : ''].filter(Boolean).join(' · ');
+          return `<button class="epc${fin ? ' fin' : ''}" data-i="${i}">
+            <span class="epth">${te && te.still ? `<img src="${IMG}w300${te.still}" alt="" loading="lazy">` : `<span class="epph">${f.ep ? 'E' + f.ep.e : '▶'}</span>`}
+              ${pr && pr.d ? `<i class="lbar" style="width:${Math.min(100, pr.t / pr.d * 100).toFixed(1)}%"></i>` : ''}${fin ? '<span class="epchk">✓</span>' : ''}</span>
+            <span class="eptx"><span class="ept">${f.ep ? `<b>${f.ep.e}</b> ` : ''}${esc(te && te.name ? te.name : f.ep ? 'Episode ' + f.ep.e : baseName(f.path))}</span>
+              <span class="epm">${esc(meta)}${ir ? ` <span class="epir ${heat(ir)}">IMDb ${ir.toFixed(1)}</span>` : ''}</span>
+              ${te && te.overview ? `<span class="epo" data-o="${i}">${esc(te.overview)}</span>` : ''}</span></button>`;
+        }).join('')}</div>`;
+      }).join('');
+    const nb = $('#epnext', box); if(nb){ const f = nx.f; nb.addEventListener('pointerdown', () => getStream(f.link).catch(() => {}), { once:true }); nb.onclick = () => play(f); }
+    $$('.epc', box).forEach(btn => {
+      const f = files[+btn.dataset.i];
+      btn.addEventListener('pointerdown', () => { getStream(f.link).catch(() => {}); }, { once:true });   // start fetching the link before the finger lifts
+      btn.onclick = e => { const o = e.target.closest('.epo'); if(o && !o.classList.contains('open')){ o.classList.add('open'); return; } play(f); };
+    });
+  };
+  draw();
+  // fill in TMDB details and IMDb ratings as they arrive
+  seasons.filter(Boolean).forEach(sn => seasonInfo(tid, sn).then(x => { info[sn] = x; draw(); }).catch(() => {}));
+  imdbEpisodeRatings(tid).then(x => { if(x){ imdb = x; draw(); } });
+  return draw;
+}
 // The episode after this one in your library (same season, or the next season you have)
 async function nextEpisode(id, key){
   try{
@@ -2994,31 +3069,22 @@ async function fillShowRow(b, f){
 // A season's episodes, from whichever packs they came in
 async function openSeason(id, sn){
   const f = filmOf(id), lm = libTitles().find(x => x.id === id) || {};
-  const title = lm.title || f.title;
-  const s = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="small">${sn ? 'Season ' + sn : 'Extras'}</div>
-    <div id="lbox" style="margin-top:12px"><div class="msg">Loading episodes…</div></div>`, { tall:true });
+  const title = lm.title || f.title, tid = +String(id).slice(2);
+  const s = sheet(`<div id="lbox"><div class="msg">Loading episodes…</div></div>`, { tall:true });
   const b = s.body;
   let eps;
   try{ const all = seasonsCache.get(id) || await showEpisodes(id); seasonsCache.set(id, all); eps = all.get(sn) || []; }
   catch(e){ $('#lbox', b).innerHTML = `<div class="msg">${rdErr(e)}</div>`; return; }
   if(!s.el.isConnected) return;
   if(!eps.length){ $('#lbox', b).innerHTML = '<div class="msg">No episodes found for this season.</div>'; return; }
-  const draw = () => {
-    $('#lbox', b).innerHTML = `<div class="lfiles">${eps.map((x, i) => {
-      const k = x.tid + '|' + x.path, pr = prog[k], fin = done[k];
-      return `<button class="lfile${fin ? ' fin' : ''}" data-i="${i}"><span>${fin ? '✓' : '▶'} <b>${x.ep ? `E${x.ep.e}` : ''}</b> ${x.ep ? '' : esc(baseName(x.path))}</span><span class="sz">${pr && pr.d ? clock(pr.t) + ' / ' + clock(pr.d) : fmtSize(x.bytes)}</span>${pr && pr.d ? `<i class="lbar" style="width:${Math.min(100, pr.t / pr.d * 100).toFixed(1)}%"></i>` : ''}</button>`; }).join('')}</div>`;
-    $$('.lfile', b).forEach(btn => {
-      const x = eps[+btn.dataset.i];
-      btn.addEventListener('pointerdown', () => { getStream(x.link).catch(() => {}); }, { once:true });
-      btn.onclick = () => {
-        const label = x.ep ? `S${x.ep.s} E${x.ep.e}` : '';
-        const p = sheet(`<h2 class="stitle">${esc(title)}${label ? ' · ' + label : ''}</h2><div id="lbox"></div>`, { tall:true });
-        p.onClose = () => setTimeout(draw, 50);
-        playInto($('#lbox', p.body), x.link, title, { key:x.tid + '|' + x.path, tid:x.tid, id, label });
-      };
-    });
-  };
-  draw();
+  let si = null, bd = null;
+  const head = (watched, total) => `<div class="sehd" style="${bd ? `background-image:linear-gradient(180deg,rgba(12,10,15,.1),rgba(12,10,15,.94)),url(${IMG}w780${bd})` : ''}">
+      <div class="sehp">${poster((si && si.poster) || lm.poster || f.poster, '', 'w185', title)}</div>
+      <div class="seht"><div class="apname">${esc(title)}</div><div class="apsub">${sn ? 'Season ' + sn : 'Extras'}${si && si.year ? ' · ' + si.year : ''}</div>
+        <div class="apsub">${watched ? `${watched} of ${total} watched` : `${total} episode${total === 1 ? '' : 's'} in your library`}</div></div></div>`;
+  const draw = renderEpisodes($('#lbox', b), eps, id, title, { head });
+  if(sn) seasonInfo(tid, sn).then(x => { si = x; draw(); }).catch(() => {});
+  detailsFor(id).then(d => { bd = d.backdrop; draw(); }).catch(() => {});
 }
 function renderLibraryTab(){
   const v = $('#v-library');
