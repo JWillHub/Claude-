@@ -471,6 +471,30 @@ html{touch-action:manipulation}
 .vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
 #setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}
+.sgroup{margin-top:20px}
+.sgh{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;background:none;border:0;border-top:1px solid var(--line);color:var(--text);text-align:left;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative}
+.scard>.srow:first-child{border-top:0}
+.srow:active:not(.static){background:var(--card2)}
+.srow.static{cursor:default}
+.sic{flex:none;width:34px;height:34px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center}
+.sic svg{width:19px;height:19px;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.slab{flex:1;min-width:0;font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:2px}
+.slab small{font-weight:500;font-size:12.5px;color:var(--muted)}
+.sval{flex:none;font-size:13px;font-weight:700;color:var(--muted)}
+.sval.ok{color:var(--good)}.sval.warn{color:var(--accent)}
+.schev{flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);margin-left:2px;opacity:.7}
+.srow.sw input{position:absolute;opacity:0;pointer-events:none}
+.swi{flex:none;width:48px;height:29px;border-radius:15px;background:var(--line);position:relative;transition:background .2s}
+.swi::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.srow.sw input:checked+.swi{background:var(--good)}
+.srow.sw input:checked+.swi::after{transform:translateX(19px)}
+.kswhat{color:var(--text);font-size:14.5px;line-height:1.5;margin:6px 0 14px}
+.kshow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.kshow b{color:var(--text);font-size:12px;letter-spacing:.8px;text-transform:uppercase}
+.kshow a{color:var(--accent);font-weight:700;text-decoration:none;margin-top:4px}
+.updbtn{flex:none;background:var(--good);color:#06150e;border:0;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
 .logo .libtag{font-style:normal;color:var(--good)}
 .lib{margin:10px 0 4px}
 .lib .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:10px 0 7px}
@@ -2358,15 +2382,16 @@ async function checkForUpdate(){
 function fillUpdate(b){
   const box = $('#appupd', b); if(!box || !NATIVE) return;
   const newer = latestBuild > APP_BUILD;
-  box.innerHTML = `App build ${APP_BUILD || '?'}${newer ? ` · <b style="color:var(--good)">build ${latestBuild} is available</b>` : latestBuild ? ' · up to date' : ''}
-    ${newer ? '<button class="btn" id="appupdbtn" style="margin-top:8px">Update</button>' : ''}`;
+  box.innerHTML = `<span class="sic"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
+    <span class="slab">Version ${APP_BUILD || '?'}<small>${newer ? `Version ${latestBuild} is ready to install` : latestBuild ? 'Up to date' : 'Checking for updates…'}</small></span>
+    ${newer ? '<button class="updbtn" id="appupdbtn">Update</button>' : ''}`;
   const btn = $('#appupdbtn', box); if(!btn) return;
   btn.onclick = async () => {
     btn.disabled = true; btn.textContent = 'Downloading…';
     try{
       const r = await callNative('RCUpdate', 'install', { url:REL + 'rolling-credits.apk' });
       if(r && r.needsPermission){ btn.disabled = false; btn.textContent = 'Update'; toast('Turn on "Allow from this source", come back, then tap Update again'); return; }
-      btn.textContent = 'Opening the installer…';
+      btn.textContent = 'Installing…';
     }catch(e){ btn.disabled = false; btn.textContent = 'Update'; toast('Update failed: ' + esc(e.message || String(e))); }
   };
 }
@@ -2906,50 +2931,95 @@ function openLibrary(){ setView('library'); }
 
 /* ---------- Settings ---------- */
 function openSettings(){
-  const hadKey = !!store.get(K_KEY, '');
-  const s = sheet(`<h2 class="stitle">Settings</h2>
-    <label class="f">TMDB API key or read access token</label>
-    <input id="key" value="${esc(store.get(K_KEY, ''))}" placeholder="Paste your key" autocomplete="off">
-    <div class="small" style="margin-top:6px">Free at themoviedb.org → Settings → API.</div>
-    <button class="btn" id="saveKey">Save key</button>
-    <label class="f">OMDb key for Rotten Tomatoes scores (optional)</label>
-    <input id="okey" value="${esc(store.get(K_OMDB, ''))}" placeholder="Paste your OMDb key" autocomplete="off">
-    <div class="small" style="margin-top:6px">Free at omdbapi.com (API Key, free tier). Up to 1,000 lookups a day; each film is looked up once a week.</div>
-    <label class="f">Real-Debrid API token (for your library)</label>
-    <input id="rdkey" type="password" value="${esc(store.get(K_RD, ''))}" placeholder="Paste your Real-Debrid API token" autocomplete="off">
-    <div class="small" style="margin-top:6px">From real-debrid.com/apitoken. Stored only on this device, in this app.</div>
-    <button class="btn ghost" id="rdopen">Open my library</button>
-    <div class="small" id="appupd" style="margin-top:10px">App build __BUILD__</div>
-    <label class="toggle"><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}> Hide films and shows I've rated while browsing</label>
-    <label class="f">Backup</label>
-    <button class="btn ghost" id="exp" style="margin-top:0">Export ratings & diary (.json)</button>
-    <button class="btn ghost" id="imp">Import backup</button>
-    <input type="file" id="file" accept=".json,application/json" hidden>
-    <p class="small" style="margin-top:18px">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. IMDb ratings: information courtesy of IMDb (imdb.com), used with permission for personal, non-commercial use. Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb.</p>`);
+  const s = sheet(`<h2 class="stitle">Settings</h2><div id="setbody"></div>`, { tall:true });
   const b = s.body;
-  $('#saveKey', b).onclick = async () => {
-    const k = $('#key', b).value.trim(); if(!store.set(K_KEY, k)){ $('#saveKey', b).textContent = 'Could not save — storage is full'; return; }
-    const done = () => { s.close(); if(!hadKey || !k){ built.discover = built.genres = built.tv = false; setView(view); } };
-    if(!k){ done(); return; }
-    $('#saveKey', b).textContent = 'Checking…';
-    try{ await tmdb('/configuration'); done(); }
-    catch(err){
-      $('#saveKey', b).textContent = err.message === 'badkey' ? 'Key rejected — try again' : 'Saved (could not verify)';
-      if(err.message !== 'badkey') setTimeout(done, 900);
-    }
+  const IC = {
+    film:'<path d="M4 5h16v14H4z"/><path d="M8 5v14M16 5v14M4 9h4M4 15h4M16 9h4M16 15h4"/>',
+    cloud:'<path d="M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5 4.5 4.5 0 0 1 17.5 18z"/><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"/>',
+    tomato:'<circle cx="12" cy="13.5" r="6.5"/><path d="M12 7c-1-2-3-2.5-4-2M12 7c1.5-1.8 3.5-2 4.5-1.5"/>',
+    eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/><path d="M4 20 20 4"/>',
+    down:'<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>',
+    up:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/>',
+    info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.1"/>',
+    lib:'<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/>'
   };
-  $('#rdkey', b).onchange = e => { const v = e.target.value.trim(); store.set(K_RD, v); if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } toast(v ? 'Real-Debrid token saved' : 'Real-Debrid token removed'); };
-  $('#rdopen', b).onclick = () => { s.close(); setTimeout(openLibrary, 60); };
-  fillUpdate(b); checkForUpdate();
-  $('#okey', b).onchange = e => { store.set(K_OMDB, e.target.value.trim()); toast(e.target.value.trim() ? 'OMDb key saved' : 'OMDb key removed'); };
-  $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
-  $('#exp', b).onclick = () => {
-    const blob = new Blob([JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1)], { type:'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
+  const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
+  const paint = () => {
+    if(!b.isConnected) return;
+    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
+    $('#setbody', b).innerHTML = `
+      <div class="sgroup"><div class="sgh">Connections</div><div class="scard">
+        ${row('s-tmdb', 'film', 'TMDB', 'Posters, titles and details', tm ? 'Connected' : 'Set up', tm ? 'ok' : 'warn')}
+        ${row('s-rd', 'cloud', 'Real-Debrid', 'Your library and playback', rd ? (n ? n + ' title' + (n === 1 ? '' : 's') : 'Connected') : 'Set up', rd ? 'ok' : '')}
+        ${row('s-omdb', 'tomato', 'Rotten Tomatoes', 'Critic scores on title cards', om ? 'On' : 'Off', om ? 'ok' : '')}
+      </div></div>
+      <div class="sgroup"><div class="sgh">Browsing</div><div class="scard">
+        <label class="srow sw">${ico('eye')}<span class="slab">Hide what I've rated<small>Keeps Discover and Genres fresh</small></span><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}><i class="swi"></i></label>
+      </div></div>
+      <div class="sgroup"><div class="sgh">Your data</div><div class="scard">
+        ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
+        ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
+      </div></div>
+      ${NATIVE ? `<div class="sgroup"><div class="sgh">App</div><div class="scard"><div class="srow static" id="appupd"></div></div></div>` : ''}
+      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About & data sources', '')}</div></div>
+      <input type="file" id="file" accept=".json,application/json" hidden>`;
+    $('#s-tmdb', b).onclick = () => keySheet({ name:'TMDB', what:'Rolling Credits gets every poster, title and detail from TMDB. A free key switches it on.',
+      how:'themoviedb.org → sign in → Settings → API → copy the API key (or the read access token).', link:'https://www.themoviedb.org/settings/api',
+      key:K_KEY, placeholder:'Paste your TMDB key', verify:true });
+    $('#s-rd', b).onclick = () => keySheet({ name:'Real-Debrid', what:'Your Real-Debrid library becomes the Library tab, with a Play button on every title you have.',
+      how:'real-debrid.com/apitoken → copy your API token.', link:'https://real-debrid.com/apitoken', key:K_RD, placeholder:'Paste your API token', secret:true,
+      extra:'<button class="btn ghost" id="ks-lib">Open my library</button>',
+      onSave:v => { if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } },
+      wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); s.close(); setTimeout(openLibrary, 60); }; } });
+    $('#s-omdb', b).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
+      how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
+    $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
+    $('#exp', b).onclick = () => {
+      const blob = new Blob([JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1)], { type:'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    };
+    $('#imp', b).onclick = () => $('#file', b).click();
+    $('#file', b).onchange = importBackup;
+    $('#s-about', b).onclick = () => sheet(`<h2 class="stitle">About</h2>
+      <p class="small" style="font-size:13.5px;line-height:1.55">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+      <p class="small" style="font-size:13.5px;line-height:1.55">IMDb ratings: information courtesy of IMDb (imdb.com), used with permission for personal, non-commercial use.</p>
+      <p class="small" style="font-size:13.5px;line-height:1.55">Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb.</p>`);
+    if(NATIVE){ fillUpdate(b); checkForUpdate(); }
   };
-  $('#imp', b).onclick = () => $('#file', b).click();
-  $('#file', b).onchange = async ev => {
+  // One connection: what it's for, where to get the key, the key itself
+  function keySheet(o){
+    const cur = store.get(o.key, '');
+    const ks = sheet(`<h2 class="stitle">${esc(o.name)}</h2>
+      <p class="kswhat">${esc(o.what)}</p>
+      <div class="kshow"><b>Where to get it</b><span>${esc(o.how)}</span><a href="${esc(o.link)}" target="_blank" rel="noopener">Open ${esc(o.link.replace(/^https:\/\/(www\.)?/, '').split('/')[0])} ↗</a></div>
+      <input id="ks-in" ${o.secret ? 'type="password"' : ''} value="${esc(cur)}" placeholder="${esc(o.placeholder)}" autocomplete="off" spellcheck="false">
+      <button class="btn" id="ks-save">${cur ? 'Save changes' : 'Connect'}</button>
+      ${cur ? '<button class="btn ghost" id="ks-del">Disconnect</button>' : ''}
+      ${cur && o.extra ? o.extra : ''}`);
+    const kb = ks.body, btn = $('#ks-save', kb);
+    const finish = (v, first) => {
+      o.onSave && o.onSave(v);
+      if(o.key === K_KEY && (first || !v)){ built.discover = built.genres = built.tv = false; setView(view); }
+      ks.close(); paint(); toast(v ? `${esc(o.name)} connected` : `${esc(o.name)} disconnected`);
+    };
+    btn.onclick = async () => {
+      const v = $('#ks-in', kb).value.trim(); if(!v){ $('#ks-in', kb).focus(); return; }
+      if(!store.set(o.key, v)){ btn.textContent = 'Could not save — storage is full'; return; }
+      if(!o.verify){ finish(v, !cur); return; }
+      btn.textContent = 'Checking…'; btn.disabled = true;
+      try{ await tmdb('/configuration'); finish(v, !cur); }
+      catch(err){
+        btn.disabled = false;
+        if(err.message === 'badkey'){ store.set(o.key, cur); btn.textContent = 'TMDB rejected that key — check it and try again'; }
+        else{ btn.textContent = 'Saved (could not check it right now)'; setTimeout(() => finish(v, !cur), 900); }
+      }
+    };
+    const del = $('#ks-del', kb); if(del) del.onclick = () => { store.set(o.key, ''); finish('', false); };
+    o.wire && o.wire(kb, ks);
+  }
+  async function importBackup(ev){
     const f = ev.target.files[0]; if(!f) return;
     try{
       const data = JSON.parse(await f.text());
@@ -2961,9 +3031,10 @@ function openSettings(){
       if(data.favs) for(const [id, p] of Object.entries(data.favs)) if(!favs[id]) favs[id] = p;
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       if(!data.ratings) list.forEach(e => { if(e.rating && !ratings[e.tmdb]){ ratings[e.tmdb] = { r:e.rating, title:e.title, year:e.year, poster:e.poster, at:e.added || 0 }; rn++; } });
-      saveAll(); s.close(); afterChange(); toast(`Imported ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
+      saveAll(); s.close(); afterChange(); toast(`Restored ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
     }catch(e){ toast('That file is not a Rolling Credits backup.'); }
-  };
+  }
+  paint();
 }
 
 /* ================= go ================= */
