@@ -1,0 +1,54 @@
+# Builds the Rolling Credits Android app (android-app/) and publishes the APK as the "android-latest" release.
+name: Android app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['android-app/**', '.github/workflows/android-app.yml']
+permissions:
+  contents: write
+concurrency: android-app
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install Capacitor
+        run: npm install --no-audit --no-fund
+      - name: Create the Android project
+        run: |
+          npx cap add android
+          ./scripts/patch-android.sh
+          npx cap sync android
+      - name: Use the same signing key every build (so updates install over the old version)
+        run: mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
+      - name: Build APK
+        working-directory: android-app/android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Rename
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk rolling-credits.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rolling-credits-apk
+          path: android-app/rolling-credits.apk
+      - name: Publish as the android-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Rolling Credits for Android (latest build)
+          body: "Latest build from ${{ github.sha }}. Download rolling-credits.apk on your phone and open it to install or update."
+          prerelease: false
+          make_latest: false
+          files: android-app/rolling-credits.apk

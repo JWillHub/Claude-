@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Adds the native player to the Android project Capacitor generates (run from android-app/ after `npx cap add android`).
+set -euo pipefail
+PKG=io/github/jwillhub/rollingcredits
+SRC=android/app/src/main/java/$PKG
+mkdir -p "$SRC"
+cp native/*.java "$SRC/"
+
+# Player libraries: Media3 ExoPlayer + UI, and Jellyfin's prebuilt FFmpeg audio decoder for DTS / TrueHD
+cat >> android/app/build.gradle <<'GRADLE'
+
+dependencies {
+    implementation "androidx.media3:media3-exoplayer:1.5.1"
+    implementation "androidx.media3:media3-exoplayer-hls:1.5.1"
+    implementation "androidx.media3:media3-ui:1.5.1"
+    implementation "org.jellyfin.media3:media3-ffmpeg-decoder:1.5.1+1"
+}
+GRADLE
+
+# Register the player screen
+MANIFEST=android/app/src/main/AndroidManifest.xml
+python3 - "$MANIFEST" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+act = ('        <activity android:name="io.github.jwillhub.rollingcredits.PlayerActivity"\n'
+       '            android:theme="@style/AppTheme.NoActionBar"\n'
+       '            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"\n'
+       '            android:screenOrientation="sensorLandscape"\n'
+       '            android:exported="false" />\n')
+assert '</application>' in s
+s = s.replace('</application>', act + '    </application>', 1)
+open(p, 'w').write(s)
+PY
+
+# App icon: the Rolling Credits icon in every density (drop the generated adaptive icon so these are used)
+RES=android/app/src/main/res
+rm -rf "$RES"/mipmap-anydpi-v26
+for d in "$RES"/mipmap-*; do
+  cp www/icon-192.png "$d/ic_launcher.png"
+  cp www/icon-192.png "$d/ic_launcher_round.png"
+  rm -f "$d/ic_launcher_foreground.png"
+done
+echo "patched"

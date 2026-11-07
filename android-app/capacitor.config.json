@@ -1,0 +1,9 @@
+{
+  "appId": "io.github.jwillhub.rollingcredits",
+  "appName": "Rolling Credits",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0c0a0f" },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}
