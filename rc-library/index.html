@@ -510,7 +510,6 @@ html{touch-action:manipulation}
     <button id="hcancel">Cancel</button>
   </div>
   <div class="hact">
-    <button class="ib" id="hlib" aria-label="My library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></button>
     <button class="ib" id="hcar" aria-label="Carousel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><rect x="7.5" y="4" width="9" height="16" rx="1.8"/><path d="M4 6.5v11M20 6.5v11"/></svg></button>
     <button class="ib" id="hsearch" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
   </div>
@@ -525,13 +524,15 @@ html{touch-action:manipulation}
   <section id="v-genre" hidden></section>
   <section id="v-franchises" hidden></section>
   <section id="v-list" hidden></section>
+  <section id="v-library" hidden></section>
 </main>
-<div class="srch" id="srch" hidden><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
+<div class="srch" id="srch" hidden><div id="slibbar"></div><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Genres</button>
   <button class="tb" data-v="diary" hidden><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Diary</button>
   <button class="tb" data-v="films"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>My Films</button>
+  <button class="tb" data-v="library"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/></svg>Library</button>
   <button class="tb" id="setTab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
 </nav>
 <div id="sheets"></div>
@@ -794,6 +795,7 @@ function afterChange(){
   sheetStack.forEach(s => s.refresh && s.refresh());
   if(view === 'diary') renderDiary();
   if(view === 'films') renderFilms();
+  if(view === 'library') renderLibraryTab();
   renderMyShows();
   if(built.discover) renderWatchRow();
 }
@@ -1051,13 +1053,14 @@ function setView(v, o = {}){
   if(!PAGES.includes(v)) lastTab = v;
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(v)));
   setHeaderTitle(v === 'genre' ? genrePageTitle : v === 'franchises' ? { small:'', big:'Franchises' } : v === 'list' ? { small:'', big:listPageTitle } : null);
-  ['discover','sagas','tv','diary','films','genres','genre','franchises','list'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
+  ['discover','sagas','tv','diary','films','genres','genre','franchises','list','library'].forEach(n => { const el = $('#v-' + n); el.hidden = n !== v; el.classList.remove('enter'); });
   if(prev !== v){ const el = $('#v-' + v); void el.offsetWidth; el.classList.add('enter'); }
   if(v === 'discover' && !built.discover) buildDiscover();
   if(v === 'genres' && !built.genres) buildGenres();
   if(v === 'tv' && !built.tv) buildTV();
   if(v === 'diary') renderDiary();
   if(v === 'films') renderFilms();
+  if(v === 'library') renderLibraryTab();
   scrollTo(0, 0);
 }
 $$('.tb').forEach(t => t.onclick = () => setView(t.dataset.v));
@@ -1078,7 +1081,7 @@ function savePos(key, val){
 }
 const posOf = key => (store.get(K_CARPOS, {})[key] || {}).id;
 // On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
-const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
+const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', library:'My library', diary:'Diary', franchises:'Franchises' };
 $('#hcar').onclick = () => {
   let src = pageSource;
   if(!src){
@@ -1107,7 +1110,6 @@ function setHeaderTitle(t){
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
 $('#hcancel').onclick = () => history.back();
 $('#setTab').onclick = openSettings;
-$('#hlib').onclick = () => openLibrary();
 
 /* ---------- Discover ---------- */
 const ROWS = [
@@ -1350,6 +1352,8 @@ function closeSearch(fromPop){
     const my = ++gen, panel = $('#srch');
     if(!q){ panel.hidden = true; return; }
     panel.hidden = false;
+    searchLibBar();
+    if(searchLib){ searchLibGrid(panel, q); return; }
     const tv = searchTV;
     feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), tv ? { path:'/search/tv', params:{ query:q }, tv:true } : { path:'/search/multi', params:{ query:q } });
     if(tv){ $('#fpeople').innerHTML = ''; return; }
@@ -1453,7 +1457,7 @@ function fitPills(bar, lists){
   run();
   document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
-const gb = { tv:false, g:'*', sort:'popular' };
+const gb = { tv:false, g:'*', sort:'popular', lib:false };
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
@@ -1462,12 +1466,14 @@ function buildGenreBrowse(){
   const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
   if(!genres.some(g => g.k === gb.g)) gb.g = '*';
   const gl = genres.find(g => g.k === gb.g);
-  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
+  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}${pickPill('gblib', gb.lib ? 'My library' : 'Everything')}</div>
     <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
+  $('#gblib', v).onclick = () => pickSheet('Show', [{ k:'all', label:'Everything' }, { k:'lib', label:'In my library' }], gb.lib ? 'lib' : 'all', k => { gb.lib = k === 'lib'; buildGenreBrowse(); scrollTo(0, 0); });
   fitPills($('.pkbar', v));
+  if(gb.lib){ setPageSource(null); genreLibGrid(v, gb.tv, gb.g, gb.sort); return; }
   const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
   setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });
   feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
@@ -2376,6 +2382,7 @@ const qualOf = n => { const m = String(n).match(/2160p|1080p|720p|480p|\b4k\b/i)
 const fmtSize = x => x ? (x >= 1e9 ? (x / 1e9).toFixed(1) + ' GB' : Math.round(x / 1e6) + ' MB') : '';
 const baseName = p => String(p).split('/').pop();
 
+const libMeta = m => ({ id:m.id, title:m.title, year:m.year, poster:m.poster, genres:m.genres || [], vote:m.vote || 0, votes:m.votes || 0, date:m.date || '' });
 async function matchItem(it){
   const q = parseName(it.name);
   const path = q.tv ? '/search/tv' : '/search/movie', yk = q.tv ? 'first_air_date_year' : 'year';
@@ -2383,7 +2390,7 @@ async function matchItem(it){
   for(const params of tries){
     const d = await tmdb(path, { include_adult:'false', ...params });
     const r = (d.results || [])[0];
-    if(r){ const m = q.tv ? slimTV(r) : slim(r); return { id:m.id, title:m.title, year:m.year, poster:m.poster }; }
+    if(r) return libMeta(q.tv ? slimTV(r) : slim(r));
   }
   return null;
 }
@@ -2417,6 +2424,53 @@ function syncLib(){
   syncing.finally(() => { syncing = null; }).catch(() => {});
   return syncing;
 }
+// Matches saved before genres were stored get them filled in from TMDB (cached), so filters work
+let filling = null;
+function backfillMeta(){
+  if(filling) return filling;
+  const need = Object.values(rdLib.items).filter(it => it.m && !it.m.genres);
+  if(!need.length) return Promise.resolve(false);
+  filling = Promise.all(need.map(async it => { try{ const d = await detailsFor(it.m.id); it.m = { ...libMeta(d), poster:it.m.poster || d.poster }; }catch(e){} }))
+    .then(() => { saveLib(); filling = null; return true; });
+  return filling;
+}
+// Every matched title once (a film with two copies shows once)
+function libTitles(){
+  const at = new Map();
+  Object.values(rdLib.items).forEach(it => { if(it.m && !at.has(it.m.id)) at.set(it.m.id, typeof it.m.id === 'string' ? { ...it.m, tv:true, tid:+String(it.m.id).slice(2) } : it.m); });
+  const list = [...at.values()]; remember(list); return list;
+}
+const libSort = (list, sort) => list.sort(sort === 'rated' ? (a, c) => (c.vote || 0) - (a.vote || 0)
+  : sort === 'newest' ? (a, c) => (c.date || '').localeCompare(a.date || '')
+  : sort === 'popular' ? (a, c) => (c.votes || 0) - (a.votes || 0)
+  : (a, c) => a.title.localeCompare(c.title, undefined, { numeric:true }));
+// Fill a poster grid from the library instead of TMDB, cancelling any TMDB list that was loading into it
+function libInto(grid, msgEl, list, empty){
+  grid._gen = (grid._gen || 0) + 1; grid._obs?.disconnect();
+  grid.innerHTML = list.map(f => cardHTML(f)).join('');
+  msgEl.textContent = list.length ? '' : empty;
+}
+// Genres page, "My library" mode
+function genreLibGrid(v, tv, g, sort){
+  const list = libTitles().filter(f => !!f.tv === !!tv && (g === '*' || (f.genres || []).includes(+g)));
+  libInto($('.grid', v), $('.msg', v), libSort(list, sort), store.get(K_RD, '') ? 'Nothing in your library matches.' : 'Add your Real-Debrid token in Settings to see your library here.');
+  if(Object.values(rdLib.items).some(it => it.m && !it.m.genres)) backfillMeta().then(ch => { if(ch && view === 'genres' && gb.lib) buildGenreBrowse(); });
+}
+// Search, "My library" mode
+const normT = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+function searchLibGrid(panel, q){
+  const n = normT(q);
+  const list = libSort(libTitles().filter(f => normT(f.title).includes(n)), '');
+  $('#fpeople').innerHTML = '';
+  libInto($('.grid', panel), $('.msg', panel), list, 'Nothing in your library matches.');
+}
+let searchLib = false;
+function searchLibBar(){
+  const bar = $('#slibbar'); if(!bar) return;
+  bar.innerHTML = `<div class="seg" style="margin:0 0 12px;display:inline-flex"><button data-sl="0" class="${searchLib ? '' : 'on'}">Everything</button><button data-sl="1" class="${searchLib ? 'on' : ''}">In my library</button></div>`;
+  $$('[data-sl]', bar).forEach(x => x.onclick = () => { searchLib = x.dataset.sl === '1'; searchLibBar(); $('#hq').oninput({ target:$('#hq'), now:true }); });
+}
+
 const libFor = id => Object.entries(rdLib.items).filter(([, it]) => it.m && it.m.id === id).map(([tid, it]) => ({ tid, ...it }));
 
 // Detail card: "In your library" above the streaming logos (shown even if TMDB is slow or offline)
@@ -2577,7 +2631,7 @@ function fixMatch(tid, after){
         : '<div class="msg" style="grid-column:1/-1">No results. Try a shorter title.</div>';
       $$('.fpick', g).forEach(x => x.onclick = () => {
         const m = rows.find(r => String(r.id) === x.dataset.fid); if(!m) return;
-        it.m = { id:m.id, title:m.title, year:m.year, poster:m.poster }; it.fixed = 1; saveLib(); remember([m]);
+        it.m = libMeta(m); it.fixed = 1; saveLib(); remember([m]);
         s.close(); toast('Matched to ' + esc(m.title)); after && after();
       });
     }catch(e){ g.innerHTML = `<div class="msg" style="grid-column:1/-1">${errText(e)}</div>`; }
@@ -2586,22 +2640,20 @@ function fixMatch(tid, after){
   run();
 }
 
-function openLibrary(){
-  const s = sheet(`<h2 class="stitle">My library</h2><div class="small" id="lsum"></div>
-    <button class="btn" id="lsync">Sync with Real-Debrid</button>
-    <div id="lcont"></div><div class="grid" id="lgrid" style="margin-top:16px"></div><div id="lun" style="margin-top:18px"></div>`, { tall:true });
-  const b = s.body;
+let libKind = 'all';
+function drawLibrary(b){
+  b.innerHTML = `<div class="small" id="lsum"></div>
+    <div class="seg" style="margin:12px 0 0;display:inline-flex">${[['all', 'All'], ['movie', 'Movies'], ['tv', 'Shows']].map(([k, l]) => `<button data-lk="${k}" class="${k === libKind ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <div id="lcont"></div><div class="grid" id="lgrid" style="margin-top:16px"></div><div id="lun" style="margin-top:18px"></div>
+    <button class="btn ghost" id="lsync">Sync with Real-Debrid</button>`;
   const paint = () => {
     if(!b.isConnected) return;
-    const items = Object.entries(rdLib.items), seen2 = new Map();
-    items.forEach(([, it]) => { if(it.m && !seen2.has(it.m.id)) seen2.set(it.m.id, it.m); });
-    const films = [...seen2.values()].map(m => typeof m.id === 'string' ? { ...m, tv:true, tid:+m.id.slice(2) } : m)
-      .sort((x, y) => x.title.localeCompare(y.title, undefined, { numeric:true }));
-    remember(films);
-    const un = items.filter(([, it]) => !it.m);
+    const films = libSort(libTitles(), '').filter(f => libKind === 'all' || (libKind === 'tv') === !!f.tv);
+    const un = Object.entries(rdLib.items).filter(([, it]) => !it.m);
     const has = !!store.get(K_RD, '');
-    $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings first.'
-      : rdLib.synced ? `${films.length} title${films.length === 1 ? '' : 's'}${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
+    const all = libTitles().length;
+    $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings to see your library.'
+      : rdLib.synced ? `${all} title${all === 1 ? '' : 's'}${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
       : 'Not synced yet.';
     $('#lsync', b).hidden = !has;
     const cont = Object.entries(prog).filter(([, p]) => p.link && p.d).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
@@ -2615,19 +2667,28 @@ function openLibrary(){
       playInto($('#lbox', ps.body), p.link, t, { key:k, tid:p.tid, id:p.id, label:p.label });
     });
     $('#lgrid', b).innerHTML = films.map(f => cardHTML(f)).join('');
-    $('#lun', b).innerHTML = un.length ? `<div class="lbl" style="font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">Not matched</div>` +
+    $('#lun', b).innerHTML = un.length ? `<div class="lbl lcl">Not matched</div>` +
       un.map(([tid, it]) => `<div class="lunm"><span>${esc(it.name)}</span><button data-fix="${esc(tid)}">Match</button></div>`).join('') : '';
     $$('[data-fix]', b).forEach(x => x.onclick = () => fixMatch(x.dataset.fix, paint));
   };
+  $$('[data-lk]', b).forEach(x => x.onclick = () => { libKind = x.dataset.lk; $$('[data-lk]', b).forEach(y => y.classList.toggle('on', y === x)); paint(); });
   const sync = async () => {
     const btn = $('#lsync', b); btn.textContent = 'Syncing…'; btn.disabled = true;
-    try{ await syncLib(); paint(); }catch(e){ if(b.isConnected) $('#lsum', b).innerHTML = rdErr(e); }
+    try{ await syncLib(); await backfillMeta(); paint(); }catch(e){ if(b.isConnected) $('#lsum', b).innerHTML = rdErr(e); }
     if(btn.isConnected){ btn.textContent = 'Sync with Real-Debrid'; btn.disabled = false; }
   };
   $('#lsync', b).onclick = sync;
   paint();
   if(store.get(K_RD, '') && Date.now() - rdLib.synced > 6 * 3600e3) sync();
+  else backfillMeta().then(ch => ch && paint());
+  return paint;
 }
+function renderLibraryTab(){
+  const v = $('#v-library');
+  v.innerHTML = '<div class="pad" style="padding-top:14px"></div>';
+  drawLibrary($('.pad', v));
+}
+function openLibrary(){ setView('library'); }
 
 /* ---------- Settings ---------- */
 function openSettings(){
@@ -2663,7 +2724,7 @@ function openSettings(){
     }
   };
   $('#rdkey', b).onchange = e => { const v = e.target.value.trim(); store.set(K_RD, v); if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } toast(v ? 'Real-Debrid token saved' : 'Real-Debrid token removed'); };
-  $('#rdopen', b).onclick = () => openLibrary();
+  $('#rdopen', b).onclick = () => { s.close(); setTimeout(openLibrary, 60); };
   $('#okey', b).onchange = e => { store.set(K_OMDB, e.target.value.trim()); toast(e.target.value.trim() ? 'OMDb key saved' : 'OMDb key removed'); };
   $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
   $('#exp', b).onclick = () => {
