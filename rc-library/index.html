@@ -526,7 +526,7 @@ html{touch-action:manipulation}
   <section id="v-list" hidden></section>
   <section id="v-library" hidden></section>
 </main>
-<div class="srch" id="srch" hidden><div id="slibbar"></div><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
+<div class="srch" id="srch" hidden><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Genres</button>
@@ -1352,8 +1352,6 @@ function closeSearch(fromPop){
     const my = ++gen, panel = $('#srch');
     if(!q){ panel.hidden = true; return; }
     panel.hidden = false;
-    searchLibBar();
-    if(searchLib){ searchLibGrid(panel, q); return; }
     const tv = searchTV;
     feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), tv ? { path:'/search/tv', params:{ query:q }, tv:true } : { path:'/search/multi', params:{ query:q } });
     if(tv){ $('#fpeople').innerHTML = ''; return; }
@@ -1457,7 +1455,7 @@ function fitPills(bar, lists){
   run();
   document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
-const gb = { tv:false, g:'*', sort:'popular', lib:false };
+const gb = { tv:false, g:'*', sort:'popular' };
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
@@ -1466,14 +1464,12 @@ function buildGenreBrowse(){
   const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
   if(!genres.some(g => g.k === gb.g)) gb.g = '*';
   const gl = genres.find(g => g.k === gb.g);
-  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}${pickPill('gblib', gb.lib ? 'My library' : 'Everything')}</div>
+  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
     <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
-  $('#gblib', v).onclick = () => pickSheet('Show', [{ k:'all', label:'Everything' }, { k:'lib', label:'In my library' }], gb.lib ? 'lib' : 'all', k => { gb.lib = k === 'lib'; buildGenreBrowse(); scrollTo(0, 0); });
   fitPills($('.pkbar', v));
-  if(gb.lib){ setPageSource(null); genreLibGrid(v, gb.tv, gb.g, gb.sort); return; }
   const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
   setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });
   feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
@@ -2444,33 +2440,6 @@ const libSort = (list, sort) => list.sort(sort === 'rated' ? (a, c) => (c.vote |
   : sort === 'newest' ? (a, c) => (c.date || '').localeCompare(a.date || '')
   : sort === 'popular' ? (a, c) => (c.votes || 0) - (a.votes || 0)
   : (a, c) => a.title.localeCompare(c.title, undefined, { numeric:true }));
-// Fill a poster grid from the library instead of TMDB, cancelling any TMDB list that was loading into it
-function libInto(grid, msgEl, list, empty){
-  grid._gen = (grid._gen || 0) + 1; grid._obs?.disconnect();
-  grid.innerHTML = list.map(f => cardHTML(f)).join('');
-  msgEl.textContent = list.length ? '' : empty;
-}
-// Genres page, "My library" mode
-function genreLibGrid(v, tv, g, sort){
-  const list = libTitles().filter(f => !!f.tv === !!tv && (g === '*' || (f.genres || []).includes(+g)));
-  libInto($('.grid', v), $('.msg', v), libSort(list, sort), store.get(K_RD, '') ? 'Nothing in your library matches.' : 'Add your Real-Debrid token in Settings to see your library here.');
-  if(Object.values(rdLib.items).some(it => it.m && !it.m.genres)) backfillMeta().then(ch => { if(ch && view === 'genres' && gb.lib) buildGenreBrowse(); });
-}
-// Search, "My library" mode
-const normT = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
-function searchLibGrid(panel, q){
-  const n = normT(q);
-  const list = libSort(libTitles().filter(f => normT(f.title).includes(n)), '');
-  $('#fpeople').innerHTML = '';
-  libInto($('.grid', panel), $('.msg', panel), list, 'Nothing in your library matches.');
-}
-let searchLib = false;
-function searchLibBar(){
-  const bar = $('#slibbar'); if(!bar) return;
-  bar.innerHTML = `<div class="seg" style="margin:0 0 12px;display:inline-flex"><button data-sl="0" class="${searchLib ? '' : 'on'}">Everything</button><button data-sl="1" class="${searchLib ? 'on' : ''}">In my library</button></div>`;
-  $$('[data-sl]', bar).forEach(x => x.onclick = () => { searchLib = x.dataset.sl === '1'; searchLibBar(); $('#hq').oninput({ target:$('#hq'), now:true }); });
-}
-
 const libFor = id => Object.entries(rdLib.items).filter(([, it]) => it.m && it.m.id === id).map(([tid, it]) => ({ tid, ...it }));
 
 // Detail card: "In your library" above the streaming logos (shown even if TMDB is slow or offline)
