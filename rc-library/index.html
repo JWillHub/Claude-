@@ -3076,9 +3076,10 @@ function drawLibrary(b){
     $$('[data-showcard]', b).forEach(x => x.onclick = () => openMovie(pid(x.dataset.showcard)));
 
     // Movies, as posters like everywhere else
-    $('#lmovies', b).innerHTML = films.length ? `<section class="row"><div class="rowhead"><div><h3>Movies</h3><p>${films.length} in your library</p></div></div>
+    $('#lmovies', b).innerHTML = films.length ? `<section class="row"><div class="rowhead"><div><h3>Movies</h3><p>${films.length} in your library</p></div><button data-libmovies="1">See all</button></div>
       <div class="track">${films.map(f => cardHTML(f)).join('')}</div></section>` : '';
 
+    const lm = $('[data-libmovies]', b); if(lm) lm.onclick = () => openLibMovies();
     $('#lun', b).innerHTML = un.length ? `<div class="lbl lcl">Not matched</div>` +
       un.map(([tid, it]) => `<div class="lunm"><span>${esc(it.name)}</span><button data-fix="${esc(tid)}">Match</button></div>`).join('') : '';
     $$('[data-fix]', b).forEach(x => x.onclick = () => fixMatch(x.dataset.fix, paint));
@@ -3128,6 +3129,13 @@ async function openSeason(id, sn){
   const draw = renderEpisodes($('#lbox', b), eps, id, title, { head });
   if(sn) seasonInfo(tid, sn).then(x => { si = x; draw(); }).catch(() => {});
   detailsFor(id).then(d => { bd = d.backdrop; draw(); }).catch(() => {});
+}
+// Every movie in your library on one page (the Movies row's arrow), A to Z
+function openLibMovies(){
+  const films = libSort(libTitles().filter(f => !f.tv), '');
+  const pg = openListPage('Your movies', `${films.length} in your library`);
+  $('.grid', pg).innerHTML = films.map(f => cardHTML(f)).join('');
+  setPageSource({ title:'Your movies', items:films });
 }
 function renderLibraryTab(){
   const v = $('#v-library');
