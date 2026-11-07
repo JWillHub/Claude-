@@ -16,7 +16,12 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.datasource.DefaultDataSource;
+import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+import androidx.media3.extractor.DefaultExtractorsFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
 
@@ -51,7 +56,23 @@ public class PlayerActivity extends AppCompatActivity {
         DefaultRenderersFactory renderers = new DefaultRenderersFactory(this)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true);
+        // Start after ~1 s of video (was 2.5 s); keep up to 3 minutes ready, capped at 300 MB of memory while playing
+        DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+            .setBufferDurationsMs(50_000, 180_000, 1_000, 2_500)
+            .setTargetBufferBytes(300 * 1024 * 1024)
+            .setPrioritizeTimeOverSizeThresholds(false)
+            .build();
+        // Follow Real-Debrid's redirects and allow slower servers a little longer before giving up
+        DefaultHttpDataSource.Factory http = new DefaultHttpDataSource.Factory()
+            .setAllowCrossProtocolRedirects(true)
+            .setConnectTimeoutMs(15_000)
+            .setReadTimeoutMs(20_000);
+        // Files without a seek index (some AVI/TS) can still be skipped through quickly; MKV and MP4 use their own index
+        DefaultExtractorsFactory extractors = new DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true);
+        DefaultMediaSourceFactory sources = new DefaultMediaSourceFactory(new DefaultDataSource.Factory(this, http), extractors);
         player = new ExoPlayer.Builder(this, renderers)
+            .setLoadControl(loadControl)
+            .setMediaSourceFactory(sources)
             .setSeekBackIncrementMs(10_000)
             .setSeekForwardIncrementMs(10_000)
             .build();
