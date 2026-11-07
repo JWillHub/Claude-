@@ -493,6 +493,9 @@ html{touch-action:manipulation}
 .lcw .lbar{top:173px;bottom:auto;left:0;height:4px}
 .lcwrap{position:relative;flex:none}
 .lcx{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;padding:0;cursor:pointer}
+.lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
+.lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
+.lcw{scroll-snap-align:start}
 </style>
 </head>
 <body>
@@ -2730,44 +2733,87 @@ function fixMatch(tid, after){
   run();
 }
 
-let libKind = 'all';
+// ---- Library page: Netflix-style rows of only your own titles ----
+// TMDB season list for a show (season posters, episode counts)
+const showSeasons = tid => cached('tvs:' + tid, 72, () => tmdb('/tv/' + tid).then(x => (x.seasons || []).map(s => ({ n:s.season_number, poster:s.poster_path, eps:s.episode_count, name:s.name }))));
+// Every episode file of a show in your library, across all its season packs, grouped by season number
+async function showEpisodes(id){
+  const tors = Object.entries(rdLib.items).filter(([, it]) => it.m && it.m.id === id);
+  const bySeason = new Map();
+  await Promise.all(tors.map(async ([tid, it]) => {
+    let files = [];
+    try{ files = await torrentFiles(tid); }catch(e){}
+    const packSeason = (seasonOf(it.name).match(/\d+/) || [])[0];
+    files.forEach(f => {
+      const ep = epOf(f.path);
+      const sn = ep ? ep.s : packSeason != null ? +packSeason : 0;
+      if(!bySeason.has(sn)) bySeason.set(sn, []);
+      bySeason.get(sn).push({ ...f, tid, ep });
+    });
+  }));
+  bySeason.forEach(list => list.sort((a, c) => (a.ep ? a.ep.e : 999) - (c.ep ? c.ep.e : 999) || a.path.localeCompare(c.path)));
+  return bySeason;
+}
+const seasonsCache = new Map();   // show id -> Map(season -> episodes), for this visit
+
+function seasonCard(f, sn, count, posterPath){
+  return `<button class="lsea" data-show="${esc(f.id)}" data-sn="${sn}">${poster(posterPath || f.poster, '', 'w185', f.title)}
+    <span>${sn ? 'Season ' + sn : 'Extras'}</span><span class="small">${count ? count + ' episode' + (count === 1 ? '' : 's') : ''}</span></button>`;
+}
 function drawLibrary(b){
-  b.innerHTML = `<div class="small" id="lsum"></div>
-    <div class="seg" style="margin:12px 0 0;display:inline-flex">${[['all', 'All'], ['movie', 'Movies'], ['tv', 'Shows']].map(([k, l]) => `<button data-lk="${k}" class="${k === libKind ? 'on' : ''}">${l}</button>`).join('')}</div>
-    <div id="lcont"></div><div class="grid" id="lgrid" style="margin-top:16px"></div><div id="lun" style="margin-top:18px"></div>
-    <button class="btn ghost" id="lsync">Sync with Real-Debrid</button>`;
+  b.innerHTML = `<div class="small" id="lsum" style="padding:0 16px"></div>
+    <div id="lcont"></div><div id="lshows"></div><div id="lmovies"></div>
+    <div style="padding:0 16px"><div id="lun" style="margin-top:18px"></div>
+    <button class="btn ghost" id="lsync">Sync with Real-Debrid</button></div>`;
   const paint = () => {
     if(!b.isConnected) return;
-    const films = libSort(libTitles(), '').filter(f => libKind === 'all' || (libKind === 'tv') === !!f.tv);
+    const all = libTitles(), has = !!store.get(K_RD, '');
+    const shows = libSort(all.filter(f => f.tv), ''), films = libSort(all.filter(f => !f.tv), '');
     const un = Object.entries(rdLib.items).filter(([, it]) => !it.m);
-    const has = !!store.get(K_RD, '');
-    const all = libTitles().length;
     $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings to see your library.'
-      : rdLib.synced ? `${all} title${all === 1 ? '' : 's'}${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
+      : rdLib.synced ? `${films.length} movie${films.length === 1 ? '' : 's'} · ${shows.length} show${shows.length === 1 ? '' : 's'}${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
       : 'Not synced yet.';
     $('#lsync', b).hidden = !has;
+
+    // Continue watching
     const cont = Object.entries(prog).filter(([, p]) => p.link && p.d && (!p.tid || rdLib.items[p.tid])).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
-    $('#lcont', b).innerHTML = cont.length ? `<div class="lbl lcl">Continue watching</div><div class="lcrow nodrag">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
+    $('#lcont', b).innerHTML = cont.length ? `<section class="row" style="margin-top:14px"><div class="rowhead"><div><h3>Continue watching</h3></div></div><div class="track">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
       const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled', poster:mm.poster || p.poster || f0.poster };
       return `<div class="lcwrap"><button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
-        <span>${esc(p.label ? f.title + ' · ' + p.label : f.title)}</span><span class="small">${clock(p.d - p.t)} left</span></button>
-        <button class="lcx" data-cx="${esc(k)}" aria-label="Remove from Continue watching">✕</button></div>`; }).join('')}</div>` : '';
+        <span>${esc(f.title)}</span><span class="small">${p.label ? esc(p.label) + ' · ' : ''}${clock(p.d - p.t)} left</span></button>
+        <button class="lcx" data-cx="${esc(k)}" aria-label="Remove from Continue watching">✕</button></div>`; }).join('')}</div></section>` : '';
     $$('[data-cx]', b).forEach(x => x.onclick = e => { e.stopPropagation(); delete prog[x.dataset.cx]; saveProg(); paint(); });
     $$('[data-ck]', b).forEach(x => x.onclick = () => {
       const k = x.dataset.ck, p = prog[k]; if(!p) return;
-      const t = (p.title || filmOf(p.id).title);
+      const t = (p.name || p.title || filmOf(p.id).title) + (p.label ? ' · ' + p.label : '');
       const ps = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
-      playInto($('#lbox', ps.body), p.link, t, { key:k, tid:p.tid, id:p.id, label:p.label });
+      playInto($('#lbox', ps.body), p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label });
     });
-    $('#lgrid', b).innerHTML = films.map(f => cardHTML(f)).join('');
+
+    // One row per show, with a card for each season you have
+    $('#lshows', b).innerHTML = shows.map(f => `<section class="row" data-lshow="${esc(f.id)}"><div class="rowhead"><div><h3>${esc(f.title)}</h3><p class="lsub"></p></div><button data-showcard="${esc(f.id)}">Details</button></div>
+      <div class="track">${(() => {
+        const known = seasonsCache.get(f.id);
+        if(known) return [...known.keys()].sort((a, c) => (a || 999) - (c || 999)).map(sn => seasonCard(f, sn, known.get(sn).length)).join('');
+        const packs = [...new Set(Object.values(rdLib.items).filter(it => it.m && it.m.id === f.id).map(it => +((seasonOf(it.name).match(/\d+/) || [0])[0])))];
+        return packs.sort((a, c) => (a || 999) - (c || 999)).map(sn => seasonCard(f, sn, 0)).join('');
+      })()}</div></section>`).join('');
+    shows.forEach(f => fillShowRow(b, f));
+    $$('[data-showcard]', b).forEach(x => x.onclick = () => openMovie(pid(x.dataset.showcard)));
+
+    // Movies, as posters like everywhere else
+    $('#lmovies', b).innerHTML = films.length ? `<section class="row"><div class="rowhead"><div><h3>Movies</h3><p>${films.length} in your library</p></div></div>
+      <div class="track">${films.map(f => cardHTML(f)).join('')}</div></section>` : '';
+
     $('#lun', b).innerHTML = un.length ? `<div class="lbl lcl">Not matched</div>` +
       un.map(([tid, it]) => `<div class="lunm"><span>${esc(it.name)}</span><button data-fix="${esc(tid)}">Match</button></div>`).join('') : '';
     $$('[data-fix]', b).forEach(x => x.onclick = () => fixMatch(x.dataset.fix, paint));
+    if(has && !all.length && rdLib.synced && !un.length) $('#lshows', b).innerHTML = '<div class="msg">Nothing in your Real-Debrid library yet.</div>';
   };
-  $$('[data-lk]', b).forEach(x => x.onclick = () => { libKind = x.dataset.lk; $$('[data-lk]', b).forEach(y => y.classList.toggle('on', y === x)); paint(); });
+  b.onclick = e => { const s = e.target.closest('.lsea'); if(s) openSeason(pid(s.dataset.show), +s.dataset.sn); };
   const sync = async () => {
     const btn = $('#lsync', b); btn.textContent = 'Syncing…'; btn.disabled = true;
-    try{ await syncLib(); await backfillMeta(); paint(); }catch(e){ if(b.isConnected) $('#lsum', b).innerHTML = rdErr(e); }
+    try{ await syncLib(); seasonsCache.clear(); await backfillMeta(); paint(); }catch(e){ if(b.isConnected) $('#lsum', b).innerHTML = rdErr(e); }
     if(btn.isConnected){ btn.textContent = 'Sync with Real-Debrid'; btn.disabled = false; }
   };
   $('#lsync', b).onclick = sync;
@@ -2776,10 +2822,52 @@ function drawLibrary(b){
   else backfillMeta().then(ch => ch && paint());
   return paint;
 }
+// Work out a show's seasons from its files (and TMDB's season posters), then redraw its row
+async function fillShowRow(b, f){
+  try{
+    const [eps, seas] = await Promise.all([seasonsCache.get(f.id) || showEpisodes(f.id), showSeasons(f.tid).catch(() => [])]);
+    seasonsCache.set(f.id, eps);
+    const row = b.querySelector(`[data-lshow="${CSS.escape(String(f.id))}"]`); if(!row) return;
+    const posters = new Map(seas.map(s => [s.n, s.poster]));
+    const sns = [...eps.keys()].sort((a, c) => (a || 999) - (c || 999));
+    $('.track', row).innerHTML = sns.map(sn => seasonCard(f, sn, eps.get(sn).length, posters.get(sn))).join('');
+    const total = sns.reduce((n, sn) => n + eps.get(sn).length, 0);
+    $('.lsub', row).textContent = `${sns.filter(Boolean).length} season${sns.filter(Boolean).length === 1 ? '' : 's'} · ${total} episodes`;
+  }catch(e){}
+}
+// A season's episodes, from whichever packs they came in
+async function openSeason(id, sn){
+  const f = filmOf(id), lm = libTitles().find(x => x.id === id) || {};
+  const title = lm.title || f.title;
+  const s = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="small">${sn ? 'Season ' + sn : 'Extras'}</div>
+    <div id="lbox" style="margin-top:12px"><div class="msg">Loading episodes…</div></div>`, { tall:true });
+  const b = s.body;
+  let eps;
+  try{ const all = seasonsCache.get(id) || await showEpisodes(id); seasonsCache.set(id, all); eps = all.get(sn) || []; }
+  catch(e){ $('#lbox', b).innerHTML = `<div class="msg">${rdErr(e)}</div>`; return; }
+  if(!s.el.isConnected) return;
+  if(!eps.length){ $('#lbox', b).innerHTML = '<div class="msg">No episodes found for this season.</div>'; return; }
+  const draw = () => {
+    $('#lbox', b).innerHTML = `<div class="lfiles">${eps.map((x, i) => {
+      const k = x.tid + '|' + x.path, pr = prog[k], fin = done[k];
+      return `<button class="lfile${fin ? ' fin' : ''}" data-i="${i}"><span>${fin ? '✓' : '▶'} <b>${x.ep ? `E${x.ep.e}` : ''}</b> ${x.ep ? '' : esc(baseName(x.path))}</span><span class="sz">${pr && pr.d ? clock(pr.t) + ' / ' + clock(pr.d) : fmtSize(x.bytes)}</span>${pr && pr.d ? `<i class="lbar" style="width:${Math.min(100, pr.t / pr.d * 100).toFixed(1)}%"></i>` : ''}</button>`; }).join('')}</div>`;
+    $$('.lfile', b).forEach(btn => {
+      const x = eps[+btn.dataset.i];
+      btn.addEventListener('pointerdown', () => { getStream(x.link).catch(() => {}); }, { once:true });
+      btn.onclick = () => {
+        const label = x.ep ? `S${x.ep.s} E${x.ep.e}` : '';
+        const p = sheet(`<h2 class="stitle">${esc(title)}${label ? ' · ' + label : ''}</h2><div id="lbox"></div>`, { tall:true });
+        p.onClose = () => setTimeout(draw, 50);
+        playInto($('#lbox', p.body), x.link, title, { key:x.tid + '|' + x.path, tid:x.tid, id, label });
+      };
+    });
+  };
+  draw();
+}
 function renderLibraryTab(){
   const v = $('#v-library');
-  v.innerHTML = '<div class="pad" style="padding-top:14px"></div>';
-  drawLibrary($('.pad', v));
+  v.innerHTML = '<div style="padding-top:14px"></div>';
+  drawLibrary(v.firstChild);
 }
 function openLibrary(){ setView('library'); }
 
