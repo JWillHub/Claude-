@@ -4,6 +4,14 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.view.WindowManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -51,7 +59,34 @@ public class PlayerActivity extends AppCompatActivity {
         view.setBackgroundColor(Color.BLACK);
         view.setShowSubtitleButton(true);
         view.setKeepScreenOn(true);
-        setContentView(view);
+
+        // Top bar over the video: a back arrow and the title. Shows and hides with the player's controls.
+        FrameLayout root = new FrameLayout(this);
+        root.addView(view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        LinearLayout bar = new LinearLayout(this);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setPadding(dp(28), dp(14), dp(28), dp(14));
+        TextView back = new TextView(this);
+        back.setText("\u2190");
+        back.setTextColor(Color.WHITE);
+        back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        back.setPadding(dp(10), dp(2), dp(16), dp(6));
+        back.setContentDescription("Back");
+        back.setOnClickListener(v -> close(false));
+        TextView name = new TextView(this);
+        name.setText(title);
+        name.setTextColor(Color.WHITE);
+        name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
+        name.setSingleLine(true);
+        name.setEllipsize(TextUtils.TruncateAt.END);
+        name.setShadowLayer(6f, 0f, 1f, Color.BLACK);
+        bar.addView(back);
+        bar.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        bar.setBackgroundColor(0x66000000);
+        root.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
+        view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(visibility));
+        setContentView(root);
 
         DefaultRenderersFactory renderers = new DefaultRenderersFactory(this)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
@@ -103,6 +138,8 @@ public class PlayerActivity extends AppCompatActivity {
             public void handleOnBackPressed() { close(false); }
         });
     }
+
+    private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
 
     // Hand the position back to the page, then leave
     private void close(boolean ended) {

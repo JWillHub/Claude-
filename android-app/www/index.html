@@ -2628,9 +2628,11 @@ function prefetchLib(list){
 const libFor = id => Object.entries(rdLib.items).filter(([, it]) => it.m && it.m.id === id).map(([tid, it]) => ({ tid, ...it }));
 
 // Detail card: "In your library" above the streaming logos (shown even if TMDB is slow or offline)
+function refreshLibBlocks(){ $$('[data-lid]').forEach(bx => { const sb = bx.closest('.sbody'); if(sb) libBlock(sb, pid(bx.dataset.lid)); }); }
 function libBlock(b, id){
   const list = libFor(id), box = $('#mlib', b);
   if(!list.length || !box) return;
+  box.dataset.lid = id;
   box.innerHTML = (`<div class="lib fadein"><div class="lbl">In your library</div><div class="lrow">${list
     .sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric:true }))
     .map(it => { const pr = progOfTorrent(it.tid); return `<button data-rdt="${esc(it.tid)}">▶ <b>${pr ? 'Resume' : 'Play'}</b> ${esc([seasonOf(it.name), qualOf(it.name), fmtSize(it.bytes)].filter(Boolean).join(' · '))}</button>`; }).join('')}</div></div>`);
@@ -2640,6 +2642,16 @@ function libBlock(b, id){
 
 async function openTorrent(tid, title, id){
   if(id == null) id = (rdLib.items[tid] && rdLib.items[tid].m || {}).id;
+  if(NATIVE){
+    let files;
+    try{ files = await torrentFiles(tid); }catch(e){ toast(rdErr(e)); return; }
+    if(files.length && !isEpisodes(files)){
+      const f = pickFilm(files);
+      const res = await launchNative(f.link, title, { key:tid + '|' + f.path, tid, id, label:'' });
+      if(res && res.finished && typeof id === 'number' && !getR(id)) setTimeout(() => toast(`Finished · rate ${esc(title)} with the stars below`), 1200);
+      return;
+    }
+  }
   const it = rdLib.items[tid] || {};
   const s = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="small" style="word-break:break-all">${esc(it.name || '')}</div>
     <div id="lbox" style="margin-top:12px"><div class="msg">Loading files…</div></div>
@@ -2744,6 +2756,33 @@ async function nativePlay(box, s, link, title, meta, startAt, remembered){
   afterPlay(box, { link, title, meta, t, d, finished, error:r.error });
 }
 
+// Android app: open the player straight from wherever you are; when it closes you're back on that same page
+let launching = false;
+async function launchNative(link, title, meta, retry = false){
+  if(launching && !retry) return null;
+  launching = true;
+  if(!retry) toast('Opening the player…');
+  try{
+    const s = await getStream(link, retry);
+    const startAt = meta.key && prog[meta.key] ? prog[meta.key].t : 0;
+    const remembered = !retry && Date.now() - s.at > 10000;
+    let r;
+    try{ r = await playerPlay({ url:s.u.download, title:title + (meta.label ? ' · ' + meta.label : ''), startMs:startAt > 20 ? Math.floor(startAt * 1000) : 0 }); }
+    catch(e){ toast('Could not open the player'); return null; }
+    if(r.error && remembered){ delete linkCache[link]; store.set(K_LINKS, linkCache); return launchNative(link, title, meta, true); }   // the remembered link may have expired
+    if(r.error) toast(`The player couldn't play this file (${esc(r.error)})`);
+    const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
+    const finished = !!(d > 0 && (r.ended || t / d >= 0.9));
+    if(meta.key && d > 0){
+      if(finished) finishWatch(meta.key, meta);
+      else if(t > 5){ prog[meta.key] = { t, d, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link, ...progMeta(meta) }; saveProg(); }
+    }
+    afterChange(); refreshLibBlocks();
+    return { t, d, finished, error:r.error };
+  }catch(e){ toast(rdErr(e)); return null; }
+  finally{ if(!retry) launching = false; }
+}
+
 const fmtDur = sec => { sec = Math.max(0, Math.round(sec / 60)); const h = Math.floor(sec / 60), mm = sec % 60; return h ? `${h} hr${mm ? ' ' + mm + ' min' : ''}` : `${mm} min`; };
 // TMDB episode names and stills for one season (for the screen after an episode)
 // One season from TMDB: its poster and year, and every episode's name, still, summary, runtime and air date
@@ -2771,6 +2810,7 @@ function renderEpisodes(box, files, id, title, opt = {}){
   const key = f => f.tid + '|' + f.path;
   const play = f => {
     const label = f.ep ? `S${f.ep.s} E${f.ep.e}` : '';
+    if(NATIVE){ launchNative(f.link, title, { key:key(f), tid:f.tid, id, label }).then(draw); return; }
     const p = sheet(`<h2 class="stitle">${esc(title)}${label ? ' · ' + label : ''}</h2><div id="lbox"></div>`, { tall:true });
     p.onClose = () => setTimeout(draw, 50);
     playInto($('#lbox', p.body), f.link, title, { key:key(f), tid:f.tid, id, label });
@@ -3017,6 +3057,7 @@ function drawLibrary(b){
     $$('[data-ck]', b).forEach(x => x.onclick = e => {
       if(x._held){ x._held = false; e.preventDefault(); return; }
       const k = x.dataset.ck, p = prog[k]; if(!p) return;
+      if(NATIVE){ launchNative(p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label }).then(paint); return; }
       const t = (p.name || p.title || filmOf(p.id).title) + (p.label ? ' · ' + p.label : '');
       const ps = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
       playInto($('#lbox', ps.body), p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label });
