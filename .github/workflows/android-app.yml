@@ -24,7 +24,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
+      - name: Android SDK (preinstalled on GitHub's runners)
+        run: echo "ANDROID_HOME=$ANDROID_HOME" && ls "$ANDROID_HOME/platforms" | tail -3
       - name: Install Capacitor
         run: npm install --no-audit --no-fund
       - name: Create the Android project
