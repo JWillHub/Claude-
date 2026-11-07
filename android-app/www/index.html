@@ -491,6 +491,8 @@ html{touch-action:manipulation}
 .lcw{flex:none;width:118px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;position:relative;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700}
 .lcw img,.lcw .ph{width:118px;height:177px;object-fit:cover;border-radius:10px;background:var(--card2)}
 .lcw .lbar{top:173px;bottom:auto;left:0;height:4px}
+.lcwrap{position:relative;flex:none}
+.lcx{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;padding:0;cursor:pointer}
 </style>
 </head>
 <body>
@@ -2747,8 +2749,10 @@ function drawLibrary(b){
     const cont = Object.entries(prog).filter(([, p]) => p.link && p.d && (!p.tid || rdLib.items[p.tid])).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
     $('#lcont', b).innerHTML = cont.length ? `<div class="lbl lcl">Continue watching</div><div class="lcrow nodrag">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
       const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled', poster:mm.poster || p.poster || f0.poster };
-      return `<button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
-        <span>${esc(p.label || f.title)}</span><span class="small">${clock(p.d - p.t)} left</span></button>`; }).join('')}</div>` : '';
+      return `<div class="lcwrap"><button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
+        <span>${esc(p.label ? f.title + ' · ' + p.label : f.title)}</span><span class="small">${clock(p.d - p.t)} left</span></button>
+        <button class="lcx" data-cx="${esc(k)}" aria-label="Remove from Continue watching">✕</button></div>`; }).join('')}</div>` : '';
+    $$('[data-cx]', b).forEach(x => x.onclick = e => { e.stopPropagation(); delete prog[x.dataset.cx]; saveProg(); paint(); });
     $$('[data-ck]', b).forEach(x => x.onclick = () => {
       const k = x.dataset.ck, p = prog[k]; if(!p) return;
       const t = (p.title || filmOf(p.id).title);
@@ -2794,6 +2798,7 @@ function openSettings(){
     <input id="rdkey" type="password" value="${esc(store.get(K_RD, ''))}" placeholder="Paste your Real-Debrid API token" autocomplete="off">
     <div class="small" style="margin-top:6px">From real-debrid.com/apitoken. Stored only on this device, in this app.</div>
     <button class="btn ghost" id="rdopen">Open my library</button>
+    <div class="small" style="margin-top:10px">App build __BUILD__</div>
     <label class="toggle"><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}> Hide films and shows I've rated while browsing</label>
     <label class="f">Backup</label>
     <button class="btn ghost" id="exp" style="margin-top:0">Export ratings & diary (.json)</button>

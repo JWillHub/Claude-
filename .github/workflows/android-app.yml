@@ -31,6 +31,7 @@ jobs:
       - name: Create the Android project
         run: |
           cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
+          sed -i "s/__BUILD__/${GITHUB_RUN_NUMBER} · $(TZ=America/Chicago date '+%b %-d, %-I:%M %p')/" www/index.html
           npx cap add android
           ./scripts/patch-android.sh
           npx cap sync android
