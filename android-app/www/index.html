@@ -2428,6 +2428,8 @@ function fillUpdate(b){
     }catch(e){ btn.disabled = false; btn.textContent = 'Update'; toast('Update failed: ' + esc(e.message || String(e))); }
   };
 }
+// Back with nothing left to close: go to Discover first, and only then let Android leave the app
+window.rcBack = () => { if(sheetStack.length){ closeAllSheets(); return true; } if(view !== 'discover'){ setView('discover'); return true; } return false; };
 if(NATIVE){ setTimeout(checkForUpdate, 2500); document.addEventListener('visibilitychange', () => { if(!document.hidden) checkForUpdate(); }); }
 // In a browser, Real-Debrid doesn't allow direct calls, so requests go through your small rc-relay Cloudflare worker
 const RD_API = NATIVE ? 'https://api.real-debrid.com/rest/1.0' : 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
