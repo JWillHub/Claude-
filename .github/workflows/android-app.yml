@@ -34,13 +34,16 @@ jobs:
           npx cap add android
           ./scripts/patch-android.sh
           npx cap sync android
-      - name: Use the same signing key every build (so updates install over the old version)
-        run: mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
       - name: Build APK
         working-directory: android-app/android
         run: ./gradlew --no-daemon assembleDebug
-      - name: Rename
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk rolling-credits.apk
+      - name: Rename and check it's signed with the app's own key
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk rolling-credits.apk
+          want=$(keytool -list -v -keystore debug.keystore -storepass android | grep -m1 'SHA256:' | awk '{print $2}')
+          got=$(keytool -printcert -jarfile rolling-credits.apk | grep -m1 'SHA256:' | awk '{print $2}')
+          echo "want $want"; echo "got  $got"
+          test "$want" = "$got"
       - uses: actions/upload-artifact@v4
         with:
           name: rolling-credits-apk

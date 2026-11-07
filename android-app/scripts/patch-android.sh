@@ -17,6 +17,24 @@ dependencies {
 }
 GRADLE
 
+# Sign every build with the same key (android-app/debug.keystore), so a new version installs over the old one
+cat >> android/app/build.gradle <<'GRADLE'
+
+android {
+    signingConfigs {
+        debug {
+            storeFile file("../../debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+    buildTypes {
+        debug { signingConfig signingConfigs.debug }
+    }
+}
+GRADLE
+
 # Register the player screen
 MANIFEST=android/app/src/main/AndroidManifest.xml
 python3 - "$MANIFEST" <<'PY'
