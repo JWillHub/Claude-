@@ -130,7 +130,7 @@ main{max-width:1100px;margin:0 auto}
 .row{margin-top:26px}
 .rowhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:0 16px 10px}
 .rowhead h3{margin:0;font-family:var(--disp);font-weight:700;font-size:22px;line-height:1.1}
-.rowhead p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.rowhead p{display:none}
 /* rows that open a full page: the title itself is the link, with a chevron after it */
 .rowhead button{display:none}
 .rowhead:has(button){cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -469,7 +469,8 @@ html{touch-action:manipulation}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 /* marquee type */
 .vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
-.hero h2{font-size:31px}\n.cchips{display:flex;flex-wrap:wrap;gap:6px}.pp.cchip{display:inline-flex;width:auto;flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:650;font-size:13px}
+.hero h2{font-size:31px}
+.bd:not(.wl):not(.seen){color:#fff}.bd .bst{font-style:normal;color:#f5c518;margin-left:1px}.bd.wl::before{background:#f5c518!important}\n.cchips{display:flex;flex-wrap:wrap;gap:6px}.pp.cchip{display:inline-flex;width:auto;flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:650;font-size:13px}
 .setpage{padding:4px 16px 40px}.setpage>.stitle{margin:8px 4px 0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:30px}
 .sgroup{margin-top:20px}
 .sgh{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}
@@ -629,6 +630,7 @@ html{touch-action:manipulation}
 .ib{background:transparent}
 #hcar{background:transparent;border:1px solid var(--accent);color:var(--accent);box-shadow:none}
 .qs{background:transparent}.qs .qi{background:transparent;border:1px solid var(--accent)}.qs .qi svg{fill:var(--accent)}.qs b{color:var(--text)}
+.rdot i svg{width:24px;height:24px}.rdot.fill i svg{width:26px;height:26px;margin-left:2px}
 </style>
 </head>
 <body>
@@ -638,7 +640,7 @@ html{touch-action:manipulation}
     <circle cx="10" cy="11" r="7.5" fill="#b8242c"/><g fill="#0c0a0f"><circle cx="10" cy="7" r="1.7"/><circle cx="13.8" cy="12.2" r="1.7"/><circle cx="6.2" cy="12.2" r="1.7"/><circle cx="10" cy="11" r=".9"/></g>
     <circle cx="24" cy="12.5" r="6" fill="#b8242c"/><g fill="#0c0a0f"><circle cx="24" cy="9.3" r="1.4"/><circle cx="27" cy="13.6" r="1.4"/><circle cx="21" cy="13.6" r="1.4"/><circle cx="24" cy="12.5" r=".8"/></g>
     <rect x="3" y="19" width="26" height="13" rx="3" fill="#b8242c"/><rect x="6" y="22" width="9" height="2" rx="1" fill="#0c0a0f" opacity=".55"/>
-    <path d="M29 22.5 L36 20 L36 31 L29 28.5 Z" fill="#b8242c"/><circle cx="36" cy="25.5" r="2.4" fill="#fff3d6"/>
+    <path d="M29 22.5 L36 20 L36 31 L29 28.5 Z" fill="#b8242c"/><circle cx="36" cy="25.5" r="2.4" fill="#e23a44"/>
     <path d="M9 32 L7 37 M23 32 L25 37" stroke="#b8242c" stroke-width="2" stroke-linecap="round"/>
   </svg>
   <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
@@ -940,12 +942,12 @@ function afterChange(){
 }
 function badge(id){
   const r = getR(id);
-  if(r) return `${fmtR(r)}★`;
+  if(r) return `${fmtR(r)}<i class="bst">★</i>`;
   return logCount(id) || seen[id] ? '✓' : '';
 }
 const bdCls = (id, t) => t === '✓' ? ' seen' : (!t && watch[id] ? ' wl' : '');
 function refreshBadges(){
-  $$('.pc[data-id]').forEach(el => { const b = $('.bd', el); if(!b) return; const id = pid(el.dataset.id), t = badge(id); b.textContent = t; b.className = 'bd' + bdCls(id, t); });
+  $$('.pc[data-id]').forEach(el => { const b = $('.bd', el); if(!b) return; const id = pid(el.dataset.id), t = badge(id); b.innerHTML = t; b.className = 'bd' + bdCls(id, t); });
 }
 function cardHTML(m, rank){
   const b = badge(m.id);
@@ -1432,7 +1434,7 @@ function openSeeAll(def){
 }
 function openStaticList(kind){
   if(kind === 'foryou'){
-    const b = openListPage('For you', $('#fysub') ? $('#fysub').textContent : '');
+    const b = openListPage('For you', '');
     $('.grid', b).innerHTML = forYouList.map(m => cardHTML(m)).join('');
     setPageSource({ title:'For you', items:forYouList });
   } else if(kind === 'watch'){
@@ -3161,9 +3163,9 @@ function seasonCard(f, sn, count, posterPath){
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
 function drawLibrary(b){
-  b.innerHTML = `<div id="lmain"><div class="small" id="lsum" style="padding:12px 16px 4px"></div>
+  b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
     <div id="lcont"></div><div class="pad" style="padding-top:8px"><div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
-    <div id="lun" style="margin-top:18px"></div></div></div><div id="lshowpg"></div>`;
+    <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
     if(!b.isConnected) return;
     const all = libSort(libTitles(), ''), has = !!store.get(K_RD, '');
@@ -3173,8 +3175,8 @@ function drawLibrary(b){
 
 
     $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings to see your library.'
-      : rdLib.synced ? `${films.length} movie${films.length === 1 ? '' : 's'} · ${shows.length} series${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })} · pull down to sync`
-      : 'Not synced yet. Pull down to sync.';
+      : rdLib.synced ? `Synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
+      : '';
 
 
     // Continue watching, above the posters (hidden while one title is picked)
