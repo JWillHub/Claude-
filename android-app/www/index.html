@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0c0a0f;--bg2:#141119;--card:#1c1823;--card2:#262030;--line:#30293b;
+  --bg:#000;--bg2:#000;--card:#1c1823;--card2:#262030;--line:#30293b;
   --text:#f4efe9;--muted:#9c93a9;--accent:#ffb547;--accent2:#ff6f61;--good:#5ad19a;
   --disp:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
 }
@@ -32,7 +32,7 @@ svg{display:block}
 
 /* top bar */
 .top{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;height:calc(52px + env(safe-area-inset-top));
-  padding:calc(6px + env(safe-area-inset-top)) 16px 6px;background:linear-gradient(180deg,#120f17,var(--bg));border-bottom:1px solid rgba(255,181,71,.55)}
+  padding:calc(6px + env(safe-area-inset-top)) 16px 6px;background:#000;border-bottom:1px solid rgba(255,181,71,.55)}
 .logo{margin:0;cursor:pointer;display:flex;flex-direction:column;line-height:.86;user-select:none;-webkit-user-select:none}
 .logo .w1{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--muted);padding-left:2px}
 .logo .w2{font-family:var(--disp);font-weight:700;font-size:25px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
@@ -565,7 +565,15 @@ html{touch-action:manipulation}
 .ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,0);z-index:60;opacity:0;pointer-events:none;
   background:var(--card);border:1px solid rgba(255,181,71,.45);color:var(--text);font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;transition:opacity .15s;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .shhero{position:relative;min-height:330px;background:var(--card2) center top/cover no-repeat;display:flex;align-items:flex-end;margin-top:-1px}
-.shback{position:absolute;top:12px;left:12px;background:rgba(12,10,15,.6);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px;cursor:pointer;backdrop-filter:blur(6px)}
+.shcard{overflow:hidden;background:#000}
+.shcard .grab{position:absolute;left:0;right:0;top:0;z-index:4}
+.shcard .grab i{background:rgba(255,255,255,.75)}
+.shcard .sbody{position:relative;z-index:1;padding-top:0}
+.shbg{position:absolute;left:0;right:0;top:0;height:360px;z-index:0;background:#000 center top/cover no-repeat;pointer-events:none}
+.shbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.5) 55%,#000 96%)}
+.shcard .shhero{background:transparent;min-height:340px}
+.shcard .shin{padding-bottom:26px}
+.shcard .shwrap .pad{position:relative;background:#000;margin:0 -16px;padding:6px 16px 0;box-shadow:0 -18px 18px #000;min-height:calc(100dvh - 380px)}
 .shin{display:flex;align-items:flex-end;gap:14px;padding:16px;width:100%}
 .shpo{flex:none;width:104px}.shpo img,.shpo .ph{width:104px;aspect-ratio:2/3;height:auto;border-radius:12px;object-fit:cover;box-shadow:0 10px 26px rgba(0,0,0,.6);background:var(--card)}
 .shtx{min-width:0}.shname{margin:0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:34px;line-height:1}
@@ -659,7 +667,7 @@ html{touch-action:manipulation}
 <script>
 /* ================= basics ================= */
 const IMG = 'https://image.tmdb.org/t/p/';
-const K_LOG = 'rclib.entries', K_RATE = 'rclib.ratings', K_KEY = 'rclib.tmdbkey', CK = 'rclib.c3.';
+const K_LOG = 'reellog.entries', K_RATE = 'reellog.ratings', K_KEY = 'reellog.tmdbkey', CK = 'reellog.c3.';
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){
@@ -708,11 +716,11 @@ if(!ratings){            // migrate ratings from older diary-only data
 (function prune(){ try{
   for(let i = localStorage.length - 1; i >= 0; i--){
     const k = localStorage.key(i);
-    if(k && (k.startsWith('rclib.c.') || k.startsWith('rclib.c2.') || (k.startsWith(CK) && Date.now() - (store.get(k,{}).t||0) > 8*86400e3))) localStorage.removeItem(k);
+    if(k && (k.startsWith('reellog.c.') || k.startsWith('reellog.c2.') || (k.startsWith(CK) && Date.now() - (store.get(k,{}).t||0) > 8*86400e3))) localStorage.removeItem(k);
   }
 }catch(e){} })();
 
-const K_WATCH = 'rclib.watch', K_HIDE = 'rclib.hiderated', K_OMDB = 'rclib.omdbkey', K_SEEN = 'rclib.seen', K_FAV = 'rclib.favpeople';
+const K_WATCH = 'reellog.watch', K_HIDE = 'reellog.hiderated', K_OMDB = 'reellog.omdbkey', K_SEEN = 'reellog.seen', K_FAV = 'reellog.favpeople';
 let watch = store.get(K_WATCH, {});
 let seen = store.get(K_SEEN, {});   // watched, not rated yet
 let favs = store.get(K_FAV, {});    // favorite actors and directors
@@ -1190,7 +1198,7 @@ let genrePageTitle = null;
 let pageSource = null;
 function setPageSource(src){ pageSource = src; }
 // where each carousel was left: the card's id, by carousel
-const K_CARPOS = 'rclib.carpos';
+const K_CARPOS = 'reellog.carpos';
 function savePos(key, val){
   const all = store.get(K_CARPOS, {});
   all[key] = { ...(all[key] || {}), ...val, at:Date.now() };
@@ -3139,27 +3147,16 @@ function seasonCard(f, sn, count, posterPath){
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
 function drawLibrary(b){
-  b.innerHTML = `<div id="lmain"><div class="pkbar" id="lpk"></div><div class="small" id="lsum" style="padding:0 16px 4px"></div>
+  b.innerHTML = `<div id="lmain"><div class="small" id="lsum" style="padding:12px 16px 4px"></div>
     <div id="lcont"></div><div class="pad" style="padding-top:8px"><div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
     if(!b.isConnected) return;
     const all = libSort(libTitles(), ''), has = !!store.get(K_RD, '');
     const shows = all.filter(f => f.tv), films = all.filter(f => !f.tv);
-    const inType = libType === 'movie' ? films : libType === 'tv' ? shows : all;
-    if(libPick !== 'all' && !inType.some(f => String(f.id) === libPick)) libPick = 'all';
-    const picked = libPick === 'all' ? null : inType.find(f => String(f.id) === libPick);
+    const inType = all, picked = null;
     const un = Object.entries(rdLib.items).filter(([, it]) => !it.m);
 
-    // the two dropdowns, like the Genres page
-    const typeLabel = { all:'All', movie:'Movies', tv:'Series' }[libType];
-    $('#lpk', b).innerHTML = pickPill('lpt', typeLabel) + pickPill('lpn', picked ? picked.title : libType === 'movie' ? 'All movies' : libType === 'tv' ? 'All series' : 'All titles');
-    $('#lpt', b).onclick = () => pickSheet('Show', [{ k:'all', label:`All (${all.length})` }, { k:'movie', label:`Movies (${films.length})` }, { k:'tv', label:`Series (${shows.length})` }], libType,
-      k => { libType = k; libPick = 'all'; paint(); scrollTo(0, 0); });
-    $('#lpn', b).onclick = () => pickSheet(libType === 'movie' ? 'Movies' : libType === 'tv' ? 'Series' : 'Titles',
-      [{ k:'all', label:libType === 'movie' ? 'All movies' : libType === 'tv' ? 'All series' : 'All titles' }, ...inType.map(f => ({ k:String(f.id), label:f.title + (f.year ? ' (' + f.year + ')' : '') }))], libPick,
-      k => { if(k !== 'all' && String(k).startsWith('tv')){ openShowPage(k); return; } libPick = k; paint(); scrollTo(0, 0); });
-    fitPills($('#lpk', b));
 
     $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings to see your library.'
       : rdLib.synced ? `${films.length} movie${films.length === 1 ? '' : 's'} · ${shows.length} series${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })} · pull down to sync`
@@ -3168,7 +3165,7 @@ function drawLibrary(b){
 
     // Continue watching, above the posters (hidden while one title is picked)
     const cont = picked ? [] : Object.entries(prog).filter(([, p]) => p.link && p.d && (!p.tid || rdLib.items[p.tid]))
-      .filter(([, p]) => libType === 'all' || (libType === 'tv') === (typeof p.id === 'string')).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
+      .sort((a, c) => c[1].at - a[1].at).slice(0, 12);
     $('#lcont', b).innerHTML = cont.length ? `<section class="cwband"><div class="cwh"><span class="cwdot"></span>Continue watching</div><div class="cwtrack nodrag">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
       const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled' };
       return `<button class="lcw cwc" data-ck="${esc(k)}" data-cid="${esc(p.id)}" data-cl="${esc(p.label || '')}"><span class="cwimg"><span class="cwph">${esc(f.title)}</span><i class="cwplay">${PLAYSVG}</i></span><i class="cwbar"><b style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></b></i>
@@ -3256,14 +3253,15 @@ function openLibMovie(id){
     <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
       <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
     <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
-      <button class="lnk" id="mvmore">Ratings, cast and more</button></div></div>`, { tall:true });
+      <button class="lnk" id="mvmore">Ratings, cast and more</button></div></div>`, { tall:true, cls:'shcard' });
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   const b = s.body;
   libBlock(b, id);
   $('#mvmore', b).onclick = () => openMovie(id);
   const ov = $('#mvov', b); ov.onclick = () => ov.classList.toggle('open');
   detailsFor(id).then(d => {
     if(!b.isConnected) return;
-    if(d.backdrop) $('#mvhero', b).style.backgroundImage = `linear-gradient(180deg,rgba(12,10,15,.2) 0%,rgba(12,10,15,.55) 55%,var(--bg) 100%),url(${IMG}w1280${d.backdrop})`;
+    if(d.backdrop) $('.shbg', s.el).style.backgroundImage = `url(${IMG}w1280${d.backdrop})`;
     ov.textContent = d.overview || '';
     const rt = d.runtime ? (d.runtime >= 60 ? Math.floor(d.runtime / 60) + 'h ' + (d.runtime % 60) + 'm' : d.runtime + 'm') : '';
     $('#mvmeta', b).textContent = [d.year || f.year, rt, d.vote ? '★ ' + (+d.vote).toFixed(1) : ''].filter(Boolean).join(' · ');
@@ -3274,13 +3272,14 @@ let showSeason = null;
 function openShowPage(id){
   const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
   showSeason = null;
-  const s = sheet('<div class="shwrap"></div>', { tall:true });
+  const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard' });
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   showPage($('.shwrap', s.body), f, s);
 }
 async function showPage(pg, f, card){
   const id = f.id, tid = +String(id).slice(2);
   pg.innerHTML = `<div class="shp">
-    <div class="shhero" id="shhero"><button class="shback" id="shback">‹ Library</button>
+    <div class="shhero" id="shhero">
       <div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
         <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div></div></div></div>
     <div class="pad" style="padding-top:6px">
@@ -3289,13 +3288,12 @@ async function showPage(pg, f, card){
       <div id="sheps"><div class="msg">Loading episodes…</div></div>
       <button class="lnk" id="shmore">Ratings, cast and more</button>
     </div></div>`;
-  $('#shback', pg).onclick = () => card ? card.close() : history.back();
   $('#shmore', pg).onclick = () => openMovie(id);
   const ov = $('#shov', pg); ov.onclick = () => ov.classList.toggle('open');
   // details: backdrop, overview, ratings
   detailsFor(id).then(d => {
     if(!pg.isConnected) return;
-    if(d.backdrop) $('#shhero', pg).style.backgroundImage = `linear-gradient(180deg,rgba(12,10,15,.25) 0%,rgba(12,10,15,.55) 55%,var(--bg) 100%),url(${IMG}w1280${d.backdrop})`;
+    if(d.backdrop){ const bg = card && $('.shbg', card.el); if(bg) bg.style.backgroundImage = `url(${IMG}w1280${d.backdrop})`; }
     ov.textContent = d.overview || '';
     const bits = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) + ' TMDB' : ''].filter(Boolean);
     $('#shmeta', pg).textContent = bits.join(' · ');
