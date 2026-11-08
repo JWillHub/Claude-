@@ -583,7 +583,7 @@ html{touch-action:manipulation}
 .shtabs{display:flex;gap:8px;overflow-x:auto;margin:14px 0 2px;padding-bottom:2px;scrollbar-width:none}
 .shtabs button{flex:none;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
 .shtabs button.on{border-color:var(--accent);color:var(--text);background:rgba(255,181,71,.1)}
-#shmore{margin-top:18px}
+.cwband.mlband{margin:26px -16px 8px}.mlband .cwh{padding-left:16px}.mlband .cwc{width:180px}.mlown{color:var(--accent);font-weight:750}
 .updfail{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted)}
 .updfail button{align-self:flex-start;background:transparent;border:1px solid rgba(255,181,71,.5);color:var(--accent);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
 #appupd{flex-wrap:wrap}
@@ -3248,24 +3248,46 @@ function drawLibrary(b){
 // ---- A series' own page in the Library tab: backdrop, details, season tabs, episodes ----
 // A movie in your library: a simple card with just that movie (backdrop, title, details, story, play)
 function openLibMovie(id){
-  const f = libTitles().find(x => x.id === id) || filmOf(id);
+  const f = libTitles().find(x => String(x.id) === String(id)) || filmOf(id);
   const s = sheet(`<div class="shwrap">
     <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
       <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
     <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
-      <button class="lnk" id="mvmore">Ratings, cast and more</button></div></div>`, { tall:true, cls:'shcard' });
+      <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard' });
   s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   const b = s.body;
   libBlock(b, id);
-  $('#mvmore', b).onclick = () => openMovie(id);
+  moreLike($('#mvlike', b), id);
   const ov = $('#mvov', b); ov.onclick = () => ov.classList.toggle('open');
   detailsFor(id).then(d => {
     if(!b.isConnected) return;
     if(d.backdrop) $('.shbg', s.el).style.backgroundImage = `url(${IMG}w1280${d.backdrop})`;
     ov.textContent = d.overview || '';
+    if(typeof id === 'string'){ $('#mvmeta', b).textContent = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) : ''].filter(Boolean).join(' · '); return; }
     const rt = d.runtime ? (d.runtime >= 60 ? Math.floor(d.runtime / 60) + 'h ' + (d.runtime % 60) + 'm' : d.runtime + 'm') : '';
     $('#mvmeta', b).textContent = [d.year || f.year, rt, d.vote ? '★ ' + (+d.vote).toFixed(1) : ''].filter(Boolean).join(' · ');
   }).catch(() => {});
+}
+// "More like this" at the bottom of a library card: wide pictures like Continue watching.
+// Titles you already have come first and open their library card; the rest open a simple card of their own.
+const inLib = id => libTitles().some(x => String(x.id) === String(id));
+function openLibCard(id){ typeof id === 'string' && inLib(id) ? openShowPage(id) : openLibMovie(id); }
+async function moreLike(box, id){
+  if(!box) return;
+  const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
+  let list;
+  try{
+    list = await cached('like:' + id, 24, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/recommendations`)
+      .then(d => (d.results || []).filter(m => m.title || m.name).slice(0, 20).map(tv ? slimTV : slim).filter(keep)));
+  }catch(e){ return; }
+  list = list.filter(m => String(m.id) !== String(id));
+  list = [...list.filter(m => inLib(m.id)), ...list.filter(m => !inLib(m.id))].slice(0, 14);
+  if(!list.length || !box.isConnected) return;
+  remember(list);
+  box.innerHTML = `<section class="cwband mlband"><div class="cwh"><span class="cwdot"></span>More like this</div><div class="cwtrack nodrag">${list.map(m => {
+    const pic = m.backdrop ? `<img src="${IMG}w500${m.backdrop}" alt="" loading="lazy">` : `<span class="cwph">${esc(m.title)}</span>`;
+    return `<button class="cwc" data-like="${esc(m.id)}"><span class="cwimg">${pic}</span><span class="cwt">${esc(m.title)}</span><span class="small">${inLib(m.id) ? '<b class="mlown">In your library</b>' : esc([m.year, m.tv ? 'Series' : 'Movie'].filter(Boolean).join(' · '))}</span></button>`; }).join('')}</div></section>`;
+  $$('[data-like]', box).forEach(x => x.onclick = () => openLibCard(pid(x.dataset.like)));
 }
 let showSeason = null;
 // A series opens as a card over the Library (swipe it down, tap outside or press Back to close)
@@ -3286,9 +3308,9 @@ async function showPage(pg, f, card){
       <p class="shov" id="shov"></p>
       <div class="shtabs" id="shtabs"></div>
       <div id="sheps"><div class="msg">Loading episodes…</div></div>
-      <button class="lnk" id="shmore">Ratings, cast and more</button>
+      <div id="shlike"></div>
     </div></div>`;
-  $('#shmore', pg).onclick = () => openMovie(id);
+  moreLike($('#shlike', pg), id);
   const ov = $('#shov', pg); ov.onclick = () => ov.classList.toggle('open');
   // details: backdrop, overview, ratings
   detailsFor(id).then(d => {
