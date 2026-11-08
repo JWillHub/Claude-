@@ -577,6 +577,9 @@ html{touch-action:manipulation}
 .shtabs button{flex:none;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
 .shtabs button.on{border-color:var(--accent);color:var(--text);background:rgba(255,181,71,.1)}
 #shmore{margin-top:18px}
+.updfail{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.updfail button{align-self:flex-start;background:transparent;border:1px solid rgba(255,181,71,.5);color:var(--accent);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
+#appupd{flex-wrap:wrap}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -2439,24 +2442,36 @@ async function checkForUpdate(){
   $('#setTab')?.classList.toggle('upd', latestBuild > APP_BUILD);
   const box = document.getElementById('appupd'); if(box) fillUpdate(box.closest('.sbody') || document);
 }
+let updating = false;   // while a download runs, don't redraw the version row (that would wipe its progress)
 function fillUpdate(b){
-  const box = $('#appupd', b); if(!box || !NATIVE) return;
+  const box = $('#appupd', b); if(!box || !NATIVE || updating) return;
   const newer = latestBuild > APP_BUILD;
   box.innerHTML = `<span class="sic"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
     <span class="slab">Version ${APP_BUILD || '?'}<small>${newer ? `Version ${latestBuild} is ready to install` : latestBuild ? 'Up to date' : 'Checking for updates…'}</small></span>
     ${newer ? '<button class="updbtn" id="appupdbtn">Update</button>' : ''}`;
   const btn = $('#appupdbtn', box); if(!btn) return;
   btn.onclick = async () => {
-    btn.disabled = true; btn.textContent = 'Downloading…';
+    btn.disabled = true; btn.textContent = 'Downloading…'; updating = true;
+    const url = REL + 'rolling-credits.apk?v=' + latestBuild;
+    const C = window.Capacitor || {}, P = (C.Plugins && C.Plugins.RCUpdate) || (C.registerPlugin && C.registerPlugin('RCUpdate'));
+    let handle = null, last = Date.now(), dog = null, gone = false;
+    const fallback = why => {
+      if(gone) return; gone = true; updating = false; clearInterval(dog); handle && handle.remove && handle.remove();
+      btn.disabled = false; btn.textContent = 'Update';
+      box.insertAdjacentHTML('beforeend', `<div class="updfail"><span>${esc(why)}</span><button id="updweb">Download in browser instead</button></div>`);
+      $('#updweb', box).onclick = () => callNative('RCUpdate', 'openInBrowser', { url }).catch(() => { location.href = url; });
+    };
+    try{ if(P && P.addListener) handle = await P.addListener('progress', e => { last = Date.now(); btn.textContent = e.pct >= 0 ? `Downloading… ${e.pct}%` : `Downloading… ${e.mb} MB`; }); }catch(e){}
+    dog = setInterval(() => { if(Date.now() - last > 25000) fallback('The download stalled.'); }, 3000);   // nothing for 25 s: offer the browser route
     try{
-      const r = await callNative('RCUpdate', 'install', { url:REL + 'rolling-credits.apk' });
+      const r = await callNative('RCUpdate', 'install', { url });
+      if(gone) return;
+      updating = false; clearInterval(dog); handle && handle.remove && handle.remove();
       if(r && r.needsPermission){ btn.disabled = false; btn.textContent = 'Update'; toast('Turn on "Allow from this source", come back, then tap Update again'); return; }
       btn.textContent = 'Installing…';
-    }catch(e){ btn.disabled = false; btn.textContent = 'Update'; toast('Update failed: ' + esc(e.message || String(e))); }
+    }catch(e){ fallback(e.message || String(e)); }
   };
 }
-// Back with nothing left to close: go to Discover first, and only then let Android leave the app
-window.rcBack = () => { if(sheetStack.length){ closeAllSheets(); return true; } if(view !== 'discover'){ setView('discover'); return true; } return false; };
 if(NATIVE){ setTimeout(checkForUpdate, 2500); document.addEventListener('visibilitychange', () => { if(!document.hidden) checkForUpdate(); }); }
 // In a browser, Real-Debrid doesn't allow direct calls, so requests go through your small rc-relay Cloudflare worker
 const RD_API = NATIVE ? 'https://api.real-debrid.com/rest/1.0' : 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';

@@ -23,6 +23,17 @@ import java.net.URL;
 @CapacitorPlugin(name = "RCUpdate")
 public class RCUpdatePlugin extends Plugin {
 
+    // Backup route: open the download link in the phone's browser
+    @PluginMethod
+    public void openInBrowser(PluginCall call) {
+        String url = call.getString("url");
+        if (url == null) { call.reject("No address"); return; }
+        Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getContext().startActivity(i);
+        call.resolve();
+    }
+
     @PluginMethod
     public void install(PluginCall call) {
         String url = call.getString("url");
@@ -48,17 +59,33 @@ public class RCUpdatePlugin extends Plugin {
                     c.setInstanceFollowRedirects(false);
                     c.setConnectTimeout(15000);
                     c.setReadTimeout(30000);
+                    c.setRequestProperty("User-Agent", "RollingCredits-Android");
+                    c.setRequestProperty("Accept", "application/octet-stream");
                     int code = c.getResponseCode();
                     if (code >= 300 && code < 400) { u = new URL(u, c.getHeaderField("Location")); c.disconnect(); c = null; continue; }
                     if (code != 200) throw new IOException("HTTP " + code);
                     break;
                 }
                 if (c == null) throw new IOException("too many redirects");
+                long total = c.getContentLengthLong(), got = 0;
+                int lastPct = -1;
                 try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(apk)) {
                     byte[] buf = new byte[65536];
                     int n;
-                    while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    while ((n = in.read(buf)) > 0) {
+                        out.write(buf, 0, n);
+                        got += n;
+                        int pct = total > 0 ? (int) (got * 100 / total) : -1;
+                        if (pct != lastPct) {   // tell the page how far along the download is
+                            lastPct = pct;
+                            JSObject p = new JSObject();
+                            p.put("pct", pct);
+                            p.put("mb", Math.round(got / 104857.6) / 10.0);
+                            notifyListeners("progress", p);
+                        }
+                    }
                 }
+                if (total > 0 && got < total) throw new IOException("download was cut off");
                 Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".updates", apk);
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setDataAndType(uri, "application/vnd.android.package-archive");
@@ -68,7 +95,7 @@ public class RCUpdatePlugin extends Plugin {
                 r.put("started", true);
                 call.resolve(r);
             } catch (Exception e) {
-                call.reject("Download failed: " + e.getMessage());
+                call.reject("Download failed: " + e.getClass().getSimpleName() + (e.getMessage() != null ? " — " + e.getMessage() : ""));
             } finally {
                 if (c != null) c.disconnect();
             }
