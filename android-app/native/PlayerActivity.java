@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -57,7 +58,10 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean done = false, wasPip = false, userPickedTracks = false;
     private String error = null;
     private SharedPreferences prefs;
-    private TextView flash;          // "+10s", "Volume 60%" ... shown briefly in the middle
+    private LinearLayout hud;        // small see-through pill: "+10s", or Volume/Brightness with a thin level bar
+    private TextView hudLabel, hudPct;
+    private FrameLayout hudBar;
+    private View hudFill;
     private AudioManager audio;
     private int swipeMode = 0;       // 0 none, 1 volume, 2 brightness, -1 ignore (horizontal / edge)
     private float swipeStartLevel = 0f;
@@ -110,13 +114,42 @@ public class PlayerActivity extends AppCompatActivity {
         root.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
         view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(isPip() ? View.GONE : visibility));
 
-        flash = new TextView(this);
-        flash.setTextColor(Color.WHITE);
-        flash.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        flash.setPadding(dp(18), dp(10), dp(18), dp(10));
-        flash.setBackgroundColor(0x99000000);
-        flash.setVisibility(View.GONE);
-        root.addView(flash, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        // see-through pill with white text and a thin white level bar
+        hud = new LinearLayout(this);
+        hud.setOrientation(LinearLayout.HORIZONTAL);
+        hud.setGravity(Gravity.CENTER_VERTICAL);
+        hud.setPadding(dp(16), dp(9), dp(16), dp(9));
+        GradientDrawable pill = new GradientDrawable();
+        pill.setColor(0x59000000);
+        pill.setCornerRadius(dp(22));
+        pill.setStroke(dp(1), 0x33FFFFFF);
+        hud.setBackground(pill);
+        hudLabel = new TextView(this);
+        hudLabel.setTextColor(Color.WHITE);
+        hudLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        hudLabel.setLetterSpacing(0.02f);
+        hudBar = new FrameLayout(this);
+        View track = new View(this);
+        GradientDrawable trackBg = new GradientDrawable(); trackBg.setColor(0x40FFFFFF); trackBg.setCornerRadius(dp(2));
+        track.setBackground(trackBg);
+        hudFill = new View(this);
+        GradientDrawable fillBg = new GradientDrawable(); fillBg.setColor(Color.WHITE); fillBg.setCornerRadius(dp(2));
+        hudFill.setBackground(fillBg);
+        hudBar.addView(track, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(3)));
+        hudBar.addView(hudFill, new FrameLayout.LayoutParams(0, dp(3)));
+        hudPct = new TextView(this);
+        hudPct.setTextColor(0xCCFFFFFF);
+        hudPct.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        hudPct.setMinWidth(dp(34));
+        hudPct.setGravity(Gravity.END);
+        hud.addView(hudLabel);
+        LinearLayout.LayoutParams barLp = new LinearLayout.LayoutParams(dp(110), dp(3));
+        barLp.leftMargin = dp(12); barLp.rightMargin = dp(10);
+        hud.addView(hudBar, barLp);
+        hud.addView(hudPct);
+        hud.setAlpha(0f);
+        hud.setVisibility(View.GONE);
+        root.addView(hud, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL));
         audio = (AudioManager) getSystemService(AUDIO_SERVICE);
         setUpGestures();
         setContentView(root);
@@ -211,7 +244,7 @@ public class PlayerActivity extends AppCompatActivity {
                 long dur = exo.getDuration(), to = exo.getCurrentPosition() + (fwd ? 10_000 : -10_000);
                 if (dur != C.TIME_UNSET) to = Math.min(to, dur - 1000);
                 exo.seekTo(Math.max(0, to));
-                show(fwd ? "+10s  \u00bb" : "\u00ab  \u221210s", fwd ? Gravity.CENTER_VERTICAL | Gravity.END : Gravity.CENTER_VERTICAL | Gravity.START);
+                show(fwd ? "+10s  \u00bb" : "\u00ab  \u221210s", -1, fwd ? Gravity.CENTER_VERTICAL | Gravity.END : Gravity.CENTER_VERTICAL | Gravity.START);
                 return true;
             }
 
@@ -231,12 +264,12 @@ public class PlayerActivity extends AppCompatActivity {
                 if (swipeMode == 1) {
                     int max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
                     audio.setStreamVolume(AudioManager.STREAM_MUSIC, Math.round(level * max), 0);
-                    show("Volume " + Math.round(level * 100) + "%", Gravity.CENTER);
+                    show("Volume", level, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
                 } else {
                     WindowManager.LayoutParams lp = getWindow().getAttributes();
                     lp.screenBrightness = Math.max(0.02f, level);
                     getWindow().setAttributes(lp);
-                    show("Brightness " + Math.round(level * 100) + "%", Gravity.CENTER);
+                    show("Brightness", level, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
                 }
                 return true;
             }
@@ -260,17 +293,30 @@ public class PlayerActivity extends AppCompatActivity {
         catch (Exception e) { return 0.5f; }
     }
 
-    private final Runnable hideFlash = () -> flash.setVisibility(View.GONE);
+    private final Runnable hideHud = () -> hud.animate().alpha(0f).setDuration(220).withEndAction(() -> hud.setVisibility(View.GONE)).start();
 
-    private void show(String text, int gravity) {
-        flash.setText(text);
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) flash.getLayoutParams();
+    // level < 0: just the text (skips); otherwise text + thin bar + percent
+    private void show(String text, float level, int gravity) {
+        hudLabel.setText(text);
+        boolean bar = level >= 0;
+        hudBar.setVisibility(bar ? View.VISIBLE : View.GONE);
+        hudPct.setVisibility(bar ? View.VISIBLE : View.GONE);
+        if (bar) {
+            FrameLayout.LayoutParams f = (FrameLayout.LayoutParams) hudFill.getLayoutParams();
+            f.width = Math.round(dp(110) * level);
+            hudFill.setLayoutParams(f);
+            hudPct.setText(Math.round(level * 100) + "%");
+        }
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) hud.getLayoutParams();
         lp.gravity = gravity;
-        lp.leftMargin = lp.rightMargin = dp(70);
-        flash.setLayoutParams(lp);
-        flash.setVisibility(View.VISIBLE);
-        flash.removeCallbacks(hideFlash);
-        flash.postDelayed(hideFlash, 700);
+        lp.topMargin = (gravity & Gravity.TOP) == Gravity.TOP ? dp(26) : 0;
+        lp.leftMargin = lp.rightMargin = (gravity & Gravity.TOP) == Gravity.TOP ? 0 : dp(70);
+        hud.setLayoutParams(lp);
+        hud.removeCallbacks(hideHud);
+        hud.animate().cancel();
+        if (hud.getVisibility() != View.VISIBLE) { hud.setVisibility(View.VISIBLE); hud.setAlpha(0f); }
+        hud.animate().alpha(1f).setDuration(120).start();
+        hud.postDelayed(hideHud, 800);
     }
 
     // ---- Remember track choices ----
