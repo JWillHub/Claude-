@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(RCPlayerPlugin.class);   // the page opens the native player through this
         registerPlugin(RCUpdatePlugin.class);   // and installs app updates through this
+        registerPlugin(RCFilesPlugin.class);    // and saves backups through this
         super.onCreate(savedInstanceState);
 
         // Android's back swipe / back button: step back inside the app (close the open card, leave a page,

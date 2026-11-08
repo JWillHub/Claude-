@@ -1,44 +1,67 @@
 package io.github.jwillhub.rollingcredits;
 
+import android.app.PictureInPictureParams;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Rational;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.view.WindowManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.media3.cast.CastPlayer;
+import androidx.media3.cast.SessionAvailabilityListener;
 import androidx.media3.common.C;
+import androidx.media3.common.Format;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
+import androidx.media3.common.MimeTypes;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
+import androidx.media3.common.TrackSelectionParameters;
+import androidx.media3.common.Tracks;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
+import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.extractor.DefaultExtractorsFactory;
-import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.ui.PlayerView;
+import androidx.mediarouter.app.MediaRouteButton;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
 
 // Full-screen player. Uses the phone's own video decoders (4K HEVC included) and an FFmpeg
 // decoder for audio the phone can't play (DTS, TrueHD), so MKV files play like they do in VLC.
+// Also: remembers your audio/subtitle language, shrinks to picture-in-picture when you leave,
+// and can hand the video to a Chromecast / Google TV.
 public class PlayerActivity extends AppCompatActivity {
-    private ExoPlayer player;
-    private boolean done = false;
+    private ExoPlayer exo;
+    private CastPlayer cast;
+    private Player current;
+    private PlayerView view;
+    private LinearLayout bar;
+    private MediaItem item;
+    private boolean done = false, wasPip = false, userPickedTracks = false;
     private String error = null;
+    private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,26 +72,27 @@ public class PlayerActivity extends AppCompatActivity {
         WindowInsetsControllerCompat bars = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         bars.hide(WindowInsetsCompat.Type.systemBars());
         bars.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        prefs = getSharedPreferences("player", MODE_PRIVATE);
 
         Intent in = getIntent();
         String url = in.getStringExtra("url");
         String title = in.getStringExtra("title");
         long startMs = in.getLongExtra("startMs", 0L);
 
-        PlayerView view = new PlayerView(this);
+        view = new PlayerView(this);
         view.setBackgroundColor(Color.BLACK);
         view.setShowSubtitleButton(true);
         view.setKeepScreenOn(true);
 
-        // Top bar over the video: a back arrow and the title. Shows and hides with the player's controls.
+        // Top bar over the video: back arrow, title, cast button. Shows and hides with the player's controls.
         FrameLayout root = new FrameLayout(this);
         root.addView(view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        LinearLayout bar = new LinearLayout(this);
+        bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
         bar.setPadding(dp(28), dp(14), dp(28), dp(14));
         TextView back = new TextView(this);
-        back.setText("\u2190");
+        back.setText("←");
         back.setTextColor(Color.WHITE);
         back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
         back.setPadding(dp(10), dp(2), dp(16), dp(6));
@@ -85,13 +109,13 @@ public class PlayerActivity extends AppCompatActivity {
         bar.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         bar.setBackgroundColor(0x66000000);
         root.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
-        view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(visibility));
+        view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(isPip() ? View.GONE : visibility));
         setContentView(root);
 
         DefaultRenderersFactory renderers = new DefaultRenderersFactory(this)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true);
-        // Start after ~1 s of video (was 2.5 s); keep up to 3 minutes ready, capped at 300 MB of memory while playing
+        // Start after ~1 s of video; keep up to 3 minutes ready, capped at 300 MB of memory while playing
         DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
             .setBufferDurationsMs(50_000, 180_000, 1_000, 2_500)
             .setTargetBufferBytes(300 * 1024 * 1024)
@@ -105,38 +129,159 @@ public class PlayerActivity extends AppCompatActivity {
         // Files without a seek index (some AVI/TS) can still be skipped through quickly; MKV and MP4 use their own index
         DefaultExtractorsFactory extractors = new DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true);
         DefaultMediaSourceFactory sources = new DefaultMediaSourceFactory(new DefaultDataSource.Factory(this, http), extractors);
-        player = new ExoPlayer.Builder(this, renderers)
+        exo = new ExoPlayer.Builder(this, renderers)
             .setLoadControl(loadControl)
             .setMediaSourceFactory(sources)
             .setSeekBackIncrementMs(10_000)
             .setSeekForwardIncrementMs(10_000)
             .build();
-        view.setPlayer(player);
 
-        MediaItem item = new MediaItem.Builder()
+        // Start with the audio and subtitle languages you picked last time
+        String audio = prefs.getString("audioLang", null), text = prefs.getString("textLang", null);
+        TrackSelectionParameters.Builder tp = exo.getTrackSelectionParameters().buildUpon();
+        if (audio != null && !audio.isEmpty()) tp.setPreferredAudioLanguage(audio);
+        if (text != null && !text.isEmpty()) tp.setPreferredTextLanguage(text);
+        exo.setTrackSelectionParameters(tp.build());
+
+        item = new MediaItem.Builder()
             .setUri(url)
+            .setMimeType(mimeFor(url))
             .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build())
             .build();
-        player.setMediaItem(item);
-        if (startMs > 0) player.seekTo(startMs);
-        player.addListener(new Player.Listener() {
+        exo.setMediaItem(item);
+        if (startMs > 0) exo.seekTo(startMs);
+        exo.addListener(new Player.Listener() {
             @Override
             public void onPlaybackStateChanged(int state) {
-                if (state == Player.STATE_ENDED) close(true);
+                if (state == Player.STATE_ENDED && current == exo) close(true);
             }
             @Override
             public void onPlayerError(@NonNull PlaybackException e) {
                 error = e.getErrorCodeName();
                 close(false);
             }
+            @Override
+            public void onTrackSelectionParametersChanged(@NonNull TrackSelectionParameters p) {
+                userPickedTracks = true;   // you changed audio or subtitles in the player's menu
+            }
+            @Override
+            public void onTracksChanged(@NonNull Tracks tracks) {
+                if (userPickedTracks) rememberTracks(tracks);
+            }
+            @Override
+            public void onIsPlayingChanged(boolean playing) { updatePip(); }
         });
-        player.prepare();
-        player.setPlayWhenReady(true);
+        current = exo;
+        view.setPlayer(exo);
+        exo.prepare();
+        exo.setPlayWhenReady(true);
+
+        setUpCast();
+        updatePip();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() { close(false); }
         });
+    }
+
+    // ---- Remember track choices ----
+    private void rememberTracks(Tracks tracks) {
+        String audio = null, text = "";
+        for (Tracks.Group g : tracks.getGroups()) {
+            for (int i = 0; i < g.length; i++) {
+                if (!g.isTrackSelected(i)) continue;
+                Format f = g.getTrackFormat(i);
+                if (g.getType() == C.TRACK_TYPE_AUDIO && f.language != null) audio = f.language;
+                if (g.getType() == C.TRACK_TYPE_TEXT) text = f.language != null ? f.language : "und";
+            }
+        }
+        SharedPreferences.Editor e = prefs.edit();
+        if (audio != null) e.putString("audioLang", audio);
+        e.putString("textLang", text);   // "" means subtitles off
+        e.apply();
+        userPickedTracks = false;
+    }
+
+    // ---- Cast to a TV ----
+    private void setUpCast() {
+        CastContext ctx;
+        try { ctx = CastContext.getSharedInstance(this); } catch (Exception e) { return; }   // no Google Play services: no casting
+        try {
+            ContextThemeWrapper dark = new ContextThemeWrapper(this, androidx.mediarouter.R.style.Theme_MediaRouter);
+            MediaRouteButton button = new MediaRouteButton(dark);
+            CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), button);
+            bar.addView(button, new LinearLayout.LayoutParams(dp(44), dp(44)));
+        } catch (Exception ignored) {}
+        cast = new CastPlayer(ctx);
+        cast.setSessionAvailabilityListener(new SessionAvailabilityListener() {
+            @Override public void onCastSessionAvailable() { switchTo(cast); }
+            @Override public void onCastSessionUnavailable() { switchTo(exo); }
+        });
+        cast.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (state == Player.STATE_ENDED && current == cast) close(true);
+            }
+        });
+        if (cast.isCastSessionAvailable()) switchTo(cast);
+    }
+
+    // Move playback between the phone and the TV, keeping your place
+    private void switchTo(Player target) {
+        if (target == null || target == current) return;
+        long pos = current.getCurrentPosition();
+        current.setPlayWhenReady(false);
+        if (current == exo) exo.pause(); else current.stop();
+        target.setMediaItem(item, pos);
+        target.prepare();
+        target.setPlayWhenReady(true);
+        current = target;
+        view.setPlayer(target);
+        view.setKeepScreenOn(target == exo);
+    }
+
+    // ---- Picture-in-picture ----
+    private boolean isPip() { return Build.VERSION.SDK_INT >= 24 && isInPictureInPictureMode(); }
+
+    private void updatePip() {
+        if (Build.VERSION.SDK_INT < 26) return;
+        try { setPictureInPictureParams(pipParams()); } catch (Exception ignored) {}
+    }
+
+    private PictureInPictureParams pipParams() {
+        PictureInPictureParams.Builder b = new PictureInPictureParams.Builder().setAspectRatio(new Rational(16, 9));
+        if (Build.VERSION.SDK_INT >= 31) {
+            b.setAutoEnterEnabled(current == exo && exo != null && exo.isPlaying());   // swipe home while playing: keep watching in a small window
+            b.setSeamlessResizeEnabled(true);
+        }
+        return b.build();
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if (Build.VERSION.SDK_INT >= 26 && Build.VERSION.SDK_INT < 31 && current == exo && exo.isPlaying()) {
+            try { enterPictureInPictureMode(pipParams()); } catch (Exception ignored) {}
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean inPip, @NonNull Configuration config) {
+        super.onPictureInPictureModeChanged(inPip, config);
+        if (inPip) wasPip = true;
+        view.setUseController(!inPip);
+        bar.setVisibility(inPip ? View.GONE : View.VISIBLE);
+    }
+
+    private static String mimeFor(String url) {
+        String u = url == null ? "" : url.toLowerCase().split("\\?")[0];
+        if (u.endsWith(".mkv")) return MimeTypes.VIDEO_MATROSKA;
+        if (u.endsWith(".webm")) return MimeTypes.VIDEO_WEBM;
+        if (u.endsWith(".m3u8")) return MimeTypes.APPLICATION_M3U8;
+        if (u.endsWith(".avi")) return MimeTypes.VIDEO_AVI;
+        if (u.endsWith(".ts")) return MimeTypes.VIDEO_MP2T;
+        return MimeTypes.VIDEO_MP4;
     }
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
@@ -146,9 +291,9 @@ public class PlayerActivity extends AppCompatActivity {
         if (done) return;
         done = true;
         Intent out = new Intent();
-        if (player != null) {
-            long pos = player.getCurrentPosition();
-            long dur = player.getDuration();
+        if (current != null) {
+            long pos = current.getCurrentPosition();
+            long dur = current.getDuration();
             out.putExtra("positionMs", pos);
             out.putExtra("durationMs", dur == C.TIME_UNSET ? 0L : dur);
         }
@@ -161,12 +306,21 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (player != null && !isFinishing()) player.pause();
+        // keep playing in picture-in-picture or on the TV; otherwise pause
+        if (exo != null && current == exo && !isFinishing() && !isPip()) exo.pause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // the floating window was closed: save your place and return
+        if (wasPip && !isFinishing() && current == exo) close(false);
     }
 
     @Override
     protected void onDestroy() {
-        if (player != null) { player.release(); player = null; }
+        if (cast != null) { cast.setSessionAvailabilityListener(null); cast.release(); cast = null; }
+        if (exo != null) { exo.release(); exo = null; }
         super.onDestroy();
     }
 }
