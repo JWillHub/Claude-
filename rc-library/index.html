@@ -579,6 +579,19 @@ html{touch-action:manipulation}
 .updfail{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted)}
 .updfail button{align-self:flex-start;background:transparent;border:1px solid rgba(255,181,71,.5);color:var(--accent);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
 #appupd{flex-wrap:wrap}
+.cwband{margin:12px 16px 4px;padding:14px 0 12px;border-radius:18px;background:linear-gradient(160deg,rgba(255,181,71,.10),rgba(255,111,97,.05) 60%,transparent),var(--card);border:1px solid rgba(255,181,71,.28)}
+.cwh{display:flex;align-items:center;gap:8px;padding:0 14px 10px;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--accent)}
+.cwdot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.cwtrack{display:flex;gap:12px;overflow-x:auto;padding:0 14px;scroll-padding:0 14px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.cwc{flex:none;width:208px;scroll-snap-align:start;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;font:inherit}
+.cwimg{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--card2);position:relative}
+.cwimg img{width:100%;height:100%;object-fit:cover;display:block}
+.cwph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;color:var(--muted);font-weight:700;font-size:13px}
+.cwbar{display:block;height:3px;border-radius:2px;background:var(--line);margin:6px 0 4px;overflow:hidden}.cwbar b{display:block;height:100%;background:var(--accent)}
+.cwt{font-weight:750;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cwlib{margin:18px 20px 0;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted)}
+.shwrap .shhero{margin:0 -16px;border-radius:0}
+.shwrap .pad{padding-left:0;padding-right:0}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -3129,25 +3142,30 @@ function drawLibrary(b){
       k => { libType = k; libPick = 'all'; paint(); scrollTo(0, 0); });
     $('#lpn', b).onclick = () => pickSheet(libType === 'movie' ? 'Movies' : libType === 'tv' ? 'Series' : 'Titles',
       [{ k:'all', label:libType === 'movie' ? 'All movies' : libType === 'tv' ? 'All series' : 'All titles' }, ...inType.map(f => ({ k:String(f.id), label:f.title + (f.year ? ' (' + f.year + ')' : '') }))], libPick,
-      k => { if(k !== 'all' && libType !== 'movie' && String(k).startsWith('tv')){ openShowPage(k); return; } libPick = k; paint(); scrollTo(0, 0); });
+      k => { if(k !== 'all' && String(k).startsWith('tv')){ openShowPage(k); return; } libPick = k; paint(); scrollTo(0, 0); });
     fitPills($('#lpk', b));
 
     $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings to see your library.'
       : rdLib.synced ? `${films.length} movie${films.length === 1 ? '' : 's'} · ${shows.length} series${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })} · pull down to sync`
       : 'Not synced yet. Pull down to sync.';
-    // one series picked: its own page instead of the grid
-    $('#lmain', b).hidden = !!(picked && picked.tv);
-    if(picked && picked.tv){ showPage($('#lshowpg', b), picked); return; }
-    $('#lshowpg', b).innerHTML = '';
+
 
     // Continue watching, above the posters (hidden while one title is picked)
     const cont = picked ? [] : Object.entries(prog).filter(([, p]) => p.link && p.d && (!p.tid || rdLib.items[p.tid]))
       .filter(([, p]) => libType === 'all' || (libType === 'tv') === (typeof p.id === 'string')).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
-    $('#lcont', b).innerHTML = cont.length ? `<section class="row" style="margin-top:10px"><div class="rowhead"><div><h3>Continue watching</h3></div></div><div class="track">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
-      const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled', poster:mm.poster || p.poster || f0.poster };
-      return `<div class="lcwrap"><button class="lcw" data-ck="${esc(k)}">${poster(f.poster, '', 'w185', f.title)}<i class="lbar" style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i>
-        <span>${esc(f.title)}</span><span class="small">${p.label ? esc(p.label) + ' · ' : ''}${clock(p.d - p.t)} left</span></button>
-        </div>`; }).join('')}</div></section>` : '';
+    $('#lcont', b).innerHTML = cont.length ? `<section class="cwband"><div class="cwh"><span class="cwdot"></span>Continue watching</div><div class="cwtrack nodrag">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
+      const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled' };
+      return `<button class="lcw cwc" data-ck="${esc(k)}" data-cid="${esc(p.id)}" data-cl="${esc(p.label || '')}"><span class="cwimg"><span class="cwph">${esc(f.title)}</span></span><i class="cwbar"><b style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></b></i>
+        <span class="cwt">${esc(f.title)}</span><span class="small">${p.label ? esc(p.label) + ' · ' : ''}${clock(p.d - p.t)} left</span></button>`; }).join('')}</div></section>
+      <div class="cwlib">Your library</div>` : '';
+    // wide pictures: the episode's still for shows, the backdrop for movies
+    $$('.cwc', b).forEach(x => {
+      const id = pid(x.dataset.cid), ep = (x.dataset.cl.match(/S(\d+)\s*E(\d+)/) || []);
+      const put = path => { if(path && x.isConnected) $('.cwimg', x).innerHTML = `<img src="${IMG}w500${path}" alt="" loading="lazy">`; };
+      const bd = () => detailsFor(id).then(d => put(d.backdrop)).catch(() => {});
+      if(typeof id === 'string' && ep[1]) seasonEps(+String(id).slice(2), +ep[1]).then(l => { const e = l.find(z => z.e === +ep[2]); e && e.still ? put(e.still) : bd(); }).catch(bd);
+      else bd();
+    });
     $$('[data-ck]', b).forEach(x => longPress(x, () => confirmRemoveCont(x.dataset.ck, paint)));
     $$('[data-ck]', b).forEach(x => x.onclick = e => {
       if(x._held){ x._held = false; e.preventDefault(); return; }
@@ -3215,17 +3233,14 @@ function drawLibrary(b){
 })();
 // ---- A series' own page in the Library tab: backdrop, details, season tabs, episodes ----
 let showSeason = null;
+// A series opens as a card over the Library (swipe it down, tap outside or press Back to close)
 function openShowPage(id){
-  libType = 'tv'; libPick = String(id); showSeason = null;
-  history.pushState({ libshow:1 }, '');   // Back (or the back swipe) returns to the grid
-  const lib = $('#v-library > div'); if(lib && lib._paint) lib._paint();
-  scrollTo(0, 0);
+  const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
+  showSeason = null;
+  const s = sheet('<div class="shwrap"></div>', { tall:true });
+  showPage($('.shwrap', s.body), f, s);
 }
-function closeShowPage(){ libPick = 'all'; showSeason = null; const lib = $('#v-library > div'); if(lib && lib._paint) lib._paint(); scrollTo(0, 0); }
-addEventListener('popstate', () => {
-  if(view === 'library' && libPick !== 'all' && String(libPick).startsWith('tv') && !sheetStack.length && !(history.state && history.state.libshow)) closeShowPage();
-});
-async function showPage(pg, f){
+async function showPage(pg, f, card){
   const id = f.id, tid = +String(id).slice(2);
   pg.innerHTML = `<div class="shp">
     <div class="shhero" id="shhero"><button class="shback" id="shback">‹ Library</button>
@@ -3237,7 +3252,7 @@ async function showPage(pg, f){
       <div id="sheps"><div class="msg">Loading episodes…</div></div>
       <button class="btn ghost" id="shmore">Ratings, cast &amp; more</button>
     </div></div>`;
-  $('#shback', pg).onclick = () => history.back();
+  $('#shback', pg).onclick = () => card ? card.close() : history.back();
   $('#shmore', pg).onclick = () => openMovie(id);
   const ov = $('#shov', pg); ov.onclick = () => ov.classList.toggle('open');
   // details: backdrop, overview, ratings
