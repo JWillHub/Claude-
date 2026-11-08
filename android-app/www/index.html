@@ -470,7 +470,7 @@ html{touch-action:manipulation}
 /* marquee type */
 .vt,.disp,.imdbbox b,.epinfo b,.hero h2,.rowhead h3,.sname,.month,.stat b,.mvhead h2,.runhead h2,.card .cap b,.rpc .rph b,.sh h2.stitle,.rk,.done .big,.ratebox .rv,.runctl .rv,.rpc .rv,.day b{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
 .hero h2{font-size:31px}
-#setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}
+#setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}\n.cchips{display:flex;flex-wrap:wrap;gap:6px}.pp.cchip{display:inline-flex;width:auto;flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:650;font-size:13px}
 .setpage{padding:4px 16px 40px}.setpage>.stitle{margin:8px 4px 0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:30px}
 .sgroup{margin-top:20px}
 .sgh{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}
@@ -2041,7 +2041,7 @@ async function openShow(id){
     $('#mm', b).textContent = [yrs, d.seasons ? d.seasons + ' season' + (d.seasons > 1 ? 's' : '') : '', d.network].filter(Boolean).join(' · ');
     $('#md', b).textContent = d.gnames.slice(0, 3).join(', ');
     $('#mov', b).textContent = d.overview;
-    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
+    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="cchips">${d.castL.slice(0, 10).map(p => `<button class="pp cchip" data-person="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>`;
     const acts = () => { const box = $('#mact', b); if(!box) return;
       box.innerHTML = `${d.trailer ? `<a href="${esc(trailerURL(d.trailer))}" target="_blank" rel="noopener">▶ Trailer</a>` : ''}<button id="mwl" class="${watch[id] ? 'on' : ''}">${BOOK}${watch[id] ? 'On watchlist' : 'Watchlist'}</button>`;
       $('#mwl', b).onclick = () => toggleWatch(filmOf(id)); };
@@ -2139,7 +2139,7 @@ async function openMovie(id){
     $('#md', b).innerHTML = d.dirs && d.dirs.length ? 'Directed by ' + d.dirs.map(p => `<button class="plink" data-person="${p.id}">${esc(p.name)}</button>`).join(', ') : '';
     $('#mov', b).textContent = d.overview;
     $('#mvote', b).textContent = d.vote ? `TMDB average ${d.vote.toFixed(1)}/10` : '';
-    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
+    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="cchips">${d.castL.slice(0, 10).map(p => `<button class="pp cchip" data-person="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>`;
     trailerKey = d.trailer; acts(trailerKey);
     $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
     if(d.imdb){
