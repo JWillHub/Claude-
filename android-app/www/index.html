@@ -667,7 +667,7 @@ html{touch-action:manipulation}
 <script>
 /* ================= basics ================= */
 const IMG = 'https://image.tmdb.org/t/p/';
-const K_LOG = 'reellog.entries', K_RATE = 'reellog.ratings', K_KEY = 'reellog.tmdbkey', CK = 'reellog.c3.';
+const K_LOG = 'rclib.entries', K_RATE = 'rclib.ratings', K_KEY = 'rclib.tmdbkey', CK = 'rclib.c3.';
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){
@@ -716,11 +716,11 @@ if(!ratings){            // migrate ratings from older diary-only data
 (function prune(){ try{
   for(let i = localStorage.length - 1; i >= 0; i--){
     const k = localStorage.key(i);
-    if(k && (k.startsWith('reellog.c.') || k.startsWith('reellog.c2.') || (k.startsWith(CK) && Date.now() - (store.get(k,{}).t||0) > 8*86400e3))) localStorage.removeItem(k);
+    if(k && (k.startsWith('rclib.c.') || k.startsWith('rclib.c2.') || (k.startsWith(CK) && Date.now() - (store.get(k,{}).t||0) > 8*86400e3))) localStorage.removeItem(k);
   }
 }catch(e){} })();
 
-const K_WATCH = 'reellog.watch', K_HIDE = 'reellog.hiderated', K_OMDB = 'reellog.omdbkey', K_SEEN = 'reellog.seen', K_FAV = 'reellog.favpeople';
+const K_WATCH = 'rclib.watch', K_HIDE = 'rclib.hiderated', K_OMDB = 'rclib.omdbkey', K_SEEN = 'rclib.seen', K_FAV = 'rclib.favpeople';
 let watch = store.get(K_WATCH, {});
 let seen = store.get(K_SEEN, {});   // watched, not rated yet
 let favs = store.get(K_FAV, {});    // favorite actors and directors
@@ -1198,7 +1198,7 @@ let genrePageTitle = null;
 let pageSource = null;
 function setPageSource(src){ pageSource = src; }
 // where each carousel was left: the card's id, by carousel
-const K_CARPOS = 'reellog.carpos';
+const K_CARPOS = 'rclib.carpos';
 function savePos(key, val){
   const all = store.get(K_CARPOS, {});
   all[key] = { ...(all[key] || {}), ...val, at:Date.now() };
