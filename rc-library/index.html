@@ -562,6 +562,8 @@ html{touch-action:manipulation}
 .upnth img{width:100%;height:100%;object-fit:cover}
 .upnt{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:24px;line-height:1.1}
 .upnbar{height:5px;border-radius:3px;background:var(--line);margin:16px 0 4px;overflow:hidden}.upnbar i{display:block;height:100%;width:0;background:var(--accent);transition:width 1s linear}
+.ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,0);z-index:60;opacity:0;pointer-events:none;
+  background:var(--card);border:1px solid rgba(255,181,71,.45);color:var(--text);font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;transition:opacity .15s;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -3155,11 +3157,37 @@ function drawLibrary(b){
     if(btn.isConnected){ btn.textContent = 'Sync with Real-Debrid'; btn.disabled = false; }
   };
   $('#lsync', b).onclick = sync;
+  b._sync = sync;
   paint();
   if(store.get(K_RD, '') && Date.now() - rdLib.synced > 20e3) sync();   // every visit (one quick request), so removals and additions show right away
   else backfillMeta().then(ch => ch && paint());
   return paint;
 }
+// Pull down at the top of the Library tab to check Real-Debrid right away
+(function pullToRefresh(){
+  let y0 = null, pulled = 0, el = null;
+  const ready = () => view === 'library' && !sheetStack.length && window.scrollY <= 0 && store.get(K_RD, '');
+  const bar = () => el || (el = Object.assign(document.createElement('div'), { className:'ptr' }), document.body.appendChild(el), el);
+  document.addEventListener('touchstart', e => { y0 = ready() && e.touches.length === 1 ? e.touches[0].clientY : null; pulled = 0; }, { passive:true });
+  document.addEventListener('touchmove', e => {
+    if(y0 == null) return;
+    pulled = Math.max(0, e.touches[0].clientY - y0);
+    if(pulled < 8){ bar().style.opacity = 0; return; }
+    const p = Math.min(pulled / 90, 1), b = bar();
+    b.textContent = p >= 1 ? 'Release to sync' : 'Pull to sync';
+    b.style.opacity = p; b.style.transform = `translate(-50%, ${Math.min(pulled * 0.5, 50)}px)`;
+  }, { passive:true });
+  document.addEventListener('touchend', () => {
+    if(y0 == null) return;
+    const go = pulled >= 90; y0 = null;
+    const b = bar();
+    if(go){
+      const lib = $('#v-library > div');
+      b.textContent = 'Syncing…';
+      Promise.resolve(lib && lib._sync && lib._sync()).finally(() => { b.style.opacity = 0; b.style.transform = 'translate(-50%, 0)'; });
+    } else { b.style.opacity = 0; b.style.transform = 'translate(-50%, 0)'; }
+  }, { passive:true });
+})();
 // One series picked: a poster for each season you have
 function showSeasonCards(f, eps, posters){
   if(eps) return [...eps.keys()].sort((a, c) => (a || 999) - (c || 999)).map(sn => seasonCard(f, sn, eps.get(sn).length, posters && posters.get(sn))).join('');

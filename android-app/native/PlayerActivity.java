@@ -9,7 +9,10 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.media.AudioManager;
 import android.util.Rational;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -54,6 +57,10 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean done = false, wasPip = false, userPickedTracks = false;
     private String error = null;
     private SharedPreferences prefs;
+    private TextView flash;          // "+10s", "Volume 60%" ... shown briefly in the middle
+    private AudioManager audio;
+    private int swipeMode = 0;       // 0 none, 1 volume, 2 brightness, -1 ignore (horizontal / edge)
+    private float swipeStartLevel = 0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +109,16 @@ public class PlayerActivity extends AppCompatActivity {
         bar.setBackgroundColor(0x66000000);
         root.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
         view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(isPip() ? View.GONE : visibility));
+
+        flash = new TextView(this);
+        flash.setTextColor(Color.WHITE);
+        flash.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        flash.setPadding(dp(18), dp(10), dp(18), dp(10));
+        flash.setBackgroundColor(0x99000000);
+        flash.setVisibility(View.GONE);
+        root.addView(flash, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        audio = (AudioManager) getSystemService(AUDIO_SERVICE);
+        setUpGestures();
         setContentView(root);
 
         DefaultRenderersFactory renderers = new DefaultRenderersFactory(this)
@@ -174,6 +191,86 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() { close(false); }
         });
+    }
+
+    // ---- Touch gestures ----
+    // Double-tap right/left: skip 10 s forward/back. Swipe up/down on the right: volume; on the left: brightness
+    // (this screen only). Edges are left alone so Android's own back and notification swipes still work.
+    private void setUpGestures() {
+        GestureDetector gd = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override public boolean onDown(@NonNull MotionEvent e) { swipeMode = 0; return true; }
+
+            @Override public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+                if (view.isControllerFullyVisible()) view.hideController(); else view.showController();
+                return true;
+            }
+
+            @Override public boolean onDoubleTap(@NonNull MotionEvent e) {
+                if (exo == null) return true;
+                boolean fwd = e.getX() > view.getWidth() / 2f;
+                long dur = exo.getDuration(), to = exo.getCurrentPosition() + (fwd ? 10_000 : -10_000);
+                if (dur != C.TIME_UNSET) to = Math.min(to, dur - 1000);
+                exo.seekTo(Math.max(0, to));
+                show(fwd ? "+10s  \u00bb" : "\u00ab  \u221210s", fwd ? Gravity.CENTER_VERTICAL | Gravity.END : Gravity.CENTER_VERTICAL | Gravity.START);
+                return true;
+            }
+
+            @Override public boolean onScroll(MotionEvent start, @NonNull MotionEvent now, float dx, float dy) {
+                if (start == null) return false;
+                float w = view.getWidth(), h = view.getHeight();
+                if (swipeMode == 0) {
+                    float mx = Math.abs(now.getX() - start.getX()), my = Math.abs(now.getY() - start.getY());
+                    if (mx < dp(12) && my < dp(12)) return true;   // not moved enough to tell yet
+                    boolean edge = start.getY() < h * 0.12f || start.getY() > h * 0.88f || start.getX() < w * 0.06f || start.getX() > w * 0.94f;
+                    if (edge || my < mx * 1.5f) { swipeMode = -1; return false; }
+                    swipeMode = start.getX() > w / 2f ? 1 : 2;
+                    swipeStartLevel = swipeMode == 1 ? volumeLevel() : brightnessLevel();
+                }
+                if (swipeMode < 0) return false;
+                float level = Math.max(0f, Math.min(1f, swipeStartLevel + (start.getY() - now.getY()) / (h * 0.7f)));
+                if (swipeMode == 1) {
+                    int max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, Math.round(level * max), 0);
+                    show("Volume " + Math.round(level * 100) + "%", Gravity.CENTER);
+                } else {
+                    WindowManager.LayoutParams lp = getWindow().getAttributes();
+                    lp.screenBrightness = Math.max(0.02f, level);
+                    getWindow().setAttributes(lp);
+                    show("Brightness " + Math.round(level * 100) + "%", Gravity.CENTER);
+                }
+                return true;
+            }
+        });
+        view.setOnTouchListener((v, e) -> {
+            if (isPip()) return false;
+            gd.onTouchEvent(e);
+            return true;   // the player's own tap-to-show-controls is handled above
+        });
+    }
+
+    private float volumeLevel() {
+        int max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        return max > 0 ? audio.getStreamVolume(AudioManager.STREAM_MUSIC) / (float) max : 0.5f;
+    }
+
+    private float brightnessLevel() {
+        float b = getWindow().getAttributes().screenBrightness;
+        if (b >= 0) return b;
+        try { return android.provider.Settings.System.getInt(getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS) / 255f; }
+        catch (Exception e) { return 0.5f; }
+    }
+
+    private final Runnable hideFlash = () -> flash.setVisibility(View.GONE);
+
+    private void show(String text, int gravity) {
+        flash.setText(text);
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) flash.getLayoutParams();
+        lp.gravity = gravity;
+        lp.leftMargin = lp.rightMargin = dp(70);
+        flash.setLayoutParams(lp);
+        flash.setVisibility(View.VISIBLE);
+        flash.removeCallbacks(hideFlash);
+        flash.postDelayed(hideFlash, 700);
     }
 
     // ---- Remember track choices ----
