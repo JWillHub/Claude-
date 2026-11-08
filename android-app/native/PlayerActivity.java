@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Rational;
 import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +24,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
-import androidx.media3.cast.CastPlayer;
-import androidx.media3.cast.SessionAvailabilityListener;
 import androidx.media3.common.C;
 import androidx.media3.common.Format;
 import androidx.media3.common.MediaItem;
@@ -44,17 +41,12 @@ import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.extractor.DefaultExtractorsFactory;
 import androidx.media3.ui.PlayerView;
-import androidx.mediarouter.app.MediaRouteButton;
-import com.google.android.gms.cast.framework.CastButtonFactory;
-import com.google.android.gms.cast.framework.CastContext;
 
 // Full-screen player. Uses the phone's own video decoders (4K HEVC included) and an FFmpeg
 // decoder for audio the phone can't play (DTS, TrueHD), so MKV files play like they do in VLC.
-// Also: remembers your audio/subtitle language, shrinks to picture-in-picture when you leave,
-// and can hand the video to a Chromecast / Google TV.
+// Also: remembers your audio/subtitle language and shrinks to picture-in-picture when you leave.
 public class PlayerActivity extends AppCompatActivity {
     private ExoPlayer exo;
-    private CastPlayer cast;
     private Player current;
     private PlayerView view;
     private LinearLayout bar;
@@ -84,7 +76,7 @@ public class PlayerActivity extends AppCompatActivity {
         view.setShowSubtitleButton(true);
         view.setKeepScreenOn(true);
 
-        // Top bar over the video: back arrow, title, cast button. Shows and hides with the player's controls.
+        // Top bar over the video: back arrow and title. Shows and hides with the player's controls.
         FrameLayout root = new FrameLayout(this);
         root.addView(view, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         bar = new LinearLayout(this);
@@ -176,7 +168,6 @@ public class PlayerActivity extends AppCompatActivity {
         exo.prepare();
         exo.setPlayWhenReady(true);
 
-        setUpCast();
         updatePip();
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -201,44 +192,6 @@ public class PlayerActivity extends AppCompatActivity {
         e.putString("textLang", text);   // "" means subtitles off
         e.apply();
         userPickedTracks = false;
-    }
-
-    // ---- Cast to a TV ----
-    private void setUpCast() {
-        CastContext ctx;
-        try { ctx = CastContext.getSharedInstance(this); } catch (Exception e) { return; }   // no Google Play services: no casting
-        try {
-            ContextThemeWrapper dark = new ContextThemeWrapper(this, androidx.mediarouter.R.style.Theme_MediaRouter);
-            MediaRouteButton button = new MediaRouteButton(dark);
-            CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), button);
-            bar.addView(button, new LinearLayout.LayoutParams(dp(44), dp(44)));
-        } catch (Exception ignored) {}
-        cast = new CastPlayer(ctx);
-        cast.setSessionAvailabilityListener(new SessionAvailabilityListener() {
-            @Override public void onCastSessionAvailable() { switchTo(cast); }
-            @Override public void onCastSessionUnavailable() { switchTo(exo); }
-        });
-        cast.addListener(new Player.Listener() {
-            @Override
-            public void onPlaybackStateChanged(int state) {
-                if (state == Player.STATE_ENDED && current == cast) close(true);
-            }
-        });
-        if (cast.isCastSessionAvailable()) switchTo(cast);
-    }
-
-    // Move playback between the phone and the TV, keeping your place
-    private void switchTo(Player target) {
-        if (target == null || target == current) return;
-        long pos = current.getCurrentPosition();
-        current.setPlayWhenReady(false);
-        if (current == exo) exo.pause(); else current.stop();
-        target.setMediaItem(item, pos);
-        target.prepare();
-        target.setPlayWhenReady(true);
-        current = target;
-        view.setPlayer(target);
-        view.setKeepScreenOn(target == exo);
     }
 
     // ---- Picture-in-picture ----
@@ -319,7 +272,6 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (cast != null) { cast.setSessionAvailabilityListener(null); cast.release(); cast = null; }
         if (exo != null) { exo.release(); exo = null; }
         super.onDestroy();
     }
