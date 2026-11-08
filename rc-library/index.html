@@ -564,6 +564,18 @@ html{touch-action:manipulation}
 .upnbar{height:5px;border-radius:3px;background:var(--line);margin:16px 0 4px;overflow:hidden}.upnbar i{display:block;height:100%;width:0;background:var(--accent);transition:width 1s linear}
 .ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,0);z-index:60;opacity:0;pointer-events:none;
   background:var(--card);border:1px solid rgba(255,181,71,.45);color:var(--text);font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;transition:opacity .15s;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.shhero{position:relative;min-height:330px;background:var(--card2) center top/cover no-repeat;display:flex;align-items:flex-end;margin-top:-1px}
+.shback{position:absolute;top:12px;left:12px;background:rgba(12,10,15,.6);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:14px;cursor:pointer;backdrop-filter:blur(6px)}
+.shin{display:flex;align-items:flex-end;gap:14px;padding:16px;width:100%}
+.shpo{flex:none;width:104px}.shpo img,.shpo .ph{width:104px;aspect-ratio:2/3;height:auto;border-radius:12px;object-fit:cover;box-shadow:0 10px 26px rgba(0,0,0,.6);background:var(--card)}
+.shtx{min-width:0}.shname{margin:0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:34px;line-height:1}
+.shmeta{color:#ddd6e6;font-size:13px;font-weight:600;margin-top:6px}
+.shov{color:var(--muted);font-size:14px;line-height:1.5;margin:4px 0 4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.shov.open{-webkit-line-clamp:unset;display:block}
+.shtabs{display:flex;gap:8px;overflow-x:auto;margin:14px 0 2px;padding-bottom:2px;scrollbar-width:none}
+.shtabs button{flex:none;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
+.shtabs button.on{border-color:var(--accent);color:var(--text);background:rgba(255,181,71,.1)}
+#shmore{margin-top:18px}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -3083,9 +3095,9 @@ function seasonCard(f, sn, count, posterPath){
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
 function drawLibrary(b){
-  b.innerHTML = `<div class="pkbar" id="lpk"></div><div class="small" id="lsum" style="padding:0 16px 4px"></div>
+  b.innerHTML = `<div id="lmain"><div class="pkbar" id="lpk"></div><div class="small" id="lsum" style="padding:0 16px 4px"></div>
     <div id="lcont"></div><div class="pad" style="padding-top:8px"><div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
-    <div id="lun" style="margin-top:18px"></div><button class="btn ghost" id="lsync">Sync with Real-Debrid</button></div>`;
+    <div id="lun" style="margin-top:18px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
     if(!b.isConnected) return;
     const all = libSort(libTitles(), ''), has = !!store.get(K_RD, '');
@@ -3102,13 +3114,16 @@ function drawLibrary(b){
       k => { libType = k; libPick = 'all'; paint(); scrollTo(0, 0); });
     $('#lpn', b).onclick = () => pickSheet(libType === 'movie' ? 'Movies' : libType === 'tv' ? 'Series' : 'Titles',
       [{ k:'all', label:libType === 'movie' ? 'All movies' : libType === 'tv' ? 'All series' : 'All titles' }, ...inType.map(f => ({ k:String(f.id), label:f.title + (f.year ? ' (' + f.year + ')' : '') }))], libPick,
-      k => { libPick = k; paint(); scrollTo(0, 0); });
+      k => { if(k !== 'all' && libType !== 'movie' && String(k).startsWith('tv')){ openShowPage(k); return; } libPick = k; paint(); scrollTo(0, 0); });
     fitPills($('#lpk', b));
 
     $('#lsum', b).textContent = !has ? 'Add your Real-Debrid API token in Settings to see your library.'
-      : rdLib.synced ? `${films.length} movie${films.length === 1 ? '' : 's'} · ${shows.length} series${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })}`
-      : 'Not synced yet.';
-    $('#lsync', b).hidden = !has;
+      : rdLib.synced ? `${films.length} movie${films.length === 1 ? '' : 's'} · ${shows.length} series${un.length ? ` · ${un.length} not matched` : ''} · synced ${new Date(rdLib.synced).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })} · pull down to sync`
+      : 'Not synced yet. Pull down to sync.';
+    // one series picked: its own page instead of the grid
+    $('#lmain', b).hidden = !!(picked && picked.tv);
+    if(picked && picked.tv){ showPage($('#lshowpg', b), picked); return; }
+    $('#lshowpg', b).innerHTML = '';
 
     // Continue watching, above the posters (hidden while one title is picked)
     const cont = picked ? [] : Object.entries(prog).filter(([, p]) => p.link && p.d && (!p.tid || rdLib.items[p.tid]))
@@ -3130,10 +3145,7 @@ function drawLibrary(b){
 
     // the posters: movies open their card; a series shows its seasons
     const grid = $('#lgrid', b);
-    if(picked && picked.tv){
-      grid.innerHTML = showSeasonCards(picked, null);
-      fillSeasonGrid(grid, picked);
-    } else {
+    {
       const list = picked ? [picked] : inType;
       grid.innerHTML = list.map(f => f.tv
         ? `<button class="lshow" data-lshow="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`
@@ -3149,15 +3161,13 @@ function drawLibrary(b){
   };
   b.onclick = e => {
     const s = e.target.closest('.lsea'); if(s){ openSeason(pid(s.dataset.show), +s.dataset.sn); return; }
-    const sh = e.target.closest('.lshow'); if(sh){ libType = 'tv'; libPick = sh.dataset.lshow; paint(); scrollTo(0, 0); }
+    const sh = e.target.closest('.lshow'); if(sh) openShowPage(sh.dataset.lshow);
   };
   const sync = async () => {
-    const btn = $('#lsync', b); btn.textContent = 'Syncing…'; btn.disabled = true;
     try{ await syncLib(); seasonsCache.clear(); await backfillMeta(); paint(); }catch(e){ if(b.isConnected) $('#lsum', b).innerHTML = rdErr(e); }
-    if(btn.isConnected){ btn.textContent = 'Sync with Real-Debrid'; btn.disabled = false; }
   };
-  $('#lsync', b).onclick = sync;
   b._sync = sync;
+  b._paint = paint;
   paint();
   if(store.get(K_RD, '') && Date.now() - rdLib.synced > 20e3) sync();   // every visit (one quick request), so removals and additions show right away
   else backfillMeta().then(ch => ch && paint());
@@ -3188,6 +3198,64 @@ function drawLibrary(b){
     } else { b.style.opacity = 0; b.style.transform = 'translate(-50%, 0)'; }
   }, { passive:true });
 })();
+// ---- A series' own page in the Library tab: backdrop, details, season tabs, episodes ----
+let showSeason = null;
+function openShowPage(id){
+  libType = 'tv'; libPick = String(id); showSeason = null;
+  history.pushState({ libshow:1 }, '');   // Back (or the back swipe) returns to the grid
+  const lib = $('#v-library > div'); if(lib && lib._paint) lib._paint();
+  scrollTo(0, 0);
+}
+function closeShowPage(){ libPick = 'all'; showSeason = null; const lib = $('#v-library > div'); if(lib && lib._paint) lib._paint(); scrollTo(0, 0); }
+addEventListener('popstate', () => {
+  if(view === 'library' && libPick !== 'all' && String(libPick).startsWith('tv') && !sheetStack.length && !(history.state && history.state.libshow)) closeShowPage();
+});
+async function showPage(pg, f){
+  const id = f.id, tid = +String(id).slice(2);
+  pg.innerHTML = `<div class="shp">
+    <div class="shhero" id="shhero"><button class="shback" id="shback">‹ Library</button>
+      <div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
+        <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div></div></div></div>
+    <div class="pad" style="padding-top:6px">
+      <p class="shov" id="shov"></p>
+      <div class="shtabs" id="shtabs"></div>
+      <div id="sheps"><div class="msg">Loading episodes…</div></div>
+      <button class="btn ghost" id="shmore">Ratings, cast &amp; more</button>
+    </div></div>`;
+  $('#shback', pg).onclick = () => history.back();
+  $('#shmore', pg).onclick = () => openMovie(id);
+  const ov = $('#shov', pg); ov.onclick = () => ov.classList.toggle('open');
+  // details: backdrop, overview, ratings
+  detailsFor(id).then(d => {
+    if(!pg.isConnected) return;
+    if(d.backdrop) $('#shhero', pg).style.backgroundImage = `linear-gradient(180deg,rgba(12,10,15,.25) 0%,rgba(12,10,15,.55) 55%,var(--bg) 100%),url(${IMG}w1280${d.backdrop})`;
+    ov.textContent = d.overview || '';
+    const bits = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) + ' TMDB' : ''].filter(Boolean);
+    $('#shmeta', pg).textContent = bits.join(' · ');
+    imdbEpisodeRatings(tid);   // warm the IMDb data for the episode cards
+  }).catch(() => {});
+  // seasons you have
+  let all;
+  try{ all = seasonsCache.get(id) || await showEpisodes(id); seasonsCache.set(id, all); }
+  catch(e){ $('#sheps', pg).innerHTML = `<div class="msg">${rdErr(e)}</div>`; return; }
+  if(!pg.isConnected) return;
+  const sns = [...all.keys()].sort((a, c) => (a || 999) - (c || 999));
+  const total = sns.reduce((n, sn) => n + all.get(sn).length, 0);
+  $('#shcount', pg).textContent = ` · ${sns.filter(Boolean).length} season${sns.filter(Boolean).length === 1 ? '' : 's'} · ${total} episodes`;
+  // start on the season you're in the middle of, else the first one not finished
+  if(showSeason == null || !all.has(showSeason)){
+    const key = x => x.tid + '|' + x.path;
+    const recent = Object.entries(prog).filter(([k, p]) => p.id === id && p.d).sort((a, c) => c[1].at - a[1].at)[0];
+    const fromProg = recent ? sns.find(sn => all.get(sn).some(x => key(x) === recent[0])) : null;
+    showSeason = fromProg != null ? fromProg : (sns.find(sn => all.get(sn).some(x => !done[key(x)])) ?? sns[0]);
+  }
+  const drawTabs = () => {
+    $('#shtabs', pg).innerHTML = sns.length > 1 ? sns.map(sn => `<button data-sn="${sn}" class="${sn === showSeason ? 'on' : ''}">${sn ? 'Season ' + sn : 'Extras'}</button>`).join('') : '';
+    $$('[data-sn]', pg).forEach(x => x.onclick = () => { showSeason = +x.dataset.sn; drawTabs(); drawEps(); });
+  };
+  const drawEps = () => renderEpisodes($('#sheps', pg), all.get(showSeason) || [], id, f.title);
+  drawTabs(); drawEps();
+}
 // One series picked: a poster for each season you have
 function showSeasonCards(f, eps, posters){
   if(eps) return [...eps.keys()].sort((a, c) => (a || 999) - (c || 999)).map(sn => seasonCard(f, sn, eps.get(sn).length, posters && posters.get(sn))).join('');
