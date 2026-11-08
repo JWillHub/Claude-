@@ -530,7 +530,6 @@ html{touch-action:manipulation}
 .aprate{margin-top:20px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 .aprate .lbl{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .aprate .s5{margin:0 auto}.aprate .rv2{margin-top:8px;min-height:18px;font-weight:700}
-.epnext{margin:14px 0 6px}
 .sehd{border-radius:18px;overflow:hidden;background:var(--card2) center/cover no-repeat;min-height:170px;display:flex;align-items:flex-end;gap:14px;padding:14px;margin-top:4px}
 .sehp{flex:none;width:74px}.sehp img,.sehp .ph{width:74px;aspect-ratio:2/3;height:auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,.5);background:var(--card)}
 .seht{min-width:0}
@@ -579,10 +578,10 @@ html{touch-action:manipulation}
 .updfail{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted)}
 .updfail button{align-self:flex-start;background:transparent;border:1px solid rgba(255,181,71,.5);color:var(--accent);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
 #appupd{flex-wrap:wrap}
-.cwband{margin:12px 16px 4px;padding:14px 0 12px;border-radius:18px;background:linear-gradient(160deg,rgba(255,181,71,.10),rgba(255,111,97,.05) 60%,transparent),var(--card);border:1px solid rgba(255,181,71,.28)}
-.cwh{display:flex;align-items:center;gap:8px;padding:0 14px 10px;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--accent)}
+.cwband{margin:14px 0 4px;padding:0;background:transparent;border:0}
+.cwh{display:flex;align-items:center;gap:8px;padding:0 20px 10px;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--accent)}
 .cwdot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
-.cwtrack{display:flex;gap:12px;overflow-x:auto;padding:0 14px;scroll-padding:0 14px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.cwtrack{display:flex;gap:12px;overflow-x:auto;padding:0 16px;scroll-padding:0 16px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .cwc{flex:none;width:208px;scroll-snap-align:start;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;font:inherit}
 .cwimg{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--card2);position:relative}
 .cwimg img{width:100%;height:100%;object-fit:cover;display:block}
@@ -592,6 +591,18 @@ html{touch-action:manipulation}
 .cwlib{margin:18px 20px 0;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted)}
 .shwrap .shhero{margin:0 -16px;border-radius:0}
 .shwrap .pad{padding-left:0;padding-right:0}
+.rdrow{display:flex;flex-direction:column;gap:6px;margin:12px 0 4px}
+.rdot{display:flex;align-items:center;gap:12px;background:none;border:0;padding:4px 0;color:var(--text);font:inherit;text-align:left;cursor:pointer;width:fit-content}
+.rdot i{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.rdot i svg{width:20px;height:20px}
+.rdot.fill i{background:var(--accent);color:#1a1206}
+.rdot:active i{transform:scale(.94)}
+.rdot b{display:block;font-size:16px;font-weight:700;line-height:1.2}
+.rdot small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.epnext{margin:14px 0 6px}
+.cwplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:1.5px solid #fff;color:#fff;background:rgba(12,10,15,.35);display:flex;align-items:center;justify-content:center}
+.cwplay svg{width:17px;height:17px}
+.lnk{display:block;margin:18px 0 4px;background:none;border:0;padding:0;color:var(--muted);font:inherit;font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}
@@ -2685,13 +2696,17 @@ const libFor = id => Object.entries(rdLib.items).filter(([, it]) => it.m && it.m
 
 // Detail card: "In your library" above the streaming logos (shown even if TMDB is slow or offline)
 function refreshLibBlocks(){ $$('[data-lid]').forEach(bx => { const sb = bx.closest('.sbody'); if(sb) libBlock(sb, pid(bx.dataset.lid)); }); }
+// Play button: a ring with a play mark, the action, and a short note under it (filled ring = the main action)
+const PLAYSVG = '<svg viewBox="0 0 24 24"><path d="M9 6.2v11.6l9.4-5.8z" fill="currentColor"/></svg>';
+const reelBtn = (attrs, label, sub, filled) => `<button class="rdot${filled ? ' fill' : ''}" ${attrs}><i>${PLAYSVG}</i><span><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`;
 function libBlock(b, id){
   const list = libFor(id), box = $('#mlib', b);
   if(!list.length || !box) return;
   box.dataset.lid = id;
-  box.innerHTML = (`<div class="lib fadein"><div class="lbl">In your library</div><div class="lrow">${list
+  box.innerHTML = (`<div class="lib fadein"><div class="rdrow">${list
     .sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric:true }))
-    .map(it => { const pr = progOfTorrent(it.tid); return `<button data-rdt="${esc(it.tid)}">▶ <b>${pr ? 'Resume' : 'Play'}</b> ${esc([seasonOf(it.name), qualOf(it.name), fmtSize(it.bytes)].filter(Boolean).join(' · '))}</button>`; }).join('')}</div></div>`);
+    .map((it, i) => { const pr = progOfTorrent(it.tid), sea = seasonOf(it.name);
+      return reelBtn(`data-rdt="${esc(it.tid)}"`, (pr ? 'Resume' : 'Play') + (sea ? ' ' + sea : ''), pr && pr.d ? `${fmtDur(pr.d - pr.t)} left` : list.length > 1 && !sea ? 'Copy ' + (i + 1) : '', i === 0); }).join('')}</div></div>`);
   $$('[data-rdt]', box).forEach(x => x.onclick = () => openTorrent(x.dataset.rdt, filmOf(id).title, id));
   prefetchLib(list);
 }
@@ -2917,7 +2932,7 @@ function renderEpisodes(box, files, id, title, opt = {}){
     if(!box.isConnected) return;
     const nx = upNext(), watched = files.filter(f => done[key(f)]).length;
     const head = opt.head ? opt.head(watched, files.length) : '';
-    box.innerHTML = head + (nx ? `<button class="btn epnext" id="epnext">▶ ${nx.resume ? 'Resume' : watched ? 'Play' : 'Start'} ${nx.f.ep ? `S${nx.f.ep.s} E${nx.f.ep.e}` : ''}${nx.resume ? ` · ${fmtDur(nx.resume.d - nx.resume.t)} left` : ''}</button>` : '')
+    box.innerHTML = head + (nx ? `<div class="epnext">${reelBtn('id="epnext"', `${nx.resume ? 'Resume' : watched ? 'Play' : 'Start'} ${nx.f.ep ? `S${nx.f.ep.s} E${nx.f.ep.e}` : ''}`.trim(), nx.resume ? `${fmtDur(nx.resume.d - nx.resume.t)} left` : 'Up next', true)}</div>` : '')
       + seasons.map(sn => {
         const si = info[sn], list = files.filter(f => (f.ep ? f.ep.s : 0) === sn);
         return `${seasons.length > 1 ? `<div class="lbl lcl">${sn ? 'Season ' + sn : 'Extras'}${si && si.year ? ' · ' + si.year : ''}</div>` : ''}<div class="eplist">${list.map(f => {
@@ -3155,13 +3170,13 @@ function drawLibrary(b){
       .filter(([, p]) => libType === 'all' || (libType === 'tv') === (typeof p.id === 'string')).sort((a, c) => c[1].at - a[1].at).slice(0, 12);
     $('#lcont', b).innerHTML = cont.length ? `<section class="cwband"><div class="cwh"><span class="cwdot"></span>Continue watching</div><div class="cwtrack nodrag">${cont.map(([k, p]) => { const it = rdLib.items[p.tid], mm = it && it.m || {}, f0 = filmOf(p.id);
       const f = { title:mm.title || p.name || (f0.title !== 'Untitled' ? f0.title : '') || p.title || 'Untitled' };
-      return `<button class="lcw cwc" data-ck="${esc(k)}" data-cid="${esc(p.id)}" data-cl="${esc(p.label || '')}"><span class="cwimg"><span class="cwph">${esc(f.title)}</span></span><i class="cwbar"><b style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></b></i>
+      return `<button class="lcw cwc" data-ck="${esc(k)}" data-cid="${esc(p.id)}" data-cl="${esc(p.label || '')}"><span class="cwimg"><span class="cwph">${esc(f.title)}</span><i class="cwplay">${PLAYSVG}</i></span><i class="cwbar"><b style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></b></i>
         <span class="cwt">${esc(f.title)}</span><span class="small">${p.label ? esc(p.label) + ' · ' : ''}${clock(p.d - p.t)} left</span></button>`; }).join('')}</div></section>
       <div class="cwlib">Your library</div>` : '';
     // wide pictures: the episode's still for shows, the backdrop for movies
     $$('.cwc', b).forEach(x => {
       const id = pid(x.dataset.cid), ep = (x.dataset.cl.match(/S(\d+)\s*E(\d+)/) || []);
-      const put = path => { if(path && x.isConnected) $('.cwimg', x).innerHTML = `<img src="${IMG}w500${path}" alt="" loading="lazy">`; };
+      const put = path => { if(path && x.isConnected) $('.cwimg', x).innerHTML = `<img src="${IMG}w500${path}" alt="" loading="lazy"><i class="cwplay">${PLAYSVG}</i>`; };
       const bd = () => detailsFor(id).then(d => put(d.backdrop)).catch(() => {});
       if(typeof id === 'string' && ep[1]) seasonEps(+String(id).slice(2), +ep[1]).then(l => { const e = l.find(z => z.e === +ep[2]); e && e.still ? put(e.still) : bd(); }).catch(bd);
       else bd();
@@ -3182,7 +3197,7 @@ function drawLibrary(b){
       const list = picked ? [picked] : inType;
       grid.innerHTML = list.map(f => f.tv
         ? `<button class="lshow" data-lshow="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`
-        : cardHTML(f)).join('');
+        : `<button class="lshow" data-lmov="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`).join('');
     }
     $('#lmsg', b).textContent = has && rdLib.synced && !all.length ? 'Nothing in your Real-Debrid library yet.' : '';
     remember(all);
@@ -3194,7 +3209,8 @@ function drawLibrary(b){
   };
   b.onclick = e => {
     const s = e.target.closest('.lsea'); if(s){ openSeason(pid(s.dataset.show), +s.dataset.sn); return; }
-    const sh = e.target.closest('.lshow'); if(sh) openShowPage(sh.dataset.lshow);
+    const mv = e.target.closest('[data-lmov]'); if(mv){ openLibMovie(+mv.dataset.lmov); return; }
+    const sh = e.target.closest('[data-lshow]'); if(sh) openShowPage(sh.dataset.lshow);
   };
   const sync = async () => {
     try{ await syncLib(); seasonsCache.clear(); await backfillMeta(); paint(); }catch(e){ if(b.isConnected) $('#lsum', b).innerHTML = rdErr(e); }
@@ -3232,6 +3248,26 @@ function drawLibrary(b){
   }, { passive:true });
 })();
 // ---- A series' own page in the Library tab: backdrop, details, season tabs, episodes ----
+// A movie in your library: a simple card with just that movie (backdrop, title, details, story, play)
+function openLibMovie(id){
+  const f = libTitles().find(x => x.id === id) || filmOf(id);
+  const s = sheet(`<div class="shwrap">
+    <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
+      <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
+    <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
+      <button class="lnk" id="mvmore">Ratings, cast and more</button></div></div>`, { tall:true });
+  const b = s.body;
+  libBlock(b, id);
+  $('#mvmore', b).onclick = () => openMovie(id);
+  const ov = $('#mvov', b); ov.onclick = () => ov.classList.toggle('open');
+  detailsFor(id).then(d => {
+    if(!b.isConnected) return;
+    if(d.backdrop) $('#mvhero', b).style.backgroundImage = `linear-gradient(180deg,rgba(12,10,15,.2) 0%,rgba(12,10,15,.55) 55%,var(--bg) 100%),url(${IMG}w1280${d.backdrop})`;
+    ov.textContent = d.overview || '';
+    const rt = d.runtime ? (d.runtime >= 60 ? Math.floor(d.runtime / 60) + 'h ' + (d.runtime % 60) + 'm' : d.runtime + 'm') : '';
+    $('#mvmeta', b).textContent = [d.year || f.year, rt, d.vote ? '★ ' + (+d.vote).toFixed(1) : ''].filter(Boolean).join(' · ');
+  }).catch(() => {});
+}
 let showSeason = null;
 // A series opens as a card over the Library (swipe it down, tap outside or press Back to close)
 function openShowPage(id){
@@ -3250,7 +3286,7 @@ async function showPage(pg, f, card){
       <p class="shov" id="shov"></p>
       <div class="shtabs" id="shtabs"></div>
       <div id="sheps"><div class="msg">Loading episodes…</div></div>
-      <button class="btn ghost" id="shmore">Ratings, cast &amp; more</button>
+      <button class="lnk" id="shmore">Ratings, cast and more</button>
     </div></div>`;
   $('#shback', pg).onclick = () => card ? card.close() : history.back();
   $('#shmore', pg).onclick = () => openMovie(id);
