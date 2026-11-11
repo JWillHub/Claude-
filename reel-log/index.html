@@ -694,6 +694,28 @@ html{touch-action:manipulation}
 .subprev.box span{background:rgba(0,0,0,.7);text-shadow:none;border-radius:3px}
 .subprev.yellow span{color:#ffe14d}
 .subprev.s-s span{font-size:12.5px}.subprev.s-l span{font-size:18px}.subprev.s-xl span{font-size:21px}
+/* One button style: pills. Play is a pill with a play mark; the main action has an accent outline */
+.rdot{border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:9px 18px 9px 13px;gap:8px;align-items:center}
+.rdot.fill{border-color:var(--accent)}
+.rdot i,.rdot.fill i{width:auto!important;height:auto!important;border:0;background:none!important;color:var(--accent)!important}
+.rdot i svg{width:17px!important;height:17px!important}
+.rdot span{display:flex;align-items:baseline;gap:6px}
+.rdot b{display:inline;font-size:14.5px}
+.rdot small{display:inline;margin:0;font-size:12.5px}
+.rdot small::before{content:"·";margin-right:6px}
+.rdrow{flex-direction:row;flex-wrap:wrap;gap:8px}
+.btn{border-radius:999px;padding:12px;background:transparent!important;border:1px solid var(--accent);color:#fff;font-weight:750}
+.btn.ghost{border-color:rgba(255,255,255,.4)}
+.pill{background:transparent}
+/* "In your library" note on rating cards */
+.inlib{display:flex;align-items:center;gap:8px;margin:2px 0 14px;font-size:13.5px;font-weight:700}
+.inlib svg{width:14px;height:14px;color:var(--accent);flex:none}
+.inlib em{font-style:normal;font-weight:500}
+/* Rating cards: still header picture, card scrolls over it */
+.mvsheet>.bdrop{position:absolute;top:0;left:0;right:0;margin:0;height:calc(340px + env(safe-area-inset-top));border-radius:0;z-index:0;pointer-events:none;background-color:#000}
+.mvsheet>.bdrop::after{border-radius:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.45) 55%,#000 97%)}
+.mvsheet>.sbody{position:relative;z-index:1;background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#000 calc(340px + env(safe-area-inset-top))) local}
+.mvsheet .mvhead{margin-top:calc(190px + env(safe-area-inset-top))}
 </style>
 </head>
 <body>
@@ -1043,6 +1065,7 @@ function sheet(html, opt = {}){
   const sh = document.createElement('div'); sh.className = 'sh' + (opt.tall ? ' tall' : '') + (opt.cls ? ' ' + opt.cls : ''); sh.style.zIndex = z + 1;
   sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>` + (isPage ? GLASS_BTNS : '');
   if(isPage) sh.classList.add('page');
+  { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }
   host.append(bk, sh);
   const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
   if(isPage){
@@ -2144,7 +2167,7 @@ async function openShow(id){
     remember([d]);
     if(!hit) await s.settled;
     if(!s.el.isConnected) return;
-    if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
+    if(d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const yrs = d.year ? d.year + (d.status === 'Returning Series' ? '–' : d.end && d.end !== d.year ? '–' + d.end : '') : '';
     $('#mm', b).textContent = [yrs, d.seasons ? d.seasons + ' season' + (d.seasons > 1 ? 's' : '') : '', d.network].filter(Boolean).join(' · ');
     $('#md', b).textContent = d.gnames.slice(0, 3).join(', ');
@@ -2203,7 +2226,7 @@ async function openMovie(id){
     remember([d]);
     if(!hit) await s.settled;
     if(!s.el.isConnected) return;
-    if(d.backdrop) $('.bdrop', b).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
+    if(d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
     const rt = d.runtime ? `${Math.floor(d.runtime / 60)}h ${d.runtime % 60}m` : '';
     $('#mm', b).textContent = [d.year, rt, d.gnames.slice(0, 3).join(', ')].filter(Boolean).join(' · ');
     $('#md', b).innerHTML = d.dirs && d.dirs.length ? 'Directed by ' + d.dirs.map(p => `<button class="plink" data-person="${p.id}">${esc(p.name)}</button>`).join(', ') : '';
@@ -2217,7 +2240,7 @@ async function openMovie(id){
       imdbMovie(d.imdb).then(x => { if(x && s.el.isConnected) box.insertAdjacentHTML('afterbegin', `<span class="imdbm"><span class="ib2">IMDb</span>${x[0].toFixed(1)}<span class="small">${fmtV(x[1])} votes</span></span>`); });
       rtScore(d.imdb).then(v => { if(v && s.el.isConnected) box.insertAdjacentHTML('beforeend', `<span class="rt" title="Rotten Tomatoes critics score">${parseInt(v) < 60 ? SPLAT : TOMATO}${esc(v)}</span>`); });
     }
-    if(d.col){
+    if(false && d.col){
       $('#msaga', b).innerHTML = `<button class="sagachip"><span>Part of <b style="color:var(--text);margin:0">${esc(d.col.name.replace(/ Collection$/, ''))}</b></span><b>Rate the franchise →</b></button>`;
       $('#msaga .sagachip', b).onclick = () => openCollectionRun(d.col.id, d.col.name);
     }
@@ -2765,6 +2788,13 @@ function libBlock(b, id){
   const list = libFor(id), box = $('#mlib', b);
   if(!list.length || !box) return;
   box.dataset.lid = id;
+  // rating cards: just a short note that you have it (playing lives in the Library tab)
+  if(box.closest('.mvsheet')){
+    const pr = list.map(it => progOfTorrent(it.tid)).filter(Boolean).sort((x, y) => y.at - x.at)[0];
+    const extra = pr && pr.d ? `${pr.label ? pr.label + ' · ' : ''}${fmtDur(pr.d - pr.t)} left` : typeof id === 'string' ? (list.length > 1 ? `${list.length} sets` : seasonOf(list[0].name) || '') : '';
+    box.innerHTML = `<div class="inlib fadein">${PLAYSVG}<span>In your library${extra ? ` <em>· ${esc(extra)}</em>` : ''}</span></div>`;
+    return;
+  }
   box.innerHTML = (`<div class="lib fadein"><div class="rdrow">${list
     .sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric:true }))
     .map((it, i) => { const pr = progOfTorrent(it.tid), sea = seasonOf(it.name);

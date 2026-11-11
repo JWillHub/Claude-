@@ -411,5 +411,13 @@ rep("""function setView(v, o = {}){""", """function setView(v, o = {}){
 rep("""\nsetView('discover');\n""", """\n{ const st = store.get('rclib.start', 'discover'), last = store.get('rclib.lastview', 'discover');
   setView(st === 'last' ? (last || 'discover') : st === 'library' ? 'library' : 'discover'); }\n""")
 
+
+# ---- Rating cards: no "Rate the franchise" pill ----
+rep("    if(d.col){\n      $('#msaga', b).innerHTML", "    if(false && d.col){\n      $('#msaga', b).innerHTML")
+# ---- Rating cards: the header picture stays still while the card scrolls over it ----
+rep("$('.bdrop', b).style.backgroundImage", "$('.bdrop', s.el).style.backgroundImage", 2)
+rep("""  if(isPage) sh.classList.add('page');""", """  if(isPage) sh.classList.add('page');
+  { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }""")
+
 open(p, 'w').write(s)
 print('applied cast chips')

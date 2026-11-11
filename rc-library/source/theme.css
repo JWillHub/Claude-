@@ -66,3 +66,25 @@
 .subprev.box span{background:rgba(0,0,0,.7);text-shadow:none;border-radius:3px}
 .subprev.yellow span{color:#ffe14d}
 .subprev.s-s span{font-size:12.5px}.subprev.s-l span{font-size:18px}.subprev.s-xl span{font-size:21px}
+/* One button style: pills. Play is a pill with a play mark; the main action has an accent outline */
+.rdot{border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:9px 18px 9px 13px;gap:8px;align-items:center}
+.rdot.fill{border-color:var(--accent)}
+.rdot i,.rdot.fill i{width:auto!important;height:auto!important;border:0;background:none!important;color:var(--accent)!important}
+.rdot i svg{width:17px!important;height:17px!important}
+.rdot span{display:flex;align-items:baseline;gap:6px}
+.rdot b{display:inline;font-size:14.5px}
+.rdot small{display:inline;margin:0;font-size:12.5px}
+.rdot small::before{content:"·";margin-right:6px}
+.rdrow{flex-direction:row;flex-wrap:wrap;gap:8px}
+.btn{border-radius:999px;padding:12px;background:transparent!important;border:1px solid var(--accent);color:#fff;font-weight:750}
+.btn.ghost{border-color:rgba(255,255,255,.4)}
+.pill{background:transparent}
+/* "In your library" note on rating cards */
+.inlib{display:flex;align-items:center;gap:8px;margin:2px 0 14px;font-size:13.5px;font-weight:700}
+.inlib svg{width:14px;height:14px;color:var(--accent);flex:none}
+.inlib em{font-style:normal;font-weight:500}
+/* Rating cards: still header picture, card scrolls over it */
+.mvsheet>.bdrop{position:absolute;top:0;left:0;right:0;margin:0;height:calc(340px + env(safe-area-inset-top));border-radius:0;z-index:0;pointer-events:none;background-color:#000}
+.mvsheet>.bdrop::after{border-radius:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.45) 55%,#000 97%)}
+.mvsheet>.sbody{position:relative;z-index:1;background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#000 calc(340px + env(safe-area-inset-top))) local}
+.mvsheet .mvhead{margin-top:calc(190px + env(safe-area-inset-top))}

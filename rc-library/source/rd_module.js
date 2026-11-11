@@ -269,6 +269,13 @@ function libBlock(b, id){
   const list = libFor(id), box = $('#mlib', b);
   if(!list.length || !box) return;
   box.dataset.lid = id;
+  // rating cards: just a short note that you have it (playing lives in the Library tab)
+  if(box.closest('.mvsheet')){
+    const pr = list.map(it => progOfTorrent(it.tid)).filter(Boolean).sort((x, y) => y.at - x.at)[0];
+    const extra = pr && pr.d ? `${pr.label ? pr.label + ' · ' : ''}${fmtDur(pr.d - pr.t)} left` : typeof id === 'string' ? (list.length > 1 ? `${list.length} sets` : seasonOf(list[0].name) || '') : '';
+    box.innerHTML = `<div class="inlib fadein">${PLAYSVG}<span>In your library${extra ? ` <em>· ${esc(extra)}</em>` : ''}</span></div>`;
+    return;
+  }
   box.innerHTML = (`<div class="lib fadein"><div class="rdrow">${list
     .sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric:true }))
     .map((it, i) => { const pr = progOfTorrent(it.tid), sea = seasonOf(it.name);
