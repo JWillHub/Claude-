@@ -371,5 +371,27 @@ rep("""  }catch(e){ $('#imdb', b).innerHTML = `<div class="msg">${errText(e)}</d
   return;
   if(!d.imdb){""")
 
+
+# ---- Every full-height card is its own page: slides in from the right, glass back button (one step),
+#      and a glass X (top right) that closes them all when pages are stacked ----
+rep("""  sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>`;""",
+"""  sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>` + (isPage ? GLASS_BTNS : '');
+  if(isPage) sh.classList.add('page');""")
+rep("""  sheetStack.push(s);
+  document.body.classList.add('locked');""", """  if(isPage){
+    if(sheetStack.some(x => x.el.classList.contains('page'))) sh.classList.add('deep');
+    $('.glback', sh).onclick = () => closeSheet(s);
+    $('.glall', sh).onclick = () => { const i = sheetStack.findIndex(x => x.el.classList.contains('page')); if(i >= 0) closeSheet(sheetStack[i]); };
+  }
+  sheetStack.push(s);
+  document.body.classList.add('locked');""")
+rep("""function sheet(html, opt = {}){""", """const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+  + '<button class="glback glall" aria-label="Close all"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
+function sheet(html, opt = {}){
+  const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));""")
+# people and "See all" lists are pages too
+rep("""<div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true })""", """<div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true, page:true })""")
+rep("""<div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });""", """<div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true, page:true });""")
+
 open(p, 'w').write(s)
 print('applied cast chips')

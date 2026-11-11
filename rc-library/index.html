@@ -642,10 +642,14 @@ html{touch-action:manipulation}
 #hcar{background:transparent;border:1px solid var(--accent);color:var(--accent);box-shadow:none}
 .qs{background:transparent}.qs .qi{background:transparent;border:1px solid var(--accent)}.qs .qi svg{fill:var(--accent)}.qs b{color:var(--text)}
 .rdot i svg{width:26px;height:26px;display:block}.rdot i{width:48px;height:48px}.cwplay svg{width:22px;height:22px;display:block}
-/* library title pages: full screen, slide in from the right, glass back button */
-.sh.shcard{top:0;max-height:none;height:100dvh;border-radius:0;border:0;box-shadow:none;transform:translateX(100%)}
-.sh.shcard.in{transform:none}
-.sh.shcard .grab{display:none}
+/* titles, people and lists are pages: full screen, slide in from the right, glass back button */
+.sh.page{top:0;max-height:none;height:100dvh;border-radius:0;border:0;box-shadow:none;transform:translateX(100%);background:#000}
+.sh.page.in{transform:none}
+.sh.page .grab{display:none}
+.sh.page>.sbody{padding-top:calc(66px + env(safe-area-inset-top))}
+.sh.page.shcard>.sbody,.sh.page.mvsheet>.sbody{padding-top:0}
+.glback.glall{left:auto;right:14px;display:none}.sh.deep .glback.glall{display:grid}
+.glall svg{margin-left:0;width:20px;height:20px}
 .glback{position:absolute;z-index:6;top:calc(12px + env(safe-area-inset-top));left:14px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;
   background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.32);
   -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
@@ -1000,13 +1004,22 @@ function toast(html, undo){
 /* ================= sheets ================= */
 const sheetStack = [];
 let popSkip = 0;
+const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+  + '<button class="glback glall" aria-label="Close all"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
 function sheet(html, opt = {}){
+  const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));
   const host = $('#sheets'), z = 30 + sheetStack.length * 2;
   const bk = document.createElement('div'); bk.className = 'sbk'; bk.style.zIndex = z;
   const sh = document.createElement('div'); sh.className = 'sh' + (opt.tall ? ' tall' : '') + (opt.cls ? ' ' + opt.cls : ''); sh.style.zIndex = z + 1;
-  sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>`;
+  sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>` + (isPage ? GLASS_BTNS : '');
+  if(isPage) sh.classList.add('page');
   host.append(bk, sh);
   const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
+  if(isPage){
+    if(sheetStack.some(x => x.el.classList.contains('page'))) sh.classList.add('deep');
+    $('.glback', sh).onclick = () => closeSheet(s);
+    $('.glall', sh).onclick = () => { const i = sheetStack.findIndex(x => x.el.classList.contains('page')); if(i >= 0) closeSheet(sheetStack[i]); };
+  }
   sheetStack.push(s);
   document.body.classList.add('locked');
   history.pushState({ rl:sheetStack.length }, '');
@@ -1582,7 +1595,7 @@ function openGenreSheet(def){
   const s = sheet(`<h2 class="stitle">${esc(def.title)}${def.tv ? ' <span class="small" style="font-family:inherit;letter-spacing:0">Series</span>' : ''}</h2>
     <div class="gopts" style="margin:0 0 14px"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
       <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
-    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });
+    <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true, page:true });
   const b = s.body;
   const load = () => feed(b, $('.grid', b), $('.sent', b), $('.msg', b), genreDef(def.tv, def.genreId, sort, decade));
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); b.scrollTop = 0; load(); });
@@ -2309,7 +2322,7 @@ async function openPerson(pid){
       <div><h2>${esc(f0 ? f0.name : 'Loading…')}</h2><div class="meta" id="pmeta"></div><button class="favbtn" id="pfav">${HEART}Favorite</button></div></div>
     <p class="bio" id="pbio"></p>
     <div class="pbar"><div class="seg" id="pseg"></div><div class="seg" id="psort"><button data-s="pop" class="on">Popular</button><button data-s="new">Newest</button></div></div>
-    <div class="grid" id="pgrid"><div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true });
+    <div class="grid" id="pgrid"><div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true, page:true });
   const b = s.body;
   let p;
   try{
@@ -3376,7 +3389,7 @@ function openLibMovie(id){
       <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
     <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
       <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>' + GLBACK); $('.glback', s.el).onclick = () => s.close();
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   const b = s.body;
   libBlock(b, id);
   moreLike($('#mvlike', b), id);
@@ -3418,7 +3431,7 @@ function openShowPage(id){
   const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
   showSeason = null;
   const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>' + GLBACK); $('.glback', s.el).onclick = () => s.close();
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   showPage($('.shwrap', s.body), f, s);
 }
 async function showPage(pg, f, card){

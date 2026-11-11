@@ -859,7 +859,7 @@ function openLibMovie(id){
       <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
     <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
       <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>' + GLBACK); $('.glback', s.el).onclick = () => s.close();
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   const b = s.body;
   libBlock(b, id);
   moreLike($('#mvlike', b), id);
@@ -901,7 +901,7 @@ function openShowPage(id){
   const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
   showSeason = null;
   const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>' + GLBACK); $('.glback', s.el).onclick = () => s.close();
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
   showPage($('.shwrap', s.body), f, s);
 }
 async function showPage(pg, f, card){

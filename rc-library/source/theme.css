@@ -14,10 +14,14 @@
 #hcar{background:transparent;border:1px solid var(--accent);color:var(--accent);box-shadow:none}
 .qs{background:transparent}.qs .qi{background:transparent;border:1px solid var(--accent)}.qs .qi svg{fill:var(--accent)}.qs b{color:var(--text)}
 .rdot i svg{width:26px;height:26px;display:block}.rdot i{width:48px;height:48px}.cwplay svg{width:22px;height:22px;display:block}
-/* library title pages: full screen, slide in from the right, glass back button */
-.sh.shcard{top:0;max-height:none;height:100dvh;border-radius:0;border:0;box-shadow:none;transform:translateX(100%)}
-.sh.shcard.in{transform:none}
-.sh.shcard .grab{display:none}
+/* titles, people and lists are pages: full screen, slide in from the right, glass back button */
+.sh.page{top:0;max-height:none;height:100dvh;border-radius:0;border:0;box-shadow:none;transform:translateX(100%);background:#000}
+.sh.page.in{transform:none}
+.sh.page .grab{display:none}
+.sh.page>.sbody{padding-top:calc(66px + env(safe-area-inset-top))}
+.sh.page.shcard>.sbody,.sh.page.mvsheet>.sbody{padding-top:0}
+.glback.glall{left:auto;right:14px;display:none}.sh.deep .glback.glall{display:grid}
+.glall svg{margin-left:0;width:20px;height:20px}
 .glback{position:absolute;z-index:6;top:calc(12px + env(safe-area-inset-top));left:14px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;
   background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.32);
   -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
