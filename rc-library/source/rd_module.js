@@ -820,9 +820,9 @@ async function watchedMenu(id, after){
 }
 function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
-    <div id="lcont"></div><div id="lrecent"></div><div class="pad" style="padding-top:8px">
-    <div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
-      <button class="gsel" id="lsort" aria-label="Sort"></button></div>
+    <div class="pad ltop"><div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
+      <button class="gsel" id="lsort" aria-label="Sort"></button></div></div>
+    <div id="lcont"></div><div class="pad" style="padding-top:8px">
     <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
@@ -864,10 +864,6 @@ function drawLibrary(b){
       playInto($('#lbox', ps.body), p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label });
     });
 
-    // Recently added: newest things in Real-Debrid
-    const recent = all.length >= 6 ? all.slice().sort((a, c) => addedAt(c) - addedAt(a)).slice(0, 10) : [];
-    $('#lrecent', b).innerHTML = recent.length ? `<div class="cwh rah"><span class="cwdot"></span>Recently added</div><div class="rarow nodrag">${recent.map(f =>
-      `<button class="lshow" ${f.tv ? 'data-lshow' : 'data-lmov'}="${esc(f.id)}">${poster(f.poster, '', 'w185', f.title)}</button>`).join('')}</div>` : '';
     // the posters: movies open their card; a series shows its seasons
     const grid = $('#lgrid', b);
     {

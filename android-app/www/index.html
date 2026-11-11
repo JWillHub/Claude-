@@ -752,6 +752,14 @@ html{touch-action:manipulation}
 .mvsheet .mvhead{margin-top:calc(140px + env(safe-area-inset-top))}
 .sh.shcard .shbg{height:calc(330px + env(safe-area-inset-top))}
 .sh.shcard .shhero{min-height:calc(320px + env(safe-area-inset-top))}
+/* Library: search and sort at the top; bigger section headers */
+.ltop{padding-top:12px!important}.ltop .ltools{margin:0 0 4px}
+#v-library .cwh,#v-library .cwlib{font-size:15px;letter-spacing:1.4px}
+#v-library .cwh .cwdot{width:8px;height:8px}
+/* Glass pop-ups: black glass */
+.gpk{background:rgba(0,0,0,.72)!important;border-color:rgba(255,255,255,.16)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 24px 60px rgba(0,0,0,.7)!important}
+.gpk-bk{background:rgba(0,0,0,.4)}
+#v-library .cwh{padding:0 16px 10px}#v-library .cwlib{margin:18px 16px 0}
 </style>
 </head>
 <body>
@@ -3382,9 +3390,9 @@ async function watchedMenu(id, after){
 }
 function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
-    <div id="lcont"></div><div id="lrecent"></div><div class="pad" style="padding-top:8px">
-    <div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
-      <button class="gsel" id="lsort" aria-label="Sort"></button></div>
+    <div class="pad ltop"><div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
+      <button class="gsel" id="lsort" aria-label="Sort"></button></div></div>
+    <div id="lcont"></div><div class="pad" style="padding-top:8px">
     <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
@@ -3426,10 +3434,6 @@ function drawLibrary(b){
       playInto($('#lbox', ps.body), p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label });
     });
 
-    // Recently added: newest things in Real-Debrid
-    const recent = all.length >= 6 ? all.slice().sort((a, c) => addedAt(c) - addedAt(a)).slice(0, 10) : [];
-    $('#lrecent', b).innerHTML = recent.length ? `<div class="cwh rah"><span class="cwdot"></span>Recently added</div><div class="rarow nodrag">${recent.map(f =>
-      `<button class="lshow" ${f.tv ? 'data-lshow' : 'data-lmov'}="${esc(f.id)}">${poster(f.poster, '', 'w185', f.title)}</button>`).join('')}</div>` : '';
     // the posters: movies open their card; a series shows its seasons
     const grid = $('#lgrid', b);
     {
