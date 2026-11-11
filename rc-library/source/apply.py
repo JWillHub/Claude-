@@ -1,3 +1,5 @@
+import os
+SRC = os.path.dirname(os.path.abspath(__file__))
 p = 'index.html'; s = open(p).read()
 def rep(old, new, count=1):
     global s
@@ -160,7 +162,7 @@ rep('.hero h2{font-size:31px}', '''.hero h2{font-size:31px}
 .lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
 .lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
 .lcw{scroll-snap-align:start}''')
-RD = open('/home/claude/rd_module.js').read()
+RD = open(os.path.join(SRC, 'rd_module.js')).read()
 rep("/* ---------- Settings ---------- */", RD + "\n/* ---------- Settings ---------- */")
 open(p, 'w').write(s)
 print('applied')
@@ -214,7 +216,7 @@ open(p, 'w').write(s)
 import re
 i = s.index('function openSettings(){')
 j = re.compile(r'\n}\n').search(s, i).end()
-s = s[:i] + open('/home/claude/settings_new.js').read() + s[j:]
+s = s[:i] + open(os.path.join(SRC, 'settings_new.js')).read() + s[j:]
 rep('.hero h2{font-size:31px}', '''.hero h2{font-size:31px}
 .sgroup{margin-top:20px}
 .sgh{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}

@@ -1,19 +1,35 @@
+#!/bin/bash
+# Builds all three pages from base.html (the original Rolling Credits page):
+#   reel-log/index.html          the published web app (keeps its own saved data: reellog.* names)
+#   rc-library/index.html        the web copy (rclib.* names)
+#   android-app/www/index.html   the Android app (rclib.* names + app-only changes)
 set -e
-cd /home/claude && T=$(mktemp -d) && cp claude-/reel-log/index.html $T/ && cd $T && python3 /home/claude/apply.py >/dev/null
-python3 - <<'PY'
-s=open('index.html').read()
-s=s.replace("'reellog.' + k","@@MAINKEY@@")      # the one-time import reads the main app's keys
-s=s.replace('reellog.','rclib.')                  # everything else: this app's own storage names
-s=s.replace("@@MAINKEY@@","'reellog.' + k")
-s=s.replace('#ffb547','#b8242c').replace('rgba(255,181,71,','rgba(184,36,44,').replace('rgba(255, 181, 71,','rgba(184,36,44,')
-s=s.replace('color:#1a1206','color:#fff')
-import re
-# all text black or white: accent/green/coral/grey text becomes white; colored badges get black or white text
-s=re.sub(r'(?<![-\w])color:var\(--(accent|accent2|good|muted)\)', 'color:#fff', s)
-s=s.replace('--muted:#9c93a9','--muted:#fff').replace('--text:#f4efe9','--text:#fff')
-for c in ('.c8{background:#3dbb6f;color:#0b1a10}','.c7{background:#e6c52f;color:#1c1600}','.c6{background:#ef8b2c;color:#1f0f00}'):
-    s=s.replace(c, c.split('color:')[0]+'color:#000}')
-s=s.replace('</style>', open('/tmp/theme.css').read() + '</style>', 1)
-open('index.html','w').write(s)
+SRC="$(cd "$(dirname "$0")" && pwd)"; REPO="$(cd "$SRC/../.." && pwd)"
+build(){   # $1 = copy (rename storage to rclib.*) or main
+  T=$(mktemp -d); cp "$SRC/base.html" "$T/index.html"; cd "$T"
+  python3 "$SRC/apply.py" >/dev/null
+  MODE="$1" SRC="$SRC" python3 - <<'PY'
+import os, re
+s = open('index.html').read()
+if os.environ['MODE'] == 'copy':
+    s = s.replace("'reellog.' + k", "@@MAINKEY@@")      # the one-time import reads the main app's keys
+    s = s.replace('reellog.', 'rclib.')                  # everything else: the copy's own storage names
+    s = s.replace("@@MAINKEY@@", "'reellog.' + k")
+else:
+    s = s.replace("if(localStorage.getItem('rclib.imported')) return;", "return;")   # the main page already has its data
+# dark red accent
+s = s.replace('#ffb547', '#b8242c').replace('rgba(255,181,71,', 'rgba(184,36,44,').replace('rgba(255, 181, 71,', 'rgba(184,36,44,')
+s = s.replace('color:#1a1206', 'color:#fff')
+# all text black or white
+s = re.sub(r'(?<![-\w])color:var\(--(accent|accent2|good|muted)\)', 'color:#fff', s)
+s = s.replace('--muted:#9c93a9', '--muted:#fff').replace('--text:#f4efe9', '--text:#fff')
+for c in ('.c8{background:#3dbb6f;color:#0b1a10}', '.c7{background:#e6c52f;color:#1c1600}', '.c6{background:#ef8b2c;color:#1f0f00}'):
+    s = s.replace(c, c.split('color:')[0] + 'color:#000}')
+s = s.replace('</style>', open(os.path.join(os.environ['SRC'], 'theme.css')).read() + '</style>', 1)
+open('index.html', 'w').write(s)
 PY
-cp index.html /home/claude/claude-/rc-library/index.html && python3 /home/claude/apply_native.py >/dev/null && cp index.html /home/claude/claude-/android-app/www/index.html && echo built
+}
+build main; cp index.html "$REPO/reel-log/index.html"
+build copy; cp index.html "$REPO/rc-library/index.html"
+python3 "$SRC/apply_native.py" >/dev/null; cp index.html "$REPO/android-app/www/index.html"
+echo built
