@@ -88,3 +88,32 @@
 .mvsheet>.bdrop::after{border-radius:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.45) 55%,#000 97%)}
 .mvsheet>.sbody{position:relative;z-index:1;background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#000 calc(340px + env(safe-area-inset-top))) local}
 .mvsheet .mvhead{margin-top:calc(190px + env(safe-area-inset-top))}
+/* Glass choice list (replaces Android's gray pop-up) */
+.gsel{flex:none;background:transparent;border:1px solid var(--line);border-radius:999px;color:#fff;font:inherit;font-size:13px;font-weight:650;padding:8px 30px 8px 13px;cursor:pointer;position:relative;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsel::after{content:"";position:absolute;right:13px;top:50%;width:6px;height:6px;border-right:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:translateY(-70%) rotate(45deg)}
+.gpk-bk{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .2s}
+.gpk-bk.in{opacity:1}
+.gpk{width:min(340px,100%);border-radius:26px;padding:6px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 24px 60px rgba(0,0,0,.55);transform:scale(.94);transition:transform .22s cubic-bezier(.2,.9,.3,1.2)}
+.gpk-bk.in .gpk{transform:none}
+.gpk button{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;color:#fff;font:inherit;font-size:16px;font-weight:600;padding:15px 18px;border-radius:20px;cursor:pointer;text-align:left}
+.gpk button:active{background:rgba(255,255,255,.1)}
+.gpk button svg{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.gpk button.on svg{opacity:1}
+.gpk button+button{border-top:1px solid rgba(255,255,255,.08)}
+/* Settings: sleeker main page */
+.smain .srow{padding:16px 16px}
+.smain .sic,.spg .sic{width:auto;height:auto;border:0;background:none}
+.smain .sic svg{width:22px;height:22px}
+.smain .slab{font-size:16px;font-weight:650}
+.smain .scard{border-radius:20px}
+.updbtn{background:transparent!important;border:1px solid var(--accent)!important;color:#fff!important}
+.accsw.on{border-color:transparent;box-shadow:0 0 0 2px #000,0 0 0 4px #fff}
+/* Posters: a thin light edge and a soft shadow so they stand off the black */
+.pw img,.pw .ph,.lshow img,.lshow .ph,.lsea img,.lsea .ph,.shpo img,.mvhead img,.lcw img,.sehp img,.rpc .rph img{box-shadow:0 0 0 1px rgba(255,255,255,.13),0 8px 18px rgba(0,0,0,.65)!important}
+.pw img{border-radius:10px}
+/* Title page: the big poster glows in its own colors */
+.pgw{position:relative;flex:none;display:block;line-height:0}
+.pgw img:not(.pglow){position:relative;z-index:1}
+.pgw .pglow{position:absolute!important;left:6%;top:8%;width:88%!important;height:88%!important;filter:blur(20px) saturate(1.7);opacity:.6;z-index:0;box-shadow:none!important;transform:translateY(6px)}

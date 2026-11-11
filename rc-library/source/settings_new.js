@@ -24,38 +24,43 @@ function renderSettings(){
     audio:'<path d="M5 9.5v5h3.5L13 18V6L8.5 9.5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
     cc:'<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M10.5 10.2a2 2 0 1 0 0 3.6M16.5 10.2a2 2 0 1 0 0 3.6"/>',
     size:'<path d="M4 18 8.5 6 13 18M5.6 14h5.8M15 18l2.8-7.5L20.5 18M15.8 16h4"/>',
+    palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2.3a3.8 3.8 0 0 0 3.8-3.8C20.5 6.6 16.7 3.5 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.5" r=".9"/><circle cx="14.6" cy="7.5" r=".9"/>',
     home:'<path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4z"/>'
   };
   const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
-  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink']];
-  const pick = (id, cur, opts) => `<select class="ssel" id="${id}">${opts.map(([v, l]) => `<option value="${v}"${String(cur) === String(v) ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink'],['#ffffff','White']];
+  const PICKS = {};
+  const pick = (id, cur, opts) => { PICKS[id] = opts; return `<button class="ssel gsel" id="${id}" value="${esc(cur)}">${esc((opts.find(o => String(o[0]) === String(cur)) || opts[0])[1])}</button>`; };
+  // a picker button: opens the glass list, then behaves like a changed select (el.value + el.onchange)
+  const wirePicks = box => $$('.gsel[id]', box).forEach(el => { const opts = PICKS[el.id]; if(!opts) return;
+    el.onclick = () => glassPick(opts, el.value, v => { el.value = v; el.textContent = opts.find(o => String(o[0]) === v)[1]; el.onchange && el.onchange({ target:el }); }); });
   const sw = (id, icon, label, sub, on) => `<label class="srow sw">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i class="swi"></i></label>`;
   const selRow = (icon, label, sub, sel) => `<div class="srow static">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${sel}</div>`;
   const langName = c => (LANGS.find(x => x[0] === c) || [])[1];
   // a settings section as its own page (glass back button), repainted when something changes
   const subPage = (title, build) => {
     const pg = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="spg"></div>`, { tall:true, page:true });
-    const draw = () => { if(!pg.el.isConnected) return; build($('.spg', pg.body), draw); };
+    const draw = () => { if(!pg.el.isConnected) return; const box = $('.spg', pg.body); build(box, draw); wirePicks(box); };
     draw(); pg.refresh = draw; pg.onClose = () => paint();
     return pg;
   };
   const paint = () => {
     if(!b.isConnected) return;
-    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, '');
-    const acc = (ACCENTS.find(x => x[0] === store.get(K_ACCENT, ACCENTS[0][0])) || ACCENTS[0])[1];
-    const st = { discover:'Discover', library:'Library', last:'Last page' }[store.get(K_START, 'discover')] || 'Discover';
+    const tm = !!store.get(K_KEY, '');
     $('#setbody', b).innerHTML = `
-      <div class="sgroup"><div class="scard">
-        ${row('g-conn', 'cloud', 'Connections', 'TMDB, Real-Debrid, Rotten Tomatoes', tm && rd ? 'All set' : tm ? 'Set up' : 'Set up', tm ? 'ok' : 'warn')}
-        ${NATIVE ? row('g-play', 'next', 'Player', 'Languages, subtitles, intros, Midnight mode') : ''}
-        ${row('g-look', 'eye', 'Look and feel', 'Accent color, start page, hide rated', `<i class="sdot" style="background:var(--accent)"></i>${acc} · ${st}`)}
-        ${row('g-data', 'down', 'Your data', 'Back up, restore, storage')}
+      <div class="sgroup smain"><div class="scard">
+        ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
+        ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
+        ${row('g-look', 'palette', 'Look and feel', '')}
+        ${row('g-data', 'down', 'Your data', '')}
       </div></div>
-      ${NATIVE ? `<div class="sgroup"><div class="sgh">App</div><div class="scard"><div class="srow static" id="appupd"></div></div></div>` : ''}
-      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About and data sources', '')}</div></div>`;
+      <div class="sgroup smain"><div class="scard">
+        ${NATIVE ? '<div class="srow static" id="appupd"></div>' : ''}
+        ${row('s-about', 'info', 'About', '')}
+      </div></div>`;
     $('#g-conn', b).onclick = () => subPage('Connections', box => {
       const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
       box.innerHTML = `<div class="scard">

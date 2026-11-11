@@ -716,6 +716,35 @@ html{touch-action:manipulation}
 .mvsheet>.bdrop::after{border-radius:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.45) 55%,#000 97%)}
 .mvsheet>.sbody{position:relative;z-index:1;background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#000 calc(340px + env(safe-area-inset-top))) local}
 .mvsheet .mvhead{margin-top:calc(190px + env(safe-area-inset-top))}
+/* Glass choice list (replaces Android's gray pop-up) */
+.gsel{flex:none;background:transparent;border:1px solid var(--line);border-radius:999px;color:#fff;font:inherit;font-size:13px;font-weight:650;padding:8px 30px 8px 13px;cursor:pointer;position:relative;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsel::after{content:"";position:absolute;right:13px;top:50%;width:6px;height:6px;border-right:1.6px solid #fff;border-bottom:1.6px solid #fff;transform:translateY(-70%) rotate(45deg)}
+.gpk-bk{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .2s}
+.gpk-bk.in{opacity:1}
+.gpk{width:min(340px,100%);border-radius:26px;padding:6px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.22);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 24px 60px rgba(0,0,0,.55);transform:scale(.94);transition:transform .22s cubic-bezier(.2,.9,.3,1.2)}
+.gpk-bk.in .gpk{transform:none}
+.gpk button{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;color:#fff;font:inherit;font-size:16px;font-weight:600;padding:15px 18px;border-radius:20px;cursor:pointer;text-align:left}
+.gpk button:active{background:rgba(255,255,255,.1)}
+.gpk button svg{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.gpk button.on svg{opacity:1}
+.gpk button+button{border-top:1px solid rgba(255,255,255,.08)}
+/* Settings: sleeker main page */
+.smain .srow{padding:16px 16px}
+.smain .sic,.spg .sic{width:auto;height:auto;border:0;background:none}
+.smain .sic svg{width:22px;height:22px}
+.smain .slab{font-size:16px;font-weight:650}
+.smain .scard{border-radius:20px}
+.updbtn{background:transparent!important;border:1px solid var(--accent)!important;color:#fff!important}
+.accsw.on{border-color:transparent;box-shadow:0 0 0 2px #000,0 0 0 4px #fff}
+/* Posters: a thin light edge and a soft shadow so they stand off the black */
+.pw img,.pw .ph,.lshow img,.lshow .ph,.lsea img,.lsea .ph,.shpo img,.mvhead img,.lcw img,.sehp img,.rpc .rph img{box-shadow:0 0 0 1px rgba(255,255,255,.13),0 8px 18px rgba(0,0,0,.65)!important}
+.pw img{border-radius:10px}
+/* Title page: the big poster glows in its own colors */
+.pgw{position:relative;flex:none;display:block;line-height:0}
+.pgw img:not(.pglow){position:relative;z-index:1}
+.pgw .pglow{position:absolute!important;left:6%;top:8%;width:88%!important;height:88%!important;filter:blur(20px) saturate(1.7);opacity:.6;z-index:0;box-shadow:none!important;transform:translateY(6px)}
 </style>
 </head>
 <body>
@@ -2555,8 +2584,8 @@ function fillUpdate(b){
   const box = $('#appupd', b); if(!box || !NATIVE || updating) return;
   const newer = latestBuild > APP_BUILD;
   box.innerHTML = `<span class="sic"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
-    <span class="slab">Version ${APP_BUILD || '?'}<small>${newer ? `Version ${latestBuild} is ready to install` : latestBuild ? 'Up to date' : 'Checking for updates…'}</small></span>
-    ${newer ? '<button class="updbtn" id="appupdbtn">Update</button>' : ''}`;
+    <span class="slab">Version ${APP_BUILD || '?'}</span>
+    ${newer ? `<button class="updbtn" id="appupdbtn">Update to ${latestBuild}</button>` : ''}`;
   const btn = $('#appupdbtn', box); if(!btn) return;
   btn.onclick = async () => {
     btn.disabled = true; btn.textContent = 'Downloading…'; updating = true;
@@ -3212,6 +3241,48 @@ function fixMatch(tid, after){
 }
 
 // Press and hold (about half a second) without moving: runs fn instead of the normal tap
+// A choice list on frosted glass (instead of Android's gray pop-up): tap an option, or outside to close
+function glassPick(opts, cur, onPick){
+  const bk = document.createElement('div'); bk.className = 'gpk-bk';
+  bk.innerHTML = `<div class="gpk">${opts.map(([v, l]) => `<button data-v="${esc(v)}" class="${String(v) === String(cur) ? 'on' : ''}"><span>${esc(l)}</span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`).join('')}</div>`;
+  document.body.append(bk);
+  requestAnimationFrame(() => bk.classList.add('in'));
+  const close = () => { bk.classList.remove('in'); setTimeout(() => bk.remove(), 220); };
+  bk.onclick = e => { const o = e.target.closest('[data-v]'); if(o){ hap(); onPick(o.dataset.v); } close(); };
+}
+// Every dropdown in the app (Genres filters and the rest) opens the glass list instead of Android's gray pop-up
+document.addEventListener('mousedown', e => {
+  const sel = e.target.closest && e.target.closest('select'); if(!sel || sel.multiple || sel.disabled) return;
+  e.preventDefault(); sel.blur();
+  const opts = [...sel.options].filter(o => !o.disabled && !o.hidden).map(o => [o.value, o.textContent]);
+  glassPick(opts, sel.value, v => { if(sel.value === v) return; sel.value = v; sel.dispatchEvent(new Event('input', { bubbles:true })); sel.dispatchEvent(new Event('change', { bubbles:true })); });
+}, true);
+// Posters lean slightly toward your finger while pressed (starts a moment after the touch, so scrolling never tilts them)
+(function posterTilt(){
+  let el = null, tm = null, last = null;
+  const go = () => { if(!el || !last) return; const r = el.getBoundingClientRect(), x = (last.clientX - r.left) / r.width - .5, y = (last.clientY - r.top) / r.height - .5;
+    el.style.transform = `perspective(600px) rotateY(${(x * 12).toFixed(1)}deg) rotateX(${(-y * 12).toFixed(1)}deg) scale(.97)`; };
+  const end = () => { clearTimeout(tm); tm = null; if(el){ el.style.transition = 'transform .25s ease-out'; el.style.transform = ''; } el = null; };
+  document.addEventListener('pointerdown', e => {
+    const t = e.target.closest && e.target.closest('.pw, .lshow, .lsea'); if(!t) return;
+    const img = t.querySelector('img, .ph'); if(!img) return;
+    last = e; end(); tm = setTimeout(() => { el = img; el.style.transition = 'transform .12s ease-out'; go(); }, 90);
+  }, { passive:true });
+  document.addEventListener('pointermove', e => { last = e; if(el) go(); }, { passive:true });
+  ['pointerup', 'pointercancel', 'scroll'].forEach(t => document.addEventListener(t, end, { passive:true, capture:true }));
+})();
+// The big poster at the top of a title page glows softly in its own colors
+(function posterGlow(){
+  const glow = () => $$('#sheets .mvhead img:not([data-g]), #sheets .shpo img:not([data-g])').forEach(img => {
+    img.dataset.g = 1;
+    const w = document.createElement('span'); w.className = 'pgw';
+    img.replaceWith(w);
+    const g = img.cloneNode(); g.className = 'pglow'; g.removeAttribute('loading'); g.alt = '';
+    w.append(g, img);
+  });
+  const host = document.getElementById('sheets');
+  if(host) new MutationObserver(() => glow()).observe(host, { childList:true, subtree:true });
+})();
 // a light tap you can feel (Android app only)
 const hap = (ms = 12) => { try{ NATIVE && navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
 function longPress(el, fn){
@@ -3260,7 +3331,7 @@ function seasonCard(f, sn, count, posterPath){
     <span>${sn ? 'Season ' + sn : 'Extras'}</span><span class="small">${count ? count + ' episode' + (count === 1 ? '' : 's') : ''}</span></button>`;
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
-const K_LSORT = 'rclib.libsort';
+const K_LSORT = 'rclib.libsort', LSORTS = [['added', 'Recently added'], ['watched', 'Recently watched'], ['az', 'A–Z']];
 // when a title was added to Real-Debrid, and when you last watched any of it
 const addedAt = f => Math.max(0, ...Object.values(rdLib.items).filter(it => it.m && String(it.m.id) === String(f.id)).map(it => Date.parse(it.added) || 0));
 function watchedAt(f){
@@ -3299,7 +3370,7 @@ function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
     <div id="lcont"></div><div id="lrecent"></div><div class="pad" style="padding-top:8px">
     <div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
-      <select id="lsort" aria-label="Sort"><option value="added">Recently added</option><option value="watched">Recently watched</option><option value="az">A–Z</option></select></div>
+      <button class="gsel" id="lsort" aria-label="Sort"></button></div>
     <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
@@ -3349,7 +3420,7 @@ function drawLibrary(b){
     const grid = $('#lgrid', b);
     {
       const q = ($('#lq', b).value || '').trim().toLowerCase(), so = store.get(K_LSORT, 'added');
-      $('#lsort', b).value = so;
+      $('#lsort', b).textContent = LSORTS.find(x => x[0] === so)[1];
       let list = picked ? [picked] : inType.slice();
       if(q) list = list.filter(f => (f.title || '').toLowerCase().includes(q));
       if(so === 'added') list.sort((a, c) => addedAt(c) - addedAt(a));
@@ -3369,7 +3440,7 @@ function drawLibrary(b){
     $$('[data-fix]', b).forEach(x => x.onclick = () => fixMatch(x.dataset.fix, paint));
   };
   $('#lq', b).oninput = () => paint();
-  $('#lsort', b).onchange = e => { store.set(K_LSORT, e.target.value); paint(); };
+  $('#lsort', b).onclick = () => glassPick(LSORTS, store.get(K_LSORT, 'added'), v => { store.set(K_LSORT, v); paint(); });
   b.onclick = e => {
     const held = e.target.closest('.lshow'); if(held && held._held){ held._held = false; return; }
     const s = e.target.closest('.lsea'); if(s){ openSeason(pid(s.dataset.show), +s.dataset.sn); return; }
@@ -3596,38 +3667,43 @@ function renderSettings(){
     audio:'<path d="M5 9.5v5h3.5L13 18V6L8.5 9.5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
     cc:'<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M10.5 10.2a2 2 0 1 0 0 3.6M16.5 10.2a2 2 0 1 0 0 3.6"/>',
     size:'<path d="M4 18 8.5 6 13 18M5.6 14h5.8M15 18l2.8-7.5L20.5 18M15.8 16h4"/>',
+    palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2.3a3.8 3.8 0 0 0 3.8-3.8C20.5 6.6 16.7 3.5 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.5" r=".9"/><circle cx="14.6" cy="7.5" r=".9"/>',
     home:'<path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4z"/>'
   };
   const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
-  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink']];
-  const pick = (id, cur, opts) => `<select class="ssel" id="${id}">${opts.map(([v, l]) => `<option value="${v}"${String(cur) === String(v) ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink'],['#ffffff','White']];
+  const PICKS = {};
+  const pick = (id, cur, opts) => { PICKS[id] = opts; return `<button class="ssel gsel" id="${id}" value="${esc(cur)}">${esc((opts.find(o => String(o[0]) === String(cur)) || opts[0])[1])}</button>`; };
+  // a picker button: opens the glass list, then behaves like a changed select (el.value + el.onchange)
+  const wirePicks = box => $$('.gsel[id]', box).forEach(el => { const opts = PICKS[el.id]; if(!opts) return;
+    el.onclick = () => glassPick(opts, el.value, v => { el.value = v; el.textContent = opts.find(o => String(o[0]) === v)[1]; el.onchange && el.onchange({ target:el }); }); });
   const sw = (id, icon, label, sub, on) => `<label class="srow sw">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i class="swi"></i></label>`;
   const selRow = (icon, label, sub, sel) => `<div class="srow static">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${sel}</div>`;
   const langName = c => (LANGS.find(x => x[0] === c) || [])[1];
   // a settings section as its own page (glass back button), repainted when something changes
   const subPage = (title, build) => {
     const pg = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="spg"></div>`, { tall:true, page:true });
-    const draw = () => { if(!pg.el.isConnected) return; build($('.spg', pg.body), draw); };
+    const draw = () => { if(!pg.el.isConnected) return; const box = $('.spg', pg.body); build(box, draw); wirePicks(box); };
     draw(); pg.refresh = draw; pg.onClose = () => paint();
     return pg;
   };
   const paint = () => {
     if(!b.isConnected) return;
-    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, '');
-    const acc = (ACCENTS.find(x => x[0] === store.get(K_ACCENT, ACCENTS[0][0])) || ACCENTS[0])[1];
-    const st = { discover:'Discover', library:'Library', last:'Last page' }[store.get(K_START, 'discover')] || 'Discover';
+    const tm = !!store.get(K_KEY, '');
     $('#setbody', b).innerHTML = `
-      <div class="sgroup"><div class="scard">
-        ${row('g-conn', 'cloud', 'Connections', 'TMDB, Real-Debrid, Rotten Tomatoes', tm && rd ? 'All set' : tm ? 'Set up' : 'Set up', tm ? 'ok' : 'warn')}
-        ${NATIVE ? row('g-play', 'next', 'Player', 'Languages, subtitles, intros, Midnight mode') : ''}
-        ${row('g-look', 'eye', 'Look and feel', 'Accent color, start page, hide rated', `<i class="sdot" style="background:var(--accent)"></i>${acc} · ${st}`)}
-        ${row('g-data', 'down', 'Your data', 'Back up, restore, storage')}
+      <div class="sgroup smain"><div class="scard">
+        ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
+        ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
+        ${row('g-look', 'palette', 'Look and feel', '')}
+        ${row('g-data', 'down', 'Your data', '')}
       </div></div>
-      ${NATIVE ? `<div class="sgroup"><div class="sgh">App</div><div class="scard"><div class="srow static" id="appupd"></div></div></div>` : ''}
-      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About and data sources', '')}</div></div>`;
+      <div class="sgroup smain"><div class="scard">
+        ${NATIVE ? '<div class="srow static" id="appupd"></div>' : ''}
+        ${row('s-about', 'info', 'About', '')}
+      </div></div>`;
     $('#g-conn', b).onclick = () => subPage('Connections', box => {
       const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
       box.innerHTML = `<div class="scard">

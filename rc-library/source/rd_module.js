@@ -36,8 +36,8 @@ function fillUpdate(b){
   const box = $('#appupd', b); if(!box || !NATIVE || updating) return;
   const newer = latestBuild > APP_BUILD;
   box.innerHTML = `<span class="sic"><svg viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
-    <span class="slab">Version ${APP_BUILD || '?'}<small>${newer ? `Version ${latestBuild} is ready to install` : latestBuild ? 'Up to date' : 'Checking for updates…'}</small></span>
-    ${newer ? '<button class="updbtn" id="appupdbtn">Update</button>' : ''}`;
+    <span class="slab">Version ${APP_BUILD || '?'}</span>
+    ${newer ? `<button class="updbtn" id="appupdbtn">Update to ${latestBuild}</button>` : ''}`;
   const btn = $('#appupdbtn', box); if(!btn) return;
   btn.onclick = async () => {
     btn.disabled = true; btn.textContent = 'Downloading…'; updating = true;
@@ -693,6 +693,48 @@ function fixMatch(tid, after){
 }
 
 // Press and hold (about half a second) without moving: runs fn instead of the normal tap
+// A choice list on frosted glass (instead of Android's gray pop-up): tap an option, or outside to close
+function glassPick(opts, cur, onPick){
+  const bk = document.createElement('div'); bk.className = 'gpk-bk';
+  bk.innerHTML = `<div class="gpk">${opts.map(([v, l]) => `<button data-v="${esc(v)}" class="${String(v) === String(cur) ? 'on' : ''}"><span>${esc(l)}</span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`).join('')}</div>`;
+  document.body.append(bk);
+  requestAnimationFrame(() => bk.classList.add('in'));
+  const close = () => { bk.classList.remove('in'); setTimeout(() => bk.remove(), 220); };
+  bk.onclick = e => { const o = e.target.closest('[data-v]'); if(o){ hap(); onPick(o.dataset.v); } close(); };
+}
+// Every dropdown in the app (Genres filters and the rest) opens the glass list instead of Android's gray pop-up
+document.addEventListener('mousedown', e => {
+  const sel = e.target.closest && e.target.closest('select'); if(!sel || sel.multiple || sel.disabled) return;
+  e.preventDefault(); sel.blur();
+  const opts = [...sel.options].filter(o => !o.disabled && !o.hidden).map(o => [o.value, o.textContent]);
+  glassPick(opts, sel.value, v => { if(sel.value === v) return; sel.value = v; sel.dispatchEvent(new Event('input', { bubbles:true })); sel.dispatchEvent(new Event('change', { bubbles:true })); });
+}, true);
+// Posters lean slightly toward your finger while pressed (starts a moment after the touch, so scrolling never tilts them)
+(function posterTilt(){
+  let el = null, tm = null, last = null;
+  const go = () => { if(!el || !last) return; const r = el.getBoundingClientRect(), x = (last.clientX - r.left) / r.width - .5, y = (last.clientY - r.top) / r.height - .5;
+    el.style.transform = `perspective(600px) rotateY(${(x * 12).toFixed(1)}deg) rotateX(${(-y * 12).toFixed(1)}deg) scale(.97)`; };
+  const end = () => { clearTimeout(tm); tm = null; if(el){ el.style.transition = 'transform .25s ease-out'; el.style.transform = ''; } el = null; };
+  document.addEventListener('pointerdown', e => {
+    const t = e.target.closest && e.target.closest('.pw, .lshow, .lsea'); if(!t) return;
+    const img = t.querySelector('img, .ph'); if(!img) return;
+    last = e; end(); tm = setTimeout(() => { el = img; el.style.transition = 'transform .12s ease-out'; go(); }, 90);
+  }, { passive:true });
+  document.addEventListener('pointermove', e => { last = e; if(el) go(); }, { passive:true });
+  ['pointerup', 'pointercancel', 'scroll'].forEach(t => document.addEventListener(t, end, { passive:true, capture:true }));
+})();
+// The big poster at the top of a title page glows softly in its own colors
+(function posterGlow(){
+  const glow = () => $$('#sheets .mvhead img:not([data-g]), #sheets .shpo img:not([data-g])').forEach(img => {
+    img.dataset.g = 1;
+    const w = document.createElement('span'); w.className = 'pgw';
+    img.replaceWith(w);
+    const g = img.cloneNode(); g.className = 'pglow'; g.removeAttribute('loading'); g.alt = '';
+    w.append(g, img);
+  });
+  const host = document.getElementById('sheets');
+  if(host) new MutationObserver(() => glow()).observe(host, { childList:true, subtree:true });
+})();
 // a light tap you can feel (Android app only)
 const hap = (ms = 12) => { try{ NATIVE && navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
 function longPress(el, fn){
@@ -741,7 +783,7 @@ function seasonCard(f, sn, count, posterPath){
     <span>${sn ? 'Season ' + sn : 'Extras'}</span><span class="small">${count ? count + ' episode' + (count === 1 ? '' : 's') : ''}</span></button>`;
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
-const K_LSORT = 'rclib.libsort';
+const K_LSORT = 'rclib.libsort', LSORTS = [['added', 'Recently added'], ['watched', 'Recently watched'], ['az', 'A–Z']];
 // when a title was added to Real-Debrid, and when you last watched any of it
 const addedAt = f => Math.max(0, ...Object.values(rdLib.items).filter(it => it.m && String(it.m.id) === String(f.id)).map(it => Date.parse(it.added) || 0));
 function watchedAt(f){
@@ -780,7 +822,7 @@ function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
     <div id="lcont"></div><div id="lrecent"></div><div class="pad" style="padding-top:8px">
     <div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
-      <select id="lsort" aria-label="Sort"><option value="added">Recently added</option><option value="watched">Recently watched</option><option value="az">A–Z</option></select></div>
+      <button class="gsel" id="lsort" aria-label="Sort"></button></div>
     <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
@@ -830,7 +872,7 @@ function drawLibrary(b){
     const grid = $('#lgrid', b);
     {
       const q = ($('#lq', b).value || '').trim().toLowerCase(), so = store.get(K_LSORT, 'added');
-      $('#lsort', b).value = so;
+      $('#lsort', b).textContent = LSORTS.find(x => x[0] === so)[1];
       let list = picked ? [picked] : inType.slice();
       if(q) list = list.filter(f => (f.title || '').toLowerCase().includes(q));
       if(so === 'added') list.sort((a, c) => addedAt(c) - addedAt(a));
@@ -850,7 +892,7 @@ function drawLibrary(b){
     $$('[data-fix]', b).forEach(x => x.onclick = () => fixMatch(x.dataset.fix, paint));
   };
   $('#lq', b).oninput = () => paint();
-  $('#lsort', b).onchange = e => { store.set(K_LSORT, e.target.value); paint(); };
+  $('#lsort', b).onclick = () => glassPick(LSORTS, store.get(K_LSORT, 'added'), v => { store.set(K_LSORT, v); paint(); });
   b.onclick = e => {
     const held = e.target.closest('.lshow'); if(held && held._held){ held._held = false; return; }
     const s = e.target.closest('.lsea'); if(s){ openSeason(pid(s.dataset.show), +s.dataset.sn); return; }
