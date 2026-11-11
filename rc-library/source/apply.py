@@ -419,5 +419,11 @@ rep("$('.bdrop', b).style.backgroundImage", "$('.bdrop', s.el).style.backgroundI
 rep("""  if(isPage) sh.classList.add('page');""", """  if(isPage) sh.classList.add('page');
   { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }""")
 
+
+# ---- Pages close only with the glass back/home buttons (or the phone's back gesture), never by pulling down ----
+rep("""  makeDraggable(s);
+  return s;""", """  if(!isPage) makeDraggable(s);
+  return s;""")
+
 open(p, 'w').write(s)
 print('applied cast chips')

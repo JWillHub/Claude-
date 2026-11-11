@@ -1122,7 +1122,7 @@ function sheet(html, opt = {}){
   requestAnimationFrame(() => requestAnimationFrame(() => { bk.classList.add('in'); sh.classList.add('in'); }));
   const opened = Date.now();
   bk.onclick = () => { if(Date.now() - opened > 450) closeAllSheets(); };
-  makeDraggable(s);
+  if(!isPage) makeDraggable(s);
   return s;
 }
 function closeSheet(s, fromPop){
