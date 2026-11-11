@@ -393,5 +393,16 @@ function sheet(html, opt = {}){
 rep("""<div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true })""", """<div class="msg" style="grid-column:1/-1">Loading films…</div></div>`, { tall:true, page:true })""")
 rep("""<div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true });""", """<div class="sent" style="height:30px"></div><div class="msg"></div>`, { tall:true, page:true });""")
 
+
+# ---- Leftover code: the episode chart is gone from series cards ----
+_i = s.index("  return;\n  if(!d.imdb){ $('#imdb', b).innerHTML")
+_j = s.index("/* ---------- Movie sheet ---------- */")
+s = s[:_i] + "}\n\n" + s[_j:]
+# ---- Faster start: Discover rows load when they're about to scroll into view, not a screen and a half early ----
+rep("if(e.target.dataset.row != null) loadRow(e.target); else loadTile(e.target);\n  }), { rootMargin:'500px 400px' });",
+    "if(e.target.dataset.row != null) loadRow(e.target); else loadTile(e.target);\n  }), { rootMargin:'250px 400px' });")
+# ---- A light tap you can feel when you rate (Android app) ----
+rep("function setRating(f, r, quiet){", "function setRating(f, r, quiet){\n  try{ NATIVE && r && navigator.vibrate && navigator.vibrate(12); }catch(e){}")
+
 open(p, 'w').write(s)
 print('applied cast chips')

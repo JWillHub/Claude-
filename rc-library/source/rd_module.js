@@ -417,29 +417,6 @@ async function launchNative(link, title, meta){
   }
   return launchOnce(link, title, meta, false, extra);
 }
-function countdownNext(next, id, title){
-  return new Promise(resolve => {
-    let left = 10, decided = false, tmr = null;
-    const s = sheet(`<div class="upn"><div class="upnth" id="upnth"><span>E${next.ep.e}</span></div>
-      <div class="lbl lcl" style="margin-top:14px">Up next</div>
-      <div class="upnt">${esc(title)} · S${next.ep.s} E${next.ep.e}</div><div class="small" id="upnn"></div>
-      <div class="upnbar"><i id="upnfill"></i></div>
-      <button class="btn" id="upngo">▶ Play now</button><button class="btn ghost" id="upnno">Cancel</button></div>`);
-    const finish = go => { if(decided) return; decided = true; clearInterval(tmr); s.onClose = null; s.close(); resolve(go); };
-    s.onClose = () => { if(!decided){ decided = true; clearInterval(tmr); resolve(false); } };
-    $('#upngo', s.body).onclick = () => finish(true);
-    $('#upnno', s.body).onclick = () => finish(false);
-    const tick = () => { const g = $('#upngo', s.body); if(g) g.textContent = `▶ Play now (${left})`; const f = $('#upnfill', s.body); if(f) f.style.width = ((10 - left) / 10 * 100) + '%'; };
-    tick();
-    tmr = setInterval(() => { left--; tick(); if(left <= 0) finish(true); }, 1000);
-    getStream(next.link).catch(() => {});   // have the link ready
-    seasonEps(+String(id).slice(2), next.ep.s).then(list => {
-      const e = list.find(x => x.e === next.ep.e); if(!e || !s.el.isConnected) return;
-      const n = $('#upnn', s.body); if(n) n.textContent = e.name || '';
-      const th = $('#upnth', s.body); if(th && e.still) th.innerHTML = `<img src="${IMG}w300${e.still}" alt="">`;
-    }).catch(() => {});
-  });
-}
 // What's in the player right now, so a resume point can be saved even if the player never answers
 const K_INPLAYER = 'rclib.inplayer';
 async function launchOnce(link, title, meta, retry = false, extra = null){
@@ -566,7 +543,8 @@ function renderEpisodes(box, files, id, title, opt = {}){
     $$('.epc', box).forEach(btn => {
       const f = files[+btn.dataset.i];
       btn.addEventListener('pointerdown', () => { getStream(f.link).catch(() => {}); }, { once:true });   // start fetching the link before the finger lifts
-      btn.onclick = e => { const o = e.target.closest('.epo'); if(o && !o.classList.contains('open')){ o.classList.add('open'); return; } play(f); };
+      longPress(btn, () => { toggleWatched([key(f)], f.tid, id); draw(); });
+      btn.onclick = e => { if(btn._held){ btn._held = false; return; } const o = e.target.closest('.epo'); if(o && !o.classList.contains('open')){ o.classList.add('open'); return; } play(f); };
     });
   };
   draw();
@@ -705,6 +683,8 @@ function fixMatch(tid, after){
 }
 
 // Press and hold (about half a second) without moving: runs fn instead of the normal tap
+// a light tap you can feel (Android app only)
+const hap = (ms = 12) => { try{ NATIVE && navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
 function longPress(el, fn){
   let tmr = null, sx = 0, sy = 0;
   const cancel = () => { clearTimeout(tmr); tmr = null; };
@@ -751,9 +731,47 @@ function seasonCard(f, sn, count, posterPath){
     <span>${sn ? 'Season ' + sn : 'Extras'}</span><span class="small">${count ? count + ' episode' + (count === 1 ? '' : 's') : ''}</span></button>`;
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
+const K_LSORT = 'rclib.libsort';
+// when a title was added to Real-Debrid, and when you last watched any of it
+const addedAt = f => Math.max(0, ...Object.values(rdLib.items).filter(it => it.m && String(it.m.id) === String(f.id)).map(it => Date.parse(it.added) || 0));
+function watchedAt(f){
+  let t = 0;
+  Object.values(prog).forEach(p => { if(String(p.id) === String(f.id)) t = Math.max(t, p.at || 0); });
+  Object.entries(done).forEach(([k, at]) => { const it = rdLib.items[k.split('|')[0]]; if(it && it.m && String(it.m.id) === String(f.id)) t = Math.max(t, at || 0); });
+  return t;
+}
+// Mark files watched (or back to unwatched). Watched ones leave Continue watching.
+function toggleWatched(keys, tid, id, force){
+  const on = force != null ? force : !keys.every(k => done[k]);
+  keys.forEach(k => { if(on){ done[k] = Date.now(); delete prog[k]; } else delete done[k]; });
+  if(on && typeof id === 'number' && !getR(id) && !seen[id]){ const f = filmOf(id); seen[id] = { title:f.title, year:f.year, poster:f.poster, at:Date.now() }; saveAll(); }
+  saveProg(); afterChange(); hap(18);
+  toast(on ? 'Marked as watched' : 'Marked as unwatched');
+  return on;
+}
+// Long-press a poster in the Library: mark the whole title watched or unwatched
+async function watchedMenu(id, after){
+  const tors = Object.entries(rdLib.items).filter(([, it]) => it.m && String(it.m.id) === String(id));
+  if(!tors.length) return;
+  let keys = [];
+  try{
+    if(typeof id === 'string'){ const all = seasonsCache.get(id) || await showEpisodes(id); seasonsCache.set(id, all); all.forEach(l => l.forEach(f => keys.push(f.tid + '|' + f.path))); }
+    else{ const files = await torrentFiles(tors[0][0]); const f = pickFilm(files); if(f) keys.push(tors[0][0] + '|' + f.path); }
+  }catch(e){ toast(rdErr(e)); return; }
+  if(!keys.length) return;
+  const all = keys.every(k => done[k]), name = filmOf(id).title;
+  const s = sheet(`<h2 class="stitle">${esc(name)}</h2>
+    <button class="btn" id="wm1">${all ? 'Mark as unwatched' : typeof id === 'string' ? 'Mark every episode watched' : 'Mark as watched'}</button>
+    <button class="btn ghost" id="wm0">Cancel</button>`);
+  $('#wm1', s.body).onclick = () => { toggleWatched(keys, tors[0][0], id, !all); s.close(); after && after(); };
+  $('#wm0', s.body).onclick = () => s.close();
+}
 function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
-    <div id="lcont"></div><div class="pad" style="padding-top:8px"><div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
+    <div id="lcont"></div><div id="lrecent"></div><div class="pad" style="padding-top:8px">
+    <div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
+      <select id="lsort" aria-label="Sort"><option value="added">Recently added</option><option value="watched">Recently watched</option><option value="az">A–Z</option></select></div>
+    <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
   const paint = () => {
     if(!b.isConnected) return;
@@ -794,15 +812,26 @@ function drawLibrary(b){
       playInto($('#lbox', ps.body), p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label });
     });
 
+    // Recently added: newest things in Real-Debrid
+    const recent = all.length >= 6 ? all.slice().sort((a, c) => addedAt(c) - addedAt(a)).slice(0, 10) : [];
+    $('#lrecent', b).innerHTML = recent.length ? `<div class="cwh rah"><span class="cwdot"></span>Recently added</div><div class="rarow nodrag">${recent.map(f =>
+      `<button class="lshow" ${f.tv ? 'data-lshow' : 'data-lmov'}="${esc(f.id)}">${poster(f.poster, '', 'w185', f.title)}</button>`).join('')}</div>` : '';
     // the posters: movies open their card; a series shows its seasons
     const grid = $('#lgrid', b);
     {
-      const list = picked ? [picked] : inType;
-      grid.innerHTML = list.map(f => f.tv
+      const q = ($('#lq', b).value || '').trim().toLowerCase(), so = store.get(K_LSORT, 'added');
+      $('#lsort', b).value = so;
+      let list = picked ? [picked] : inType.slice();
+      if(q) list = list.filter(f => (f.title || '').toLowerCase().includes(q));
+      if(so === 'added') list.sort((a, c) => addedAt(c) - addedAt(a));
+      else if(so === 'watched') list.sort((a, c) => watchedAt(c) - watchedAt(a) || addedAt(c) - addedAt(a));
+      grid.innerHTML = has && !rdLib.synced && !list.length ? '<i class="skel"></i>'.repeat(9) : list.map(f => f.tv
         ? `<button class="lshow" data-lshow="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`
         : `<button class="lshow" data-lmov="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`).join('');
     }
-    $('#lmsg', b).textContent = has && rdLib.synced && !all.length ? 'Nothing in your Real-Debrid library yet.' : '';
+    $('#lmsg', b).textContent = has && rdLib.synced && !all.length ? 'Nothing in your Real-Debrid library yet.'
+      : $('#lq', b).value.trim() && !grid.children.length ? 'No matches in your library.' : '';
+    $$('.lshow', b).forEach(x => longPress(x, () => watchedMenu(pid(x.dataset.lmov || x.dataset.lshow), paint)));
     remember(all);
     setPageSource(picked && picked.tv ? null : { title:'My library', items:(picked ? [picked] : inType).filter(f => !f.tv) });
 
@@ -810,7 +839,10 @@ function drawLibrary(b){
       un.map(([tid, it]) => `<div class="lunm"><span>${esc(it.name)}</span><button data-fix="${esc(tid)}">Match</button></div>`).join('') : '';
     $$('[data-fix]', b).forEach(x => x.onclick = () => fixMatch(x.dataset.fix, paint));
   };
+  $('#lq', b).oninput = () => paint();
+  $('#lsort', b).onchange = e => { store.set(K_LSORT, e.target.value); paint(); };
   b.onclick = e => {
+    const held = e.target.closest('.lshow'); if(held && held._held){ held._held = false; return; }
     const s = e.target.closest('.lsea'); if(s){ openSeason(pid(s.dataset.show), +s.dataset.sn); return; }
     const mv = e.target.closest('[data-lmov]'); if(mv){ openLibMovie(+mv.dataset.lmov); return; }
     const sh = e.target.closest('[data-lshow]'); if(sh) openShowPage(sh.dataset.lshow);
@@ -894,7 +926,6 @@ async function moreLike(box, id){
     return `<button class="cwc" data-like="${esc(m.id)}"><span class="cwimg">${pic}</span><span class="cwt">${esc(m.title)}</span><span class="small">${inLib(m.id) ? '<b class="mlown">In your library</b>' : esc([m.year, m.tv ? 'Series' : 'Movie'].filter(Boolean).join(' · '))}</span></button>`; }).join('')}</div></section>`;
   $$('[data-like]', box).forEach(x => x.onclick = () => openLibCard(pid(x.dataset.like)));
 }
-const GLBACK = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
 let showSeason = null;
 // A series opens as a card over the Library (swipe it down, tap outside or press Back to close)
 function openShowPage(id){

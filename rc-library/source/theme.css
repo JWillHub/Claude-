@@ -37,3 +37,18 @@
 .plogos{gap:6px}.plogos img{width:30px;height:30px;border-radius:8px;box-shadow:none}
 .castsec .pp{width:62px}.castsec .pp img,.castsec .pp .pi{width:48px;height:48px;box-shadow:none;margin-bottom:5px}.castsec .pp .pi{font-size:17px}.castsec .ppl{gap:8px}
 .castsec .ppl{align-items:flex-start}
+/* Library: search, sort, Recently added */
+.ltools{display:flex;gap:8px;margin:0 0 12px}
+.ltools input{flex:1;min-width:0;background:transparent;border:1px solid var(--line);border-radius:999px;padding:9px 14px;color:#fff;font:inherit;font-size:14px}
+.ltools select{flex:none;background:transparent;border:1px solid var(--line);border-radius:999px;padding:9px 12px;color:#fff;font:inherit;font-size:13px;font-weight:650}
+.ltools select option{background:#000}
+.rah{margin-top:18px}
+.rarow{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding:0 16px 4px}.rarow::-webkit-scrollbar{display:none}
+.rarow .lshow{flex:none;width:96px}
+/* Storage meter */
+.stor{align-items:center}.stbar{display:block;height:3px;border-radius:2px;background:#222;margin-top:8px;overflow:hidden}.stbar b{display:block;height:100%;width:0;background:var(--accent)}
+.sclr{flex:none;background:transparent;border:1px solid var(--line);border-radius:999px;color:#fff;font:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;cursor:pointer}
+/* Placeholders: dark shapes that pulse gently until posters and pictures arrive */
+@keyframes skel{0%,100%{background-color:#111}50%{background-color:#1c1c1c}}
+.grid img,.rarow img,.lshow img,.cwimg,.epth{background-color:#111}
+.skel{display:block;aspect-ratio:2/3;border-radius:12px;background-color:#111;animation:skel 1.4s ease-in-out infinite}

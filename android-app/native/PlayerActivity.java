@@ -39,6 +39,7 @@ import android.text.TextUtils;
 import android.media.AudioManager;
 import android.util.Rational;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -212,12 +213,12 @@ public class PlayerActivity extends AppCompatActivity {
 
         // bottom-right: "Skip intro" and "Next episode" (see-through pills with a white outline)
         skipBtn = pillButton();
-        skipBtn.setOnClickListener(v -> { if (exo != null) { exo.seekTo(skipTarget); fade(skipBtn, false); } });
+        skipBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); if (exo != null) { exo.seekTo(skipTarget); fade(skipBtn, false); } });
         nextBtn = pillButton();
         GradientDrawable fillShape = new GradientDrawable(); fillShape.setColor(0x40FFFFFF); fillShape.setCornerRadius(dp(22));
         nextFill = new ClipDrawable(fillShape, Gravity.START, ClipDrawable.HORIZONTAL);
         nextBtn.setBackground(new LayerDrawable(new Drawable[]{ nextBtn.getBackground(), nextFill }));
-        nextBtn.setOnClickListener(v -> goNext());
+        nextBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); goNext(); });
         for (TextView b : new TextView[]{ skipBtn, nextBtn }) {
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END);
             lp.rightMargin = dp(36); lp.bottomMargin = dp(96);
@@ -373,6 +374,7 @@ public class PlayerActivity extends AppCompatActivity {
         long now = SystemClock.uptimeMillis();
         if (dir != runDir || now - lastSkipAt > 700) { runDir = dir; runTotal = 0; }
         runTotal += 10; lastSkipAt = now;
+        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
         long dur = exo.getDuration(), to = exo.getCurrentPosition() + dir * 10_000L;
         if (dur != C.TIME_UNSET) to = Math.min(to, dur - 1000);
         exo.seekTo(Math.max(0, to));
@@ -667,7 +669,7 @@ public class PlayerActivity extends AppCompatActivity {
         moonBtn = new ImageButton(this);
         moonBtn.setImageDrawable(moon);
         moonBtn.setContentDescription("Midnight mode");
-        moonBtn.setOnClickListener(v -> toggleMidnight());
+        moonBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); toggleMidnight(); });
         try {
             View cc = view.findViewById(androidx.media3.ui.R.id.exo_subtitle);
             ViewGroup parent = (ViewGroup) cc.getParent();

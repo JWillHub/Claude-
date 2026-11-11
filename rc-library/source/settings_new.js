@@ -14,6 +14,7 @@ function renderSettings(){
     info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.1"/>',
     lib:'<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/>'
   };
+  const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const paint = () => {
@@ -32,6 +33,7 @@ function renderSettings(){
       <div class="sgroup"><div class="sgh">Your data</div><div class="scard">
         ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
         ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
+        <div class="srow static stor"><span class="slab">Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span><button class="pill sclr" id="stclr">Clear cache</button></div>
       </div></div>
       ${NATIVE ? `<div class="sgroup"><div class="sgh">App</div><div class="scard"><div class="srow static" id="appupd"></div></div></div>` : ''}
       <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About & data sources', '')}</div></div>
@@ -47,6 +49,25 @@ function renderSettings(){
     $('#s-omdb', b).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
       how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
     $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
+    // Storage: your own data vs. cached data (posters, title details, stream links), and a button to clear the cache
+    const measure = () => {
+      let mine = 0, cache = 0;
+      for(let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || '').length) * 2;
+        if(isCacheKey(k)) cache += n; else mine += n;
+      }
+      const mb = n => n < 1e6 ? Math.max(1, Math.round(n / 1e3)) + ' KB' : (n / 1e6).toFixed(1) + ' MB';
+      const el = $('#stinfo', b); if(!el) return;
+      el.textContent = `Yours ${mb(mine)} · Cache ${mb(cache)} · 5 MB max`;
+      $('#stfill', b).style.width = Math.min(100, (mine + cache) / 5e6 * 100).toFixed(1) + '%';
+    };
+    measure();
+    $('#stclr', b).onclick = () => {
+      for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
+      try{ sessionStorage.clear(); }catch(e){}
+      if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
+      measure(); toast('Cache cleared. Your ratings and library are untouched.');
+    };
     const ap = $('#autop', b); if(ap) ap.onchange = e => store.set(K_AUTOPLAY, e.target.checked);
     $('#exp', b).onclick = async () => {
       const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1);
