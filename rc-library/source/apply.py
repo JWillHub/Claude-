@@ -404,5 +404,12 @@ rep("if(e.target.dataset.row != null) loadRow(e.target); else loadTile(e.target)
 # ---- A light tap you can feel when you rate (Android app) ----
 rep("function setRating(f, r, quiet){", "function setRating(f, r, quiet){\n  try{ NATIVE && r && navigator.vibrate && navigator.vibrate(12); }catch(e){}")
 
+
+# ---- Start on: Discover, Library or the last page you were on ----
+rep("""function setView(v, o = {}){""", """function setView(v, o = {}){
+  try{ if(['discover','genres','films','library','settings','diary','tv'].includes(v)) store.set('rclib.lastview', v); }catch(e){}""")
+rep("""\nsetView('discover');\n""", """\n{ const st = store.get('rclib.start', 'discover'), last = store.get('rclib.lastview', 'discover');
+  setView(st === 'last' ? (last || 'discover') : st === 'library' ? 'library' : 'discover'); }\n""")
+
 open(p, 'w').write(s)
 print('applied cast chips')

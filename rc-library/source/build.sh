@@ -20,6 +20,9 @@ else:
 # dark red accent
 s = s.replace('#ffb547', '#b8242c').replace('rgba(255,181,71,', 'rgba(184,36,44,').replace('rgba(255, 181, 71,', 'rgba(184,36,44,')
 s = s.replace('color:#1a1206', 'color:#fff')
+# the accent can be changed in Settings: everything red follows one variable
+s = s.replace('fill="#b8242c"', 'style="fill:var(--accent)"')
+s = re.sub(r'rgba\(184,36,44,(\.?\d*\.?\d+)\)', lambda m: 'color-mix(in srgb, var(--accent) %d%%, transparent)' % round(float(m.group(1)) * 100), s)
 # all text black or white
 s = re.sub(r'(?<![-\w])color:var\(--(accent|accent2|good|muted)\)', 'color:#fff', s)
 s = s.replace('--muted:#9c93a9', '--muted:#fff').replace('--text:#f4efe9', '--text:#fff')

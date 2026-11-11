@@ -52,3 +52,17 @@
 @keyframes skel{0%,100%{background-color:#111}50%{background-color:#1c1c1c}}
 .grid img,.rarow img,.lshow img,.cwimg,.epth{background-color:#111}
 .skel{display:block;aspect-ratio:2/3;border-radius:12px;background-color:#111;animation:skel 1.4s ease-in-out infinite}
+/* Settings sub-pages */
+.spg{padding:6px 0 30px}.spg .sgh{margin:18px 4px 8px}.spg .sgh:first-child{margin-top:6px}
+.ssel{flex:none;max-width:48%;background:transparent;border:1px solid var(--line);border-radius:999px;color:#fff;font:inherit;font-size:13px;font-weight:650;padding:7px 10px}
+.ssel option{background:#000}
+.sdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.acc{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;padding:14px}
+.accsw{width:34px;height:34px;border-radius:50%;border:2px solid transparent;background:var(--c);box-shadow:inset 0 0 0 2px #000;cursor:pointer}
+.accsw.on{border-color:#fff}
+.subprev{margin:4px 12px 12px;border-radius:10px;height:90px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;background:linear-gradient(135deg,#2c3b4f,#4a3a2c)}
+.subprev span{color:#fff;font-weight:600;font-size:15px;text-align:center;padding:1px 6px;text-shadow:0 1px 3px #000,0 0 2px #000}
+.subprev.outline span{text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.subprev.box span{background:rgba(0,0,0,.7);text-shadow:none;border-radius:3px}
+.subprev.yellow span{color:#ffe14d}
+.subprev.s-s span{font-size:12.5px}.subprev.s-l span{font-size:18px}.subprev.s-xl span{font-size:21px}

@@ -12,7 +12,10 @@ function callNative(plugin, method, opts){
   if(typeof C.nativePromise === 'function') return C.nativePromise(plugin, method, opts);
   return Promise.reject(new Error('this part of the app is not available'));
 }
-const playerPlay = opts => callNative('RCPlayer', 'play', opts);
+// your Player settings ride along with every video
+const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), midnightDefault:!!store.get(K_PL_MID, false),
+  audioLang:store.get(K_PL_AUD, ''), textLang:store.get(K_PL_TXT, ''), subSize:store.get(K_PL_SIZE, 'm'), subStyle:store.get(K_PL_STYLE, 'shadow') });
+const playerPlay = opts => callNative('RCPlayer', 'play', { ...playerPrefs(), ...opts });
 
 // ---- App updates (Android app only): a dot on Settings when a newer build is out, and an Update button there ----
 const APP_BUILD = parseInt('__BUILDNUM__', 10);

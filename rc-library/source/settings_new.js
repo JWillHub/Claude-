@@ -1,3 +1,8 @@
+// Settings keys for the player and the look of the app
+const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
+const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
+function applyAccent(){ try{ document.documentElement.style.setProperty('--accent', store.get(K_ACCENT, '#b8242c')); }catch(e){} }
+applyAccent();
 // Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
 function openSettings(){ setView('settings'); }
 function renderSettings(){
@@ -12,80 +17,135 @@ function renderSettings(){
     down:'<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>',
     up:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/>',
     info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.1"/>',
-    lib:'<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/>'
+    lib:'<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/>',
+    next:'<path d="M6 6.5v11l8-5.5z"/><path d="M17.5 6.5v11"/>',
+    skip:'<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5v4h4"/><path d="M10 9.5v5l4-2.5z"/>',
+    moon:'<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/>',
+    audio:'<path d="M5 9.5v5h3.5L13 18V6L8.5 9.5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
+    cc:'<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M10.5 10.2a2 2 0 1 0 0 3.6M16.5 10.2a2 2 0 1 0 0 3.6"/>',
+    size:'<path d="M4 18 8.5 6 13 18M5.6 14h5.8M15 18l2.8-7.5L20.5 18M15.8 16h4"/>',
+    home:'<path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4z"/>'
   };
   const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
+  const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
+  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink']];
+  const pick = (id, cur, opts) => `<select class="ssel" id="${id}">${opts.map(([v, l]) => `<option value="${v}"${String(cur) === String(v) ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  const sw = (id, icon, label, sub, on) => `<label class="srow sw">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i class="swi"></i></label>`;
+  const selRow = (icon, label, sub, sel) => `<div class="srow static">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${sel}</div>`;
+  const langName = c => (LANGS.find(x => x[0] === c) || [])[1];
+  // a settings section as its own page (glass back button), repainted when something changes
+  const subPage = (title, build) => {
+    const pg = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="spg"></div>`, { tall:true, page:true });
+    const draw = () => { if(!pg.el.isConnected) return; build($('.spg', pg.body), draw); };
+    draw(); pg.refresh = draw; pg.onClose = () => paint();
+    return pg;
+  };
   const paint = () => {
     if(!b.isConnected) return;
-    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
+    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, '');
+    const acc = (ACCENTS.find(x => x[0] === store.get(K_ACCENT, ACCENTS[0][0])) || ACCENTS[0])[1];
+    const st = { discover:'Discover', library:'Library', last:'Last page' }[store.get(K_START, 'discover')] || 'Discover';
     $('#setbody', b).innerHTML = `
-      <div class="sgroup"><div class="sgh">Connections</div><div class="scard">
-        ${row('s-tmdb', 'film', 'TMDB', 'Posters, titles and details', tm ? 'Connected' : 'Set up', tm ? 'ok' : 'warn')}
-        ${row('s-rd', 'cloud', 'Real-Debrid', 'Your library and playback', rd ? (n ? n + ' title' + (n === 1 ? '' : 's') : 'Connected') : 'Set up', rd ? 'ok' : '')}
-        ${row('s-omdb', 'tomato', 'Rotten Tomatoes', 'Critic scores on title cards', om ? 'On' : 'Off', om ? 'ok' : '')}
-      </div></div>
-      <div class="sgroup"><div class="sgh">Browsing</div><div class="scard">
-        <label class="srow sw">${ico('eye')}<span class="slab">Hide what I've rated<small>Keeps Discover and Genres fresh</small></span><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}><i class="swi"></i></label>
-        ${NATIVE ? `<label class="srow sw">${ico('lib')}<span class="slab">Auto-play next episode<small>Starts the next one after a 10-second countdown</small></span><input type="checkbox" id="autop" ${store.get(K_AUTOPLAY, true) ? 'checked' : ''}><i class="swi"></i></label>` : ''}
-      </div></div>
-      <div class="sgroup"><div class="sgh">Your data</div><div class="scard">
-        ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
-        ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
-        <div class="srow static stor"><span class="slab">Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span><button class="pill sclr" id="stclr">Clear cache</button></div>
+      <div class="sgroup"><div class="scard">
+        ${row('g-conn', 'cloud', 'Connections', 'TMDB, Real-Debrid, Rotten Tomatoes', tm && rd ? 'All set' : tm ? 'Set up' : 'Set up', tm ? 'ok' : 'warn')}
+        ${NATIVE ? row('g-play', 'next', 'Player', 'Languages, subtitles, intros, Midnight mode') : ''}
+        ${row('g-look', 'eye', 'Look and feel', 'Accent color, start page, hide rated', `<i class="sdot" style="background:var(--accent)"></i>${acc} · ${st}`)}
+        ${row('g-data', 'down', 'Your data', 'Back up, restore, storage')}
       </div></div>
       ${NATIVE ? `<div class="sgroup"><div class="sgh">App</div><div class="scard"><div class="srow static" id="appupd"></div></div></div>` : ''}
-      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About & data sources', '')}</div></div>
-      <input type="file" id="file" accept=".json,application/json" hidden>`;
-    $('#s-tmdb', b).onclick = () => keySheet({ name:'TMDB', what:'Rolling Credits gets every poster, title and detail from TMDB. A free key switches it on.',
-      how:'themoviedb.org → sign in → Settings → API → copy the API key (or the read access token).', link:'https://www.themoviedb.org/settings/api',
-      key:K_KEY, placeholder:'Paste your TMDB key', verify:true });
-    $('#s-rd', b).onclick = () => keySheet({ name:'Real-Debrid', what:'Your Real-Debrid library becomes the Library tab, with a Play button on every title you have.',
-      how:'real-debrid.com/apitoken → copy your API token.', link:'https://real-debrid.com/apitoken', key:K_RD, placeholder:'Paste your API token', secret:true,
-      extra:'<button class="btn ghost" id="ks-lib">Open my library</button>',
-      onSave:v => { if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } },
-      wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); setTimeout(openLibrary, 60); }; } });
-    $('#s-omdb', b).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
-      how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
-    $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
-    // Storage: your own data vs. cached data (posters, title details, stream links), and a button to clear the cache
-    const measure = () => {
-      let mine = 0, cache = 0;
-      for(let i = 0; i < localStorage.length; i++){
-        const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || '').length) * 2;
-        if(isCacheKey(k)) cache += n; else mine += n;
-      }
-      const mb = n => n < 1e6 ? Math.max(1, Math.round(n / 1e3)) + ' KB' : (n / 1e6).toFixed(1) + ' MB';
-      const el = $('#stinfo', b); if(!el) return;
-      el.textContent = `Yours ${mb(mine)} · Cache ${mb(cache)} · 5 MB max`;
-      $('#stfill', b).style.width = Math.min(100, (mine + cache) / 5e6 * 100).toFixed(1) + '%';
-    };
-    measure();
-    $('#stclr', b).onclick = () => {
-      for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
-      try{ sessionStorage.clear(); }catch(e){}
-      if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
-      measure(); toast('Cache cleared. Your ratings and library are untouched.');
-    };
-    const ap = $('#autop', b); if(ap) ap.onchange = e => store.set(K_AUTOPLAY, e.target.checked);
-    $('#exp', b).onclick = async () => {
-      const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1);
-      if(NATIVE){   // in the Android app: Android's own "Save to" screen (Downloads, Drive, ...)
-        try{ const r = await callNative('RCFiles', 'save', { name:`rolling-credits-${today()}.json`, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); }
-        catch(e){ toast('Could not save the backup'); }
-        return;
-      }
-      const blob = new Blob([json], { type:'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    };
-    $('#imp', b).onclick = () => $('#file', b).click();
-    $('#file', b).onchange = importBackup;
+      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About and data sources', '')}</div></div>`;
+    $('#g-conn', b).onclick = () => subPage('Connections', box => {
+      const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
+      box.innerHTML = `<div class="scard">
+        ${row('s-tmdb', 'film', 'TMDB', 'Posters, titles and details', tm ? 'Connected' : 'Set up', tm ? 'ok' : 'warn')}
+        ${row('s-rd', 'cloud', 'Real-Debrid', 'Your library and playback', rd ? (n ? n + ' title' + (n === 1 ? '' : 's') : 'Connected') : 'Set up', rd ? 'ok' : '')}
+        ${row('s-omdb', 'tomato', 'Rotten Tomatoes', 'Critic scores on title cards', om ? 'On' : 'Off', om ? 'ok' : '')}</div>`;
+      $('#s-tmdb', box).onclick = () => keySheet({ name:'TMDB', what:'Rolling Credits gets every poster, title and detail from TMDB. A free key switches it on.',
+        how:'themoviedb.org → sign in → Settings → API → copy the API key (or the read access token).', link:'https://www.themoviedb.org/settings/api',
+        key:K_KEY, placeholder:'Paste your TMDB key', verify:true });
+      $('#s-rd', box).onclick = () => keySheet({ name:'Real-Debrid', what:'Your Real-Debrid library becomes the Library tab, with a Play button on every title you have.',
+        how:'real-debrid.com/apitoken → copy your API token.', link:'https://real-debrid.com/apitoken', key:K_RD, placeholder:'Paste your API token', secret:true,
+        extra:'<button class="btn ghost" id="ks-lib">Open my library</button>',
+        onSave:v => { if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } },
+        wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); closeAllSheets(); setTimeout(openLibrary, 60); }; } });
+      $('#s-omdb', box).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
+        how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
+    });
+    const gp = $('#g-play', b); if(gp) gp.onclick = () => subPage('Player', box => {
+      const g = (k, d) => store.get(k, d);
+      box.innerHTML = `<div class="sgh">Episodes</div><div class="scard">
+        ${sw('p-auto', 'next', 'Auto-play next episode', 'A 10-second countdown when the credits start', g(K_AUTOPLAY, true))}
+        ${sw('p-skip', 'skip', 'Skip intros automatically', 'Jumps past intros and recaps, with a tap to undo', g(K_PL_SKIP, false))}</div>
+        <div class="sgh">Sound</div><div class="scard">
+        ${sw('p-mid', 'moon', 'Midnight mode by default', 'Every video starts with loud peaks evened out', g(K_PL_MID, false))}
+        ${selRow('audio', 'Audio language', 'When a file has more than one', pick('p-al', g(K_PL_AUD, ''), [['', 'Last used'], ...LANGS]))}</div>
+        <div class="sgh">Subtitles</div><div class="scard">
+        ${selRow('cc', 'Subtitle language', '', pick('p-tl', g(K_PL_TXT, ''), [['', 'Last used'], ['off', 'Off'], ...LANGS]))}
+        ${selRow('size', 'Size', '', pick('p-ts', g(K_PL_SIZE, 'm'), [['s', 'Small'], ['m', 'Medium'], ['l', 'Large'], ['xl', 'Extra large']]))}
+        ${selRow('cc', 'Style', '', pick('p-tst', g(K_PL_STYLE, 'shadow'), [['shadow', 'White with shadow'], ['outline', 'White with outline'], ['box', 'White on dark box'], ['yellow', 'Yellow with shadow']]))}
+        <div class="subprev ${g(K_PL_STYLE, 'shadow')} s-${g(K_PL_SIZE, 'm')}"><span>This is how subtitles will look.</span></div></div>`;
+      const bind = (id, k, isBool) => { const el = $('#' + id, box); el.onchange = () => { store.set(k, isBool ? el.checked : el.value); if(!isBool) draw2(); }; };
+      const draw2 = () => { const pv = $('.subprev', box); pv.className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; };
+      bind('p-auto', K_AUTOPLAY, true); bind('p-skip', K_PL_SKIP, true); bind('p-mid', K_PL_MID, true);
+      bind('p-al', K_PL_AUD); bind('p-tl', K_PL_TXT); bind('p-ts', K_PL_SIZE); bind('p-tst', K_PL_STYLE);
+    });
+    $('#g-look', b).onclick = () => subPage('Look and feel', (box, redraw) => {
+      const cur = store.get(K_ACCENT, ACCENTS[0][0]);
+      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
+          `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
+        <div class="sgh">Start on</div><div class="scard">
+        ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
+        <div class="sgh">Browsing</div><div class="scard">
+        ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
+      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
+      $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
+    });
+    $('#g-data', b).onclick = () => subPage('Your data', box => {
+      box.innerHTML = `<div class="scard">
+        ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
+        ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
+        <div class="srow static stor"><span class="slab">Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span><button class="pill sclr" id="stclr">Clear cache</button></div></div>
+        <input type="file" id="file" accept=".json,application/json" hidden>`;
+      // Storage: your own data vs. cached data (title details, stream links), and a button to clear the cache
+      const measure = () => {
+        let mine = 0, cache = 0;
+        for(let i = 0; i < localStorage.length; i++){
+          const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || '').length) * 2;
+          if(isCacheKey(k)) cache += n; else mine += n;
+        }
+        const mb = n => n < 1e6 ? Math.max(1, Math.round(n / 1e3)) + ' KB' : (n / 1e6).toFixed(1) + ' MB';
+        const el = $('#stinfo', box); if(!el) return;
+        el.textContent = `Yours ${mb(mine)} · Cache ${mb(cache)} · 5 MB max`;
+        $('#stfill', box).style.width = Math.min(100, (mine + cache) / 5e6 * 100).toFixed(1) + '%';
+      };
+      measure();
+      $('#stclr', box).onclick = () => {
+        for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
+        try{ sessionStorage.clear(); }catch(e){}
+        if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
+        measure(); toast('Cache cleared. Your ratings and library are untouched.');
+      };
+      $('#exp', box).onclick = async () => {
+        const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1);
+        if(NATIVE){   // in the Android app: Android's own "Save to" screen (Downloads, Drive, ...)
+          try{ const r = await callNative('RCFiles', 'save', { name:`rolling-credits-${today()}.json`, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); }
+          catch(e){ toast('Could not save the backup'); }
+          return;
+        }
+        const blob = new Blob([json], { type:'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      };
+      $('#imp', box).onclick = () => $('#file', box).click();
+      $('#file', box).onchange = importBackup;
+    });
     $('#s-about', b).onclick = () => sheet(`<h2 class="stitle">About</h2>
       <p class="small" style="font-size:13.5px;line-height:1.55">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
       <p class="small" style="font-size:13.5px;line-height:1.55">IMDb ratings: information courtesy of IMDb (imdb.com), used with permission for personal, non-commercial use.</p>
-      <p class="small" style="font-size:13.5px;line-height:1.55">Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb.</p>`);
+      <p class="small" style="font-size:13.5px;line-height:1.55">Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb. Intro timestamps from TheIntroDB.</p>`);
     if(NATIVE){ fillUpdate(b); checkForUpdate(); }
   };
   // One connection: what it's for, where to get the key, the key itself
@@ -102,7 +162,7 @@ function renderSettings(){
     const finish = (v, first) => {
       o.onSave && o.onSave(v);
       if(o.key === K_KEY && (first || !v)){ built.discover = built.genres = built.tv = false; setView(view); }
-      ks.close(); paint(); toast(v ? `${esc(o.name)} connected` : `${esc(o.name)} disconnected`);
+      ks.close(); paint(); sheetStack.forEach(x => x.refresh && x.refresh()); toast(v ? `${esc(o.name)} connected` : `${esc(o.name)} disconnected`);
     };
     btn.onclick = async () => {
       const v = $('#ks-in', kb).value.trim(); if(!v){ $('#ks-in', kb).focus(); return; }

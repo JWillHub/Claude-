@@ -32,7 +32,7 @@ svg{display:block}
 
 /* top bar */
 .top{position:sticky;top:0;z-index:8;display:flex;align-items:center;justify-content:space-between;gap:10px;height:calc(52px + env(safe-area-inset-top));
-  padding:calc(6px + env(safe-area-inset-top)) 16px 6px;background:#000;border-bottom:1px solid rgba(184,36,44,.55)}
+  padding:calc(6px + env(safe-area-inset-top)) 16px 6px;background:#000;border-bottom:1px solid color-mix(in srgb, var(--accent) 55%, transparent)}
 .logo{margin:0;cursor:pointer;display:flex;flex-direction:column;line-height:.86;user-select:none;-webkit-user-select:none}
 .logo .w1{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:#fff;padding-left:2px}
 .logo .w2{font-family:var(--disp);font-weight:700;font-size:25px;letter-spacing:.04em;text-transform:uppercase;color:#fff}
@@ -40,7 +40,7 @@ svg{display:block}
 .logo .w2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .logo.sub .w1{display:none}
 .logo.sub .w2{font-size:26px;line-height:1}
-.ib.hback{width:30px;height:30px;border-radius:9px;color:#fff;background:rgba(184,36,44,.08);border-color:rgba(184,36,44,.35);margin-right:-2px}
+.ib.hback{width:30px;height:30px;border-radius:9px;color:#fff;background:color-mix(in srgb, var(--accent) 8%, transparent);border-color:color-mix(in srgb, var(--accent) 35%, transparent);margin-right:-2px}
 .ib.hback[hidden]{display:none}
 .hback svg{width:16px;height:16px}
 .hact{display:flex;gap:8px}
@@ -62,7 +62,7 @@ svg{display:block}
   font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
 #hcar svg{width:19px;height:19px}
 #hcar:active{transform:scale(.95)}
-.hact .ib.on{color:#fff;border-color:rgba(184,36,44,.5)}
+.hact .ib.on{color:#fff;border-color:color-mix(in srgb, var(--accent) 50%, transparent)}
 .hact .ib.gen{width:auto;display:flex;gap:6px;padding:0 12px;font-weight:800;font-size:13.5px;color:var(--text)}
 .hact .ib.gen svg{color:#fff;width:17px;height:17px}
 .hact .ib svg{width:19px;height:19px}
@@ -165,7 +165,7 @@ main{max-width:1100px;margin:0 auto}
 /* Stremio-style pickers: a row of pills, each opening a bottom-sheet list */
 .pkbar{display:flex;gap:8px;padding:14px 16px 16px}
 .pkp{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:12px 9px 12px 11px;border-radius:14px;cursor:pointer;
-  border:1px solid rgba(184,36,44,.35);background:linear-gradient(120deg,rgba(255,111,97,.12),rgba(184,36,44,.08));color:var(--text);font-weight:700}
+  border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);background:linear-gradient(120deg,rgba(255,111,97,.12),color-mix(in srgb, var(--accent) 8%, transparent));color:var(--text);font-weight:700}
 .pkp span{white-space:nowrap;overflow:hidden;font-size:15px}
 .pkp svg{flex:none;color:#fff}
 .pkhd{margin:2px 4px 10px}
@@ -287,7 +287,7 @@ label.f{display:block;color:#fff;font-size:13px;margin:14px 0 6px}
 .acts{display:flex;gap:8px;margin-top:12px}
 .acts .pill{flex:1;justify-content:center;padding:12px}
 .sagachip{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:12px 14px;border-radius:16px;cursor:pointer;text-align:left;
-  background:linear-gradient(120deg,rgba(255,111,97,.18),rgba(184,36,44,.12));border:1px solid rgba(184,36,44,.35)}
+  background:linear-gradient(120deg,rgba(255,111,97,.18),color-mix(in srgb, var(--accent) 12%, transparent));border:1px solid color-mix(in srgb, var(--accent) 35%, transparent)}
 .sagachip>span{flex:1;min-width:0}
 .sagachip>b{color:#fff;margin-left:auto;white-space:nowrap;flex-shrink:0}
 .ov{color:#d3cbdb;font-size:14.5px;margin:14px 0 4px}
@@ -346,11 +346,11 @@ label.f{display:block;color:#fff;font-size:13px;margin:14px 0 6px}
 .rpp{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:10px 12px;border-radius:999px;font-weight:800;font-size:13.5px;cursor:pointer;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--text);transition:background .15s,border-color .15s,color .15s}
 .rpp svg{width:11px;height:14px;fill:currentColor}
-.rpp.on{border-color:var(--accent);color:#fff;background:rgba(184,36,44,.1)}
+.rpp.on{border-color:var(--accent);color:#fff;background:color-mix(in srgb, var(--accent) 10%, transparent)}
 .rpp:active{background:rgba(255,255,255,.14)}
 .rpc>*:not(.rpbg){position:relative;z-index:1}
 .rpc .st .f{transition:width .14s ease-out}
-.rpc .st .f svg{filter:drop-shadow(0 0 7px rgba(184,36,44,.5))}
+.rpc .st .f svg{filter:drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 50%, transparent))}
 .rpc .rv.bump{animation:bump .25s ease}
 .rpc .s5.pulse{animation:bump .3s ease}
 @keyframes bump{40%{transform:scale(1.12)}}
@@ -383,10 +383,10 @@ label.f{display:block;color:#fff;font-size:13px;margin:14px 0 6px}
 .imdbbox .ib2{padding:2px 6px;font-size:13px}
 .wz{display:flex;align-items:center;justify-content:center;gap:8px;margin:-2px 0 14px;padding:9px;border:1px dashed var(--line);border-radius:14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .wz svg{width:12px;height:15px;fill:currentColor}
-.wz.on{border-style:solid;border-color:var(--accent);background:rgba(184,36,44,.14);color:#fff;transform:scale(1.04)}
+.wz.on{border-style:solid;border-color:var(--accent);background:color-mix(in srgb, var(--accent) 14%, transparent);color:#fff;transform:scale(1.04)}
 .rpc.wzmode .s5{opacity:.25}
-.qs{display:flex;align-items:center;gap:14px;margin:22px 16px 0;width:calc(100% - 32px);padding:14px 16px;border-radius:18px;border:1px solid rgba(184,36,44,.35);
-  background:linear-gradient(120deg,rgba(255,111,97,.2),rgba(184,36,44,.1));text-align:left;cursor:pointer}
+.qs{display:flex;align-items:center;gap:14px;margin:22px 16px 0;width:calc(100% - 32px);padding:14px 16px;border-radius:18px;border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background:linear-gradient(120deg,rgba(255,111,97,.2),color-mix(in srgb, var(--accent) 10%, transparent));text-align:left;cursor:pointer}
 .qs .qi{flex:none;width:46px;height:46px;border-radius:12px;background:var(--accent);display:grid;place-items:center}
 .qs .qi svg{width:24px;height:24px;fill:#1a1206}
 .qs b{display:block;font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.02em}
@@ -407,7 +407,7 @@ label.f{display:block;color:#fff;font-size:13px;margin:14px 0 6px}
 .plogos{display:flex;gap:8px;flex-wrap:wrap}
 .plogos img{width:42px;height:42px;border-radius:11px;box-shadow:0 4px 10px rgba(0,0,0,.4)}
 .revbtn{display:flex;align-items:center;justify-content:space-between;margin:0 16px 16px;width:calc(100% - 32px);padding:13px 16px;border-radius:16px;cursor:pointer;
-  background:linear-gradient(120deg,rgba(255,111,97,.2),rgba(184,36,44,.12));border:1px solid rgba(184,36,44,.35);font-weight:800}
+  background:linear-gradient(120deg,rgba(255,111,97,.2),color-mix(in srgb, var(--accent) 12%, transparent));border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);font-weight:800}
 .revbtn b{color:#fff}
 .rev{text-align:center}
 .rev .big{font-family:var(--disp);font-weight:700;font-size:84px;line-height:.9;color:#fff}
@@ -448,7 +448,7 @@ label.f{display:block;color:#fff;font-size:13px;margin:14px 0 6px}
 .pp .pi{display:grid!important;place-items:center;font-family:var(--disp);font-weight:700;font-size:22px;color:#fff}
 .pp b{display:block;font-size:12px;font-weight:700;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pp span{display:block;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plink{background:none;border:0;padding:0;color:var(--text);font:inherit;text-decoration:underline;text-decoration-color:rgba(184,36,44,.6);text-underline-offset:3px;cursor:pointer}
+.plink{background:none;border:0;padding:0;color:var(--text);font:inherit;text-decoration:underline;text-decoration-color:color-mix(in srgb, var(--accent) 60%, transparent);text-underline-offset:3px;cursor:pointer}
 .castsec .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#fff;margin:14px 0 8px}
 .phead{display:flex;gap:16px;align-items:flex-end;margin-top:6px}
 .phead img,.phead .pi{width:112px;height:150px;border-radius:14px;object-fit:cover;flex:none;background:var(--card2);box-shadow:0 12px 26px rgba(0,0,0,.5)}
@@ -574,7 +574,7 @@ html{touch-action:manipulation}
 .upnt{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:24px;line-height:1.1}
 .upnbar{height:5px;border-radius:3px;background:var(--line);margin:16px 0 4px;overflow:hidden}.upnbar i{display:block;height:100%;width:0;background:var(--accent);transition:width 1s linear}
 .ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,0);z-index:60;opacity:0;pointer-events:none;
-  background:var(--card);border:1px solid rgba(184,36,44,.45);color:var(--text);font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;transition:opacity .15s;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  background:var(--card);border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);color:var(--text);font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;transition:opacity .15s;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .shhero{position:relative;min-height:330px;background:var(--card2) center top/cover no-repeat;display:flex;align-items:flex-end;margin-top:-1px}
 .shcard{overflow:hidden;background:#000}
 .shcard .grab{position:absolute;left:0;right:0;top:0;z-index:4}
@@ -593,10 +593,10 @@ html{touch-action:manipulation}
 .shov.open{-webkit-line-clamp:unset;display:block}
 .shtabs{display:flex;gap:8px;overflow-x:auto;margin:14px 0 2px;padding-bottom:2px;scrollbar-width:none}
 .shtabs button{flex:none;background:transparent;border:1px solid var(--line);color:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
-.shtabs button.on{border-color:var(--accent);color:var(--text);background:rgba(184,36,44,.1)}
+.shtabs button.on{border-color:var(--accent);color:var(--text);background:color-mix(in srgb, var(--accent) 10%, transparent)}
 .cwband.mlband{margin:26px -16px 8px}.mlband .cwh{padding-left:16px}.mlband .cwc{width:180px}.mlown{color:#fff;font-weight:750}
 .updfail{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12.5px;color:#fff}
-.updfail button{align-self:flex-start;background:transparent;border:1px solid rgba(184,36,44,.5);color:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
+.updfail button{align-self:flex-start;background:transparent;border:1px solid color-mix(in srgb, var(--accent) 50%, transparent);color:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
 #appupd{flex-wrap:wrap}
 .cwband{margin:14px 0 4px;padding:0;background:transparent;border:0}
 .cwh{display:flex;align-items:center;gap:8px;padding:0 20px 10px;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:#fff}
@@ -680,16 +680,30 @@ html{touch-action:manipulation}
 @keyframes skel{0%,100%{background-color:#111}50%{background-color:#1c1c1c}}
 .grid img,.rarow img,.lshow img,.cwimg,.epth{background-color:#111}
 .skel{display:block;aspect-ratio:2/3;border-radius:12px;background-color:#111;animation:skel 1.4s ease-in-out infinite}
+/* Settings sub-pages */
+.spg{padding:6px 0 30px}.spg .sgh{margin:18px 4px 8px}.spg .sgh:first-child{margin-top:6px}
+.ssel{flex:none;max-width:48%;background:transparent;border:1px solid var(--line);border-radius:999px;color:#fff;font:inherit;font-size:13px;font-weight:650;padding:7px 10px}
+.ssel option{background:#000}
+.sdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.acc{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;padding:14px}
+.accsw{width:34px;height:34px;border-radius:50%;border:2px solid transparent;background:var(--c);box-shadow:inset 0 0 0 2px #000;cursor:pointer}
+.accsw.on{border-color:#fff}
+.subprev{margin:4px 12px 12px;border-radius:10px;height:90px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;background:linear-gradient(135deg,#2c3b4f,#4a3a2c)}
+.subprev span{color:#fff;font-weight:600;font-size:15px;text-align:center;padding:1px 6px;text-shadow:0 1px 3px #000,0 0 2px #000}
+.subprev.outline span{text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.subprev.box span{background:rgba(0,0,0,.7);text-shadow:none;border-radius:3px}
+.subprev.yellow span{color:#ffe14d}
+.subprev.s-s span{font-size:12.5px}.subprev.s-l span{font-size:18px}.subprev.s-xl span{font-size:21px}
 </style>
 </head>
 <body>
 <header class="top">
   <button class="ib hback" id="hback" aria-label="Back" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <svg class="hproj" id="hproj" viewBox="0 0 40 40" aria-hidden="true">
-    <circle cx="10" cy="11" r="7.5" fill="#b8242c"/><g fill="#0c0a0f"><circle cx="10" cy="7" r="1.7"/><circle cx="13.8" cy="12.2" r="1.7"/><circle cx="6.2" cy="12.2" r="1.7"/><circle cx="10" cy="11" r=".9"/></g>
-    <circle cx="24" cy="12.5" r="6" fill="#b8242c"/><g fill="#0c0a0f"><circle cx="24" cy="9.3" r="1.4"/><circle cx="27" cy="13.6" r="1.4"/><circle cx="21" cy="13.6" r="1.4"/><circle cx="24" cy="12.5" r=".8"/></g>
-    <rect x="3" y="19" width="26" height="13" rx="3" fill="#b8242c"/><rect x="6" y="22" width="9" height="2" rx="1" fill="#0c0a0f" opacity=".55"/>
-    <path d="M29 22.5 L36 20 L36 31 L29 28.5 Z" fill="#b8242c"/><circle cx="36" cy="25.5" r="2.4" fill="#e23a44"/>
+    <circle cx="10" cy="11" r="7.5" style="fill:var(--accent)"/><g fill="#0c0a0f"><circle cx="10" cy="7" r="1.7"/><circle cx="13.8" cy="12.2" r="1.7"/><circle cx="6.2" cy="12.2" r="1.7"/><circle cx="10" cy="11" r=".9"/></g>
+    <circle cx="24" cy="12.5" r="6" style="fill:var(--accent)"/><g fill="#0c0a0f"><circle cx="24" cy="9.3" r="1.4"/><circle cx="27" cy="13.6" r="1.4"/><circle cx="21" cy="13.6" r="1.4"/><circle cx="24" cy="12.5" r=".8"/></g>
+    <rect x="3" y="19" width="26" height="13" rx="3" style="fill:var(--accent)"/><rect x="6" y="22" width="9" height="2" rx="1" fill="#0c0a0f" opacity=".55"/>
+    <path d="M29 22.5 L36 20 L36 31 L29 28.5 Z" style="fill:var(--accent)"/><circle cx="36" cy="25.5" r="2.4" fill="#e23a44"/>
     <path d="M9 32 L7 37 M23 32 L25 37" stroke="#b8242c" stroke-width="2" stroke-linecap="round"/>
   </svg>
   <h1 class="logo" id="logo" role="link" tabindex="0"><span class="w1">Rolling</span><span class="w2">Credits</span></h1>
@@ -1243,6 +1257,7 @@ const built = {};
 const PAGES = ['genre', 'franchises', 'list'];
 let lastTab = 'discover';
 function setView(v, o = {}){
+  try{ if(['discover','genres','films','library','settings','diary','tv'].includes(v)) store.set('rclib.lastview', v); }catch(e){}
   // a tab or page opened while searching: close search first (and its history step), then go
   if(searchOn && !o.fromPop){ closeSearch(false); setTimeout(() => setView(v, o), 40); return; }
   const prev = view;
@@ -2493,7 +2508,10 @@ function callNative(plugin, method, opts){
   if(typeof C.nativePromise === 'function') return C.nativePromise(plugin, method, opts);
   return Promise.reject(new Error('this part of the app is not available'));
 }
-const playerPlay = opts => callNative('RCPlayer', 'play', opts);
+// your Player settings ride along with every video
+const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), midnightDefault:!!store.get(K_PL_MID, false),
+  audioLang:store.get(K_PL_AUD, ''), textLang:store.get(K_PL_TXT, ''), subSize:store.get(K_PL_SIZE, 'm'), subStyle:store.get(K_PL_STYLE, 'shadow') });
+const playerPlay = opts => callNative('RCPlayer', 'play', { ...playerPrefs(), ...opts });
 
 // ---- App updates (Android app only): a dot on Settings when a newer build is out, and an Update button there ----
 const APP_BUILD = parseInt('__BUILDNUM__', 10);
@@ -3522,6 +3540,11 @@ function renderLibraryTab(){
 function openLibrary(){ setView('library'); }
 
 /* ---------- Settings ---------- */
+// Settings keys for the player and the look of the app
+const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
+const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
+function applyAccent(){ try{ document.documentElement.style.setProperty('--accent', store.get(K_ACCENT, '#b8242c')); }catch(e){} }
+applyAccent();
 // Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
 function openSettings(){ setView('settings'); }
 function renderSettings(){
@@ -3536,80 +3559,135 @@ function renderSettings(){
     down:'<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/>',
     up:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19h14"/>',
     info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.1"/>',
-    lib:'<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/>'
+    lib:'<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/>',
+    next:'<path d="M6 6.5v11l8-5.5z"/><path d="M17.5 6.5v11"/>',
+    skip:'<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4.5v4h4"/><path d="M10 9.5v5l4-2.5z"/>',
+    moon:'<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/>',
+    audio:'<path d="M5 9.5v5h3.5L13 18V6L8.5 9.5z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
+    cc:'<rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M10.5 10.2a2 2 0 1 0 0 3.6M16.5 10.2a2 2 0 1 0 0 3.6"/>',
+    size:'<path d="M4 18 8.5 6 13 18M5.6 14h5.8M15 18l2.8-7.5L20.5 18M15.8 16h4"/>',
+    home:'<path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4z"/>'
   };
   const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
+  const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
+  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink']];
+  const pick = (id, cur, opts) => `<select class="ssel" id="${id}">${opts.map(([v, l]) => `<option value="${v}"${String(cur) === String(v) ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+  const sw = (id, icon, label, sub, on) => `<label class="srow sw">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i class="swi"></i></label>`;
+  const selRow = (icon, label, sub, sel) => `<div class="srow static">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${sel}</div>`;
+  const langName = c => (LANGS.find(x => x[0] === c) || [])[1];
+  // a settings section as its own page (glass back button), repainted when something changes
+  const subPage = (title, build) => {
+    const pg = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="spg"></div>`, { tall:true, page:true });
+    const draw = () => { if(!pg.el.isConnected) return; build($('.spg', pg.body), draw); };
+    draw(); pg.refresh = draw; pg.onClose = () => paint();
+    return pg;
+  };
   const paint = () => {
     if(!b.isConnected) return;
-    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
+    const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, '');
+    const acc = (ACCENTS.find(x => x[0] === store.get(K_ACCENT, ACCENTS[0][0])) || ACCENTS[0])[1];
+    const st = { discover:'Discover', library:'Library', last:'Last page' }[store.get(K_START, 'discover')] || 'Discover';
     $('#setbody', b).innerHTML = `
-      <div class="sgroup"><div class="sgh">Connections</div><div class="scard">
-        ${row('s-tmdb', 'film', 'TMDB', 'Posters, titles and details', tm ? 'Connected' : 'Set up', tm ? 'ok' : 'warn')}
-        ${row('s-rd', 'cloud', 'Real-Debrid', 'Your library and playback', rd ? (n ? n + ' title' + (n === 1 ? '' : 's') : 'Connected') : 'Set up', rd ? 'ok' : '')}
-        ${row('s-omdb', 'tomato', 'Rotten Tomatoes', 'Critic scores on title cards', om ? 'On' : 'Off', om ? 'ok' : '')}
-      </div></div>
-      <div class="sgroup"><div class="sgh">Browsing</div><div class="scard">
-        <label class="srow sw">${ico('eye')}<span class="slab">Hide what I've rated<small>Keeps Discover and Genres fresh</small></span><input type="checkbox" id="hide" ${hideRated ? 'checked' : ''}><i class="swi"></i></label>
-        ${NATIVE ? `<label class="srow sw">${ico('lib')}<span class="slab">Auto-play next episode<small>Starts the next one after a 10-second countdown</small></span><input type="checkbox" id="autop" ${store.get(K_AUTOPLAY, true) ? 'checked' : ''}><i class="swi"></i></label>` : ''}
-      </div></div>
-      <div class="sgroup"><div class="sgh">Your data</div><div class="scard">
-        ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
-        ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
-        <div class="srow static stor"><span class="slab">Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span><button class="pill sclr" id="stclr">Clear cache</button></div>
+      <div class="sgroup"><div class="scard">
+        ${row('g-conn', 'cloud', 'Connections', 'TMDB, Real-Debrid, Rotten Tomatoes', tm && rd ? 'All set' : tm ? 'Set up' : 'Set up', tm ? 'ok' : 'warn')}
+        ${NATIVE ? row('g-play', 'next', 'Player', 'Languages, subtitles, intros, Midnight mode') : ''}
+        ${row('g-look', 'eye', 'Look and feel', 'Accent color, start page, hide rated', `<i class="sdot" style="background:var(--accent)"></i>${acc} · ${st}`)}
+        ${row('g-data', 'down', 'Your data', 'Back up, restore, storage')}
       </div></div>
       ${NATIVE ? `<div class="sgroup"><div class="sgh">App</div><div class="scard"><div class="srow static" id="appupd"></div></div></div>` : ''}
-      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About & data sources', '')}</div></div>
-      <input type="file" id="file" accept=".json,application/json" hidden>`;
-    $('#s-tmdb', b).onclick = () => keySheet({ name:'TMDB', what:'Rolling Credits gets every poster, title and detail from TMDB. A free key switches it on.',
-      how:'themoviedb.org → sign in → Settings → API → copy the API key (or the read access token).', link:'https://www.themoviedb.org/settings/api',
-      key:K_KEY, placeholder:'Paste your TMDB key', verify:true });
-    $('#s-rd', b).onclick = () => keySheet({ name:'Real-Debrid', what:'Your Real-Debrid library becomes the Library tab, with a Play button on every title you have.',
-      how:'real-debrid.com/apitoken → copy your API token.', link:'https://real-debrid.com/apitoken', key:K_RD, placeholder:'Paste your API token', secret:true,
-      extra:'<button class="btn ghost" id="ks-lib">Open my library</button>',
-      onSave:v => { if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } },
-      wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); setTimeout(openLibrary, 60); }; } });
-    $('#s-omdb', b).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
-      how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
-    $('#hide', b).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; setView(view); };
-    // Storage: your own data vs. cached data (posters, title details, stream links), and a button to clear the cache
-    const measure = () => {
-      let mine = 0, cache = 0;
-      for(let i = 0; i < localStorage.length; i++){
-        const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || '').length) * 2;
-        if(isCacheKey(k)) cache += n; else mine += n;
-      }
-      const mb = n => n < 1e6 ? Math.max(1, Math.round(n / 1e3)) + ' KB' : (n / 1e6).toFixed(1) + ' MB';
-      const el = $('#stinfo', b); if(!el) return;
-      el.textContent = `Yours ${mb(mine)} · Cache ${mb(cache)} · 5 MB max`;
-      $('#stfill', b).style.width = Math.min(100, (mine + cache) / 5e6 * 100).toFixed(1) + '%';
-    };
-    measure();
-    $('#stclr', b).onclick = () => {
-      for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
-      try{ sessionStorage.clear(); }catch(e){}
-      if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
-      measure(); toast('Cache cleared. Your ratings and library are untouched.');
-    };
-    const ap = $('#autop', b); if(ap) ap.onchange = e => store.set(K_AUTOPLAY, e.target.checked);
-    $('#exp', b).onclick = async () => {
-      const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1);
-      if(NATIVE){   // in the Android app: Android's own "Save to" screen (Downloads, Drive, ...)
-        try{ const r = await callNative('RCFiles', 'save', { name:`rolling-credits-${today()}.json`, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); }
-        catch(e){ toast('Could not save the backup'); }
-        return;
-      }
-      const blob = new Blob([json], { type:'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    };
-    $('#imp', b).onclick = () => $('#file', b).click();
-    $('#file', b).onchange = importBackup;
+      <div class="sgroup"><div class="scard">${row('s-about', 'info', 'About and data sources', '')}</div></div>`;
+    $('#g-conn', b).onclick = () => subPage('Connections', box => {
+      const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
+      box.innerHTML = `<div class="scard">
+        ${row('s-tmdb', 'film', 'TMDB', 'Posters, titles and details', tm ? 'Connected' : 'Set up', tm ? 'ok' : 'warn')}
+        ${row('s-rd', 'cloud', 'Real-Debrid', 'Your library and playback', rd ? (n ? n + ' title' + (n === 1 ? '' : 's') : 'Connected') : 'Set up', rd ? 'ok' : '')}
+        ${row('s-omdb', 'tomato', 'Rotten Tomatoes', 'Critic scores on title cards', om ? 'On' : 'Off', om ? 'ok' : '')}</div>`;
+      $('#s-tmdb', box).onclick = () => keySheet({ name:'TMDB', what:'Rolling Credits gets every poster, title and detail from TMDB. A free key switches it on.',
+        how:'themoviedb.org → sign in → Settings → API → copy the API key (or the read access token).', link:'https://www.themoviedb.org/settings/api',
+        key:K_KEY, placeholder:'Paste your TMDB key', verify:true });
+      $('#s-rd', box).onclick = () => keySheet({ name:'Real-Debrid', what:'Your Real-Debrid library becomes the Library tab, with a Play button on every title you have.',
+        how:'real-debrid.com/apitoken → copy your API token.', link:'https://real-debrid.com/apitoken', key:K_RD, placeholder:'Paste your API token', secret:true,
+        extra:'<button class="btn ghost" id="ks-lib">Open my library</button>',
+        onSave:v => { if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } },
+        wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); closeAllSheets(); setTimeout(openLibrary, 60); }; } });
+      $('#s-omdb', box).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
+        how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
+    });
+    const gp = $('#g-play', b); if(gp) gp.onclick = () => subPage('Player', box => {
+      const g = (k, d) => store.get(k, d);
+      box.innerHTML = `<div class="sgh">Episodes</div><div class="scard">
+        ${sw('p-auto', 'next', 'Auto-play next episode', 'A 10-second countdown when the credits start', g(K_AUTOPLAY, true))}
+        ${sw('p-skip', 'skip', 'Skip intros automatically', 'Jumps past intros and recaps, with a tap to undo', g(K_PL_SKIP, false))}</div>
+        <div class="sgh">Sound</div><div class="scard">
+        ${sw('p-mid', 'moon', 'Midnight mode by default', 'Every video starts with loud peaks evened out', g(K_PL_MID, false))}
+        ${selRow('audio', 'Audio language', 'When a file has more than one', pick('p-al', g(K_PL_AUD, ''), [['', 'Last used'], ...LANGS]))}</div>
+        <div class="sgh">Subtitles</div><div class="scard">
+        ${selRow('cc', 'Subtitle language', '', pick('p-tl', g(K_PL_TXT, ''), [['', 'Last used'], ['off', 'Off'], ...LANGS]))}
+        ${selRow('size', 'Size', '', pick('p-ts', g(K_PL_SIZE, 'm'), [['s', 'Small'], ['m', 'Medium'], ['l', 'Large'], ['xl', 'Extra large']]))}
+        ${selRow('cc', 'Style', '', pick('p-tst', g(K_PL_STYLE, 'shadow'), [['shadow', 'White with shadow'], ['outline', 'White with outline'], ['box', 'White on dark box'], ['yellow', 'Yellow with shadow']]))}
+        <div class="subprev ${g(K_PL_STYLE, 'shadow')} s-${g(K_PL_SIZE, 'm')}"><span>This is how subtitles will look.</span></div></div>`;
+      const bind = (id, k, isBool) => { const el = $('#' + id, box); el.onchange = () => { store.set(k, isBool ? el.checked : el.value); if(!isBool) draw2(); }; };
+      const draw2 = () => { const pv = $('.subprev', box); pv.className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; };
+      bind('p-auto', K_AUTOPLAY, true); bind('p-skip', K_PL_SKIP, true); bind('p-mid', K_PL_MID, true);
+      bind('p-al', K_PL_AUD); bind('p-tl', K_PL_TXT); bind('p-ts', K_PL_SIZE); bind('p-tst', K_PL_STYLE);
+    });
+    $('#g-look', b).onclick = () => subPage('Look and feel', (box, redraw) => {
+      const cur = store.get(K_ACCENT, ACCENTS[0][0]);
+      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
+          `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
+        <div class="sgh">Start on</div><div class="scard">
+        ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
+        <div class="sgh">Browsing</div><div class="scard">
+        ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
+      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
+      $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
+    });
+    $('#g-data', b).onclick = () => subPage('Your data', box => {
+      box.innerHTML = `<div class="scard">
+        ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
+        ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
+        <div class="srow static stor"><span class="slab">Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span><button class="pill sclr" id="stclr">Clear cache</button></div></div>
+        <input type="file" id="file" accept=".json,application/json" hidden>`;
+      // Storage: your own data vs. cached data (title details, stream links), and a button to clear the cache
+      const measure = () => {
+        let mine = 0, cache = 0;
+        for(let i = 0; i < localStorage.length; i++){
+          const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || '').length) * 2;
+          if(isCacheKey(k)) cache += n; else mine += n;
+        }
+        const mb = n => n < 1e6 ? Math.max(1, Math.round(n / 1e3)) + ' KB' : (n / 1e6).toFixed(1) + ' MB';
+        const el = $('#stinfo', box); if(!el) return;
+        el.textContent = `Yours ${mb(mine)} · Cache ${mb(cache)} · 5 MB max`;
+        $('#stfill', box).style.width = Math.min(100, (mine + cache) / 5e6 * 100).toFixed(1) + '%';
+      };
+      measure();
+      $('#stclr', box).onclick = () => {
+        for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
+        try{ sessionStorage.clear(); }catch(e){}
+        if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
+        measure(); toast('Cache cleared. Your ratings and library are untouched.');
+      };
+      $('#exp', box).onclick = async () => {
+        const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1);
+        if(NATIVE){   // in the Android app: Android's own "Save to" screen (Downloads, Drive, ...)
+          try{ const r = await callNative('RCFiles', 'save', { name:`rolling-credits-${today()}.json`, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); }
+          catch(e){ toast('Could not save the backup'); }
+          return;
+        }
+        const blob = new Blob([json], { type:'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      };
+      $('#imp', box).onclick = () => $('#file', box).click();
+      $('#file', box).onchange = importBackup;
+    });
     $('#s-about', b).onclick = () => sheet(`<h2 class="stitle">About</h2>
       <p class="small" style="font-size:13.5px;line-height:1.55">Film data and posters from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
       <p class="small" style="font-size:13.5px;line-height:1.55">IMDb ratings: information courtesy of IMDb (imdb.com), used with permission for personal, non-commercial use.</p>
-      <p class="small" style="font-size:13.5px;line-height:1.55">Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb.</p>`);
+      <p class="small" style="font-size:13.5px;line-height:1.55">Streaming availability from JustWatch. Rotten Tomatoes scores via OMDb. Intro timestamps from TheIntroDB.</p>`);
     if(NATIVE){ fillUpdate(b); checkForUpdate(); }
   };
   // One connection: what it's for, where to get the key, the key itself
@@ -3626,7 +3704,7 @@ function renderSettings(){
     const finish = (v, first) => {
       o.onSave && o.onSave(v);
       if(o.key === K_KEY && (first || !v)){ built.discover = built.genres = built.tv = false; setView(view); }
-      ks.close(); paint(); toast(v ? `${esc(o.name)} connected` : `${esc(o.name)} disconnected`);
+      ks.close(); paint(); sheetStack.forEach(x => x.refresh && x.refresh()); toast(v ? `${esc(o.name)} connected` : `${esc(o.name)} disconnected`);
     };
     btn.onclick = async () => {
       const v = $('#ks-in', kb).value.trim(); if(!v){ $('#ks-in', kb).focus(); return; }
@@ -3663,7 +3741,8 @@ function renderSettings(){
 
 /* ================= go ================= */
 history.replaceState({ rl:0 }, '');
-setView('discover');
+{ const st = store.get('rclib.start', 'discover'), last = store.get('rclib.lastview', 'discover');
+  setView(st === 'last' ? (last || 'discover') : st === 'library' ? 'library' : 'discover'); }
 setTimeout(() => { if(store.get(K_KEY, '')) repairTitles(); }, 2500);
 if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

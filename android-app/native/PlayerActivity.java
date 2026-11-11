@@ -71,7 +71,9 @@ import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.extractor.DefaultExtractorsFactory;
+import androidx.media3.ui.CaptionStyleCompat;
 import androidx.media3.ui.PlayerView;
+import androidx.media3.ui.SubtitleView;
 
 // Full-screen player. Uses the phone's own video decoders (4K HEVC included) and an FFmpeg
 // decoder for audio the phone can't play (DTS, TrueHD), so MKV files play like they do in VLC.
@@ -113,6 +115,9 @@ public class PlayerActivity extends AppCompatActivity {
     private float downX, downY; private boolean runTap = false;
     private DynamicsProcessing dyn;
     private boolean midnight = false;
+    private boolean autoSkip = false;
+    private final java.util.Set<Long> autoSkipped = new java.util.HashSet<>();
+    private long undoTo = 0, undoUntil = 0;
     private ImageButton moonBtn; private MoonDrawable moon;
 
     @Override
@@ -138,12 +143,14 @@ public class PlayerActivity extends AppCompatActivity {
         curE = in.getIntExtra("episode", 0);
         autoplay = in.getBooleanExtra("autoplay", true);
         try { queue = new JSONArray(str(in.getStringExtra("queue")).isEmpty() ? "[]" : in.getStringExtra("queue")); } catch (Exception e) { queue = new JSONArray(); }
-        midnight = prefs.getBoolean("midnight", false);
+        midnight = in.getBooleanExtra("midnightDefault", false);   // Settings → Player → Midnight mode by default
+        autoSkip = in.getBooleanExtra("autoSkip", false);
 
         view = new PlayerView(this);
         view.setBackgroundColor(Color.BLACK);
         view.setShowSubtitleButton(true);
         view.setKeepScreenOn(true);
+        styleSubtitles(str(in.getStringExtra("subSize")), str(in.getStringExtra("subStyle")));
 
         // Top bar over the video: back arrow and title. Shows and hides with the player's controls.
         FrameLayout root = new FrameLayout(this);
@@ -213,7 +220,13 @@ public class PlayerActivity extends AppCompatActivity {
 
         // bottom-right: "Skip intro" and "Next episode" (see-through pills with a white outline)
         skipBtn = pillButton();
-        skipBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); if (exo != null) { exo.seekTo(skipTarget); fade(skipBtn, false); } });
+        skipBtn.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+            if (exo == null) return;
+            if (SystemClock.uptimeMillis() < undoUntil) { exo.seekTo(undoTo); undoUntil = 0; }   // undo an automatic skip
+            else exo.seekTo(skipTarget);
+            fade(skipBtn, false);
+        });
         nextBtn = pillButton();
         GradientDrawable fillShape = new GradientDrawable(); fillShape.setColor(0x40FFFFFF); fillShape.setCornerRadius(dp(22));
         nextFill = new ClipDrawable(fillShape, Gravity.START, ClipDrawable.HORIZONTAL);
@@ -252,10 +265,14 @@ public class PlayerActivity extends AppCompatActivity {
             .build();
 
         // Start with the audio and subtitle languages you picked last time
-        String audio = prefs.getString("audioLang", null), text = prefs.getString("textLang", null);
+        // Settings → Player languages; "Last used" falls back to what you picked in the player before
+        String setA = str(in.getStringExtra("audioLang")), setT = str(in.getStringExtra("textLang"));
+        String audio = !setA.isEmpty() ? setA : prefs.getString("audioLang", null);
+        String text = !setT.isEmpty() ? setT : prefs.getString("textLang", null);
         TrackSelectionParameters.Builder tp = exo.getTrackSelectionParameters().buildUpon();
         if (audio != null && !audio.isEmpty()) tp.setPreferredAudioLanguage(audio);
-        if (text != null && !text.isEmpty()) tp.setPreferredTextLanguage(text);
+        if ("off".equals(text)) { tp.setPreferredTextLanguage(null); tp.setIgnoredTextSelectionFlags(C.SELECTION_FLAG_DEFAULT); }
+        else if (text != null && !text.isEmpty()) tp.setPreferredTextLanguage(text);
         exo.setTrackSelectionParameters(tp.build());
 
         item = new MediaItem.Builder()
@@ -421,6 +438,20 @@ public class PlayerActivity extends AppCompatActivity {
 
     private static String str(String s) { return s == null ? "" : s; }
 
+    // Settings → Player → subtitle size and style
+    private void styleSubtitles(String size, String style) {
+        SubtitleView sv = view.getSubtitleView();
+        if (sv == null) return;
+        float f = "s".equals(size) ? 0.85f : "l".equals(size) ? 1.3f : "xl".equals(size) ? 1.6f : 1.05f;
+        sv.setApplyEmbeddedStyles(false);
+        sv.setApplyEmbeddedFontSizes(false);
+        sv.setFractionalTextSize(SubtitleView.DEFAULT_TEXT_SIZE_FRACTION * f);
+        int fg = "yellow".equals(style) ? 0xFFFFE14D : Color.WHITE;
+        int bg = "box".equals(style) ? 0xB3000000 : Color.TRANSPARENT;
+        int edge = "outline".equals(style) ? CaptionStyleCompat.EDGE_TYPE_OUTLINE : "box".equals(style) ? CaptionStyleCompat.EDGE_TYPE_NONE : CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW;
+        sv.setStyle(new CaptionStyleCompat(fg, bg, Color.TRANSPARENT, edge, Color.BLACK, null));
+    }
+
     // Write where you are to the phone every few seconds, so the app still gets your resume point
     // if the player never closes normally (app swiped away, phone restarts, Android closes it in the background).
     private long lastSaveAt = 0;
@@ -470,11 +501,20 @@ public class PlayerActivity extends AppCompatActivity {
     private void check() {
         if (loadingNext) return;
         long pos = exo.getCurrentPosition(), dur = exo.getDuration();
-        String label = null;
+        String label = null; long segStart = -1;
         for (long[] sg : segs) {
-            if (pos >= sg[0] && pos < sg[1] - 1500) { label = sg[2] == 1 ? "Skip recap" : "Skip intro"; skipTarget = sg[1]; break; }
+            if (pos >= sg[0] && pos < sg[1] - 1500) { label = sg[2] == 1 ? "Skip recap" : "Skip intro"; skipTarget = sg[1]; segStart = sg[0]; break; }
         }
-        if (label != null && !isPip()) { skipBtn.setText(label); fade(skipBtn, true); } else fade(skipBtn, false);
+        // Settings → Player → Skip intros automatically: jump once per intro, then offer "Undo skip" for 5 seconds
+        if (label != null && autoSkip && !isPip() && !autoSkipped.contains(segStart)) {
+            autoSkipped.add(segStart);
+            undoTo = pos; undoUntil = SystemClock.uptimeMillis() + 5000;
+            exo.seekTo(skipTarget);
+            show(label.equals("Skip recap") ? "Skipped recap" : "Skipped intro", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            label = null;
+        }
+        if (SystemClock.uptimeMillis() < undoUntil && !isPip()) { skipBtn.setText("Undo skip"); fade(skipBtn, true); }
+        else if (label != null && !isPip()) { skipBtn.setText(label); fade(skipBtn, true); } else fade(skipBtn, false);
         if (dur == C.TIME_UNSET || dur < 120_000) return;
         long trigger = creditsMs > dur / 2 && creditsMs < dur - 5000 ? creditsMs : (long) (dur * 0.95);
         if (hasNext() && pos > dur * 0.7) prefetchNext();
@@ -562,7 +602,7 @@ public class PlayerActivity extends AppCompatActivity {
         curKey = n.optString("key", "");
         curS = n.optInt("s", 0); curE = n.optInt("e", 0);
         curFinished = false; nextShown = false; nextCancelled = false; counting = false;
-        segs.clear(); creditsMs = -1; preUrl = null; preFor = -2;
+        segs.clear(); creditsMs = -1; preUrl = null; preFor = -2; autoSkipped.clear(); undoUntil = 0;
         String title = show + (n.optString("label", "").isEmpty() ? "" : " \u00b7 " + n.optString("label"));
         nameView.setText(title);
         item = new MediaItem.Builder()
@@ -657,7 +697,6 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void toggleMidnight() {
         midnight = !midnight;
-        prefs.edit().putBoolean("midnight", midnight).apply();
         applyMidnight();
         if (moon != null) { moon.on = midnight; moon.invalidateSelf(); }
         show(midnight ? "Midnight mode on" : "Midnight mode off", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
