@@ -1,7 +1,11 @@
 // Settings keys for the player and the look of the app
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
-function applyAccent(){ try{ document.documentElement.style.setProperty('--accent', store.get(K_ACCENT, '#b8242c')); }catch(e){} }
+function applyAccent(){ try{
+  const c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  document.documentElement.style.setProperty('--accent', c);
+  document.documentElement.style.setProperty('--on-accent', lum > 0.6 ? '#000' : '#fff');   // text on a solid accent button: black on light colors
+}catch(e){} }
 applyAccent();
 // Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
 function openSettings(){ setView('settings'); }

@@ -136,3 +136,27 @@
 .gpk{background:rgba(12,12,12,.94)!important;max-height:min(70dvh,560px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;transform:scale(.97);transition:transform .16s ease-out}
 .gpk::-webkit-scrollbar{display:none}
 .gpk-bk:not(.in) .gpk{visibility:hidden}
+/* Play and Resume: solid accent */
+.rdot,.rdot.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff)}
+.rdot i,.rdot.fill i{color:var(--on-accent,#fff)!important}
+.rdot small,.rdot b{color:var(--on-accent,#fff)}
+/* Big poster glow: a colored halo larger than the poster */
+.pgw .pglow{left:-10%!important;top:-6%!important;width:120%!important;height:112%!important;filter:blur(26px) saturate(2)!important;opacity:.8!important;transform:none!important;border-radius:20px}
+/* Library tab: the search bar replaces the app header and stays pinned */
+body.libv header.top{display:none}
+body.libv .ltop{position:sticky;top:0;z-index:30;background:#000;padding:calc(12px + env(safe-area-inset-top)) 16px 10px!important;margin:0}
+body.libv #v-library{padding-top:0}
+/* Trending now: a stack of cards */
+.hero.hstack{position:relative;background:none!important;overflow:visible;margin-right:28px!important;touch-action:pan-y}
+.hero.hstack::after{display:none}
+.hcard{position:absolute;inset:0;border-radius:inherit;background:#111 center/cover no-repeat;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 14px 30px rgba(0,0,0,.7);cursor:pointer}
+.hcard::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.92) 100%)}
+.hcard .hin{position:absolute;left:16px;right:16px;bottom:14px;z-index:1;transition:opacity .25s}
+.hcard[data-p="0"]{z-index:3;transform:none}
+.hcard[data-p="1"]{z-index:2;transform:translateX(14px) scale(.94);opacity:.75}
+.hcard[data-p="2"]{z-index:1;transform:translateX(26px) scale(.88);opacity:.45}
+.hcard[data-p="x"]{z-index:0;transform:translateX(26px) scale(.88);opacity:0;pointer-events:none}
+.hcard:not([data-p="0"]) .hin{opacity:0;pointer-events:none}
+.hdots{position:absolute;right:14px;top:12px;z-index:4;display:flex;gap:5px}
+.hdots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer}
+.hdots i.on{background:#fff;width:16px;border-radius:3px}

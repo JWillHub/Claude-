@@ -765,6 +765,30 @@ html{touch-action:manipulation}
 .gpk{background:rgba(12,12,12,.94)!important;max-height:min(70dvh,560px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;transform:scale(.97);transition:transform .16s ease-out}
 .gpk::-webkit-scrollbar{display:none}
 .gpk-bk:not(.in) .gpk{visibility:hidden}
+/* Play and Resume: solid accent */
+.rdot,.rdot.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff)}
+.rdot i,.rdot.fill i{color:var(--on-accent,#fff)!important}
+.rdot small,.rdot b{color:var(--on-accent,#fff)}
+/* Big poster glow: a colored halo larger than the poster */
+.pgw .pglow{left:-10%!important;top:-6%!important;width:120%!important;height:112%!important;filter:blur(26px) saturate(2)!important;opacity:.8!important;transform:none!important;border-radius:20px}
+/* Library tab: the search bar replaces the app header and stays pinned */
+body.libv header.top{display:none}
+body.libv .ltop{position:sticky;top:0;z-index:30;background:#000;padding:calc(12px + env(safe-area-inset-top)) 16px 10px!important;margin:0}
+body.libv #v-library{padding-top:0}
+/* Trending now: a stack of cards */
+.hero.hstack{position:relative;background:none!important;overflow:visible;margin-right:28px!important;touch-action:pan-y}
+.hero.hstack::after{display:none}
+.hcard{position:absolute;inset:0;border-radius:inherit;background:#111 center/cover no-repeat;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 14px 30px rgba(0,0,0,.7);cursor:pointer}
+.hcard::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.92) 100%)}
+.hcard .hin{position:absolute;left:16px;right:16px;bottom:14px;z-index:1;transition:opacity .25s}
+.hcard[data-p="0"]{z-index:3;transform:none}
+.hcard[data-p="1"]{z-index:2;transform:translateX(14px) scale(.94);opacity:.75}
+.hcard[data-p="2"]{z-index:1;transform:translateX(26px) scale(.88);opacity:.45}
+.hcard[data-p="x"]{z-index:0;transform:translateX(26px) scale(.88);opacity:0;pointer-events:none}
+.hcard:not([data-p="0"]) .hin{opacity:0;pointer-events:none}
+.hdots{position:absolute;right:14px;top:12px;z-index:4;display:flex;gap:5px}
+.hdots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer}
+.hdots i.on{background:#fff;width:16px;border-radius:3px}
 </style>
 </head>
 <body>
@@ -1337,6 +1361,7 @@ const PAGES = ['genre', 'franchises', 'list'];
 let lastTab = 'discover';
 function setView(v, o = {}){
   try{ if(['discover','genres','films','library','settings','diary','tv'].includes(v)) store.set('rclib.lastview', v); }catch(e){}
+  if(!searchOn || o.fromPop) document.body.classList.toggle('libv', v === 'library');
   // a tab or page opened while searching: close search first (and its history step), then go
   if(searchOn && !o.fromPop){ closeSearch(false); setTimeout(() => setView(v, o), 40); return; }
   const prev = view;
@@ -1494,15 +1519,33 @@ async function loadHero(){
   try{
     const d = await listPage('/trending/movie/week', {}, 1);
     const pool = d.results.filter(m => m.backdrop).slice(0, 6);
-    const m = pool[Math.floor(Math.random() * pool.length)];
-    if(!m){ h.remove(); return; }
-    h.style.backgroundImage = `url(${IMG}w780${m.backdrop})`;
-    h.innerHTML = `<div class="hin"><span class="tag">Trending now</span><h2>${esc(m.title)}</h2>
+    if(!pool.length){ h.remove(); return; }
+    let at = 0;
+    h.classList.add('hstack');
+    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}w780${m.backdrop})"><div class="hin"><span class="tag">Trending now</span><h2>${esc(m.title)}</h2>
       <div class="hm">${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}</div>
-      <div class="hbtns"><button class="pill" id="hr">★ Rate</button><button class="pill ghost" id="hd">Details</button></div></div>`;
-    h.onclick = e => { if(!e.target.closest('button')) openMovie(m.id); };
-    $('#hr').onclick = () => openRatepad(m.id, false);
-    $('#hd').onclick = () => openMovie(m.id);
+      <div class="hbtns"><button class="pill" data-hr="${m.id}">★ Rate</button><button class="pill ghost" data-hd="${m.id}">Details</button></div></div></div>`).join('')
+      + `<div class="hdots">${pool.map((_, i) => `<i data-d="${i}"></i>`).join('')}</div>`;
+    const cards = $$('.hcard', h), dots = $$('.hdots i', h);
+    const lay = () => {
+      cards.forEach((c, i) => { const p = (i - at + pool.length) % pool.length; c.dataset.p = p < 3 ? p : 'x'; });
+      dots.forEach((x, i) => x.classList.toggle('on', i === at));
+    };
+    const go = n => { at = (at + n + pool.length) % pool.length; lay(); };
+    lay();
+    let sx = null, sy = 0, moved = false;
+    h.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; moved = false; });
+    h.addEventListener('pointermove', e => { if(sx != null && Math.abs(e.clientX - sx) > 12 && Math.abs(e.clientX - sx) > Math.abs(e.clientY - sy)) moved = true; });
+    h.addEventListener('pointerup', e => { if(sx != null && moved){ go(e.clientX < sx ? 1 : -1); } sx = null; });
+    h.addEventListener('pointercancel', () => { sx = null; });
+    h.onclick = e => {
+      if(moved){ moved = false; return; }
+      const r = e.target.closest('[data-hr]'); if(r){ openRatepad(+r.dataset.hr, false); return; }
+      const dd = e.target.closest('[data-hd]'); if(dd){ openMovie(+dd.dataset.hd); return; }
+      const dt = e.target.closest('[data-d]'); if(dt){ at = +dt.dataset.d; lay(); return; }
+      const c = e.target.closest('.hcard'); if(!c) return;
+      if(c.dataset.p === '0') openMovie(pool[+c.dataset.i].id); else { at = +c.dataset.i; lay(); }
+    };
   }catch(e){ h.outerHTML = `<div class="onb"><p>${errText(e)}</p></div>`; }
 }
 async function loadRow(sec){
@@ -3667,7 +3710,11 @@ function openLibrary(){ setView('library'); }
 // Settings keys for the player and the look of the app
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
-function applyAccent(){ try{ document.documentElement.style.setProperty('--accent', store.get(K_ACCENT, '#b8242c')); }catch(e){} }
+function applyAccent(){ try{
+  const c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  document.documentElement.style.setProperty('--accent', c);
+  document.documentElement.style.setProperty('--on-accent', lum > 0.6 ? '#000' : '#fff');   // text on a solid accent button: black on light colors
+}catch(e){} }
 applyAccent();
 // Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
 function openSettings(){ setView('settings'); }

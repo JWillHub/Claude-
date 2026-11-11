@@ -425,5 +425,48 @@ rep("""  makeDraggable(s);
   return s;""", """  if(!isPage) makeDraggable(s);
   return s;""")
 
+
+# ---- Library tab: the search bar takes the place of the app header ----
+rep("""  try{ if(['discover','genres','films','library','settings','diary','tv'].includes(v)) store.set('rclib.lastview', v); }catch(e){}""",
+"""  try{ if(['discover','genres','films','library','settings','diary','tv'].includes(v)) store.set('rclib.lastview', v); }catch(e){}
+  if(!searchOn || o.fromPop) document.body.classList.toggle('libv', v === 'library');""")
+# ---- Discover: "Trending now" becomes a stack of several you can swipe through ----
+_i = s.index("async function loadHero(){"); _j = s.index("async function loadRow(sec){")
+s = s[:_i] + r'''async function loadHero(){
+  const h = $('#hero');
+  try{
+    const d = await listPage('/trending/movie/week', {}, 1);
+    const pool = d.results.filter(m => m.backdrop).slice(0, 6);
+    if(!pool.length){ h.remove(); return; }
+    let at = 0;
+    h.classList.add('hstack');
+    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}w780${m.backdrop})"><div class="hin"><span class="tag">Trending now</span><h2>${esc(m.title)}</h2>
+      <div class="hm">${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}</div>
+      <div class="hbtns"><button class="pill" data-hr="${m.id}">★ Rate</button><button class="pill ghost" data-hd="${m.id}">Details</button></div></div></div>`).join('')
+      + `<div class="hdots">${pool.map((_, i) => `<i data-d="${i}"></i>`).join('')}</div>`;
+    const cards = $$('.hcard', h), dots = $$('.hdots i', h);
+    const lay = () => {
+      cards.forEach((c, i) => { const p = (i - at + pool.length) % pool.length; c.dataset.p = p < 3 ? p : 'x'; });
+      dots.forEach((x, i) => x.classList.toggle('on', i === at));
+    };
+    const go = n => { at = (at + n + pool.length) % pool.length; lay(); };
+    lay();
+    let sx = null, sy = 0, moved = false;
+    h.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; moved = false; });
+    h.addEventListener('pointermove', e => { if(sx != null && Math.abs(e.clientX - sx) > 12 && Math.abs(e.clientX - sx) > Math.abs(e.clientY - sy)) moved = true; });
+    h.addEventListener('pointerup', e => { if(sx != null && moved){ go(e.clientX < sx ? 1 : -1); } sx = null; });
+    h.addEventListener('pointercancel', () => { sx = null; });
+    h.onclick = e => {
+      if(moved){ moved = false; return; }
+      const r = e.target.closest('[data-hr]'); if(r){ openRatepad(+r.dataset.hr, false); return; }
+      const dd = e.target.closest('[data-hd]'); if(dd){ openMovie(+dd.dataset.hd); return; }
+      const dt = e.target.closest('[data-d]'); if(dt){ at = +dt.dataset.d; lay(); return; }
+      const c = e.target.closest('.hcard'); if(!c) return;
+      if(c.dataset.p === '0') openMovie(pool[+c.dataset.i].id); else { at = +c.dataset.i; lay(); }
+    };
+  }catch(e){ h.outerHTML = `<div class="onb"><p>${errText(e)}</p></div>`; }
+}
+''' + s[_j:]
+
 open(p, 'w').write(s)
 print('applied cast chips')
