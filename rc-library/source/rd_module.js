@@ -820,7 +820,7 @@ async function watchedMenu(id, after){
 }
 function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
-    <div class="pad ltop"><div class="ltools"><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search">
+    <div class="pad ltop"><div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search"></label>
       <button class="gsel" id="lsort" aria-label="Sort"></button></div></div>
     <div id="lcont"></div><div class="pad" style="padding-top:8px">
     <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
