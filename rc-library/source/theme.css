@@ -252,3 +252,5 @@ body.libv #v-library{padding-top:0}
 .hproj.nreel{width:46px;height:46px;margin-right:0;object-fit:contain}
 .srlogo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .logo:not(.sub) .w1,.logo:not(.sub) .w2{display:none}
+/* No line under the header */
+header.top,.top{border-bottom:0!important;box-shadow:none!important}
