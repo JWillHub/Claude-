@@ -631,7 +631,7 @@ html{touch-action:manipulation}
 .ib{background:transparent}
 #hcar{background:transparent;border:1px solid var(--accent);color:var(--accent);box-shadow:none}
 .qs{background:transparent}.qs .qi{background:transparent;border:1px solid var(--accent)}.qs .qi svg{fill:var(--accent)}.qs b{color:var(--text)}
-.rdot i svg{width:24px;height:24px}.rdot.fill i svg{width:26px;height:26px;margin-left:2px}
+.rdot i svg{width:26px;height:26px;display:block}.rdot i{width:48px;height:48px}.cwplay svg{width:22px;height:22px;display:block}
 </style>
 </head>
 <body>
@@ -2723,7 +2723,7 @@ const libFor = id => Object.entries(rdLib.items).filter(([, it]) => it.m && it.m
 // Detail card: "In your library" above the streaming logos (shown even if TMDB is slow or offline)
 function refreshLibBlocks(){ $$('[data-lid]').forEach(bx => { const sb = bx.closest('.sbody'); if(sb) libBlock(sb, pid(bx.dataset.lid)); }); }
 // Play button: a ring with a play mark, the action, and a short note under it (filled ring = the main action)
-const PLAYSVG = '<svg viewBox="0 0 24 24"><path d="M9 6.2v11.6l9.4-5.8z" fill="currentColor"/></svg>';
+const PLAYSVG = '<svg viewBox="0 0 24 24"><path d="M8.5 4.5v15l12-7.5z" fill="currentColor"/></svg>';
 const reelBtn = (attrs, label, sub, filled) => `<button class="rdot${filled ? ' fill' : ''}" ${attrs}><i>${PLAYSVG}</i><span><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`;
 function libBlock(b, id){
   const list = libFor(id), box = $('#mlib', b);
