@@ -273,5 +273,86 @@ rep('.rowhead p{margin:2px 0 0;color:var(--muted);font-size:12.5px}', '.rowhead 
 # ---- header film graphic: red light ----
 rep('<circle cx="36" cy="25.5" r="2.4" fill="#fff3d6"/>', '<circle cx="36" cy="25.5" r="2.4" fill="#e23a44"/>')
 rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\n.bd:not(.wl):not(.seen){color:#fff}.bd .bst{font-style:normal;color:#f5c518;margin-left:1px}.bd.wl::before{background:#f5c518!important}')
+
+# ---- Streamlined series card (this app only) ----
+# 1. story under the title, three lines, tap for the rest
+rep('''      <div class="mact" id="mact"></div></div></div>
+    <div id="mlib"></div><div id="mwatch"></div>
+    <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
+    <div id="mcast"></div>
+    <p class="ov" id="mov">${esc(m.overview || '')}</p>''', '''      <div class="mact" id="mact"></div></div></div>
+    <p class="ov clamp" id="mov" onclick="this.classList.toggle('clamp')">${esc(m.overview || '')}</p>
+    <div id="mlib"></div><div id="mwatch"></div>
+    <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
+    <div id="mcast"></div>''')
+# 2. where to watch: one row of streaming services (rent/buy only if nothing streams), no source line
+rep('''  return `<div class="prov fadein">${p.stream.length ? '<div class="lbl">Stream it on</div>' + row(p.stream) : ''}
+    ${p.rent.length ? '<div class="lbl">Rent or buy</div>' + row(p.rent) : ''}<div class="small" style="margin-top:8px">US availability from JustWatch</div></div>`;''',
+'''  return `<div class="prov fadein">${p.stream.length ? '<div class="lbl">Stream it on</div>' + row(p.stream) : '<div class="lbl">Rent or buy</div>' + row(p.rent)}</div>`;''')
+# 3-5. one ratings line; a strip of season averages with the full chart on its own page; short legend
+rep('''  const lbl = x => `S${x.s} E${x.e}`;
+  box.innerHTML = `<div class="imdbbox"><span class="ib2">IMDb</span><b>${d.r.toFixed(1)}</b><span class="small">${fmtV(d.v)} votes · ${all.length} rated episodes</span></div>
+    ${best ? `<div class="hl"><div data-s="${best.s}" data-e="${best.e}">Best episode<b>${esc(best.t || lbl(best))}</b>${lbl(best)} · ${best.r.toFixed(1)}</div>
+      <div data-s="${worst.s}" data-e="${worst.e}">Lowest rated<b>${esc(worst.t || lbl(worst))}</b>${lbl(worst)} · ${worst.r.toFixed(1)}</div></div>` : ''}
+    <div class="chartwrap"><table class="hm">${rowsH}</table></div>
+    <div class="legend"><span><i class="c9"></i>9+ Absolute cinema</span><span><i class="c8"></i>8+ Great</span><span><i class="c7"></i>7+ Good</span>
+      <span><i class="c6"></i>6+ Regular</span><span><i class="c5"></i>5+ Bad</span><span><i class="c4"></i>Garbage</span></div>
+    <div class="epinfo" id="epi" hidden></div>
+    <div class="small" style="margin-top:8px;text-align:center">Episode ratings from IMDb, updated ${esc(meta.built)}.</div>`;''',
+'''  const lbl = x => `S${x.s} E${x.e}`;
+  const legend = '<div class="legend lg2"><span><i class="c9"></i>9+</span><span><i class="c8"></i>8+</span><span><i class="c7"></i>7+</span><span><i class="c6"></i>6+</span><span><i class="c5"></i>5+</span><span><i class="c4"></i>under 5</span></div>';
+  const full = `<div class="chartwrap"><table class="hm">${rowsH}</table></div>${legend}<div class="epinfo" id="epi" hidden></div>`;
+  const big = ss.length > 3;
+  box.innerHTML = `<div class="rline"><span class="ib2">IMDb</span><b>${d.r.toFixed(1)}</b>${best ? `<button data-s="${best.s}" data-e="${best.e}">Best ${lbl(best)} <em>${best.r.toFixed(1)}</em></button><button data-s="${worst.s}" data-e="${worst.e}">Lowest ${lbl(worst)} <em>${worst.r.toFixed(1)}</em></button>` : ''}</div>
+    ${big ? `<div class="sstrip nodrag">${ss.map(n => { const a = avg(d.s[n]); return `<button class="${heat(a)}" data-sea="${n}"><small>S${n}</small>${a == null ? '–' : a.toFixed(1)}</button>`; }).join('')}</div>
+      <button class="btn ghost allep" id="allep">See all episodes</button><div class="epinfo" id="epi" hidden></div>` : full}`;
+  const bindCells = (root, focus) => {
+    const info = (n, e) => {
+      const x = (d.s[n] || []).find(q => q[0] === e); if(!x) return;
+      $$('.hm td.sel', root).forEach(c => c.classList.remove('sel'));
+      const cell = $(`.hm td[data-s="${n}"][data-e="${e}"]`, root); if(cell){ cell.classList.add('sel'); cell.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' }); }
+      const ep = $('#epi', root); ep.hidden = false;
+      ep.innerHTML = `<b>S${n} E${e}</b> &nbsp;${esc(x[3] || 'Untitled episode')}<br><span class="small">${x[1] == null ? 'Not rated yet' : `IMDb ${x[1].toFixed(1)} · ${x[2].toLocaleString()} votes`}</span>`;
+    };
+    $$('.hm [data-s][data-e]', root).forEach(c => c.onclick = () => info(+c.dataset.s, +c.dataset.e));
+    if(focus) info(focus.s, focus.e);
+    return info;
+  };
+  const openFull = (focus, sea) => {
+    const p = sheet(`<h2 class="stitle">All episodes</h2>${full}`, { tall:true });
+    bindCells(p.body, focus);
+    if(sea && !focus){ const row = $$('.hm tr', p.body)[ss.indexOf(sea) + 1]; if(row) setTimeout(() => row.scrollIntoView({ block:'center' }), 350); }
+  };
+  if(big){
+    $('#allep', box).onclick = () => openFull();
+    $$('[data-sea]', box).forEach(x => x.onclick = () => openFull(null, +x.dataset.sea));
+    $$('.rline [data-s]', box).forEach(x => x.onclick = () => openFull({ s:+x.dataset.s, e:+x.dataset.e }));
+  }else{
+    const info = bindCells(box);
+    $$('.rline [data-s]', box).forEach(x => x.onclick = () => info(+x.dataset.s, +x.dataset.e));
+  }
+  return;''')
+rep('''  const info = (n, e) => {
+    const x = (d.s[n] || []).find(q => q[0] === e); if(!x) return;
+    $$('.hm td.sel', box).forEach(c => c.classList.remove('sel'));''', '''  const info0 = (n, e) => {
+    const x = (d.s[n] || []).find(q => q[0] === e); if(!x) return;
+    $$('.hm td.sel', box).forEach(c => c.classList.remove('sel'));''')
+rep('''  $$('[data-s][data-e]', box).forEach(c => c.onclick = () => info(+c.dataset.s, +c.dataset.e));
+}''', '''}''')
+# 6. cast: top five, one row
+s = s.replace('d.castL.slice(0, 10).map(p => `<button class="pp cchip"', 'd.castL.slice(0, 5).map(p => `<button class="pp cchip"')
+rep('.hero h2{font-size:31px}', '''.hero h2{font-size:31px}
+.ov{color:#fff}.ov.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.cchips{display:flex!important;gap:6px;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.cchips::-webkit-scrollbar{display:none}
+.rline{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-top:16px;font-size:13.5px}
+.rline b{font-family:var(--disp);font-size:24px;line-height:1;margin-right:4px}
+.rline button{background:none;border:0;color:#fff;padding:0;font:inherit;font-weight:650;cursor:pointer}
+.rline em{font-style:normal;font-weight:800}
+.sstrip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px -16px 0;padding:0 16px}.sstrip::-webkit-scrollbar{display:none}
+.sstrip button{flex:none;border:0;border-radius:10px;padding:6px 10px;font-weight:800;font-size:14px;display:flex;flex-direction:column;align-items:center;min-width:52px;cursor:pointer}
+.sstrip small{font-size:10.5px;font-weight:700;opacity:.85}
+.allep{margin-top:12px}
+.lg2 span{gap:4px}''')
+
 open(p, 'w').write(s)
 print('applied cast chips')
