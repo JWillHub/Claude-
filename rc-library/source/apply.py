@@ -386,7 +386,7 @@ rep("""  sheetStack.push(s);
   sheetStack.push(s);
   document.body.classList.add('locked');""")
 rep("""function sheet(html, opt = {}){""", """const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
-  + '<button class="glback glall" aria-label="Close all"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>';
+  + '<button class="glback glall" aria-label="Back to the tab"><svg viewBox="0 0 24 24"><path d="M4.5 11 12 4.8l7.5 6.2M6.5 9.6v9h4v-5h3v5h4v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
 function sheet(html, opt = {}){
   const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));""")
 # people and "See all" lists are pages too
