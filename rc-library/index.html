@@ -1041,7 +1041,7 @@ const slim = m => ({ id:m.id, title:m.title, year:(m.release_date||'').slice(0,4
 // Only English-language and Korean titles. Fan-made and straight-to-video entries are left out: TMDB marks videos,
 // and released titles with almost no votes are nearly always fan or amateur uploads.
 const LANGS = ['en', 'ko'];
-const keep = f => (!f.lang || LANGS.includes(f.lang)) && !f.video && !(f.date && f.date <= today() && f.votes != null && f.votes < 10);
+const keep = f => (!f.lang || LANGS.includes(f.lang)) && !f.video && !(f.tv && (f.genres || []).includes(10767)) && !(f.date && f.date <= today() && f.votes != null && f.votes < 10);
 const slimTV = m => ({ id:'tv' + m.id, tid:m.id, tv:true, title:m.name, year:(m.first_air_date||'').slice(0,4), date:m.first_air_date||'',
   poster:m.poster_path, backdrop:m.backdrop_path, overview:m.overview||'', genres:m.genre_ids || (m.genres||[]).map(g => g.id), vote:m.vote_average||0,
   lang:m.original_language, votes:m.vote_count });
@@ -1073,6 +1073,7 @@ async function listPage(path, params, page, tv){
     return { page:d.page, total:Math.min(d.total_pages||1, 500), count:d.total_results, results:rows.filter(keep) };
   };
   const out = page === 1 && !params.query ? await cached(k, 6, run) : (mem.get(k) || await run().then(d => (mem.set(k, d), d)));
+  out.results = (out.results || []).filter(keep);   // also clears talk shows out of rows saved earlier
   remember(out.results);
   return out;
 }

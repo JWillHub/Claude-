@@ -509,5 +509,14 @@ async function appleArt(sh, id){
 function sheet(html, opt = {}){""")
 # ==== end APPLE TV ART ====
 
+
+# ---- No talk shows anywhere (TMDB's "Talk" TV genre) ----
+rep("const keep = f => (!f.lang || LANGS.includes(f.lang)) && !f.video &&", "const keep = f => (!f.lang || LANGS.includes(f.lang)) && !f.video && !(f.tv && (f.genres || []).includes(10767)) &&")
+
+rep("""  const out = page === 1 && !params.query ? await cached(k, 6, run) : (mem.get(k) || await run().then(d => (mem.set(k, d), d)));
+  remember(out.results);""", """  const out = page === 1 && !params.query ? await cached(k, 6, run) : (mem.get(k) || await run().then(d => (mem.set(k, d), d)));
+  out.results = (out.results || []).filter(keep);   // also clears talk shows out of rows saved earlier
+  remember(out.results);""")
+
 open(p, 'w').write(s)
 print('applied cast chips')
