@@ -745,6 +745,12 @@ html{touch-action:manipulation}
 .pgw{position:relative;flex:none;display:block;line-height:0}
 .pgw img:not(.pglow){position:relative;z-index:1}
 .pgw .pglow{position:absolute!important;left:6%;top:8%;width:88%!important;height:88%!important;filter:blur(20px) saturate(1.7);opacity:.6;z-index:0;box-shadow:none!important;transform:translateY(6px)}
+/* Title pages: title and details start higher; the backdrop still leads */
+.mvsheet>.bdrop{height:calc(300px + env(safe-area-inset-top))}
+.mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#000 calc(300px + env(safe-area-inset-top))) local}
+.mvsheet .mvhead{margin-top:calc(140px + env(safe-area-inset-top))}
+.sh.shcard .shbg{height:calc(330px + env(safe-area-inset-top))}
+.sh.shcard .shhero{min-height:calc(320px + env(safe-area-inset-top))}
 </style>
 </head>
 <body>
