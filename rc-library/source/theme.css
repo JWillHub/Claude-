@@ -1,0 +1,32 @@
+/* see-through pills and cards with neat outlines; dark red accent */
+:root{--card:transparent;--line:#2e2a33}
+.pill,.btn{background:transparent;border:1px solid var(--accent);color:var(--text)}
+.pill.ghost{background:transparent;border:1px solid rgba(255,255,255,.35);backdrop-filter:none}
+.btn.ghost,.mact button,.mact a,.favbtn,.lunm button,.seg button.on,.sic,.srow:active:not(.static),.epc:active{background:transparent}
+.btn.ghost,.seg button.on{border:1px solid var(--line)}
+.sic{border:1px solid var(--line)}
+.lrow{border:1px solid var(--line)}
+.ib.hback,.rpp.on,.wz.on,.shtabs button.on{background:transparent}
+.rdot.fill i{color:#fff}
+.onb{background:transparent}
+.toast,.ptr{background:#000}
+.ib{background:transparent}
+#hcar{background:transparent;border:1px solid var(--accent);color:var(--accent);box-shadow:none}
+.qs{background:transparent}.qs .qi{background:transparent;border:1px solid var(--accent)}.qs .qi svg{fill:var(--accent)}.qs b{color:var(--text)}
+.rdot i svg{width:26px;height:26px;display:block}.rdot i{width:48px;height:48px}.cwplay svg{width:22px;height:22px;display:block}
+/* library title pages: full screen, slide in from the right, glass back button */
+.sh.shcard{top:0;max-height:none;height:100dvh;border-radius:0;border:0;box-shadow:none;transform:translateX(100%)}
+.sh.shcard.in{transform:none}
+.sh.shcard .grab{display:none}
+.glback{position:absolute;z-index:6;top:calc(12px + env(safe-area-inset-top));left:14px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.32);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.35)}
+.glback svg{width:22px;height:22px;margin-left:-2px}
+.glback:active{transform:scale(.92)}
+.sh.shcard .shbg{height:calc(380px + env(safe-area-inset-top))}
+.sh.shcard .shhero{min-height:calc(380px + env(safe-area-inset-top))}
+/* icons keep the red; text stays white */
+.rdot i,#hcar,.pkp svg{color:var(--accent)}
+.rdot.fill i{color:#fff}
+.tb{color:#fff}.tb.on{color:#fff;font-weight:800}.tb.on svg{color:var(--accent)}

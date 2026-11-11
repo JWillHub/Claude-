@@ -39,6 +39,21 @@ public class RCPlayerPlugin extends Plugin {
         startActivityForResult(call, intent, "playerClosed");
     }
 
+    // The last spot the player wrote down (see PlayerActivity.saveSpot), for when a result never came back
+    @PluginMethod
+    public void saved(PluginCall call) {
+        String j = getContext().getSharedPreferences("player", android.content.Context.MODE_PRIVATE).getString("spot", null);
+        JSObject out = new JSObject();
+        try { if (j != null) out = new JSObject(j); } catch (Exception ignored) {}
+        call.resolve(out);
+    }
+
+    @PluginMethod
+    public void clearSaved(PluginCall call) {
+        getContext().getSharedPreferences("player", android.content.Context.MODE_PRIVATE).edit().remove("spot").apply();
+        call.resolve();
+    }
+
     @ActivityCallback
     private void playerClosed(PluginCall call, ActivityResult result) {
         if (call == null) return;

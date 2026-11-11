@@ -1,0 +1,277 @@
+p = 'index.html'; s = open(p).read()
+def rep(old, new, count=1):
+    global s
+    assert s.count(old) == count, (old[:60], s.count(old))
+    s = s.replace(old, new)
+
+rep('''  <div class="hact">
+    <button class="ib" id="hcar"''', '''  <div class="hact">
+    <button class="ib" id="hlib" aria-label="My library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></button>
+    <button class="ib" id="hcar"''')
+rep('--bg:#0c0a0f;--bg2:#141119;', '--bg:#000;--bg2:#000;')
+rep('background:linear-gradient(180deg,#120f17,var(--bg))', 'background:#000')
+rep('''const $ = (s, r = document) => r.querySelector(s);''', '''// First launch: copy the main Rolling Credits data into this app's own keys. The main app's keys are only read, never changed.
+(function importMain(){ try{
+  if(localStorage.getItem('rclib.imported')) return;
+  ['entries','ratings','watch','seen','favpeople','tmdbkey','omdbkey','hiderated'].forEach(k => {
+    const v = localStorage.getItem('reellog.' + k);
+    if(v != null && localStorage.getItem('rclib.' + k) == null) store.set('rclib.' + k, JSON.parse(v));
+  });
+  if(localStorage.getItem('rclib.tmdbkey')) localStorage.setItem('rclib.imported', String(Date.now()));   // keep checking until there's something to copy
+}catch(e){} })();
+// TMDB responses are cached for this tab only (sessionStorage), so this copy never eats into the storage space the main app needs
+const cstore = {
+  get(k, d){ try{ const v = sessionStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ sessionStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const $ = (s, r = document) => r.querySelector(s);''')
+rep("const isCached = (k, ttlH) => { if(mem.has(k)) return true; const c = store.get(CK + k, null);",
+    "const isCached = (k, ttlH) => { if(mem.has(k)) return true; const c = cstore.get(CK + k, null);")
+rep("  const c = store.get(CK + k, null);\n  if(c && Date.now()", "  const c = cstore.get(CK + k, null);\n  if(c && Date.now()")
+rep("mem.set(k, d); store.set(CK + k, { t:Date.now(), d }); return d;", "mem.set(k, d); cstore.set(CK + k, { t:Date.now(), d }); return d;")
+rep('<div id="mwatch"></div>', '<div id="mlib"></div><div id="mwatch"></div>', 2)
+rep("  const b = s.body, s5 = $('.ratebar .s5', b);", "  const b = s.body, s5 = $('.ratebar .s5', b);\n  libBlock(b, id);", 2)
+rep('''    <label class="toggle"><input type="checkbox" id="hide"''', '''    <label class="f">Real-Debrid API token (for your library)</label>
+    <input id="rdkey" type="password" value="${esc(store.get(K_RD, ''))}" placeholder="Paste your Real-Debrid API token" autocomplete="off">
+    <div class="small" style="margin-top:6px">From real-debrid.com/apitoken. Stored only on this device, in this app.</div>
+    <button class="btn ghost" id="rdopen">Open my library</button>
+    <label class="toggle"><input type="checkbox" id="hide"''')
+rep('''  $('#okey', b).onchange = e =>''', '''  $('#rdkey', b).onchange = e => { const v = e.target.value.trim(); store.set(K_RD, v); if(!v){ rdLib = { synced:0, items:{} }; saveLib(); } toast(v ? 'Real-Debrid token saved' : 'Real-Debrid token removed'); };
+  $('#rdopen', b).onclick = () => openLibrary();
+  $('#okey', b).onchange = e =>''')
+rep("$('#setTab').onclick = openSettings;", "$('#setTab').onclick = openSettings;\n$('#hlib').onclick = () => openLibrary();")
+rep('.hero h2{font-size:31px}', '''.hero h2{font-size:31px}
+.logo .libtag{font-style:normal;color:var(--good)}
+.lib{margin:10px 0 4px}
+.lib .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:10px 0 7px}
+.lib .lrow{display:flex;gap:8px;flex-wrap:wrap}
+.lib .lrow button,.lfile{background:rgba(90,209,154,.12);border:1px solid rgba(90,209,154,.45);color:var(--text);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:750;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.lib .lrow button b,.lfile b{color:var(--good)}
+.lfiles{display:flex;flex-direction:column;gap:8px}
+.lfile{border-radius:12px;justify-content:space-between;text-align:left;width:100%}
+.lfile span.sz{color:var(--muted);font-weight:600;font-size:12px;flex:none}
+.lunm{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.lunm span{word-break:break-all;color:var(--muted)}
+.lunm button{flex:none;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 11px;font-weight:700;font-size:12.5px;cursor:pointer}
+.lplay video{width:100%;border-radius:12px;background:#000;max-height:60vh}
+.lres{margin-top:6px}.lres button{background:none;border:0;color:var(--accent);font-weight:800;padding:0;cursor:pointer;font-size:inherit}
+.lfile{position:relative;overflow:hidden}.lfile.fin{opacity:.6}
+.lbar{position:absolute;left:0;bottom:0;height:3px;background:var(--good);border-radius:0 2px 2px 0}
+.lcl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+.lcrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px}
+.lcw{flex:none;width:118px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;position:relative;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700}
+.lcw img,.lcw .ph{width:118px;height:177px;object-fit:cover;border-radius:10px;background:var(--card2)}
+.lcw .lbar{top:173px;bottom:auto;left:0;height:4px}
+.lcwrap{position:relative;flex:none}
+.lcx{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;padding:0;cursor:pointer}
+.lcw{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.apmode>.stitle,.apmode>.small{display:none}
+.apbd{border-radius:18px;overflow:hidden;background:var(--card2) center/cover no-repeat;min-height:190px;display:flex;align-items:flex-end;margin-top:4px}
+.apbdin{display:flex;align-items:flex-end;gap:14px;padding:14px;width:100%}
+.apposter{flex:none;width:78px}.apposter img,.apposter .ph{width:78px;aspect-ratio:2/3;height:auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,.5);background:var(--card)}
+.aptxt{min-width:0}.apname{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:26px;line-height:1.05}
+.apsub{color:#d8d2e0;font-size:13.5px;margin-top:4px}
+.approg{height:5px;border-radius:3px;background:var(--line);margin:16px 0 8px;overflow:hidden}.approg i{display:block;height:100%;background:var(--good);border-radius:3px}
+.aptime{font-size:13.5px;color:var(--muted);font-weight:600}
+.aprate{margin-top:20px;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.aprate .lbl{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.aprate .s5{margin:0 auto}.aprate .rv2{margin-top:8px;min-height:18px;font-weight:700}
+.sehd{border-radius:18px;overflow:hidden;background:var(--card2) center/cover no-repeat;min-height:170px;display:flex;align-items:flex-end;gap:14px;padding:14px;margin-top:4px}
+.sehp{flex:none;width:74px}.sehp img,.sehp .ph{width:74px;aspect-ratio:2/3;height:auto;border-radius:10px;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,.5);background:var(--card)}
+.seht{min-width:0}
+.eplist{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.epc{display:flex;gap:12px;align-items:flex-start;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.epc:active{background:var(--card2)}
+.epc.fin .epth img,.epc.fin .epph{opacity:.55}
+.epth{position:relative;flex:none;width:132px;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--card2)}
+.epth img{width:100%;height:100%;object-fit:cover;display:block}
+.epph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:15px}
+.epth .lbar{bottom:0;top:auto;height:4px}
+.epchk{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--good);color:#06150e;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.eptx{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.ept{font-weight:750;font-size:14.5px;line-height:1.25}.ept b{color:var(--accent);margin-right:2px}
+.epm{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.epir{font-size:11px;font-weight:800;border-radius:6px;padding:1px 6px}
+.epo{font-size:12.5px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.epo.open{-webkit-line-clamp:unset;display:block}
+.grid .lsea{width:auto}.grid .lsea img,.grid .lsea .ph{width:100%}
+.lshow{background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:5px;font:inherit}
+.lshow img,.lshow .ph{width:100%;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35)}
+.lshn{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lpk{padding-top:12px}
+/* see-through header buttons and dropdown pills: outline only */
+.ib{background:transparent}
+.pkp{background:transparent}
+.upn{text-align:center;padding-top:6px}
+.upnth{width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:22px}
+.upnth img{width:100%;height:100%;object-fit:cover}
+.upnt{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:24px;line-height:1.1}
+.upnbar{height:5px;border-radius:3px;background:var(--line);margin:16px 0 4px;overflow:hidden}.upnbar i{display:block;height:100%;width:0;background:var(--accent);transition:width 1s linear}
+.ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,0);z-index:60;opacity:0;pointer-events:none;
+  background:var(--card);border:1px solid rgba(255,181,71,.45);color:var(--text);font-weight:700;font-size:13px;padding:8px 14px;border-radius:999px;transition:opacity .15s;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.shhero{position:relative;min-height:330px;background:var(--card2) center top/cover no-repeat;display:flex;align-items:flex-end;margin-top:-1px}
+.shcard{overflow:hidden;background:#000}
+.shcard .grab{position:absolute;left:0;right:0;top:0;z-index:4}
+.shcard .grab i{background:rgba(255,255,255,.75)}
+.shcard .sbody{position:relative;z-index:1;padding-top:0}
+.shbg{position:absolute;left:0;right:0;top:0;height:360px;z-index:0;background:#000 center top/cover no-repeat;pointer-events:none}
+.shbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.5) 55%,#000 96%)}
+.shcard .shhero{background:transparent;min-height:340px}
+.shcard .shin{padding-bottom:26px}
+.shcard .shwrap .pad{position:relative;background:#000;margin:0 -16px;padding:6px 16px 0;box-shadow:0 -18px 18px #000;min-height:calc(100dvh - 380px)}
+.shin{display:flex;align-items:flex-end;gap:14px;padding:16px;width:100%}
+.shpo{flex:none;width:104px}.shpo img,.shpo .ph{width:104px;aspect-ratio:2/3;height:auto;border-radius:12px;object-fit:cover;box-shadow:0 10px 26px rgba(0,0,0,.6);background:var(--card)}
+.shtx{min-width:0}.shname{margin:0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:34px;line-height:1}
+.shmeta{color:#ddd6e6;font-size:13px;font-weight:600;margin-top:6px}
+.shov{color:var(--muted);font-size:14px;line-height:1.5;margin:4px 0 4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.shov.open{-webkit-line-clamp:unset;display:block}
+.shtabs{display:flex;gap:8px;overflow-x:auto;margin:14px 0 2px;padding-bottom:2px;scrollbar-width:none}
+.shtabs button{flex:none;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13.5px;cursor:pointer}
+.shtabs button.on{border-color:var(--accent);color:var(--text);background:rgba(255,181,71,.1)}
+.cwband.mlband{margin:26px -16px 8px}.mlband .cwh{padding-left:16px}.mlband .cwc{width:180px}.mlown{color:var(--accent);font-weight:750}
+.updfail{flex-basis:100%;display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.updfail button{align-self:flex-start;background:transparent;border:1px solid rgba(255,181,71,.5);color:var(--accent);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}
+#appupd{flex-wrap:wrap}
+.cwband{margin:14px 0 4px;padding:0;background:transparent;border:0}
+.cwh{display:flex;align-items:center;gap:8px;padding:0 20px 10px;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--accent)}
+.cwdot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.cwtrack{display:flex;gap:12px;overflow-x:auto;padding:0 16px;scroll-padding:0 16px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.cwc{flex:none;width:208px;scroll-snap-align:start;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;font:inherit}
+.cwimg{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--card2);position:relative}
+.cwimg img{width:100%;height:100%;object-fit:cover;display:block}
+.cwph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px;text-align:center;color:var(--muted);font-weight:700;font-size:13px}
+.cwbar{display:block;height:3px;border-radius:2px;background:var(--line);margin:6px 0 4px;overflow:hidden}.cwbar b{display:block;height:100%;background:var(--accent)}
+.cwt{font-weight:750;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cwlib{margin:18px 20px 0;font-weight:800;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted)}
+.shwrap .shhero{margin:0 -16px;border-radius:0}
+.shwrap .pad{padding-left:0;padding-right:0}
+.rdrow{display:flex;flex-direction:column;gap:6px;margin:12px 0 4px}
+.rdot{display:flex;align-items:center;gap:12px;background:none;border:0;padding:4px 0;color:var(--text);font:inherit;text-align:left;cursor:pointer;width:fit-content}
+.rdot i{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.rdot i svg{width:20px;height:20px}
+.rdot.fill i{background:var(--accent);color:#1a1206}
+.rdot:active i{transform:scale(.94)}
+.rdot b{display:block;font-size:16px;font-weight:700;line-height:1.2}
+.rdot small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.epnext{margin:14px 0 6px}
+.cwplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;border:1.5px solid #fff;color:#fff;background:rgba(12,10,15,.35);display:flex;align-items:center;justify-content:center}
+.cwplay svg{width:17px;height:17px}
+.lnk{display:block;margin:18px 0 4px;background:none;border:0;padding:0;color:var(--muted);font:inherit;font-size:13.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.lsea{flex:none;width:112px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:12.5px;font-weight:700;scroll-snap-align:start}
+.lsea img,.lsea .ph{width:112px;aspect-ratio:2/3;height:auto;object-fit:cover;border-radius:12px;background:var(--card2);box-shadow:0 8px 18px rgba(0,0,0,.35);margin-bottom:4px}
+.lcw{scroll-snap-align:start}''')
+RD = open('/home/claude/rd_module.js').read()
+rep("/* ---------- Settings ---------- */", RD + "\n/* ---------- Settings ---------- */")
+open(p, 'w').write(s)
+print('applied')
+
+# Storage on jwillhub.github.io is shared by every app there. When it's full, saves fail silently.
+# Free room by dropping cached lookups (TMDB, Comic Vine), which the apps re-download when needed, then retry.
+s2 = s
+rep("""  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } },""",
+"""  set(k, v){
+    const j = JSON.stringify(v);
+    try{ localStorage.setItem(k, j); return true; }catch(e){}
+    try{
+      for(let i = localStorage.length - 1; i >= 0; i--){ const x = localStorage.key(i); if(x && /^(reellog\\.c\\d?\\.|rclib\\.c\\d?\\.|longbox\\.c\\d+\\.)/.test(x)) localStorage.removeItem(x); }
+      localStorage.setItem(k, j); return true;
+    }catch(e){ return false; }
+  },""")
+rep("const k = $('#key', b).value.trim(); store.set(K_KEY, k);",
+    "const k = $('#key', b).value.trim(); if(!store.set(K_KEY, k)){ $('#saveKey', b).textContent = 'Could not save — storage is full'; return; }")
+rep("""(function importMain(){ try{""", """(function importMain(){ try{
+  // the copy below can fail if this site's storage is full; the save helper further down clears cached data and retries""")
+open(p, 'w').write(s)
+print('applied storage fix')
+
+
+# ---- Library tab + "In my library" filters ----
+rep("""  <button class="tb" id="setTab">""", """  <button class="tb" data-v="library"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/></svg>Library</button>
+  <button class="tb" id="setTab">""")
+rep("""  <section id="v-list" hidden></section>""", """  <section id="v-list" hidden></section>
+  <section id="v-library" hidden></section>""")
+rep("""['discover','sagas','tv','diary','films','genres','genre','franchises','list'].forEach""", """['discover','sagas','tv','diary','films','genres','genre','franchises','list','library'].forEach""")
+rep("""  if(v === 'films') renderFilms();
+  scrollTo(0, 0);""", """  if(v === 'films') renderFilms();
+  if(v === 'library') renderLibraryTab();
+  scrollTo(0, 0);""")
+rep("""  if(view === 'films') renderFilms();
+  renderMyShows();""", """  if(view === 'films') renderFilms();
+  if(view === 'library') renderLibraryTab();
+  renderMyShows();""")
+# header library button no longer needed: the tab replaces it
+rep("""    <button class="ib" id="hlib" aria-label="My library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z" fill="currentColor"/></svg></button>
+""", "")
+rep("""$('#setTab').onclick = openSettings;
+$('#hlib').onclick = () => openLibrary();""", """$('#setTab').onclick = openSettings;""")
+rep("""  $('#rdopen', b).onclick = () => openLibrary();""", """  $('#rdopen', b).onclick = () => { s.close(); setTimeout(openLibrary, 60); };""")
+open(p, 'w').write(s)
+print('applied library tab')
+rep("films:'My films', diary:'Diary',", "films:'My films', library:'My library', diary:'Diary',")
+open(p, 'w').write(s)
+
+# ---- Settings redesign: grouped rows, each connection in its own sheet ----
+import re
+i = s.index('function openSettings(){')
+j = re.compile(r'\n}\n').search(s, i).end()
+s = s[:i] + open('/home/claude/settings_new.js').read() + s[j:]
+rep('.hero h2{font-size:31px}', '''.hero h2{font-size:31px}
+.sgroup{margin-top:20px}
+.sgh{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin:0 4px 8px}
+.scard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;background:none;border:0;border-top:1px solid var(--line);color:var(--text);text-align:left;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative}
+.scard>.srow:first-child{border-top:0}
+.srow:active:not(.static){background:var(--card2)}
+.srow.static{cursor:default}
+.sic{flex:none;width:34px;height:34px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center}
+.sic svg{width:19px;height:19px;fill:none;stroke:var(--accent);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.slab{flex:1;min-width:0;font-weight:700;font-size:15px;display:flex;flex-direction:column;gap:2px}
+.slab small{font-weight:500;font-size:12.5px;color:var(--muted)}
+.sval{flex:none;font-size:13px;font-weight:700;color:var(--muted)}
+.sval.ok{color:var(--good)}.sval.warn{color:var(--accent)}
+.schev{flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);margin-left:2px;opacity:.7}
+.srow.sw input{position:absolute;opacity:0;pointer-events:none}
+.swi{flex:none;width:48px;height:29px;border-radius:15px;background:var(--line);position:relative;transition:background .2s}
+.swi::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.srow.sw input:checked+.swi{background:var(--good)}
+.srow.sw input:checked+.swi::after{transform:translateX(19px)}
+.kswhat{color:var(--text);font-size:14.5px;line-height:1.5;margin:6px 0 14px}
+.kshow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.kshow b{color:var(--text);font-size:12px;letter-spacing:.8px;text-transform:uppercase}
+.kshow a{color:var(--accent);font-weight:700;text-decoration:none;margin-top:4px}
+.updbtn{flex:none;background:var(--good);color:#06150e;border:0;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer}''')
+open(p, 'w').write(s)
+print('applied settings')
+
+# ---- Settings as a tab page ----
+rep('<button class="tb" id="setTab">', '<button class="tb" data-v="settings" id="setTab">')
+rep("""  <section id="v-library" hidden></section>""", """  <section id="v-library" hidden></section>
+  <section id="v-settings" hidden></section>""")
+rep("'list','library'].forEach", "'list','library','settings'].forEach")
+rep("""  if(v === 'library') renderLibraryTab();
+  scrollTo(0, 0);""", """  if(v === 'library') renderLibraryTab();
+  if(v === 'settings') renderSettings();
+  scrollTo(0, 0);""")
+rep("$('#setTab').onclick = openSettings;\n", "")
+rep("library:'My library',", "library:'My library', settings:'Settings',")
+rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\n.setpage{padding:4px 16px 40px}.setpage>.stitle{margin:8px 4px 0;font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:.02em;font-size:30px}')
+open(p, 'w').write(s)
+print('applied settings page')
+
+# ---- Cast on title cards: compact name chips, no photos ----
+CASTOLD = """if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;"""
+CASTNEW = """if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="cchips">${d.castL.slice(0, 10).map(p => `<button class="pp cchip" data-person="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>`;"""
+rep(CASTOLD, CASTNEW, 2)
+rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\\n.cchips{display:flex;flex-wrap:wrap;gap:6px}.pp.cchip{display:inline-flex;width:auto;flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:650;font-size:13px}')
+
+# ---- poster badges: white number, yellow star; watchlist bookmark stays yellow ----
+rep("  if(r) return `${fmtR(r)}★`;", "  if(r) return `${fmtR(r)}<i class=\"bst\">★</i>`;")
+rep("t = badge(id); b.textContent = t;", "t = badge(id); b.innerHTML = t;")
+# ---- Discover: no subtext under row titles ----
+rep("openListPage('For you', $('#fysub') ? $('#fysub').textContent : '')", "openListPage('For you', '')")
+rep('.rowhead p{margin:2px 0 0;color:var(--muted);font-size:12.5px}', '.rowhead p{display:none}')
+# ---- header film graphic: red light ----
+rep('<circle cx="36" cy="25.5" r="2.4" fill="#fff3d6"/>', '<circle cx="36" cy="25.5" r="2.4" fill="#e23a44"/>')
+rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\n.bd:not(.wl):not(.seen){color:#fff}.bd .bst{font-style:normal;color:#f5c518;margin-left:1px}.bd.wl::before{background:#f5c518!important}')
+open(p, 'w').write(s)
+print('applied cast chips')

@@ -2870,7 +2870,7 @@ async function nativePlay(box, s, link, title, meta, startAt, remembered){
 }
 
 // Android app: open the player straight from wherever you are; when it closes you're back on that same page
-let launching = false;
+let launching = 0;
 // After you finish an episode: "Next episode in 10s" (unless turned off in Settings), then straight into it
 const K_AUTOPLAY = 'rclib.autoplay';
 // Episodes: hand the player the rest of the show so it can go straight on to the next episode itself
@@ -2919,9 +2919,11 @@ function countdownNext(next, id, title){
     }).catch(() => {});
   });
 }
+// What's in the player right now, so a resume point can be saved even if the player never answers
+const K_INPLAYER = 'rclib.inplayer';
 async function launchOnce(link, title, meta, retry = false, extra = null){
-  if(launching && !retry) return null;
-  launching = true;
+  if(!retry && Date.now() - launching < 4000) return null;   // ignore a double tap, but never stay stuck
+  launching = Date.now();
   if(!retry) toast('Opening the player…');
   try{
     const s = await getStream(link, retry);
@@ -2930,31 +2932,54 @@ async function launchOnce(link, title, meta, retry = false, extra = null){
     let r;
     const opts = { url:s.u.download, title:title + (meta.label ? ' · ' + meta.label : ''), startMs:startAt > 20 ? Math.floor(startAt * 1000) : 0, key:meta.key || '' };
     if(extra) Object.assign(opts, extra, { queue:JSON.stringify(extra.queue) });
+    store.set(K_INPLAYER, { link, title, meta, queue:(extra && extra.queue) || [], at:Date.now() });
     try{ r = await playerPlay(opts); }
-    catch(e){ toast('Could not open the player'); return null; }
-    // episodes the player went through on its own: mark them watched
-    const byKey = {}; ((extra && extra.queue) || []).forEach(q => byKey[q.key] = q);
-    (Array.isArray(r.played) ? r.played : []).forEach(p => {
-      if(!p || !p.key || !p.finished) return;
-      const q = byKey[p.key];
-      finishWatch(p.key, q ? { key:p.key, tid:q.tid, id:meta.id, label:q.label } : meta);
-    });
-    if(r.lastKey && r.lastKey !== meta.key && byKey[r.lastKey]){
-      const q = byKey[r.lastKey];
-      link = q.link; meta = { key:q.key, tid:q.tid, id:meta.id, label:q.label };
-    }else if(r.error && remembered){ delete linkCache[link]; store.set(K_LINKS, linkCache); return launchOnce(link, title, meta, true, extra); }   // the remembered link may have expired
-    if(r.error) toast(r.error === 'NEXT_EPISODE_UNAVAILABLE' ? "Couldn't load the next episode" : `The player couldn't play this file (${esc(r.error)})`);
-    const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
-    const finished = !!(d > 0 && (r.finished || r.ended || t / d >= 0.9));
-    if(meta.key && d > 0){
-      if(finished) finishWatch(meta.key, meta);
-      else if(t > 5){ prog[meta.key] = { t, d, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link, ...progMeta(meta) }; saveProg(); }
+    catch(e){ store.del(K_INPLAYER); toast('Could not open the player'); return null; }
+    if(r.error && remembered && (!r.lastKey || r.lastKey === meta.key)){   // the remembered link may have expired
+      delete linkCache[link]; store.set(K_LINKS, linkCache); return launchOnce(link, title, meta, true, extra);
     }
-    afterChange(); refreshLibBlocks();
-    return { t, d, finished, error:r.error };
+    if(r.error) toast(r.error === 'NEXT_EPISODE_UNAVAILABLE' ? "Couldn't load the next episode" : `The player couldn't play this file (${esc(r.error)})`);
+    return applyPlayerResult(r, { link, title, meta, queue:(extra && extra.queue) || [] });
   }catch(e){ toast(rdErr(e)); return null; }
-  finally{ if(!retry) launching = false; }
+  finally{ launching = 0; }
 }
+// Save what the player reports: episodes it finished on its own, and where you stopped
+function applyPlayerResult(r, ctx){
+  let { link, title, meta } = ctx;
+  const byKey = {}; (ctx.queue || []).forEach(q => byKey[q.key] = q);
+  let played = r.played; if(typeof played === 'string'){ try{ played = JSON.parse(played); }catch(e){ played = []; } }
+  (Array.isArray(played) ? played : []).forEach(p => {
+    if(!p || !p.key || !p.finished || done[p.key]) return;
+    const q = byKey[p.key];
+    finishWatch(p.key, q ? { key:p.key, tid:q.tid, id:meta.id, label:q.label } : meta);
+  });
+  if(r.lastKey && r.lastKey !== meta.key && byKey[r.lastKey]){
+    const q = byKey[r.lastKey];
+    link = q.link; meta = { key:q.key, tid:q.tid, id:meta.id, label:q.label };
+  }
+  const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
+  const finished = !!(d > 0 && (r.finished || r.ended || t / d >= 0.9));
+  if(meta.key && d > 0){
+    if(finished){ if(!done[meta.key] || prog[meta.key]) finishWatch(meta.key, meta); }
+    else if(t > 5){ prog[meta.key] = { t, d, at:Date.now(), tid:meta.tid, id:meta.id, title, label:meta.label || '', link, ...progMeta(meta) }; saveProg(); }
+  }
+  store.del(K_INPLAYER); callNative('RCPlayer', 'clearSaved', {}).catch(() => {});
+  afterChange(); refreshLibBlocks();
+  return { t, d, finished, error:r.error };
+}
+// The player wrote its spot down but never got to report it (app closed or restarted meanwhile)
+async function recoverPlayerSpot(){
+  if(!NATIVE || launching) return;
+  const ctx = store.get(K_INPLAYER, null);
+  if(!ctx || !ctx.meta) return;
+  if(Date.now() - (ctx.at || 0) > 14 * 864e5){ store.del(K_INPLAYER); return; }
+  let r; try{ r = await callNative('RCPlayer', 'saved', {}); }catch(e){ return; }
+  if(launching) return;   // a new play started meanwhile
+  if(!r || !r.lastKey || !r.durationMs){ store.del(K_INPLAYER); return; }
+  if(r.at && r.at < ctx.at - 60000) return;   // an older spot from a previous session
+  applyPlayerResult(r, ctx);
+}
+if(NATIVE){ setTimeout(recoverPlayerSpot, 1500); document.addEventListener('visibilitychange', () => { if(!document.hidden) setTimeout(recoverPlayerSpot, 1500); }); }
 
 const fmtDur = sec => { sec = Math.max(0, Math.round(sec / 60)); const h = Math.floor(sec / 60), mm = sec % 60; return h ? `${h} hr${mm ? ' ' + mm + ' min' : ''}` : `${mm} min`; };
 // TMDB episode names and stills for one season (for the screen after an episode)

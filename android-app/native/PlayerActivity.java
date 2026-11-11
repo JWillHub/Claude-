@@ -419,6 +419,22 @@ public class PlayerActivity extends AppCompatActivity {
 
     private static String str(String s) { return s == null ? "" : s; }
 
+    // Write where you are to the phone every few seconds, so the app still gets your resume point
+    // if the player never closes normally (app swiped away, phone restarts, Android closes it in the background).
+    private long lastSaveAt = 0;
+    private void saveSpot() {
+        lastSaveAt = SystemClock.uptimeMillis();
+        if (exo == null || curKey.isEmpty() || loadingNext) return;
+        try {
+            long pos = exo.getCurrentPosition(), dur = exo.getDuration();
+            if (dur == C.TIME_UNSET || dur <= 0) return;
+            JSONObject o = new JSONObject();
+            o.put("lastKey", curKey); o.put("positionMs", pos); o.put("durationMs", dur);
+            o.put("finished", curFinished); o.put("played", played.toString()); o.put("at", System.currentTimeMillis());
+            prefs.edit().putString("spot", o.toString()).commit();
+        } catch (Exception ignored) {}
+    }
+
     private TextView pillButton() {
         TextView b = new TextView(this);
         b.setTextColor(Color.WHITE);
@@ -444,6 +460,7 @@ public class PlayerActivity extends AppCompatActivity {
         @Override public void run() {
             if (exo == null) return;
             try { check(); } catch (Exception ignored) {}
+            if (SystemClock.uptimeMillis() - lastSaveAt > 8000) saveSpot();
             ui.postDelayed(this, 500);
         }
     };
@@ -766,6 +783,7 @@ public class PlayerActivity extends AppCompatActivity {
         out.putExtra("finished", curFinished || ended);
         out.putExtra("lastKey", curKey);
         out.putExtra("played", played.toString());
+        saveSpot();
         if (error != null) out.putExtra("error", error);
         setResult(RESULT_OK, out);
         finish();
@@ -774,6 +792,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        saveSpot();
         // keep playing in picture-in-picture or on the TV; otherwise pause
         if (exo != null && current == exo && !isFinishing() && !isPip()) exo.pause();
     }
