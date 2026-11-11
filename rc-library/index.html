@@ -845,6 +845,12 @@ body.libv #v-library{padding-top:0}
 .mvsheet #mact{justify-content:center;margin-top:14px}
 .mvsheet .ov{margin-top:18px}
 .mvsheet #mimdb:empty,.mvsheet #md:empty{min-height:0;margin:0}
+/* ==== APPLE TV ART: title logo in place of the text title (delete this block to undo) ==== */
+.mvsheet .mvhead h2.haslogo{font-size:0;line-height:0;margin-bottom:14px;text-shadow:none}
+.mtlogo{display:block;margin:0 auto;max-width:78%;max-height:120px;object-fit:contain;filter:drop-shadow(0 4px 18px rgba(0,0,0,.6))}
+.mtlogo.tall{max-height:150px;max-width:60%}
+.mvsheet .mvhead img.mtlogo{width:auto!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;background:none!important;box-shadow:none!important;border-radius:0!important;flex:none}
+/* ==== end APPLE TV ART ==== */
 </style>
 </head>
 <body>
@@ -1187,6 +1193,28 @@ const sheetStack = [];
 let popSkip = 0;
 const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
   + '<button class="glback glall" aria-label="Back to the tab"><svg viewBox="0 0 24 24"><path d="M4.5 11 12 4.8l7.5 6.2M6.5 9.6v9h4v-5h3v5h4v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+// Textless key art and the title logo from TMDB (saved for a week); falls back quietly to the normal poster and text title
+async function appleArt(sh, id){
+  const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
+  let im;
+  try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
+    const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
+    const clean = best((x.posters || []).filter(p => !p.iso_639_1));
+    const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
+    return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
+  })); }catch(e){ return; }
+  if(!sh.isConnected || !im) return;
+  const bd = $('.bdrop', sh);
+  const art = im.poster || (filmOf(id) || {}).poster;
+  if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
+  const h2 = $('.mvhead h2', sh);
+  if(h2 && im.logo){
+    const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
+    lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
+    if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
+  }
+}
 function sheet(html, opt = {}){
   const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));
   const host = $('#sheets'), z = 30 + sheetStack.length * 2;
@@ -1195,6 +1223,7 @@ function sheet(html, opt = {}){
   sh.innerHTML = `<div class="grab"><i></i></div><div class="sbody">${html}</div>` + (isPage ? GLASS_BTNS : '');
   if(isPage) sh.classList.add('page');
   { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }
+  if(opt.art != null) appleArt(sh, opt.art);
   host.append(bk, sh);
   const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
   if(isPage){
@@ -2298,7 +2327,7 @@ async function openShow(id){
     <div id="mlib"></div><div id="mwatch"></div>
     <div id="mcast"></div>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
-      <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
+      <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet', art:id });
   const b = s.body, s5 = $('.ratebar .s5', b);
   libBlock(b, id);
   const paint = () => {
@@ -2342,7 +2371,7 @@ async function openMovie(id){
       <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
     <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div id="mlib"></div><div id="mwatch"></div><div id="mcast"></div><div class="small" id="mvote" style="margin-top:10px"></div><div id="mhist" style="margin-top:14px"></div>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
-      <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
+      <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet', art:id });
   const b = s.body, s5 = $('.ratebar .s5', b);
   libBlock(b, id);
   const paint = () => {

@@ -477,5 +477,37 @@ rep("""  const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ?
 rep("""    if(d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;""",
     """    if(d.poster || d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.poster || d.backdrop})`;""", 2)
 
+
+# ==== APPLE TV ART (to undo: delete this block and the "APPLE TV ART" block in theme.css) ====
+# Rating pages use TMDB's textless poster art (sharper size) and the official title logo in place of the text title.
+rep("{ tall:true, cls:'mvsheet' })", "{ tall:true, cls:'mvsheet', art:id })", 2)
+rep("""  { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }""",
+"""  { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }
+  if(opt.art != null) appleArt(sh, opt.art);""")
+rep("function sheet(html, opt = {}){", r"""// Textless key art and the title logo from TMDB (saved for a week); falls back quietly to the normal poster and text title
+async function appleArt(sh, id){
+  const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
+  let im;
+  try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
+    const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
+    const clean = best((x.posters || []).filter(p => !p.iso_639_1));
+    const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
+    return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
+  })); }catch(e){ return; }
+  if(!sh.isConnected || !im) return;
+  const bd = $('.bdrop', sh);
+  const art = im.poster || (filmOf(id) || {}).poster;
+  if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
+  const h2 = $('.mvhead h2', sh);
+  if(h2 && im.logo){
+    const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
+    lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
+    if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
+  }
+}
+function sheet(html, opt = {}){""")
+# ==== end APPLE TV ART ====
+
 open(p, 'w').write(s)
 print('applied cast chips')
