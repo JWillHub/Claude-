@@ -723,18 +723,6 @@ document.addEventListener('mousedown', e => {
   document.addEventListener('pointermove', e => { last = e; if(el) go(); }, { passive:true });
   ['pointerup', 'pointercancel', 'scroll'].forEach(t => document.addEventListener(t, end, { passive:true, capture:true }));
 })();
-// The big poster at the top of a title page glows softly in its own colors
-(function posterGlow(){
-  const glow = () => $$('#sheets .mvhead img:not([data-g]), #sheets .shpo img:not([data-g])').forEach(img => {
-    img.dataset.g = 1;
-    const w = document.createElement('span'); w.className = 'pgw';
-    img.replaceWith(w);
-    const g = img.cloneNode(); g.className = 'pglow'; g.removeAttribute('loading'); g.alt = '';
-    w.append(g, img);
-  });
-  const host = document.getElementById('sheets');
-  if(host) new MutationObserver(() => glow()).observe(host, { childList:true, subtree:true });
-})();
 // a light tap you can feel (Android app only)
 const hap = (ms = 12) => { try{ NATIVE && navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
 function longPress(el, fn){

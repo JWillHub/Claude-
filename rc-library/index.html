@@ -824,6 +824,13 @@ body.libv #v-library{padding-top:0}
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 12px 32px rgba(0,0,0,.6)!important}
 .lsearch,.ltools #lsort{box-shadow:none!important}
 .gpk button.on{background:rgba(255,255,255,.06)!important;box-shadow:none!important}
+/* No glow on big posters */
+.pgw .pglow{display:none!important}
+/* Discover: no dots on the Trending stack, no "Rate what you've seen" */
+.hdots{display:none!important}
+#v-discover .qs{display:none!important}
+/* Library: no dot before the section headers */
+#v-library .cwdot{display:none}
 </style>
 </head>
 <body>
@@ -3368,18 +3375,6 @@ document.addEventListener('mousedown', e => {
   }, { passive:true });
   document.addEventListener('pointermove', e => { last = e; if(el) go(); }, { passive:true });
   ['pointerup', 'pointercancel', 'scroll'].forEach(t => document.addEventListener(t, end, { passive:true, capture:true }));
-})();
-// The big poster at the top of a title page glows softly in its own colors
-(function posterGlow(){
-  const glow = () => $$('#sheets .mvhead img:not([data-g]), #sheets .shpo img:not([data-g])').forEach(img => {
-    img.dataset.g = 1;
-    const w = document.createElement('span'); w.className = 'pgw';
-    img.replaceWith(w);
-    const g = img.cloneNode(); g.className = 'pglow'; g.removeAttribute('loading'); g.alt = '';
-    w.append(g, img);
-  });
-  const host = document.getElementById('sheets');
-  if(host) new MutationObserver(() => glow()).observe(host, { childList:true, subtree:true });
 })();
 // a light tap you can feel (Android app only)
 const hap = (ms = 12) => { try{ NATIVE && navigator.vibrate && navigator.vibrate(ms); }catch(e){} };
