@@ -658,6 +658,9 @@ html{touch-action:manipulation}
 .rdot i,#hcar,.pkp svg{color:var(--accent)}
 .rdot.fill i{color:#fff}
 .tb{color:#fff}.tb.on{color:#fff;font-weight:800}.tb.on svg{color:var(--accent)}
+.plogos{gap:6px}.plogos img{width:30px;height:30px;border-radius:8px;box-shadow:none}
+.castsec .pp{width:62px}.castsec .pp img,.castsec .pp .pi{width:48px;height:48px;box-shadow:none;margin-bottom:5px}.castsec .pp .pi{font-size:17px}.castsec .ppl{gap:8px}
+.castsec .ppl{align-items:flex-start}
 </style>
 </head>
 <body>
@@ -2075,10 +2078,9 @@ async function openShow(id){
   const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
-      <div class="mact" id="mact"></div></div></div>
+      <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
     <p class="ov clamp" id="mov" onclick="this.classList.toggle('clamp')">${esc(m.overview || '')}</p>
     <div id="mlib"></div><div id="mwatch"></div>
-    <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>
     <div id="mcast"></div>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
       <div class="myrow">${starsHTML(32, 4)}<button class="xr" id="mclr" aria-label="Clear rating">✕</button></div></div>`, { tall:true, cls:'mvsheet' });
@@ -2103,13 +2105,17 @@ async function openShow(id){
     $('#mm', b).textContent = [yrs, d.seasons ? d.seasons + ' season' + (d.seasons > 1 ? 's' : '') : '', d.network].filter(Boolean).join(' · ');
     $('#md', b).textContent = d.gnames.slice(0, 3).join(', ');
     $('#mov', b).textContent = d.overview;
-    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="cchips">${d.castL.slice(0, 5).map(p => `<button class="pp cchip" data-person="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>`;
+    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
     const acts = () => { const box = $('#mact', b); if(!box) return;
       box.innerHTML = `${d.trailer ? `<a href="${esc(trailerURL(d.trailer))}" target="_blank" rel="noopener">▶ Trailer</a>` : ''}<button id="mwl" class="${watch[id] ? 'on' : ''}">${BOOK}${watch[id] ? 'On watchlist' : 'Watchlist'}</button>`;
       $('#mwl', b).onclick = () => toggleWatch(filmOf(id)); };
     acts(); const oldR = s.refresh; s.refresh = () => { oldR(); acts(); };
     $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
-  }catch(e){ $('#imdb', b).innerHTML = `<div class="msg">${errText(e)}</div>`; return; }
+  }catch(e){ return; }
+  if(d.imdb){ const sc = $('#mimdb', b); sc.className = 'scores';
+    rtScore(d.imdb).then(v => { if(v && s.el.isConnected) sc.insertAdjacentHTML('beforeend', `<span class="rt" title="Rotten Tomatoes critics score">${parseInt(v) < 60 ? SPLAT : TOMATO}${esc(v)}</span>`); });
+    imdbFile(d.imdb).then(res => { if(res.state === 'ok' && res.d.r && s.el.isConnected) sc.insertAdjacentHTML('afterbegin', `<span class="imdbm"><span class="ib2">IMDb</span>${res.d.r.toFixed(1)}<span class="small">${fmtV(res.d.v)} votes</span></span>`); }); }
+  return;
   if(!d.imdb){ $('#imdb', b).innerHTML = '<div class="msg">This show has no IMDb link on TMDB, so there\'s no episode chart.</div>'; return; }
   const res = await imdbFile(d.imdb);
   if(!s.el.isConnected) return;
@@ -2224,7 +2230,7 @@ async function openMovie(id){
     $('#md', b).innerHTML = d.dirs && d.dirs.length ? 'Directed by ' + d.dirs.map(p => `<button class="plink" data-person="${p.id}">${esc(p.name)}</button>`).join(', ') : '';
     $('#mov', b).textContent = d.overview;
     $('#mvote', b).textContent = d.vote ? `TMDB average ${d.vote.toFixed(1)}/10` : '';
-    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="cchips">${d.castL.slice(0, 5).map(p => `<button class="pp cchip" data-person="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>`;
+    if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
     trailerKey = d.trailer; acts(trailerKey);
     $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
     if(d.imdb){

@@ -30,3 +30,6 @@
 .rdot i,#hcar,.pkp svg{color:var(--accent)}
 .rdot.fill i{color:#fff}
 .tb{color:#fff}.tb.on{color:#fff;font-weight:800}.tb.on svg{color:var(--accent)}
+.plogos{gap:6px}.plogos img{width:30px;height:30px;border-radius:8px;box-shadow:none}
+.castsec .pp{width:62px}.castsec .pp img,.castsec .pp .pi{width:48px;height:48px;box-shadow:none;margin-bottom:5px}.castsec .pp .pi{font-size:17px}.castsec .ppl{gap:8px}
+.castsec .ppl{align-items:flex-start}

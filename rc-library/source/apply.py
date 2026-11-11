@@ -263,7 +263,6 @@ print('applied settings page')
 # ---- Cast on title cards: compact name chips, no photos ----
 CASTOLD = """if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;"""
 CASTNEW = """if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="cchips">${d.castL.slice(0, 10).map(p => `<button class="pp cchip" data-person="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>`;"""
-rep(CASTOLD, CASTNEW, 2)
 rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\\n.cchips{display:flex;flex-wrap:wrap;gap:6px}.pp.cchip{display:inline-flex;width:auto;flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:650;font-size:13px}')
 
 # ---- poster badges: white number, yellow star; watchlist bookmark stays yellow ----
@@ -355,6 +354,22 @@ rep('.hero h2{font-size:31px}', '''.hero h2{font-size:31px}
 .sstrip small{font-size:10.5px;font-weight:700;opacity:.85}
 .allep{margin-top:12px}
 .lg2 span{gap:4px}''')
+
+
+# ---- Series card: overall IMDb (+ Rotten Tomatoes) up top like movies; no episode chart ----
+rep('    <div id="imdb"><div class="msg">Loading IMDb episode ratings…</div></div>\n', '')
+rep('''<div class="meta" id="md"></div>
+      <div class="mact" id="mact"></div></div></div>
+    <p class="ov clamp" id="mov"''', '''<div class="meta" id="md"></div>
+      <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
+    <p class="ov clamp" id="mov"''')
+rep("""  }catch(e){ $('#imdb', b).innerHTML = `<div class="msg">${errText(e)}</div>`; return; }
+  if(!d.imdb){""", """  }catch(e){ return; }
+  if(d.imdb){ const sc = $('#mimdb', b); sc.className = 'scores';
+    rtScore(d.imdb).then(v => { if(v && s.el.isConnected) sc.insertAdjacentHTML('beforeend', `<span class="rt" title="Rotten Tomatoes critics score">${parseInt(v) < 60 ? SPLAT : TOMATO}${esc(v)}</span>`); });
+    imdbFile(d.imdb).then(res => { if(res.state === 'ok' && res.d.r && s.el.isConnected) sc.insertAdjacentHTML('afterbegin', `<span class="imdbm"><span class="ib2">IMDb</span>${res.d.r.toFixed(1)}<span class="small">${fmtV(res.d.v)} votes</span></span>`); }); }
+  return;
+  if(!d.imdb){""")
 
 open(p, 'w').write(s)
 print('applied cast chips')
