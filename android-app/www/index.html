@@ -791,6 +791,13 @@ body.libv #v-library{padding-top:0}
 .hdots i.on{background:#fff;width:16px;border-radius:3px}
 /* My Films tab removed */
 .tb[data-v="films"]{display:none!important}
+/* Pop-up lists in the same glass as the round back button */
+.gpk{background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),rgba(14,14,14,.9)!important;border:1px solid rgba(255,255,255,.32)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),0 18px 50px rgba(0,0,0,.7)!important;border-radius:28px}
+.gpk button{border-radius:22px;position:relative}
+.gpk button+button{border-top:0}
+.gpk button+button::before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;background:rgba(255,255,255,.1)}
+.gpk button.on{background:rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
