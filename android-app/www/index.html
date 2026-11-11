@@ -789,6 +789,8 @@ body.libv #v-library{padding-top:0}
 .hdots{position:absolute;right:14px;top:12px;z-index:4;display:flex;gap:5px}
 .hdots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer}
 .hdots i.on{background:#fff;width:16px;border-radius:3px}
+/* My Films tab removed */
+.tb[data-v="films"]{display:none!important}
 </style>
 </head>
 <body>
@@ -3918,7 +3920,7 @@ function renderSettings(){
 /* ================= go ================= */
 history.replaceState({ rl:0 }, '');
 { const st = store.get('rclib.start', 'discover'), last = store.get('rclib.lastview', 'discover');
-  setView(st === 'last' ? (last || 'discover') : st === 'library' ? 'library' : 'discover'); }
+  setView(st === 'last' && last && last !== 'films' ? last : st === 'library' ? 'library' : 'discover'); }
 setTimeout(() => { if(store.get(K_KEY, '')) repairTitles(); }, 2500);
 if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>

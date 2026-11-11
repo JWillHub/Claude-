@@ -409,7 +409,7 @@ rep("function setRating(f, r, quiet){", "function setRating(f, r, quiet){\n  try
 rep("""function setView(v, o = {}){""", """function setView(v, o = {}){
   try{ if(['discover','genres','films','library','settings','diary','tv'].includes(v)) store.set('rclib.lastview', v); }catch(e){}""")
 rep("""\nsetView('discover');\n""", """\n{ const st = store.get('rclib.start', 'discover'), last = store.get('rclib.lastview', 'discover');
-  setView(st === 'last' ? (last || 'discover') : st === 'library' ? 'library' : 'discover'); }\n""")
+  setView(st === 'last' && last && last !== 'films' ? last : st === 'library' ? 'library' : 'discover'); }\n""")
 
 
 # ---- Rating cards: no "Rate the franchise" pill ----
