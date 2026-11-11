@@ -631,6 +631,18 @@ html{touch-action:manipulation}
 #hcar{background:transparent;border:1px solid var(--accent);color:var(--accent);box-shadow:none}
 .qs{background:transparent}.qs .qi{background:transparent;border:1px solid var(--accent)}.qs .qi svg{fill:var(--accent)}.qs b{color:var(--text)}
 .rdot i svg{width:26px;height:26px;display:block}.rdot i{width:48px;height:48px}.cwplay svg{width:22px;height:22px;display:block}
+/* library title pages: full screen, slide in from the right, glass back button */
+.sh.shcard{top:0;max-height:none;height:100dvh;border-radius:0;border:0;box-shadow:none;transform:translateX(100%)}
+.sh.shcard.in{transform:none}
+.sh.shcard .grab{display:none}
+.glback{position:absolute;z-index:6;top:calc(12px + env(safe-area-inset-top));left:14px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.32);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.35)}
+.glback svg{width:22px;height:22px;margin-left:-2px}
+.glback:active{transform:scale(.92)}
+.sh.shcard .shbg{height:calc(380px + env(safe-area-inset-top))}
+.sh.shcard .shhero{min-height:calc(380px + env(safe-area-inset-top))}
 </style>
 </head>
 <body>
@@ -3270,7 +3282,7 @@ function openLibMovie(id){
       <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
     <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
       <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>' + GLBACK); $('.glback', s.el).onclick = () => s.close();
   const b = s.body;
   libBlock(b, id);
   moreLike($('#mvlike', b), id);
@@ -3305,13 +3317,14 @@ async function moreLike(box, id){
     return `<button class="cwc" data-like="${esc(m.id)}"><span class="cwimg">${pic}</span><span class="cwt">${esc(m.title)}</span><span class="small">${inLib(m.id) ? '<b class="mlown">In your library</b>' : esc([m.year, m.tv ? 'Series' : 'Movie'].filter(Boolean).join(' · '))}</span></button>`; }).join('')}</div></section>`;
   $$('[data-like]', box).forEach(x => x.onclick = () => openLibCard(pid(x.dataset.like)));
 }
+const GLBACK = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
 let showSeason = null;
 // A series opens as a card over the Library (swipe it down, tap outside or press Back to close)
 function openShowPage(id){
   const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
   showSeason = null;
   const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
+  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>' + GLBACK); $('.glback', s.el).onclick = () => s.close();
   showPage($('.shwrap', s.body), f, s);
 }
 async function showPage(pg, f, card){
