@@ -518,5 +518,12 @@ rep("""  const out = page === 1 && !params.query ? await cached(k, 6, run) : (me
   out.results = (out.results || []).filter(keep);   // also clears talk shows out of rows saved earlier
   remember(out.results);""")
 
+
+# ---- Logo: the Neo Reel only (no "Rolling Credits" wordmark) ----
+import base64 as _b64
+_reel = 'data:image/png;base64,' + _b64.b64encode(open(os.path.join(SRC, 'neo-reel-176.png'), 'rb').read()).decode()
+_i = s.index('<svg class="hproj" id="hproj"'); _j = s.index('</svg>', _i) + len('</svg>')
+s = s[:_i] + f'<img class="hproj nreel" id="hproj" src="{_reel}" alt="" draggable="false">' + s[_j:]
+
 open(p, 'w').write(s)
 print('applied cast chips')

@@ -248,3 +248,7 @@ body.libv #v-library{padding-top:0}
 .shtabs{display:block!important}
 .shcard #mlib:not(.allcp) .rdot small{display:none}
 /* ==== end APPLE STYLE LIBRARY PAGES ==== */
+/* Logo: the Neo Reel on its own */
+.hproj.nreel{width:46px;height:46px;margin-right:0;object-fit:contain}
+.srlogo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.logo:not(.sub) .w1,.logo:not(.sub) .w2{display:none}
