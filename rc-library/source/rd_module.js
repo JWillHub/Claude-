@@ -698,8 +698,8 @@ function glassPick(opts, cur, onPick){
   const bk = document.createElement('div'); bk.className = 'gpk-bk';
   bk.innerHTML = `<div class="gpk">${opts.map(([v, l]) => `<button data-v="${esc(v)}" class="${String(v) === String(cur) ? 'on' : ''}"><span>${esc(l)}</span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`).join('')}</div>`;
   document.body.append(bk);
-  requestAnimationFrame(() => bk.classList.add('in'));
-  const close = () => { bk.classList.remove('in'); setTimeout(() => bk.remove(), 220); };
+  requestAnimationFrame(() => { bk.classList.add('in'); const on = $('.gpk .on', bk); if(on) on.scrollIntoView({ block:'center' }); });
+  const close = () => { bk.classList.remove('in'); setTimeout(() => bk.remove(), 150); };
   bk.onclick = e => { const o = e.target.closest('[data-v]'); if(o){ hap(); onPick(o.dataset.v); } close(); };
 }
 // Every dropdown in the app (Genres filters and the rest) opens the glass list instead of Android's gray pop-up

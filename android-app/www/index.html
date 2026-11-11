@@ -760,6 +760,11 @@ html{touch-action:manipulation}
 .gpk{background:rgba(0,0,0,.72)!important;border-color:rgba(255,255,255,.16)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 24px 60px rgba(0,0,0,.7)!important}
 .gpk-bk{background:rgba(0,0,0,.4)}
 #v-library .cwh{padding:0 16px 10px}#v-library .cwlib{margin:18px 16px 0}
+/* Glass pop-ups: solid enough that nothing shows through while opening/closing; long lists scroll */
+.gpk-bk{transition:opacity .14s ease-out;background:rgba(0,0,0,.55)}
+.gpk{background:rgba(12,12,12,.94)!important;max-height:min(70dvh,560px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;transform:scale(.97);transition:transform .16s ease-out}
+.gpk::-webkit-scrollbar{display:none}
+.gpk-bk:not(.in) .gpk{visibility:hidden}
 </style>
 </head>
 <body>
@@ -3268,8 +3273,8 @@ function glassPick(opts, cur, onPick){
   const bk = document.createElement('div'); bk.className = 'gpk-bk';
   bk.innerHTML = `<div class="gpk">${opts.map(([v, l]) => `<button data-v="${esc(v)}" class="${String(v) === String(cur) ? 'on' : ''}"><span>${esc(l)}</span><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>`).join('')}</div>`;
   document.body.append(bk);
-  requestAnimationFrame(() => bk.classList.add('in'));
-  const close = () => { bk.classList.remove('in'); setTimeout(() => bk.remove(), 220); };
+  requestAnimationFrame(() => { bk.classList.add('in'); const on = $('.gpk .on', bk); if(on) on.scrollIntoView({ block:'center' }); });
+  const close = () => { bk.classList.remove('in'); setTimeout(() => bk.remove(), 150); };
   bk.onclick = e => { const o = e.target.closest('[data-v]'); if(o){ hap(); onPick(o.dataset.v); } close(); };
 }
 // Every dropdown in the app (Genres filters and the rest) opens the glass list instead of Android's gray pop-up
