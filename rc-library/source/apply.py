@@ -468,5 +468,14 @@ s = s[:_i] + r'''async function loadHero(){
 }
 ''' + s[_j:]
 
+
+# ---- Rating pages (Discover, Genres, search): Apple TV style. The tall poster art fills the top, title large and centered ----
+rep("""  const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>""",
+    """  const s = sheet(`<div class="bdrop" style="${f.poster || m.poster ? `background-image:url(${IMG}w780${f.poster || m.poster})` : ''}"></div>""")
+rep("""  const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>""",
+    """  const s = sheet(`<div class="bdrop" style="${f.poster || m.poster ? `background-image:url(${IMG}w780${f.poster || m.poster})` : ''}"></div>""")
+rep("""    if(d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;""",
+    """    if(d.poster || d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.poster || d.backdrop})`;""", 2)
+
 open(p, 'w').write(s)
 print('applied cast chips')

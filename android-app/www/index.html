@@ -832,6 +832,20 @@ body.libv #v-library{padding-top:0}
 #v-discover .qs{display:none!important}
 /* Library: no dot before the section headers */
 #v-library .cwdot{display:none}
+/* Rating pages: Apple TV style. Tall poster art fills the top and stays still; centered title and details over its fade */
+.mvsheet{--hero:min(72dvh,640px)}
+.mvsheet>.bdrop{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
+.mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 78%,#000 100%)!important}
+.mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+.mvsheet .mvhead{margin-top:calc(var(--hero) - 250px + env(safe-area-inset-top))!important;flex-direction:column;align-items:center;text-align:center;gap:0}
+.mvsheet .mvhead>img,.mvsheet .mvhead>.ph,.mvsheet .mvhead>.pgw{display:none!important}
+.mvsheet .mvhead>div{width:100%;display:flex;flex-direction:column;align-items:center}
+.mvsheet .mvhead h2{font-size:42px;line-height:.98;margin:0 0 10px;text-shadow:0 4px 22px rgba(0,0,0,.6);max-width:94%}
+.mvsheet .mvhead .meta{justify-content:center;text-align:center;font-size:14px;color:rgba(255,255,255,.85)}
+.mvsheet #mimdb{justify-content:center;margin-top:8px}
+.mvsheet #mact{justify-content:center;margin-top:14px}
+.mvsheet .ov{margin-top:18px}
+.mvsheet #mimdb:empty,.mvsheet #md:empty{min-height:0;margin:0}
 </style>
 </head>
 <body>
@@ -2285,7 +2299,7 @@ async function waitDetails(id){ if(detailsCached(id)) return; await Promise.race
 async function openShow(id){
   await waitDetails(id);
   const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
-  const s = sheet(`<div class="bdrop" style="${m.backdrop ? `background-image:url(${IMG}w780${m.backdrop})` : ''}"></div>
+  const s = sheet(`<div class="bdrop" style="${f.poster || m.poster ? `background-image:url(${IMG}w780${f.poster || m.poster})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
       <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
     <p class="ov clamp" id="mov" onclick="this.classList.toggle('clamp')">${esc(m.overview || '')}</p>
@@ -2309,7 +2323,7 @@ async function openShow(id){
     remember([d]);
     if(!hit) await s.settled;
     if(!s.el.isConnected) return;
-    if(d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
+    if(d.poster || d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.poster || d.backdrop})`;
     const yrs = d.year ? d.year + (d.status === 'Returning Series' ? '–' : d.end && d.end !== d.year ? '–' + d.end : '') : '';
     $('#mm', b).textContent = [yrs, d.seasons ? d.seasons + ' season' + (d.seasons > 1 ? 's' : '') : '', d.network].filter(Boolean).join(' · ');
     $('#md', b).textContent = d.gnames.slice(0, 3).join(', ');
@@ -2331,7 +2345,7 @@ async function openMovie(id){
   if(typeof id === 'string') return openShow(id);
   await waitDetails(id);
   const f = filmOf(id), m = movies.get(id) || {};
-  const s = sheet(`<div class="bdrop" style="${f.backdrop || m.backdrop ? `background-image:url(${IMG}w780${f.backdrop || m.backdrop})` : ''}"></div>
+  const s = sheet(`<div class="bdrop" style="${f.poster || m.poster ? `background-image:url(${IMG}w780${f.poster || m.poster})` : ''}"></div>
     <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
       <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
     <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div id="mlib"></div><div id="mwatch"></div><div id="mcast"></div><div class="small" id="mvote" style="margin-top:10px"></div><div id="mhist" style="margin-top:14px"></div>
@@ -2368,7 +2382,7 @@ async function openMovie(id){
     remember([d]);
     if(!hit) await s.settled;
     if(!s.el.isConnected) return;
-    if(d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.backdrop})`;
+    if(d.poster || d.backdrop) $('.bdrop', s.el).style.backgroundImage = `url(${IMG}w780${d.poster || d.backdrop})`;
     const rt = d.runtime ? `${Math.floor(d.runtime / 60)}h ${d.runtime % 60}m` : '';
     $('#mm', b).textContent = [d.year, rt, d.gnames.slice(0, 3).join(', ')].filter(Boolean).join(' · ');
     $('#md', b).innerHTML = d.dirs && d.dirs.length ? 'Directed by ' + d.dirs.map(p => `<button class="plink" data-person="${p.id}">${esc(p.name)}</button>`).join(', ') : '';

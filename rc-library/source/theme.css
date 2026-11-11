@@ -203,3 +203,17 @@ body.libv #v-library{padding-top:0}
 #v-discover .qs{display:none!important}
 /* Library: no dot before the section headers */
 #v-library .cwdot{display:none}
+/* Rating pages: Apple TV style. Tall poster art fills the top and stays still; centered title and details over its fade */
+.mvsheet{--hero:min(72dvh,640px)}
+.mvsheet>.bdrop{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
+.mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 78%,#000 100%)!important}
+.mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+.mvsheet .mvhead{margin-top:calc(var(--hero) - 250px + env(safe-area-inset-top))!important;flex-direction:column;align-items:center;text-align:center;gap:0}
+.mvsheet .mvhead>img,.mvsheet .mvhead>.ph,.mvsheet .mvhead>.pgw{display:none!important}
+.mvsheet .mvhead>div{width:100%;display:flex;flex-direction:column;align-items:center}
+.mvsheet .mvhead h2{font-size:42px;line-height:.98;margin:0 0 10px;text-shadow:0 4px 22px rgba(0,0,0,.6);max-width:94%}
+.mvsheet .mvhead .meta{justify-content:center;text-align:center;font-size:14px;color:rgba(255,255,255,.85)}
+.mvsheet #mimdb{justify-content:center;margin-top:8px}
+.mvsheet #mact{justify-content:center;margin-top:14px}
+.mvsheet .ov{margin-top:18px}
+.mvsheet #mimdb:empty,.mvsheet #md:empty{min-height:0;margin:0}
