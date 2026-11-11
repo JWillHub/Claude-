@@ -820,6 +820,11 @@ body.libv #v-library{padding-top:0}
 .gpk button.on{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
 .gpk button+button::before{background:rgba(255,255,255,.06)}
 .gpk{border-color:rgba(255,255,255,.11)!important;border-top-color:rgba(255,255,255,.18)!important}
+/* Search bar, sort button and pop-ups: plain black, even all the way through, with a thin rim */
+.lsearch,.ltools #lsort,.ltools #lsort.lsortbtn,.gpk{background:#000!important;border:1px solid rgba(255,255,255,.14)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 12px 32px rgba(0,0,0,.6)!important}
+.lsearch,.ltools #lsort{box-shadow:none!important}
+.gpk button.on{background:rgba(255,255,255,.06)!important;box-shadow:none!important}
 </style>
 </head>
 <body>
