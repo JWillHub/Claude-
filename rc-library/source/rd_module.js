@@ -924,17 +924,20 @@ function openLibMovie(id){
   const f = libTitles().find(x => String(x.id) === String(id)) || filmOf(id);
   const s = sheet(`<div class="shwrap">
     <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
-      <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
-    <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
-      <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
+      <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div>
+        <div id="mlib"></div><button class="morecp" id="mvcopies" hidden>More copies</button></div></div></div>
+    <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p>
+      <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard', art:id });
+  s.el.insertAdjacentHTML('afterbegin', `<div class="shbg" style="${f.poster ? `background-image:url(${IMG}w780${f.poster})` : ''}"></div>`);
   const b = s.body;
   libBlock(b, id);
+  // one main button; other copies of the movie behind a small "More copies" link
+  const copies = () => { const n = $$('#mlib .rdot', b).length, m = $('#mvcopies', b); m.hidden = n < 2; };
+  copies(); $('#mvcopies', b).onclick = e => { $('#mlib', b).classList.toggle('allcp'); e.target.textContent = $('#mlib', b).classList.contains('allcp') ? 'Fewer copies' : 'More copies'; };
   moreLike($('#mvlike', b), id);
   const ov = $('#mvov', b); ov.onclick = () => ov.classList.toggle('open');
   detailsFor(id).then(d => {
     if(!b.isConnected) return;
-    if(d.backdrop) $('.shbg', s.el).style.backgroundImage = `url(${IMG}w1280${d.backdrop})`;
     ov.textContent = d.overview || '';
     if(typeof id === 'string'){ $('#mvmeta', b).textContent = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) : ''].filter(Boolean).join(' · '); return; }
     const rt = d.runtime ? (d.runtime >= 60 ? Math.floor(d.runtime / 60) + 'h ' + (d.runtime % 60) + 'm' : d.runtime + 'm') : '';
@@ -967,8 +970,8 @@ let showSeason = null;
 function openShowPage(id){
   const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
   showSeason = null;
-  const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
+  const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard', art:id });
+  s.el.insertAdjacentHTML('afterbegin', `<div class="shbg" style="${f.poster ? `background-image:url(${IMG}w780${f.poster})` : ''}"></div>`);
   showPage($('.shwrap', s.body), f, s);
 }
 async function showPage(pg, f, card){
@@ -976,7 +979,7 @@ async function showPage(pg, f, card){
   pg.innerHTML = `<div class="shp">
     <div class="shhero" id="shhero">
       <div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
-        <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div></div></div></div>
+        <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div><div id="shplay"></div></div></div></div>
     <div class="pad" style="padding-top:6px">
       <p class="shov" id="shov"></p>
       <div class="shtabs" id="shtabs"></div>
@@ -988,7 +991,6 @@ async function showPage(pg, f, card){
   // details: backdrop, overview, ratings
   detailsFor(id).then(d => {
     if(!pg.isConnected) return;
-    if(d.backdrop){ const bg = card && $('.shbg', card.el); if(bg) bg.style.backgroundImage = `url(${IMG}w1280${d.backdrop})`; }
     ov.textContent = d.overview || '';
     const bits = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) + ' TMDB' : ''].filter(Boolean);
     $('#shmeta', pg).textContent = bits.join(' · ');
@@ -1010,10 +1012,16 @@ async function showPage(pg, f, card){
     showSeason = fromProg != null ? fromProg : (sns.find(sn => all.get(sn).some(x => !done[key(x)])) ?? sns[0]);
   }
   const drawTabs = () => {
-    $('#shtabs', pg).innerHTML = sns.length > 1 ? sns.map(sn => `<button data-sn="${sn}" class="${sn === showSeason ? 'on' : ''}">${sn ? 'Season ' + sn : 'Extras'}</button>`).join('') : '';
-    $$('[data-sn]', pg).forEach(x => x.onclick = () => { showSeason = +x.dataset.sn; drawTabs(); drawEps(); });
+    const nm = sn => sn ? 'Season ' + sn : 'Extras';
+    $('#shtabs', pg).innerHTML = sns.length > 1 ? `<button class="seapick" id="seapick">${nm(showSeason)}</button>` : (sns[0] ? `<div class="sealbl">${nm(sns[0])}</div>` : '');
+    const sp = $('#seapick', pg);
+    if(sp) sp.onclick = () => glassPick(sns.map(sn => [String(sn), nm(sn)]), String(showSeason), v => { showSeason = +v; drawTabs(); drawEps(); });
   };
-  const drawEps = () => renderEpisodes($('#sheps', pg), all.get(showSeason) || [], id, f.title);
+  // the Up next / Resume button sits under the title, Apple-style
+  const drawEps = () => { renderEpisodes($('#sheps', pg), all.get(showSeason) || [], id, f.title);
+    const slot = $('#shplay', pg), en = $('#sheps .epnext', pg); if(slot && en){ slot.innerHTML = ''; slot.append(en); } };
+  // episodes redraw themselves (long-press, finishing one): keep the button under the title
+  new MutationObserver(() => { const slot = $('#shplay', pg), en = $('#sheps .epnext', pg); if(slot && en){ slot.innerHTML = ''; slot.append(en); } }).observe($('#sheps', pg), { childList:true, subtree:true });
   drawTabs(); drawEps();
 }
 // One series picked: a poster for each season you have

@@ -495,10 +495,10 @@ async function appleArt(sh, id){
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
   })); }catch(e){ return; }
   if(!sh.isConnected || !im) return;
-  const bd = $('.bdrop', sh);
+  const bd = $('.bdrop', sh) || $('.shbg', sh);
   const art = im.poster || (filmOf(id) || {}).poster;
   if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
-  const h2 = $('.mvhead h2', sh);
+  const h2 = $('.mvhead h2', sh) || $('.shname', sh);
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
     lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };

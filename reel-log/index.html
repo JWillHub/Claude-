@@ -851,6 +851,31 @@ body.libv #v-library{padding-top:0}
 .mtlogo.tall{max-height:150px;max-width:60%}
 .mvsheet .mvhead img.mtlogo{width:auto!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;background:none!important;box-shadow:none!important;border-radius:0!important;flex:none}
 /* ==== end APPLE TV ART ==== */
+/* ==== APPLE STYLE LIBRARY PAGES (delete this block to undo) ==== */
+.sh.shcard{--hero:min(70dvh,620px)}
+.sh.shcard .shbg{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
+.sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 42%,rgba(0,0,0,.8) 78%,#000 100%)!important}
+.sh.shcard .shhero{min-height:calc(var(--hero) + env(safe-area-inset-top))!important}
+.shcard .shin{flex-direction:column;align-items:center;text-align:center;width:100%;padding:0 18px 22px!important;gap:0}
+.shcard .shpo{display:none!important}
+.shcard .shtx{display:flex;flex-direction:column;align-items:center;width:100%}
+.shcard .shname{font-size:42px;line-height:.98;margin:0 0 10px;text-align:center;text-shadow:0 4px 22px rgba(0,0,0,.6);max-width:94%}
+.shcard .shname.haslogo{font-size:0;line-height:0;margin-bottom:14px;text-shadow:none}
+.shcard .shname img.mtlogo{width:auto!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;background:none!important;box-shadow:none!important;border-radius:0!important}
+.shcard .shmeta{justify-content:center;text-align:center;color:rgba(255,255,255,.85)}
+.shcard #mlib,.shcard #shplay{width:100%;display:flex;flex-direction:column;align-items:center;margin-top:16px}
+.shcard #mlib .inlib{display:none}
+.shcard .rdrow{justify-content:center;width:100%}
+.shcard .rdot{min-width:min(78%,300px);justify-content:center;padding:13px 22px}
+.shcard #mlib:not(.allcp) .rdot:not(:first-child){display:none}
+.shcard .epnext{margin:0;width:100%;display:flex;justify-content:center}
+.morecp{background:none;border:0;color:#fff;font:inherit;font-size:13px;font-weight:650;opacity:.8;margin-top:10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.seapick{background:#000;border:1px solid rgba(255,255,255,.18);border-radius:999px;color:#fff;font:inherit;font-size:15px;font-weight:750;padding:10px 38px 10px 16px;position:relative;cursor:pointer;margin:4px 0 10px}
+.seapick::after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-70%) rotate(45deg)}
+.sealbl{font-weight:800;font-size:15px;margin:4px 0 10px}
+.shtabs{display:block!important}
+.shcard #mlib:not(.allcp) .rdot small{display:none}
+/* ==== end APPLE STYLE LIBRARY PAGES ==== */
 </style>
 </head>
 <body>
@@ -1205,10 +1230,10 @@ async function appleArt(sh, id){
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
   })); }catch(e){ return; }
   if(!sh.isConnected || !im) return;
-  const bd = $('.bdrop', sh);
+  const bd = $('.bdrop', sh) || $('.shbg', sh);
   const art = im.poster || (filmOf(id) || {}).poster;
   if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
-  const h2 = $('.mvhead h2', sh);
+  const h2 = $('.mvhead h2', sh) || $('.shname', sh);
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
     lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
@@ -3621,17 +3646,20 @@ function openLibMovie(id){
   const f = libTitles().find(x => String(x.id) === String(id)) || filmOf(id);
   const s = sheet(`<div class="shwrap">
     <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
-      <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div></div></div></div>
-    <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p><div id="mlib"></div>
-      <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
+      <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div>
+        <div id="mlib"></div><button class="morecp" id="mvcopies" hidden>More copies</button></div></div></div>
+    <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p>
+      <div id="mvlike"></div></div></div>`, { tall:true, cls:'shcard', art:id });
+  s.el.insertAdjacentHTML('afterbegin', `<div class="shbg" style="${f.poster ? `background-image:url(${IMG}w780${f.poster})` : ''}"></div>`);
   const b = s.body;
   libBlock(b, id);
+  // one main button; other copies of the movie behind a small "More copies" link
+  const copies = () => { const n = $$('#mlib .rdot', b).length, m = $('#mvcopies', b); m.hidden = n < 2; };
+  copies(); $('#mvcopies', b).onclick = e => { $('#mlib', b).classList.toggle('allcp'); e.target.textContent = $('#mlib', b).classList.contains('allcp') ? 'Fewer copies' : 'More copies'; };
   moreLike($('#mvlike', b), id);
   const ov = $('#mvov', b); ov.onclick = () => ov.classList.toggle('open');
   detailsFor(id).then(d => {
     if(!b.isConnected) return;
-    if(d.backdrop) $('.shbg', s.el).style.backgroundImage = `url(${IMG}w1280${d.backdrop})`;
     ov.textContent = d.overview || '';
     if(typeof id === 'string'){ $('#mvmeta', b).textContent = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) : ''].filter(Boolean).join(' · '); return; }
     const rt = d.runtime ? (d.runtime >= 60 ? Math.floor(d.runtime / 60) + 'h ' + (d.runtime % 60) + 'm' : d.runtime + 'm') : '';
@@ -3664,8 +3692,8 @@ let showSeason = null;
 function openShowPage(id){
   const f = libTitles().find(x => String(x.id) === String(id)); if(!f) return;
   showSeason = null;
-  const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard' });
-  s.el.insertAdjacentHTML('afterbegin', '<div class="shbg"></div>');
+  const s = sheet('<div class="shwrap"></div>', { tall:true, cls:'shcard', art:id });
+  s.el.insertAdjacentHTML('afterbegin', `<div class="shbg" style="${f.poster ? `background-image:url(${IMG}w780${f.poster})` : ''}"></div>`);
   showPage($('.shwrap', s.body), f, s);
 }
 async function showPage(pg, f, card){
@@ -3673,7 +3701,7 @@ async function showPage(pg, f, card){
   pg.innerHTML = `<div class="shp">
     <div class="shhero" id="shhero">
       <div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
-        <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div></div></div></div>
+        <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div><div id="shplay"></div></div></div></div>
     <div class="pad" style="padding-top:6px">
       <p class="shov" id="shov"></p>
       <div class="shtabs" id="shtabs"></div>
@@ -3685,7 +3713,6 @@ async function showPage(pg, f, card){
   // details: backdrop, overview, ratings
   detailsFor(id).then(d => {
     if(!pg.isConnected) return;
-    if(d.backdrop){ const bg = card && $('.shbg', card.el); if(bg) bg.style.backgroundImage = `url(${IMG}w1280${d.backdrop})`; }
     ov.textContent = d.overview || '';
     const bits = [d.year || f.year, d.vote ? '★ ' + (+d.vote).toFixed(1) + ' TMDB' : ''].filter(Boolean);
     $('#shmeta', pg).textContent = bits.join(' · ');
@@ -3707,10 +3734,16 @@ async function showPage(pg, f, card){
     showSeason = fromProg != null ? fromProg : (sns.find(sn => all.get(sn).some(x => !done[key(x)])) ?? sns[0]);
   }
   const drawTabs = () => {
-    $('#shtabs', pg).innerHTML = sns.length > 1 ? sns.map(sn => `<button data-sn="${sn}" class="${sn === showSeason ? 'on' : ''}">${sn ? 'Season ' + sn : 'Extras'}</button>`).join('') : '';
-    $$('[data-sn]', pg).forEach(x => x.onclick = () => { showSeason = +x.dataset.sn; drawTabs(); drawEps(); });
+    const nm = sn => sn ? 'Season ' + sn : 'Extras';
+    $('#shtabs', pg).innerHTML = sns.length > 1 ? `<button class="seapick" id="seapick">${nm(showSeason)}</button>` : (sns[0] ? `<div class="sealbl">${nm(sns[0])}</div>` : '');
+    const sp = $('#seapick', pg);
+    if(sp) sp.onclick = () => glassPick(sns.map(sn => [String(sn), nm(sn)]), String(showSeason), v => { showSeason = +v; drawTabs(); drawEps(); });
   };
-  const drawEps = () => renderEpisodes($('#sheps', pg), all.get(showSeason) || [], id, f.title);
+  // the Up next / Resume button sits under the title, Apple-style
+  const drawEps = () => { renderEpisodes($('#sheps', pg), all.get(showSeason) || [], id, f.title);
+    const slot = $('#shplay', pg), en = $('#sheps .epnext', pg); if(slot && en){ slot.innerHTML = ''; slot.append(en); } };
+  // episodes redraw themselves (long-press, finishing one): keep the button under the title
+  new MutationObserver(() => { const slot = $('#shplay', pg), en = $('#sheps .epnext', pg); if(slot && en){ slot.innerHTML = ''; slot.append(en); } }).observe($('#sheps', pg), { childList:true, subtree:true });
   drawTabs(); drawEps();
 }
 // One series picked: a poster for each season you have
