@@ -821,7 +821,7 @@ async function watchedMenu(id, after){
 function drawLibrary(b){
   b.innerHTML = `<div id="lmain"><div style="height:8px"></div>
     <div class="pad ltop"><div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="lq" placeholder="Search your library" autocomplete="off" enterkeyhint="search"></label>
-      <button class="gsel" id="lsort" aria-label="Sort"></button></div></div>
+      <button class="lsortbtn" id="lsort" aria-label="Sort"><svg viewBox="0 0 24 24"><path d="M5 7h14M7.5 12h9M10 17h4"/></svg></button></div></div>
     <div id="lcont"></div><div class="pad" style="padding-top:8px">
     <div class="grid" id="lgrid"></div><div class="msg" id="lmsg"></div>
     <div id="lun" style="margin-top:18px"></div><div class="small" id="lsum" style="text-align:center;margin:26px 0 6px"></div></div></div><div id="lshowpg"></div>`;
@@ -868,7 +868,7 @@ function drawLibrary(b){
     const grid = $('#lgrid', b);
     {
       const q = ($('#lq', b).value || '').trim().toLowerCase(), so = store.get(K_LSORT, 'added');
-      $('#lsort', b).textContent = LSORTS.find(x => x[0] === so)[1];
+      $('#lsort', b).setAttribute('aria-label', 'Sort: ' + LSORTS.find(x => x[0] === so)[1]);
       let list = picked ? [picked] : inType.slice();
       if(q) list = list.filter(f => (f.title || '').toLowerCase().includes(q));
       if(so === 'added') list.sort((a, c) => addedAt(c) - addedAt(a));
