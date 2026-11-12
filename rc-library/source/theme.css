@@ -257,3 +257,57 @@ header.top,.top{border-bottom:0!important;box-shadow:none!important}
 
 /* top bar scrolls away 1:1, glides back on scroll up (JS) */
 header.top,.ltop{will-change:transform}
+
+/* ==== LIGHT MODE (html.light) ==== */
+html.light{--bg:#fff;--bg2:#fff;--card:transparent;--card2:#f2f2f4;--line:#dedee3;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
+html.light .top,html.light body.libv .ltop{background:#fff}
+html.light .tabbar{background:linear-gradient(to top,rgba(255,255,255,.96),rgba(255,255,255,.75) 60%,rgba(255,255,255,0))}
+html.light .tb,html.light .tb.on{color:#1c1c1e}
+html.light .ov,html.light .bio{color:#3a3a3c}
+html.light .sh{box-shadow:0 -12px 40px rgba(0,0,0,.12)}
+html.light .sh.page{background:#fff}
+html.light .toast,html.light .ptr{background:#fff;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+/* round glass buttons: frosted white with dark icons, readable over pictures and plain pages */
+html.light .glback{color:#111;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.7));border:1px solid rgba(0,0,0,.08);
+  box-shadow:inset 0 1px 0 #fff,0 6px 18px rgba(0,0,0,.18)}
+/* pills and inputs */
+html.light .pill.ghost,html.light .btn.ghost{border-color:rgba(0,0,0,.28)}
+html.light .btn,html.light .sclr,html.light .ssel,html.light .gsel,html.light .morecp,html.light .updbtn{color:#111!important}
+html.light .gsel::after{border-color:#111}
+html.light .ltools input,html.light .ltools select{color:#111}
+html.light .ltools select option,html.light .ssel option{background:#fff}
+html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#f2f2f4!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+html.light .lsearch svg{stroke:rgba(0,0,0,.55)}
+html.light .ltools .lsearch input{color:#111}
+html.light .lsearch input::placeholder{color:rgba(0,0,0,.45)}
+html.light .lsearch input::-webkit-search-cancel-button{filter:none}
+html.light .lsortbtn svg{stroke:#111}
+html.light .seapick{background:#fff;border-color:rgba(0,0,0,.18);color:#111}
+html.light .seapick::after{border-color:#111}
+/* pop-up lists: white with a soft shadow */
+html.light .gpk-bk{background:rgba(0,0,0,.25)}
+html.light .gpk{background:#fff!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
+html.light .gpk button{color:#111}
+html.light .gpk button:active,html.light .gpk button.on{background:rgba(0,0,0,.05)!important}
+html.light .gpk button+button::before{background:rgba(0,0,0,.07)}
+/* placeholders and posters */
+@keyframes skell{0%,100%{background-color:#ececef}50%{background-color:#e0e0e4}}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#ececef}
+html.light .skel{background-color:#ececef;animation-name:skell}
+html.light .pw img,html.light .pw .ph,html.light .lshow img,html.light .lshow .ph,html.light .lsea img,html.light .lsea .ph,html.light .shpo img,html.light .mvhead img,html.light .lcw img,html.light .sehp img,html.light .rpc .rph img{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.16)!important}
+html.light .stbar{background:#e5e5ea}
+html.light .accsw{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px rgba(0,0,0,.12)}
+html.light .accsw.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #111}
+/* Trending stack: picture cards keep white text */
+html.light .hcard .hin,html.light .hero .hin{--text:#fff;color:#fff}
+html.light .hcard .pill,html.light .hcard .btn{color:#fff!important;border-color:rgba(255,255,255,.6)}
+/* Title pages: the poster art fades into white; dark title and details; title logos turn dark */
+html.light .mvsheet>.bdrop{background-color:#fff}
+html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(255,255,255,0) 45%,rgba(255,255,255,.8) 78%,#fff 100%)!important}
+html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#fff calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(255,255,255,0) 42%,rgba(255,255,255,.85) 78%,#fff 100%)!important}
+html.light .mvsheet .mvhead h2,html.light .shcard .shname{text-shadow:0 2px 16px rgba(255,255,255,.7)}
+html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7)}
+html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
+html.light .subprev span{color:#fff}
+/* ==== end LIGHT MODE ==== */

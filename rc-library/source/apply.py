@@ -550,5 +550,9 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
 """
 s = s.replace('</body>', _hide_js + '</body>', 1)
 
+
+# ---------- LIGHT MODE: set the theme before the page paints ----------
+s = s.replace('<style>', "<script>try{var _t=JSON.parse(localStorage.getItem('rclib.theme')||'\"dark\"');if(_t==='light'||(_t==='system'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light')}catch(e){}</script>\n<style>", 1)
+
 open(p, 'w').write(s)
 print('applied cast chips')

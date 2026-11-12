@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<script>try{var _t=JSON.parse(localStorage.getItem('rclib.theme')||'"dark"');if(_t==='light'||(_t==='system'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light')}catch(e){}</script>
 <style>
 :root{
   --bg:#000;--bg2:#000;--card:#1c1823;--card2:#262030;--line:#30293b;
@@ -885,6 +886,190 @@ header.top,.top{border-bottom:0!important;box-shadow:none!important}
 
 /* top bar scrolls away 1:1, glides back on scroll up (JS) */
 header.top,.ltop{will-change:transform}
+
+/* ==== LIGHT MODE (html.light) ==== */
+html.light{--bg:#fff;--bg2:#fff;--card:transparent;--card2:#f2f2f4;--line:#dedee3;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
+html.light .top,html.light body.libv .ltop{background:#fff}
+html.light .tabbar{background:linear-gradient(to top,rgba(255,255,255,.96),rgba(255,255,255,.75) 60%,rgba(255,255,255,0))}
+html.light .tb,html.light .tb.on{color:#1c1c1e}
+html.light .ov,html.light .bio{color:#3a3a3c}
+html.light .sh{box-shadow:0 -12px 40px rgba(0,0,0,.12)}
+html.light .sh.page{background:#fff}
+html.light .toast,html.light .ptr{background:#fff;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+/* round glass buttons: frosted white with dark icons, readable over pictures and plain pages */
+html.light .glback{color:#111;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.7));border:1px solid rgba(0,0,0,.08);
+  box-shadow:inset 0 1px 0 #fff,0 6px 18px rgba(0,0,0,.18)}
+/* pills and inputs */
+html.light .pill.ghost,html.light .btn.ghost{border-color:rgba(0,0,0,.28)}
+html.light .btn,html.light .sclr,html.light .ssel,html.light .gsel,html.light .morecp,html.light .updbtn{color:#111!important}
+html.light .gsel::after{border-color:#111}
+html.light .ltools input,html.light .ltools select{color:#111}
+html.light .ltools select option,html.light .ssel option{background:#fff}
+html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#f2f2f4!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+html.light .lsearch svg{stroke:rgba(0,0,0,.55)}
+html.light .ltools .lsearch input{color:#111}
+html.light .lsearch input::placeholder{color:rgba(0,0,0,.45)}
+html.light .lsearch input::-webkit-search-cancel-button{filter:none}
+html.light .lsortbtn svg{stroke:#111}
+html.light .seapick{background:#fff;border-color:rgba(0,0,0,.18);color:#111}
+html.light .seapick::after{border-color:#111}
+/* pop-up lists: white with a soft shadow */
+html.light .gpk-bk{background:rgba(0,0,0,.25)}
+html.light .gpk{background:#fff!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
+html.light .gpk button{color:#111}
+html.light .gpk button:active,html.light .gpk button.on{background:rgba(0,0,0,.05)!important}
+html.light .gpk button+button::before{background:rgba(0,0,0,.07)}
+/* placeholders and posters */
+@keyframes skell{0%,100%{background-color:#ececef}50%{background-color:#e0e0e4}}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#ececef}
+html.light .skel{background-color:#ececef;animation-name:skell}
+html.light .pw img,html.light .pw .ph,html.light .lshow img,html.light .lshow .ph,html.light .lsea img,html.light .lsea .ph,html.light .shpo img,html.light .mvhead img,html.light .lcw img,html.light .sehp img,html.light .rpc .rph img{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.16)!important}
+html.light .stbar{background:#e5e5ea}
+html.light .accsw{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px rgba(0,0,0,.12)}
+html.light .accsw.on{box-shadow:0 0 0 2px #fff,0 0 0 4px #111}
+/* Trending stack: picture cards keep white text */
+html.light .hcard .hin,html.light .hero .hin{--text:#fff;color:#fff}
+html.light .hcard .pill,html.light .hcard .btn{color:#fff!important;border-color:rgba(255,255,255,.6)}
+/* Title pages: the poster art fades into white; dark title and details; title logos turn dark */
+html.light .mvsheet>.bdrop{background-color:#fff}
+html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(255,255,255,0) 45%,rgba(255,255,255,.8) 78%,#fff 100%)!important}
+html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#fff calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(255,255,255,0) 42%,rgba(255,255,255,.85) 78%,#fff 100%)!important}
+html.light .mvsheet .mvhead h2,html.light .shcard .shname{text-shadow:0 2px 16px rgba(255,255,255,.7)}
+html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7)}
+html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
+html.light .subprev span{color:#fff}
+/* ==== end LIGHT MODE ==== */
+</style>
+<style id="lightgen">html.light .top{background-color:#fff!important}
+html.light .logo .w1{color:var(--text)!important}
+html.light .logo .w2{color:var(--text)!important}
+html.light .ib.hback{color:var(--text)!important}
+html.light .hsearch svg{color:var(--text)!important}
+html.light .hsearch button{color:var(--text)!important}
+html.light .hact .ib.on{color:var(--text)!important}
+html.light .hact .ib.gen svg{color:var(--text)!important}
+html.light .ib{color:var(--text)!important}
+html.light .vs{color:var(--text)!important}
+html.light .tb{color:rgba(0,0,0,0.83)!important;text-shadow:none!important}
+html.light .tb.on{color:var(--text)!important}
+html.light .searchpill{color:var(--text)!important}
+html.light .ph{color:var(--text)!important}
+html.light .pkp svg{color:var(--text)!important}
+html.light .pklist button.on{color:var(--text)!important}
+html.light .fan img,html.light .fan .ph{border-color:rgba(0,0,0,0.10)!important}
+html.light .smeta{color:var(--text)!important}
+html.light .sec{color:var(--text)!important}
+html.light label.f{color:var(--text)!important}
+html.light .btn{color:var(--text)!important}
+html.light .btn.danger{color:var(--text)!important}
+html.light .small{color:var(--text)!important}
+html.light .msg{color:var(--text)!important}
+html.light .empty{color:var(--text)!important}
+html.light .mini{color:var(--text)!important}
+html.light .ls{color:var(--text)!important}
+html.light .day span{color:var(--text)!important}
+html.light .rw{color:var(--text)!important}
+html.light .stat b{color:var(--text)!important}
+html.light .stat span{color:var(--text)!important}
+html.light .histl{color:var(--text)!important}
+html.light .toolbar{color:var(--text)!important}
+html.light .meta{color:var(--text)!important}
+html.light .ratebar .lbl{color:var(--text)!important}
+html.light .rv2{color:var(--text)!important}
+html.light .rv2.dim{color:var(--text)!important}
+html.light .xr{color:var(--text)!important}
+html.light .ratebox .lbl{color:var(--text)!important}
+html.light .ratebox .rv{color:var(--text)!important}
+html.light .sagachip>b{color:var(--text)!important}
+html.light .ov{color:var(--text)!important}
+html.light .note{color:var(--text)!important}
+html.light .wbtn.on{color:var(--text)!important}
+html.light .prog{color:var(--text)!important}
+html.light .seg button{color:var(--text)!important}
+html.light .runctl .rv{color:var(--text)!important}
+html.light .hint{color:var(--text)!important}
+html.light .done .big{color:var(--text)!important}
+html.light .rpc{border-color:rgba(0,0,0,0.11)!important}
+html.light .rpyear{color:var(--text)!important}
+html.light .rpp{border-color:rgba(0,0,0,0.14)!important}
+html.light .rpp.on{color:var(--text)!important}
+html.light .rpc .rv{color:var(--text)!important}
+html.light .onb p{color:var(--text)!important}
+html.light .wz{color:var(--text)!important}
+html.light .wz.on{color:var(--text)!important}
+html.light .qs span{color:var(--text)!important}
+html.light .mact button.on{color:var(--text)!important}
+html.light .prov .lbl{color:var(--text)!important}
+html.light .revbtn b{color:var(--text)!important}
+html.light .rev .big{color:var(--text)!important}
+html.light .rev .tops span{color:var(--text)!important}
+html.light .rgrid span{color:var(--text)!important}
+html.light .hm th{color:var(--text)!important}
+html.light .hm td.na{color:var(--text)!important}
+html.light .legend{color:var(--text)!important}
+html.light .hl div{color:var(--text)!important}
+html.light .pp .pi{color:var(--text)!important}
+html.light .pp span{color:var(--text)!important}
+html.light .castsec .lbl{color:var(--text)!important}
+html.light .phead .pi{color:var(--text)!important}
+html.light .favbtn.on{color:var(--text)!important}
+html.light .bio{color:var(--text)!important}
+html.light .ov{color:var(--text)!important}
+html.light .rline button{color:var(--text)!important}
+html.light .sgh{color:var(--text)!important}
+html.light .slab small{color:var(--text)!important}
+html.light .sval{color:var(--text)!important}
+html.light .sval.ok{color:var(--text)!important}
+html.light .sval.warn{color:var(--text)!important}
+html.light .kshow{color:var(--text)!important}
+html.light .kshow a{color:var(--text)!important}
+html.light .logo .libtag{color:var(--text)!important}
+html.light .lib .lbl{color:var(--text)!important}
+html.light .lib .lrow button b,html.light .lfile b{color:var(--text)!important}
+html.light .lfile span.sz{color:var(--text)!important}
+html.light .lunm span{color:var(--text)!important}
+html.light .lres button{color:var(--text)!important}
+html.light .lcl{color:var(--text)!important}
+html.light .aptime{color:var(--text)!important}
+html.light .aprate .lbl{color:var(--text)!important}
+html.light .epph{color:var(--text)!important}
+html.light .ept b{color:var(--text)!important}
+html.light .epm{color:var(--text)!important}
+html.light .epo{color:var(--text)!important}
+html.light .upnth{color:var(--text)!important}
+html.light .shcard{background-color:#fff!important}
+html.light .shcard .shwrap .pad{background-color:#fff!important;box-shadow:none!important}
+html.light .shov{color:var(--text)!important}
+html.light .shtabs button{color:var(--text)!important}
+html.light .mlown{color:var(--text)!important}
+html.light .updfail{color:var(--text)!important}
+html.light .updfail button{color:var(--text)!important}
+html.light .cwh{color:var(--text)!important}
+html.light .cwph{color:var(--text)!important}
+html.light .cwlib{color:var(--text)!important}
+html.light .lnk{color:var(--text)!important}
+html.light .sh.page{background-color:#fff!important}
+html.light .tb{color:var(--text)!important}
+html.light .tb.on{color:var(--text)!important}
+html.light .ltools input{color:var(--text)!important}
+html.light .ltools select{color:var(--text)!important}
+html.light .ltools select option{background-color:#fff!important}
+html.light .sclr{color:var(--text)!important}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#fff!important}
+html.light .ssel{color:var(--text)!important}
+html.light .ssel option{background-color:#fff!important}
+html.light .btn{color:var(--text)!important}
+html.light .btn.ghost{border-color:rgba(0,0,0,0.30)!important}
+html.light .gsel{color:var(--text)!important}
+html.light body.libv .ltop{background-color:#fff!important}
+html.light .mvsheet .mvhead .meta{color:var(--text)!important}
+html.light .shcard .shmeta{color:var(--text)!important}
+html.light .morecp{color:var(--text)!important}
+html.light .hcard *,html.light .hero .hin *{color:#fff!important}
+html.light .tb svg{filter:none!important}
+html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
+html.light .shbg{background-color:#ececef!important}
 </style>
 </head>
 <body>
@@ -3813,12 +3998,24 @@ function openLibrary(){ setView('library'); }
 // Settings keys for the player and the look of the app
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
+const K_THEME = 'rclib.theme';
 function applyAccent(){ try{
-  const c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  let c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  if(document.documentElement.classList.contains('light') && lum > 0.85){ c = '#000000'; lum = 0; }   // white accent becomes black in light mode
   document.documentElement.style.setProperty('--accent', c);
   document.documentElement.style.setProperty('--on-accent', lum > 0.6 ? '#000' : '#fff');   // text on a solid accent button: black on light colors
 }catch(e){} }
-applyAccent();
+// Light or dark: the setting is Dark, Light, or match the phone
+const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+function applyTheme(){ try{
+  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches);
+  document.documentElement.classList.toggle('light', light);
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#ffffff' : '#000000';
+  const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
+  applyAccent();
+}catch(e){} }
+applyTheme();
+if(themeMQ) (themeMQ.addEventListener ? themeMQ.addEventListener('change', applyTheme) : themeMQ.addListener(applyTheme));
 // Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
 function openSettings(){ setView('settings'); }
 function renderSettings(){
@@ -3870,7 +4067,7 @@ function renderSettings(){
       <div class="sgroup smain"><div class="scard">
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
-        ${row('g-look', 'palette', 'Look and feel', '')}
+        ${row('g-look', 'palette', 'Appearance', '')}
         ${row('g-data', 'down', 'Your data', '')}
       </div></div>
       <div class="sgroup smain"><div class="scard">
@@ -3912,9 +4109,11 @@ function renderSettings(){
       bind('p-auto', K_AUTOPLAY, true); bind('p-skip', K_PL_SKIP, true); bind('p-mid', K_PL_MID, true);
       bind('p-al', K_PL_AUD); bind('p-tl', K_PL_TXT); bind('p-ts', K_PL_SIZE); bind('p-tst', K_PL_STYLE);
     });
-    $('#g-look', b).onclick = () => subPage('Look and feel', (box, redraw) => {
+    $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard">
+        ${selRow('palette', 'Mode', '', pick('l-theme', store.get(K_THEME, 'dark'), [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match phone']]))}</div>
+        <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
@@ -3922,6 +4121,7 @@ function renderSettings(){
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
       $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
+      $('#l-theme', box).onchange = e => { store.set(K_THEME, e.target.value); applyTheme(); hap(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
     });
     $('#g-data', b).onclick = () => subPage('Your data', box => {

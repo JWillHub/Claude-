@@ -1,12 +1,24 @@
 // Settings keys for the player and the look of the app
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
+const K_THEME = 'rclib.theme';
 function applyAccent(){ try{
-  const c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  let c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+  if(document.documentElement.classList.contains('light') && lum > 0.85){ c = '#000000'; lum = 0; }   // white accent becomes black in light mode
   document.documentElement.style.setProperty('--accent', c);
   document.documentElement.style.setProperty('--on-accent', lum > 0.6 ? '#000' : '#fff');   // text on a solid accent button: black on light colors
 }catch(e){} }
-applyAccent();
+// Light or dark: the setting is Dark, Light, or match the phone
+const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
+function applyTheme(){ try{
+  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches);
+  document.documentElement.classList.toggle('light', light);
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#ffffff' : '#000000';
+  const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
+  applyAccent();
+}catch(e){} }
+applyTheme();
+if(themeMQ) (themeMQ.addEventListener ? themeMQ.addEventListener('change', applyTheme) : themeMQ.addListener(applyTheme));
 // Settings is its own tab page (not a pop-up), so closing one of its cards always lands back here
 function openSettings(){ setView('settings'); }
 function renderSettings(){
@@ -58,7 +70,7 @@ function renderSettings(){
       <div class="sgroup smain"><div class="scard">
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
-        ${row('g-look', 'palette', 'Look and feel', '')}
+        ${row('g-look', 'palette', 'Appearance', '')}
         ${row('g-data', 'down', 'Your data', '')}
       </div></div>
       <div class="sgroup smain"><div class="scard">
@@ -100,9 +112,11 @@ function renderSettings(){
       bind('p-auto', K_AUTOPLAY, true); bind('p-skip', K_PL_SKIP, true); bind('p-mid', K_PL_MID, true);
       bind('p-al', K_PL_AUD); bind('p-tl', K_PL_TXT); bind('p-ts', K_PL_SIZE); bind('p-tst', K_PL_STYLE);
     });
-    $('#g-look', b).onclick = () => subPage('Look and feel', (box, redraw) => {
+    $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard">
+        ${selRow('palette', 'Mode', '', pick('l-theme', store.get(K_THEME, 'dark'), [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match phone']]))}</div>
+        <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
@@ -110,6 +124,7 @@ function renderSettings(){
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
       $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
+      $('#l-theme', box).onchange = e => { store.set(K_THEME, e.target.value); applyTheme(); hap(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
     });
     $('#g-data', b).onclick = () => subPage('Your data', box => {

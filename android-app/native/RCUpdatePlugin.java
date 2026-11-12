@@ -23,6 +23,22 @@ import java.net.URL;
 @CapacitorPlugin(name = "RCUpdate")
 public class RCUpdatePlugin extends Plugin {
 
+    // Light mode: dark status/navigation bar icons on a light page, light icons on a dark page
+    @PluginMethod
+    public void setBars(PluginCall call) {
+        final boolean light = Boolean.TRUE.equals(call.getBoolean("light", false));
+        getActivity().runOnUiThread(() -> {
+            try {
+                android.view.Window w = getActivity().getWindow();
+                androidx.core.view.WindowInsetsControllerCompat c = new androidx.core.view.WindowInsetsControllerCompat(w, w.getDecorView());
+                c.setAppearanceLightStatusBars(light);
+                c.setAppearanceLightNavigationBars(light);
+                w.getDecorView().setBackgroundColor(light ? 0xFFFFFFFF : 0xFF000000);
+            } catch (Exception ignored) {}
+        });
+        call.resolve();
+    }
+
     // Backup route: open the download link in the phone's browser
     @PluginMethod
     public void openInBrowser(PluginCall call) {

@@ -29,6 +29,7 @@ s = s.replace('--muted:#9c93a9', '--muted:#fff').replace('--text:#f4efe9', '--te
 for c in ('.c8{background:#3dbb6f;color:#0b1a10}', '.c7{background:#e6c52f;color:#1c1600}', '.c6{background:#ef8b2c;color:#1f0f00}'):
     s = s.replace(c, c.split('color:')[0] + 'color:#000}')
 s = s.replace('</style>', open(os.path.join(os.environ['SRC'], 'theme.css')).read() + '</style>', 1)
+import sys; sys.path.insert(0, os.environ['SRC']); import light_gen; s = light_gen.gen(s)
 open('index.html', 'w').write(s)
 PY
 }
