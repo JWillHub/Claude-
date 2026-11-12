@@ -525,5 +525,26 @@ _reel = 'data:image/png;base64,' + _b64.b64encode(open(os.path.join(SRC, 'neo-re
 _i = s.index('<svg class="hproj" id="hproj"'); _j = s.index('</svg>', _i) + len('</svg>')
 s = s[:_i] + f'<img class="hproj nreel" id="hproj" src="{_reel}" alt="" draggable="false">' + s[_j:]
 
+# ---------- ACCENT LOGO: inline folded triangle tinted by --accent ----------
+_i = s.index('<img class="hproj nreel" id="hproj"'); _j = s.index('>', _i) + 1
+_svg = ('<svg class="hproj nreel" id="hproj" viewBox="40 60 440 520" aria-hidden="true"><defs>'
+ '<mask id="lgm"><rect width="600" height="700" fill="#000"/><path d="M88 112 L432 322 L88 532 Z" fill="#fff" stroke="#fff" stroke-width="52" stroke-linejoin="round"/>'
+ '<rect x="100" y="168" width="58" height="66" rx="13" fill="#000"/><rect x="100" y="290" width="58" height="66" rx="13" fill="#000"/><rect x="100" y="412" width="58" height="66" rx="13" fill="#000"/></mask>'
+ '<linearGradient id="lgt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient>'
+ '<linearGradient id="lgb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".27"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></linearGradient>'
+ '<linearGradient id="lgs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient></defs>'
+ '<g mask="url(#lgm)"><rect width="600" height="700" style="fill:var(--accent)"/><rect width="600" height="322" fill="url(#lgt)"/>'
+ '<rect y="322" width="600" height="400" fill="url(#lgb)"/><rect y="322" width="600" height="40" fill="url(#lgs)"/></g></svg>')
+s = s[:_i] + _svg + s[_j:]
+
+# ---------- HIDE TOP BAR ON SCROLL DOWN, SHOW ON SCROLL UP ----------
+_hide_js = r"""
+<script>(()=>{let y=scrollY,acc=0;addEventListener('scroll',()=>{const n=scrollY,d=n-y;y=n;
+const bars=document.querySelectorAll('header.top,body.libv .ltop');
+if(n<60||document.querySelector('.top.searching')){bars.forEach(b=>b.classList.remove('bhid'));acc=0;return}
+if(d>0){acc+=d;if(acc>24)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=0;bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
+"""
+s = s.replace('</body>', _hide_js + '</body>', 1)
+
 open(p, 'w').write(s)
 print('applied cast chips')
