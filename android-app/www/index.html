@@ -885,8 +885,8 @@ body.libv #v-library{padding-top:0}
 header.top,.top{border-bottom:0!important;box-shadow:none!important}
 
 /* hide top bar on scroll down */
-header.top,.ltop{transition:transform .25s ease}
-header.top.bhid,body.libv .ltop.bhid{transform:translateY(-110%)}
+header.top,.ltop{transition:transform .42s cubic-bezier(.22,1,.36,1),opacity .32s ease;will-change:transform}
+header.top.bhid,body.libv .ltop.bhid{transform:translateY(-105%);opacity:0;transition:transform .38s cubic-bezier(.55,0,.75,.2),opacity .3s ease .05s}
 </style>
 </head>
 <body>
@@ -4038,6 +4038,6 @@ if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') na
 <script>(()=>{let y=scrollY,acc=0;addEventListener('scroll',()=>{const n=scrollY,d=n-y;y=n;
 const bars=document.querySelectorAll('header.top,body.libv .ltop');
 if(n<60||document.querySelector('.top.searching')){bars.forEach(b=>b.classList.remove('bhid'));acc=0;return}
-if(d>0){acc+=d;if(acc>24)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=0;bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
+if(d>0){acc=Math.max(acc,0)+d;if(acc>30)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=Math.min(acc,0)+d;if(acc<-6)bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
 </body>
 </html>

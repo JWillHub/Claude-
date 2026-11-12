@@ -256,5 +256,5 @@ body.libv #v-library{padding-top:0}
 header.top,.top{border-bottom:0!important;box-shadow:none!important}
 
 /* hide top bar on scroll down */
-header.top,.ltop{transition:transform .25s ease}
-header.top.bhid,body.libv .ltop.bhid{transform:translateY(-110%)}
+header.top,.ltop{transition:transform .42s cubic-bezier(.22,1,.36,1),opacity .32s ease;will-change:transform}
+header.top.bhid,body.libv .ltop.bhid{transform:translateY(-105%);opacity:0;transition:transform .38s cubic-bezier(.55,0,.75,.2),opacity .3s ease .05s}

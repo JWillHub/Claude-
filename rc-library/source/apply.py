@@ -542,7 +542,7 @@ _hide_js = r"""
 <script>(()=>{let y=scrollY,acc=0;addEventListener('scroll',()=>{const n=scrollY,d=n-y;y=n;
 const bars=document.querySelectorAll('header.top,body.libv .ltop');
 if(n<60||document.querySelector('.top.searching')){bars.forEach(b=>b.classList.remove('bhid'));acc=0;return}
-if(d>0){acc+=d;if(acc>24)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=0;bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
+if(d>0){acc=Math.max(acc,0)+d;if(acc>30)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=Math.min(acc,0)+d;if(acc<-6)bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
 """
 s = s.replace('</body>', _hide_js + '</body>', 1)
 
