@@ -60,7 +60,7 @@ s = s.replace('<application', '<uses-permission android:name="android.permission
 open(p, 'w').write(s)
 PY
 
-# App icon: the Rolling Credits icon in every density (drop the generated adaptive icon so these are used)
+# App icon: plain picture for old Android versions (the generated adaptive icon is replaced below)
 RES=android/app/src/main/res
 rm -rf "$RES"/mipmap-anydpi-v26
 for d in "$RES"/mipmap-*; do
@@ -68,4 +68,6 @@ for d in "$RES"/mipmap-*; do
   cp www/icon-192.png "$d/ic_launcher_round.png"
   rm -f "$d/ic_launcher_foreground.png"
 done
+# Adaptive icon (Android 8+): glass background + logo, plus a one-color layer so "Themed icons" (Android 13+) can tint it
+cp -r native/res/mipmap-* "$RES"/
 echo "patched"

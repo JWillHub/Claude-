@@ -3325,6 +3325,11 @@ const K_AUTOPLAY = 'rclib.autoplay';
 // Episodes: hand the player the rest of the show so it can go straight on to the next episode itself
 // (it fetches each link from Real-Debrid on the phone), skip intros and count down near the credits.
 async function launchNative(link, title, meta){
+  // Partly watched: ask "Resume from 42:10" or "Start over" (Continue watching cards just resume)
+  const pr = meta.key && prog[meta.key];
+  if(pr && pr.t > 20 && !meta.resume && !done[meta.key])
+    return new Promise(res => glassPick([['r', `Resume from ${clock(pr.t)}`], ['s', 'Start over']], 'r',
+      v => launchNative(link, title, { ...meta, resume:true, fromStart:v === 's' }).then(res)));
   let extra = null;
   if(typeof meta.id === 'string' && meta.key){
     try{
@@ -3353,7 +3358,7 @@ async function launchOnce(link, title, meta, retry = false, extra = null){
   if(!retry) toast('Opening the player…');
   try{
     const s = await getStream(link, retry);
-    const startAt = meta.key && prog[meta.key] ? prog[meta.key].t : 0;
+    const startAt = !meta.fromStart && meta.key && prog[meta.key] ? prog[meta.key].t : 0;
     const remembered = !retry && Date.now() - s.at > 10000;
     let r;
     const opts = { url:s.u.download, title:title + (meta.label ? ' · ' + meta.label : ''), startMs:startAt > 20 ? Math.floor(startAt * 1000) : 0, key:meta.key || '' };
@@ -3764,7 +3769,7 @@ function drawLibrary(b){
     $$('[data-ck]', b).forEach(x => x.onclick = e => {
       if(x._held){ x._held = false; e.preventDefault(); return; }
       const k = x.dataset.ck, p = prog[k]; if(!p) return;
-      if(NATIVE){ launchNative(p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label }).then(paint); return; }
+      if(NATIVE){ launchNative(p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label, resume:true }).then(paint); return; }
       const t = (p.name || p.title || filmOf(p.id).title) + (p.label ? ' · ' + p.label : '');
       const ps = sheet(`<h2 class="stitle">${esc(t)}</h2><div id="lbox"></div>`, { tall:true });
       playInto($('#lbox', ps.body), p.link, p.name || p.title || filmOf(p.id).title, { key:k, tid:p.tid, id:p.id, label:p.label });
