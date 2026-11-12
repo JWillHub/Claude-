@@ -884,9 +884,8 @@ body.libv #v-library{padding-top:0}
 /* No line under the header */
 header.top,.top{border-bottom:0!important;box-shadow:none!important}
 
-/* hide top bar on scroll down */
-header.top,.ltop{transition:transform .42s cubic-bezier(.22,1,.36,1),opacity .32s ease;will-change:transform}
-header.top.bhid,body.libv .ltop.bhid{transform:translateY(-105%);opacity:0;transition:transform .38s cubic-bezier(.55,0,.75,.2),opacity .3s ease .05s}
+/* top bar scrolls away 1:1, glides back on scroll up (JS) */
+header.top,.ltop{will-change:transform}
 </style>
 </head>
 <body>
@@ -4035,9 +4034,13 @@ setTimeout(() => { if(store.get(K_KEY, '')) repairTitles(); }, 2500);
 if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 
-<script>(()=>{let y=scrollY,acc=0;addEventListener('scroll',()=>{const n=scrollY,d=n-y;y=n;
-const bars=document.querySelectorAll('header.top,body.libv .ltop');
-if(n<60||document.querySelector('.top.searching')){bars.forEach(b=>b.classList.remove('bhid'));acc=0;return}
-if(d>0){acc=Math.max(acc,0)+d;if(acc>30)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=Math.min(acc,0)+d;if(acc<-6)bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
+<script>(()=>{let y=scrollY,off=0,acc=0,gliding=false;
+const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const set=(o,glide)=>{off=o;bars().forEach(b=>{const h=b.offsetHeight+2;b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,h)}px)`:'';});};
+addEventListener('scroll',()=>{const n=Math.max(0,scrollY),d=n-y;y=n;
+if(document.querySelector('.top.searching')){if(off)set(0,true);return}
+if(d>0){acc=0;if(n>0)set(Math.min(140,off+d),false)}
+else if(d<0){acc+=d;if(off&&(acc<-6||n<=0))set(0,true)}},{passive:true});
+document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))set(0,false)},true);})();</script>
 </body>
 </html>

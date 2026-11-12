@@ -539,10 +539,14 @@ s = s[:_i] + _svg + s[_j:]
 
 # ---------- HIDE TOP BAR ON SCROLL DOWN, SHOW ON SCROLL UP ----------
 _hide_js = r"""
-<script>(()=>{let y=scrollY,acc=0;addEventListener('scroll',()=>{const n=scrollY,d=n-y;y=n;
-const bars=document.querySelectorAll('header.top,body.libv .ltop');
-if(n<60||document.querySelector('.top.searching')){bars.forEach(b=>b.classList.remove('bhid'));acc=0;return}
-if(d>0){acc=Math.max(acc,0)+d;if(acc>30)bars.forEach(b=>b.classList.add('bhid'))}else if(d<0){acc=Math.min(acc,0)+d;if(acc<-6)bars.forEach(b=>b.classList.remove('bhid'))}},{passive:true});})();</script>
+<script>(()=>{let y=scrollY,off=0,acc=0,gliding=false;
+const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const set=(o,glide)=>{off=o;bars().forEach(b=>{const h=b.offsetHeight+2;b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,h)}px)`:'';});};
+addEventListener('scroll',()=>{const n=Math.max(0,scrollY),d=n-y;y=n;
+if(document.querySelector('.top.searching')){if(off)set(0,true);return}
+if(d>0){acc=0;if(n>0)set(Math.min(140,off+d),false)}
+else if(d<0){acc+=d;if(off&&(acc<-6||n<=0))set(0,true)}},{passive:true});
+document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))set(0,false)},true);})();</script>
 """
 s = s.replace('</body>', _hide_js + '</body>', 1)
 
