@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 60 440 520" width="440" height="520">
+<defs>
+<mask id="m"><rect width="600" height="700" fill="#000"/>
+<path d="M88 112 L432 322 L88 532 Z" fill="#fff" stroke="#fff" stroke-width="52" stroke-linejoin="round"/>
+<rect x="100" y="168" width="58" height="66" rx="13" fill="#000"/>
+<rect x="100" y="290" width="58" height="66" rx="13" fill="#000"/>
+<rect x="100" y="412" width="58" height="66" rx="13" fill="#000"/></mask>
+<linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4e4e4"/></linearGradient>
+<linearGradient id="bot" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9b9b9"/><stop offset="1" stop-color="#8c8c8c"/></linearGradient>
+<linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<linearGradient id="sh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+</defs>
+<g mask="url(#m)">
+<rect x="0" y="0" width="600" height="322" fill="url(#top)"/>
+<rect x="0" y="322" width="600" height="400" fill="url(#bot)"/>
+<rect x="0" y="322" width="600" height="40" fill="url(#sh)"/>
+<rect x="0" y="0" width="600" height="322" fill="url(#hl)" opacity=".5"/>
+</g>
+<path d="M88 112 L432 322" stroke="#fff" stroke-opacity=".9" stroke-width="5" fill="none" transform="translate(-6,-24)" stroke-linecap="round" opacity="0"/>
+</svg>

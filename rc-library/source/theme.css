@@ -249,7 +249,7 @@ body.libv #v-library{padding-top:0}
 .shcard #mlib:not(.allcp) .rdot small{display:none}
 /* ==== end APPLE STYLE LIBRARY PAGES ==== */
 /* Logo: the Neo Reel on its own */
-.hproj.nreel{width:46px;height:46px;margin-right:0;object-fit:contain}
+.hproj.nreel{width:40px;height:40px;margin-right:0;object-fit:contain}
 .srlogo{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .logo:not(.sub) .w1,.logo:not(.sub) .w2{display:none}
 /* No line under the header */
