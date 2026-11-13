@@ -213,6 +213,62 @@ body.playing #player{display:block}
 .toast{position:fixed;left:50%;bottom:calc(var(--sb) + 92px);transform:translate(-50%,20px);z-index:60;padding:12px 20px;border-radius:999px;font-size:13px;font-weight:300;
   opacity:0;pointer-events:none;transition:opacity .3s,transform .4s var(--ease);max-width:88vw;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ================= outlined light glass (applies everywhere) ================= */
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.glass{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012));-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 0 14px rgba(255,255,255,.045),inset 0 0 14px rgba(255,255,255,.025);transition:box-shadow .35s,transform .25s var(--ease),color .3s}
+.glass::after{display:none}
+.glass::before{background:linear-gradient(100deg,rgba(255,255,255,.6),rgba(255,255,255,.2) 22%,rgba(255,255,255,.09) 50%,rgba(255,255,255,.2) 78%,rgba(255,255,255,.6))}
+.glass.on{color:#fff;box-shadow:0 0 16px rgba(255,255,255,.22),0 0 42px rgba(255,255,255,.07),inset 0 0 12px rgba(255,255,255,.09)}
+.glass.on::before{display:block;background:linear-gradient(100deg,#fff,rgba(255,255,255,.6) 30%,rgba(255,255,255,.42) 50%,rgba(255,255,255,.6) 70%,#fff)}
+.chip.on{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.015));color:#fff}
+.lit,.seg button.on,.dk.on{color:#fff;background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.72),0 0 14px rgba(255,255,255,.2),inset 0 0 10px rgba(255,255,255,.08)}
+/* a light that travels around the outline while something loads */
+.glass.busy::before,.sbar.glass.busy::before{background:conic-gradient(from var(--a),rgba(255,255,255,.16) 0deg,rgba(255,255,255,.16) 220deg,rgba(255,255,255,.7) 285deg,#fff 310deg,rgba(255,255,255,.16) 350deg);animation:orbit 1.8s linear infinite}
+@keyframes orbit{to{--a:360deg}}
+.sheet{background:rgba(0,0,0,.94);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.sheet.z2{transition:transform .5s var(--ease),clip-path .55s var(--ease),opacity .35s}
+/* dock: a pill with four tabs; a little dark tint so it reads over posters */
+.dock{border-radius:999px;width:min(430px,calc(100% - 36px));gap:4px;padding:6px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.dk{flex-direction:column;gap:4px;height:54px;padding:0;border-radius:999px;font-size:10.5px;letter-spacing:.08em;color:rgba(255,255,255,.55)}
+.dk .ico{width:21px;height:21px}
+/* posters wait in black and white and come into color when touched */
+.pt .pf img,.ri img,.ep .th img,.rec img,.wr img{filter:grayscale(1) brightness(.9);transition:filter .6s}
+.pt:hover .pf img,.pt:active .pf img,.ri:hover img,.ri:active img,.ep:hover .th img,.ep:active .th img,.rec button:hover img,.rec button:active img,.wr:hover img,.wr:active img{filter:none}
+.pt .pf{box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 0 14px rgba(255,255,255,.04)}
+.pt .pf::after{background:linear-gradient(160deg,rgba(255,255,255,.08),transparent 35%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.pt:active .pf::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),0 0 14px rgba(255,255,255,.2)}
+.play{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.015));box-shadow:0 0 18px rgba(255,255,255,.24),0 0 50px rgba(255,255,255,.08),inset 0 0 14px rgba(255,255,255,.1);animation:breathe2 5s ease-in-out infinite}
+.play svg{fill:#fff}
+@keyframes breathe2{0%,100%{box-shadow:0 0 12px rgba(255,255,255,.16),0 0 34px rgba(255,255,255,.05),inset 0 0 12px rgba(255,255,255,.07)}50%{box-shadow:0 0 20px rgba(255,255,255,.3),0 0 56px rgba(255,255,255,.1),inset 0 0 16px rgba(255,255,255,.12)}}
+.cast{margin-top:10px;font-size:12px;color:var(--muted);font-weight:300;line-height:1.6}
+.fld{background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+.fld:focus-within{box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),0 0 14px rgba(255,255,255,.12)}
+.fld button.sv{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 0 12px rgba(255,255,255,.18)}
+.sw2{background:transparent}
+.tg.on .sw2{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),0 0 14px rgba(255,255,255,.24)}
+.tg.on .sw2::after{background:#fff;box-shadow:0 0 10px rgba(255,255,255,.8)}
+.ep .ck{filter:drop-shadow(0 0 5px rgba(255,255,255,.6))}
+/* recently added, under the search bar */
+.rec{margin-top:40px;width:min(560px,100%);transition:opacity .3s}
+body.q .rec{opacity:0;pointer-events:none}
+.rec .rl{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:rgba(255,255,255,.28);text-align:center;margin-bottom:14px}
+.rec .rr{display:flex;justify-content:center;gap:10px}
+.rec button{opacity:.5;transition:opacity .4s,transform .25s var(--ease);animation:rise .5s var(--ease) both}
+.rec button:active{opacity:1;transform:scale(.95)}
+.rec img,.rec .np{width:50px;height:75px;border-radius:9px;object-fit:cover;outline:1px solid rgba(255,255,255,.14);outline-offset:-1px;background:rgba(255,255,255,.03)}
+/* watching */
+.wl{display:flex;flex-direction:column;gap:10px}
+.wr{display:flex;align-items:center;gap:12px;border-radius:18px;padding:9px 14px 9px 9px;text-align:left;width:100%;animation:rise .4s var(--ease) both}
+.wr img,.wr .np{width:40px;height:60px;border-radius:9px;object-fit:cover;flex:none;background:rgba(255,255,255,.05)}
+.wr .ct{flex:1;min-width:0}
+.wr .ct b{display:block;font-weight:400;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wr .ct span{font-size:11.5px;color:var(--muted);font-weight:300}
+.wr .bar{height:2px;border-radius:2px;background:rgba(255,255,255,.12);margin-top:8px;overflow:hidden}
+.wr .bar i{display:block;height:100%;background:#fff;box-shadow:0 0 8px #fff}
+.wr .pl{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),0 0 12px rgba(255,255,255,.15)}
+.wr .pl svg{width:13px;height:13px;fill:#fff}
 </style>
 </head>
 <body>
@@ -230,6 +286,7 @@ body.playing #player{display:block}
       </label>
     </div>
     <div class="hint" id="hint"></div>
+    <div class="rec" id="rec"></div>
   </div>
   <div class="res" id="res"><div class="in" id="resin"></div></div>
 </main>
@@ -246,10 +303,17 @@ body.playing #player{display:block}
   <div class="sbody" id="setbody"></div>
 </section>
 
+<section class="sheet" id="watch">
+  <div class="shead"><h2>Watching</h2></div>
+  <div class="sbody" id="watchbody"></div>
+</section>
+
 <section class="sheet z2" id="title"><div class="sbody" id="tbody"></div></section>
 
 <nav class="dock glass">
+  <button class="dk press" data-sheet="home"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>Search</button>
   <button class="dk press" data-sheet="lib"><svg class="ico" viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="2"/><rect x="13.5" y="4" width="7" height="7" rx="2"/><rect x="3.5" y="14" width="7" height="7" rx="2"/><rect x="13.5" y="14" width="7" height="7" rx="2"/></svg>Library</button>
+  <button class="dk press" data-sheet="watch"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M10.2 8.8v6.4l5.2-3.2z"/></svg>Watching</button>
   <button class="dk press" data-sheet="set"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2 5.5 5.5"/></svg>Settings</button>
 </nav>
 
@@ -323,14 +387,30 @@ async function tmdb(path, params = {}){
   }
 }
 // small details for a title page, kept for a week
+// Genres and cast for every title, so search can find "Ryan Gosling" or "sci-fi". Kept until the title leaves the library.
+const K_IDX = P + 'idx';
+let idx = store.get(K_IDX, {}), idxT = null;
+const saveIdx = () => { clearTimeout(idxT); idxT = setTimeout(() => store.set(K_IDX, idx), 800); };
+let indexing = null;
+function indexAll(){
+  if(indexing || !store.get(K_TM, '')) return indexing;
+  const need = titles().filter(t => !t.raw && !idx[t.id]);
+  if(!need.length) return null;
+  indexing = Promise.all(need.map(t => details(t).catch(() => {}))).finally(() => { indexing = null; busy(); store.set(K_IDX, idx); if(qi.value) drawResults(); });
+  busy(); return indexing;
+}
+function busy(){ $('.sbar').classList.toggle('busy', !!(syncing || indexing)); }
 async function details(m){
   const k = P + 'd.' + m.id, c = store.get(k, null);
-  if(c && Date.now() - c.at < 7 * 864e5) return c;
+  if(c && c.cast && Date.now() - c.at < 7 * 864e5) return c;
   if(typeof m.id !== 'number' && !m.tv) return null;
-  const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id);
+  const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id, { append_to_response:m.tv ? 'aggregate_credits' : 'credits' });
+  const cr = (m.tv ? d.aggregate_credits : d.credits) || {};
   const out = { at:Date.now(), backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
-    genres:(d.genres || []).slice(0, 2).map(g => g.name), vote:d.vote_average || 0, seasons:(d.seasons || []).filter(s => s.season_number > 0).length };
-  store.set(k, out); return out;
+    genres:(d.genres || []).map(g => g.name), cast:(cr.cast || []).slice(0, 12).map(c => c.name), vote:d.vote_average || 0, seasons:(d.seasons || []).filter(s => s.season_number > 0).length };
+  store.set(k, out);
+  idx[m.id] = { g:out.genres, c:out.cast }; saveIdx();
+  return out;
 }
 async function seasonEps(tid, n){
   const k = P + 'd.s' + tid + '.' + n, c = store.get(k, null);
@@ -391,6 +471,7 @@ let syncing = null;
 function sync(){
   if(syncing) return syncing;
   $('#sync').classList.add('spin');
+  setTimeout(busy);
   syncing = (async () => {
     const all = [];
     for(let page = 1; page <= 40; page++){ const l = await rd('/torrents', { q:{ page, limit:500 } }) || []; all.push(...l); if(l.length < 500) break; }
@@ -406,7 +487,7 @@ function sync(){
     lib.synced = Date.now(); saveLib();
     if(fatal) throw fatal;
   })();
-  syncing.finally(() => { syncing = null; $('#sync').classList.remove('spin'); refresh(); }).catch(() => {});
+  syncing.finally(() => { syncing = null; $('#sync').classList.remove('spin'); busy(); refresh(); indexAll(); }).catch(() => {});
   return syncing;
 }
 // One entry per title; a film or show with several torrents (copies, seasons) shows once
@@ -451,26 +532,38 @@ async function transcode(s){
 const layers = [];
 function pushLayer(name, close){ layers.push({ name, close }); history.pushState({ l:layers.length }, ''); }
 function popLayer(){ const l = layers.pop(); if(l) l.close(); }
-addEventListener('popstate', () => popLayer());
+addEventListener('popstate', e => { const n = (e.state && e.state.l) || 0; if(n >= layers.length && layers.length) popLayer(); while(layers.length > n) popLayer(); });
 const back = () => { if(layers.length) history.back(); };
 
 function openSheet(id){
   const el = $('#' + id); if(el.classList.contains('open')) return;
   // the two dock sheets replace each other
-  ['lib', 'set'].filter(x => x !== id && $('#' + x).classList.contains('open')).forEach(x => { const i = layers.findIndex(l => l.name === x); if(i >= 0){ layers.splice(i, 1); } $('#' + x).classList.remove('open'); });
+  ['lib', 'set', 'watch'].filter(x => x !== id && $('#' + x).classList.contains('open')).forEach(x => { const i = layers.findIndex(l => l.name === x); if(i >= 0){ layers.splice(i, 1); } $('#' + x).classList.remove('open'); });
   el.classList.add('open'); dockState();
-  if(id === 'lib') drawLib(); if(id === 'set') drawSettings();
+  if(id === 'lib') drawLib(); if(id === 'set') drawSettings(); if(id === 'watch') drawWatch();
   pushLayer(id, () => { el.classList.remove('open'); dockState(); });
 }
-function dockState(){ $$('.dk').forEach(b => b.classList.toggle('on', $('#' + b.dataset.sheet).classList.contains('open'))); }
-$$('.dk').forEach(b => b.onclick = () => { const s = b.dataset.sheet; if($('#' + s).classList.contains('open')){ const top = layers[layers.length - 1]; if(top && top.name === s) back(); } else openSheet(s); });
+const isOpen = s => s === 'home' ? !['lib', 'set', 'watch'].some(x => $('#' + x).classList.contains('open')) : $('#' + s).classList.contains('open');
+function dockState(){ $$('.dk').forEach(b => b.classList.toggle('on', isOpen(b.dataset.sheet))); }
+$$('.dk').forEach(b => b.onclick = () => {
+  const s = b.dataset.sheet;
+  if(s === 'home'){ if(layers.length) history.go(-layers.length); else qi.focus(); return; }
+  if(isOpen(s)){ const top = layers[layers.length - 1]; if(top && top.name === s) back(); } else openSheet(s);
+});
+dockState();
 
 /* ================= home + search ================= */
 const qi = $('#q');
+const GEN = { 'sci fi':'science fiction', 'scifi':'science fiction', 'sf':'science fiction', 'rom com':'romance', 'romcom':'romance', 'romantic':'romance',
+  'doc':'documentary', 'docs':'documentary', 'animated':'animation', 'anime':'animation', 'cartoon':'animation', 'scary':'horror', 'funny':'comedy',
+  'kids':'family', 'thrillers':'thriller', 'war movies':'war', 'crime drama':'crime', 'detective':'mystery', 'western':'western' };
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 function drawHome(){
   const n = titles().length, key = store.get(K_RD, '');
   $('#hint').textContent = !key ? 'Add your Real-Debrid token in Settings to begin' : n ? n + (n === 1 ? ' title' : ' titles') + ' in your library' : syncing ? 'Reading your library…' : 'Your library is empty';
+  const rec = titles().filter(t => t.poster).sort((a, b) => b.added.localeCompare(a.added)).slice(0, innerWidth < 380 ? 4 : 5);
+  $('#rec').innerHTML = rec.length ? `<div class="rl">Recently added</div><div class="rr">${rec.map((t, i) => `<button data-id="${esc(t.id)}" style="animation-delay:${200 + i * 70}ms"><img src="${poster(t.poster, 'w154')}" alt=""></button>`).join('')}</div>` : '';
+  $$('#rec button').forEach(b => b.onclick = () => openTitle(b.dataset.id, $('img', b)));
 }
 function drawResults(){
   const q = norm(qi.value);
@@ -478,13 +571,24 @@ function drawResults(){
   document.body.classList.toggle('q', !!q);
   if(!q){ $('#resin').innerHTML = ''; return; }
   const words = q.split(' ');
-  const list = titles().map(t => { const n = norm(t.title); const sc = n === q ? 0 : n.startsWith(q) ? 1 : n.split(' ').some(w => w.startsWith(words[0])) ? 2 : 3;
-    return words.every(w => n.includes(w)) ? [sc, t] : null; }).filter(Boolean).sort((a, b) => a[0] - b[0] || a[1].title.localeCompare(b[1].title)).map(x => x[1]).slice(0, 40);
-  $('#resin').innerHTML = list.length ? list.map((t, i) => { const p = progOf(t);
+  const gq = GEN[q] || q, yr = /^\d{4}$/.test(q) ? q : null, dec = q.match(/^(19|20)?(\d)0 ?s$/);
+  const decRange = dec ? (dec[1] ? +(dec[1] + dec[2] + '0') : +dec[2] < 3 ? 2000 + +dec[2] * 10 : 1900 + +dec[2] * 10) : null;
+  const list = titles().map(t => {
+    const n = norm(t.title), ix = idx[t.id] || {};
+    if(words.every(w => n.includes(w))) return [n === q ? 0 : n.startsWith(q) ? 1 : n.split(' ').some(w => w.startsWith(words[0])) ? 2 : 3, t, ''];
+    if(yr && t.year === yr) return [4, t, ''];
+    if(decRange && +t.year >= decRange && +t.year < decRange + 10) return [4, t, ''];
+    const g = q.length >= 3 && (ix.g || []).find(x => { const ng = norm(x); return ng === gq || ng.startsWith(gq) || ng.split(' ').includes(gq); });
+    if(g) return [5, t, g];
+    const c = q.length >= 3 && (ix.c || []).find(x => { const nc = norm(x); return words.every(w => nc.split(' ').some(p => p.startsWith(w))); });
+    if(c) return [6, t, 'with ' + c];
+    return null;
+  }).filter(Boolean).sort((a, b) => a[0] - b[0] || a[1].title.localeCompare(b[1].title)).slice(0, 60);
+  $('#resin').innerHTML = list.length ? list.map(([, t, why], i) => { const p = progOf(t);
     return `<button class="ri glass press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 8) * 35}ms">${t.poster ? `<img src="${poster(t.poster, 'w154')}" alt="" loading="lazy">` : '<div class="np"></div>'}
-      <div class="t"><b>${esc(t.title)}</b><span>${[t.year, t.tv ? 'Series' : 'Film', p ? left(p) : ''].filter(Boolean).join(' · ')}</span></div>${CHEV}</button>`; }).join('')
-    : `<div class="empty">Nothing in your library matches “${esc(qi.value.trim())}”.</div>`;
-  $$('.ri').forEach(b => b.onclick = () => { qi.blur(); openTitle(b.dataset.id); });
+      <div class="t"><b>${esc(t.title)}</b><span>${esc([t.year, t.tv ? 'Series' : 'Film', why || (p ? left(p) : '')].filter(Boolean).join(' · '))}</span></div>${CHEV}</button>`; }).join('')
+    : `<div class="empty">${indexing ? 'Still learning your library’s cast and genres…' : `Nothing in your library matches “${esc(qi.value.trim())}”.`}</div>`;
+  $$('.ri').forEach(b => b.onclick = () => { qi.blur(); openTitle(b.dataset.id, $('img', b)); });
 }
 qi.addEventListener('input', drawResults);
 qi.addEventListener('keydown', e => { if(e.key === 'Enter'){ qi.blur(); const f = $('.ri'); if(f && $$('.ri').length === 1) f.click(); } });
@@ -512,29 +616,65 @@ function drawLib(){
         return `<button class="pt press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 15) * 20}ms"><div class="pf">${t.poster ? `<img src="${poster(t.poster)}" alt="" loading="lazy">` : `<div class="np">${esc(t.title)}</div>`}${p ? `<div class="pb"><i style="width:${(p.t / p.d * 100).toFixed(1)}%"></i></div>` : ''}</div><div class="cap">${esc(t.title)}</div></button>`; }).join('')}</div>`}`;
   $$('.seg button', b).forEach(x => x.onclick = () => { store.set(K_KIND, x.dataset.k); drawLib(); });
   $('#sortb').onclick = () => { const ks = Object.keys(SORTS); store.set(K_SORT, ks[(ks.indexOf(sort) + 1) % ks.length]); drawLib(); };
-  $$('.pt', b).forEach(x => x.onclick = () => openTitle(x.dataset.id));
+  $$('.pt', b).forEach(x => x.onclick = () => openTitle(x.dataset.id, $('.pf', x)));
 }
+/* ================= watching ================= */
+function drawWatch(){
+  const b = $('#watchbody');
+  const inProg = Object.entries(prog).sort((a, c) => c[1].at - a[1].at);
+  const tFor = tid => titles().find(t => t.tors.includes(tid));
+  const seen = new Map();
+  Object.entries(done).sort((a, c) => c[1] - a[1]).forEach(([k, at]) => { const tid = k.split('|')[0], t = tFor(tid); if(t && !seen.has(t.id)) seen.set(t.id, { t, at, ep:epOf(k) }); });
+  const row = (img, title, sub, extra, attrs, i) => `<button class="wr glass press" ${attrs} style="animation-delay:${Math.min(i, 10) * 30}ms">${img ? `<img src="${poster(img, 'w154')}" alt="">` : '<div class="np"></div>'}<div class="ct"><b>${esc(title)}</b><span>${esc(sub)}</span>${extra}</div>`;
+  b.innerHTML = (inProg.length ? `<div class="lbl" style="margin-top:6px">In progress</div><div class="wl">${inProg.map(([k, p], i) => { const t = tFor(p.tid);
+      return row(p.poster || (t && t.poster), t ? t.title : p.name || p.title, [p.label, left(p)].filter(Boolean).join(' · '), `<div class="bar"><i style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i></div>`, `data-k="${esc(k)}"`, i) + `<span class="pl">${PLAY}</span></button>`; }).join('')}</div>` : '')
+    + (seen.size ? `<div class="lbl">Watched</div><div class="wl">${[...seen.values()].slice(0, 30).map(({ t, at, ep }, i) =>
+      row(t.poster, t.title, [ep ? `S${ep.s} E${ep.e}` : '', ago(at)].filter(Boolean).join(' · '), '', `data-id="${esc(t.id)}"`, i) + '</button>').join('')}</div>` : '')
+    || '<div class="empty">Nothing watched yet. Anything you start playing shows up here.</div>';
+  $$('.wr[data-k]', b).forEach(x => x.onclick = () => resume(x.dataset.k));
+  $$('.wr[data-id]', b).forEach(x => x.onclick = () => openTitle(x.dataset.id, $('img', x)));
+}
+
 $('#sync').onclick = () => sync().then(() => toast('Library up to date')).catch(e => toast(errMsg(e)));
 
 /* ================= title page ================= */
 let cur = null;
-async function openTitle(id){
+const rectClip = e => { const r = e.getBoundingClientRect(); return `inset(${r.top}px ${innerWidth - r.right}px ${innerHeight - r.bottom}px ${r.left}px round 14px)`; };
+function growFrom(el, from){
+  el.style.transition = 'none'; el.style.transform = 'none'; el.style.clipPath = rectClip(from); el.style.opacity = '.3';
+  el.offsetWidth;
+  el.style.transition = 'clip-path .55s var(--ease), opacity .3s';
+  el.style.clipPath = 'inset(0px 0px 0px 0px round 0px)'; el.style.opacity = '1';
+}
+async function openTitle(id, src){
   const t = titleById(id); if(!t) return;
   cur = { t, season:null, ver:null };
   const el = $('#title'), b = $('#tbody'); b.scrollTop = 0;
   b.innerHTML = `<div class="hero" id="hero"><button class="ibtn glass press bk" id="tback" aria-label="Back"><svg class="ico" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></div>
     <div class="tbody"><h1 class="ttl">${esc(t.title)}</h1><div class="meta" id="tmeta">${esc([t.year, t.tv ? 'Series' : 'Film'].filter(Boolean).join(' · '))}</div>
-    <p class="ov" id="tov"></p><div id="tact"></div><div id="tmore"></div></div>`;
+    <p class="ov" id="tov"></p><div class="cast" id="tcast"></div><div id="tact"></div><div id="tmore"></div></div>`;
   $('#tback').onclick = back;
-  if(!el.classList.contains('open')){ el.classList.add('open'); document.body.classList.add('tp'); pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; }); }
+  if(!el.classList.contains('open')){
+    const from = src && src.isConnected ? src : null;
+    el.classList.add('open'); document.body.classList.add('tp');
+    if(from) growFrom(el, from);
+    pushLayer('title', () => {
+      document.body.classList.remove('tp'); cur = null;
+      if(from && from.isConnected && from.getBoundingClientRect().height){
+        el.style.clipPath = rectClip(from); el.style.opacity = '0';
+        setTimeout(() => { el.style.transition = 'none'; el.classList.remove('open'); el.style.cssText = ''; }, 480);
+      }else{ el.style.cssText = ''; el.classList.remove('open'); }
+    });
+  }
   if(t.poster) $('#hero').style.backgroundImage = `url(${poster(t.poster, 'w780')})`;
   if(!t.raw) details(t).then(d => {
     if(!d || !cur || cur.t !== t) return;
     if(d.backdrop) $('#hero').style.backgroundImage = `url(${IMG}w1280${d.backdrop})`;
-    $('#tmeta').textContent = [t.year, ...d.genres, t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : '', d.vote ? '★ ' + d.vote.toFixed(1) : ''].filter(Boolean).join(' · ');
+    $('#tmeta').textContent = [t.year, ...d.genres.slice(0, 2), t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : '', d.vote ? '★ ' + d.vote.toFixed(1) : ''].filter(Boolean).join(' · ');
     const ov = $('#tov'); ov.textContent = d.overview; ov.onclick = () => ov.classList.toggle('full');
+    if(d.cast && d.cast.length) $('#tcast').textContent = 'With ' + d.cast.slice(0, 4).join(', ');
   }).catch(() => {});
-  $('#tact').innerHTML = `<button class="play press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
+  $('#tact').innerHTML = `<button class="play glass busy press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
   let all;
   try{ all = (await Promise.all(t.tors.map(files))).flat(); }
   catch(e){ if(cur && cur.t === t) $('#tact').innerHTML = `<div class="empty">${esc(errMsg(e))}</div>`; return; }
@@ -551,7 +691,7 @@ function drawMovie(all){
   const withProg = vers.find(f => prog[f.tid + '|' + f.path]);
   if(!cur.ver) cur.ver = withProg || vers.slice().sort((a, b) => b.bytes - a.bytes)[0];
   const f = cur.ver, k = f.tid + '|' + f.path, p = prog[k];
-  $('#tact').innerHTML = `<button class="play press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'}</button>
+  $('#tact').innerHTML = `<button class="play glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'}</button>
     <div class="psub">${p ? left(p) + ' · ' : done[k] ? 'Watched · ' : ''}${[qualOf(f.path), fmtSize(f.bytes)].filter(Boolean).join(' · ')}</div>
     ${p ? '<div class="row2"><button class="glass press" id="over">Start over</button></div>' : ''}`;
   $('#tmore').innerHTML = vers.length > 1 ? `<div class="lbl">Version</div><div class="chips">${vers.map((v, i) => `<button class="chip glass press ${v === f ? 'on' : ''}" data-i="${i}">${esc([qualOf(v.path) || 'Copy ' + (i + 1), fmtSize(v.bytes)].filter(Boolean).join(' · '))}</button>`).join('')}</div>` : '';
@@ -572,7 +712,7 @@ function drawShow(eps){
   const target = (last && list.find(x => x.tid + '|' + x.path === last[0])) || list.find(x => !done[x.tid + '|' + x.path]) || list[0];
   if(cur.season == null) cur.season = target ? target.ep.s : seasons[0];
   const p = target && prog[target.tid + '|' + target.path];
-  $('#tact').innerHTML = target ? `<button class="play press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'} ${target.ep.s ? 'S' + target.ep.s + ' E' + target.ep.e : ''}</button><div class="psub">${p ? left(p) : ''}</div>` : '';
+  $('#tact').innerHTML = target ? `<button class="play glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'} ${target.ep.s ? 'S' + target.ep.s + ' E' + target.ep.e : ''}</button><div class="psub">${p ? left(p) : ''}</div>` : '';
   if(target) $('#pbtn').onclick = () => playEp(target);
   const sl = s => s === 0 ? 'Extras' : 'Season ' + s;
   $('#tmore').innerHTML = `${seasons.length > 1 ? `<div class="lbl">Seasons</div><div class="chips">${seasons.map(s => `<button class="chip glass press ${s === cur.season ? 'on' : ''}" data-s="${s}">${sl(s)}</button>`).join('')}</div>` : ''}
@@ -735,9 +875,10 @@ function confirmTap(sel){ const el = $(sel); if(el.dataset.arm){ delete el.datas
 function refresh(){
   drawHome(); if(qi.value) drawResults();
   if($('#lib').classList.contains('open')) drawLib();
+  if($('#watch').classList.contains('open')) drawWatch();
   if(cur && $('#title').classList.contains('open') && cur.files){ const eps = cur.files.filter(f => epOf(f.path)); if(cur.t.tv || eps.length > 1) drawShow(eps.length ? eps : cur.files); else drawMovie(cur.files); }
 }
-drawHome();
+drawHome(); indexAll();
 if(store.get(K_RD, '') && Date.now() - lib.synced > 10 * 60e3) sync().catch(e => { if(!titles().length) $('#hint').textContent = errMsg(e); });
 document.addEventListener('visibilitychange', () => { if(!document.hidden && !pl && store.get(K_RD, '') && Date.now() - lib.synced > 30 * 60e3) sync().catch(() => {}); });
 if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
