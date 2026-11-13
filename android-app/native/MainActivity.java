@@ -125,33 +125,36 @@ public class MainActivity extends BridgeActivity {
         try {
             if (Build.VERSION.SDK_INT >= 30) {
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ApplicationExitInfo> list = am.getHistoricalProcessExitReasons(getPackageName(), 0, 3);
-                long seen = diag().getLong("seenExit", 0);
-                if (!list.isEmpty() && list.get(0).getTimestamp() > seen) {
-                    ApplicationExitInfo x = list.get(0);
-                    diag().edit().putLong("seenExit", x.getTimestamp()).apply();
+                List<ApplicationExitInfo> list = am.getHistoricalProcessExitReasons(getPackageName(), 0, 10);
+                long seen = diag().getLong("seenExit", 0), newest = seen;
+                int shown = 0;
+                // every close since the last report (an app update or a swipe-away in between no longer hides a crash)
+                for (ApplicationExitInfo x : list) {
+                    if (x.getTimestamp() <= seen) continue;
+                    newest = Math.max(newest, x.getTimestamp());
                     int r = x.getReason();
                     boolean bad = r == ApplicationExitInfo.REASON_CRASH || r == ApplicationExitInfo.REASON_CRASH_NATIVE
                         || r == ApplicationExitInfo.REASON_ANR || r == ApplicationExitInfo.REASON_LOW_MEMORY
                         || r == ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE || r == ApplicationExitInfo.REASON_INITIALIZATION_FAILURE
                         || r == ApplicationExitInfo.REASON_SIGNALED;
-                    if (bad) {
-                        msg.append(new SimpleDateFormat("MMM d h:mm:ss a", Locale.US).format(new Date(x.getTimestamp())))
-                           .append("  ").append(reasonName(r));
-                        if (x.getDescription() != null) msg.append(": ").append(x.getDescription());
-                        msg.append("\nMemory: ").append(x.getPss() / 1024).append(" MB (pss), ").append(x.getRss() / 1024).append(" MB (rss)")
-                           .append(", status ").append(x.getStatus()).append(", importance ").append(x.getImportance()).append("\n");
-                        if (r == ApplicationExitInfo.REASON_CRASH_NATIVE || r == ApplicationExitInfo.REASON_ANR) {
-                            try (InputStream in = x.getTraceInputStream()) {
-                                if (in != null) {
-                                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                                    String line; int n = 0;
-                                    while ((line = br.readLine()) != null && n < 60) { msg.append(line).append("\n"); n++; }
-                                }
-                            } catch (Throwable ignored) {}
-                        }
+                    if (!bad || shown >= 3) continue;
+                    shown++;
+                    msg.append(new SimpleDateFormat("MMM d h:mm:ss a", Locale.US).format(new Date(x.getTimestamp())))
+                       .append("  ").append(reasonName(r));
+                    if (x.getDescription() != null) msg.append(": ").append(x.getDescription());
+                    msg.append("\nMemory: ").append(x.getPss() / 1024).append(" MB (pss), ").append(x.getRss() / 1024).append(" MB (rss)")
+                       .append(", status ").append(x.getStatus()).append(", importance ").append(x.getImportance()).append("\n");
+                    if (r == ApplicationExitInfo.REASON_CRASH_NATIVE || r == ApplicationExitInfo.REASON_ANR) {
+                        try (InputStream in = x.getTraceInputStream()) {
+                            if (in != null) {
+                                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                                String line; int n = 0;
+                                while ((line = br.readLine()) != null && n < 40) { msg.append(line).append("\n"); n++; }
+                            }
+                        } catch (Throwable ignored) {}
                     }
                 }
+                if (newest > seen) diag().edit().putLong("seenExit", newest).apply();
             }
         } catch (Throwable ignored) {}
         String pending = diag().getString("pending", "");
