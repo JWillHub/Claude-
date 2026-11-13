@@ -485,26 +485,50 @@ rep("""  { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh);
 """  { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }
   if(opt.art != null) appleArt(sh, opt.art);""")
 rep("function sheet(html, opt = {}){", r"""// Textless key art and the title logo from TMDB (saved for a week); falls back quietly to the normal poster and text title
-async function appleArt(sh, id){
+function artInfo(id){
   const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
-  let im;
-  try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
+  return cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
     const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
     const clean = best((x.posters || []).filter(p => !p.iso_639_1));
     const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
-  })); }catch(e){ return; }
-  if(!sh.isConnected || !im) return;
+  }));
+}
+const artSrc = (im, id) => { const a = im.poster || (filmOf(id) || {}).poster; return a ? IMG + 'original' + a : ''; };
+const logoSrc = im => im.logo ? IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo : '';
+// Start fetching a title's art the moment a finger lands on its poster, so it's often ready when the page opens
+const artWarm = new Set();
+document.addEventListener('pointerdown', e => {
+  const c = e.target.closest && e.target.closest('[data-id],[data-lshow],[data-lmov]'); if(!c) return;
+  const raw = c.dataset.id || c.dataset.lshow || c.dataset.lmov; if(!raw || artWarm.has(raw)) return; artWarm.add(raw);
+  const id = /^\d+$/.test(raw) ? +raw : raw;
+  artInfo(id).then(im => { [artSrc(im, id), logoSrc(im)].forEach(u => { if(u){ const i = new Image(); i.src = u; } }); }).catch(() => {});
+}, { capture:true, passive:true });
+async function appleArt(sh, id){
+  // Until we know the final art: no background picture (so it never swaps pictures) and the title waits (so it never swaps text for a logo)
+  sh.classList.add('artwait');
+  let titled = false, pictured = false;
+  const tt = () => $('.mvhead h2', sh) || $('.shname', sh);
+  const showTitle = () => { if(titled) return; titled = true; sh.classList.remove('tpend'); };
+  const showPic = () => { if(pictured) return; pictured = true; sh.classList.remove('artwait'); };
+  sh.classList.add('tpend');
+  setTimeout(showTitle, 900);
+  setTimeout(showPic, 4000);            // very slow connection: give up and show the regular poster
+  let im;
+  try{ im = await artInfo(id); }catch(e){ showTitle(); showPic(); return; }
+  if(!sh.isConnected || !im){ showTitle(); showPic(); return; }
   const bd = $('.bdrop', sh) || $('.shbg', sh);
-  const art = im.poster || (filmOf(id) || {}).poster;
-  if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
-  const h2 = $('.mvhead h2', sh) || $('.shname', sh);
+  const src = artSrc(im, id);
+  if(bd && src && !pictured){ const pic = new Image(); pic.onload = () => { if(pictured) return; bd.style.backgroundImage = `url(${pic.src})`; showPic(); }; pic.onerror = showPic; pic.src = src; }
+  else showPic();
+  const h2 = tt();
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
-    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
-    lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); showTitle(); };
+    lg.onerror = showTitle;
+    lg.src = logoSrc(im);
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
-  }
+  } else showTitle();
 }
 function sheet(html, opt = {}){""")
 # ==== end APPLE TV ART ====

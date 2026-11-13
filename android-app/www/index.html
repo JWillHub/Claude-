@@ -964,6 +964,17 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,248,.97))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
+
+/* ==== FIRST OPEN, NO SHIFT: one fixed-size title box (text or logo), no picture until the final art is ready ==== */
+.mvsheet .mvhead h2,.shcard .shname{height:118px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;transition:opacity .25s ease}
+.mtlogo,.mtlogo.tall{max-height:118px!important}
+.mvsheet .mvhead{margin-top:calc(var(--hero) - 310px + env(safe-area-inset-top))!important}
+.sh.tpend .mvhead h2,.sh.tpend .shname{opacity:0}
+.mvsheet #md,.mvsheet #md:empty{min-height:1.45em!important}
+.mvsheet #mimdb,.mvsheet #mimdb:empty{min-height:30px!important;margin-top:8px!important}
+.mvsheet>.bdrop,.sh.shcard .shbg{transition:opacity .4s ease}
+.sh.artwait>.bdrop,.sh.artwait .shbg{opacity:0}
+.mvsheet .mvhead h2,.mvsheet .mvhead h2.haslogo,.shcard .shname,.shcard .shname.haslogo{margin-bottom:12px!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1440,26 +1451,50 @@ let popSkip = 0;
 const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
   + '<button class="glback glall" aria-label="Back to the tab"><svg viewBox="0 0 24 24"><path d="M4.5 11 12 4.8l7.5 6.2M6.5 9.6v9h4v-5h3v5h4v-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
 // Textless key art and the title logo from TMDB (saved for a week); falls back quietly to the normal poster and text title
-async function appleArt(sh, id){
+function artInfo(id){
   const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
-  let im;
-  try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
+  return cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
     const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
     const clean = best((x.posters || []).filter(p => !p.iso_639_1));
     const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
-  })); }catch(e){ return; }
-  if(!sh.isConnected || !im) return;
+  }));
+}
+const artSrc = (im, id) => { const a = im.poster || (filmOf(id) || {}).poster; return a ? IMG + 'original' + a : ''; };
+const logoSrc = im => im.logo ? IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo : '';
+// Start fetching a title's art the moment a finger lands on its poster, so it's often ready when the page opens
+const artWarm = new Set();
+document.addEventListener('pointerdown', e => {
+  const c = e.target.closest && e.target.closest('[data-id],[data-lshow],[data-lmov]'); if(!c) return;
+  const raw = c.dataset.id || c.dataset.lshow || c.dataset.lmov; if(!raw || artWarm.has(raw)) return; artWarm.add(raw);
+  const id = /^\d+$/.test(raw) ? +raw : raw;
+  artInfo(id).then(im => { [artSrc(im, id), logoSrc(im)].forEach(u => { if(u){ const i = new Image(); i.src = u; } }); }).catch(() => {});
+}, { capture:true, passive:true });
+async function appleArt(sh, id){
+  // Until we know the final art: no background picture (so it never swaps pictures) and the title waits (so it never swaps text for a logo)
+  sh.classList.add('artwait');
+  let titled = false, pictured = false;
+  const tt = () => $('.mvhead h2', sh) || $('.shname', sh);
+  const showTitle = () => { if(titled) return; titled = true; sh.classList.remove('tpend'); };
+  const showPic = () => { if(pictured) return; pictured = true; sh.classList.remove('artwait'); };
+  sh.classList.add('tpend');
+  setTimeout(showTitle, 900);
+  setTimeout(showPic, 4000);            // very slow connection: give up and show the regular poster
+  let im;
+  try{ im = await artInfo(id); }catch(e){ showTitle(); showPic(); return; }
+  if(!sh.isConnected || !im){ showTitle(); showPic(); return; }
   const bd = $('.bdrop', sh) || $('.shbg', sh);
-  const art = im.poster || (filmOf(id) || {}).poster;
-  if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
-  const h2 = $('.mvhead h2', sh) || $('.shname', sh);
+  const src = artSrc(im, id);
+  if(bd && src && !pictured){ const pic = new Image(); pic.onload = () => { if(pictured) return; bd.style.backgroundImage = `url(${pic.src})`; showPic(); }; pic.onerror = showPic; pic.src = src; }
+  else showPic();
+  const h2 = tt();
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
-    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
-    lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); showTitle(); };
+    lg.onerror = showTitle;
+    lg.src = logoSrc(im);
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
-  }
+  } else showTitle();
 }
 function sheet(html, opt = {}){
   const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));
