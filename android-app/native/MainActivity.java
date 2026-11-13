@@ -116,6 +116,12 @@ public class MainActivity extends BridgeActivity {
             case 3: return "Killed by signal";
             case 10: return "Killed by user";
             case 13: return "Killed by Android";
+            case 1: return "Closed itself";
+            case 11: return "Force stopped";
+            case 12: return "Part it depends on stopped";
+            case 14: return "App updated";
+            case 8: return "Permission changed";
+            case 0: return "Unknown";
             default: return "Exit reason " + r;
         }
     }
@@ -155,16 +161,34 @@ public class MainActivity extends BridgeActivity {
                     }
                 }
                 if (newest > seen) diag().edit().putLong("seenExit", newest).apply();
+                // One time: list every close Android has on record, whatever the reason, so we can see what's happening
+                if (!diag().getBoolean("fullList1", false)) {
+                    diag().edit().putBoolean("fullList1", true).apply();
+                    msg.setLength(0);
+                    msg.append("All recorded closes (newest first):\n");
+                    if (list.isEmpty()) msg.append("(Android has none on record)\n");
+                    for (ApplicationExitInfo x : list) {
+                        msg.append(new SimpleDateFormat("MMM d h:mm:ss a", Locale.US).format(new Date(x.getTimestamp())))
+                           .append("  ").append(reasonName(x.getReason()))
+                           .append(x.getDescription() != null ? ": " + x.getDescription() : "")
+                           .append(" [").append(x.getProcessName()).append(", ").append(x.getPss() / 1024).append(" MB]\n");
+                    }
+                }
             }
         } catch (Throwable ignored) {}
         String pending = diag().getString("pending", "");
         if (!pending.isEmpty()) { msg.append(pending); diag().edit().remove("pending").apply(); }
         if (msg.length() == 0) return;
         final String text = "Rolling Credits " + versionName() + " on Android " + Build.VERSION.RELEASE + "\n" + msg;
+        getWindow().getDecorView().postDelayed(() -> showReport(text), 1500);
+    }
+
+    private void showReport(String text) {
+        if (isFinishing() || isDestroyed()) return;
         try {
             new AlertDialog.Builder(this)
                 .setTitle("Rolling Credits closed unexpectedly")
-                .setMessage(text.length() > 1500 ? text.substring(0, 1500) + "\u2026" : text)
+                .setMessage(text.length() > 2500 ? text.substring(0, 2500) + "\u2026" : text)
                 .setPositiveButton("Copy details", (d, w) -> {
                     ClipboardManager cb = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                     cb.setPrimaryClip(ClipData.newPlainText("Rolling Credits crash", text));
