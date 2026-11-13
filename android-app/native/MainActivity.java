@@ -1,6 +1,26 @@
 package io.github.jwillhub.rollingcredits;
 
+import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.ApplicationExitInfo;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.ViewGroup;
+import android.webkit.RenderProcessGoneDetail;
+import com.getcapacitor.WebViewListener;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import androidx.activity.OnBackPressedCallback;
@@ -12,7 +32,29 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(RCPlayerPlugin.class);   // the page opens the native player through this
         registerPlugin(RCUpdatePlugin.class);   // and installs app updates through this
         registerPlugin(RCFilesPlugin.class);    // and saves backups through this
+        installCrashRecorder();
         super.onCreate(savedInstanceState);
+
+        // The screens run in a separate WebView process. If Android closes that process to free memory
+        // (easy to hit while a big 4K file is playing), the default reaction is to crash the whole app.
+        // Instead: note it, throw the dead view away and rebuild the screens.
+        try {
+            getBridge().addWebViewListener(new WebViewListener() {
+                @Override
+                public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                    boolean crashed = Build.VERSION.SDK_INT >= 26 && detail != null && detail.didCrash();
+                    note("Screens process " + (crashed ? "crashed" : "was closed by Android to free memory") + " (recovered)");
+                    try {
+                        ViewGroup parent = (ViewGroup) view.getParent();
+                        if (parent != null) parent.removeView(view);
+                        view.destroy();
+                    } catch (Throwable ignored) {}
+                    getWindow().getDecorView().post(MainActivity.this::recreate);
+                    return true;
+                }
+            });
+        } catch (Throwable ignored) {}
+        reportLastExit();
 
         // Posters and backdrops: once the phone has one, show it from storage instead of downloading it again.
         // (Only images and fonts go through this cache; the app's own data calls go through the native HTTP layer.)
@@ -36,5 +78,100 @@ public class MainActivity extends BridgeActivity {
                 setEnabled(true);
             }
         });
+    }
+
+    // ---- Crash notes: what made the app close last time, shown once on the next start with a Copy button ----
+    private static boolean recorderOn = false;
+    private SharedPreferences diag() { return getSharedPreferences("diag", Context.MODE_PRIVATE); }
+    private String stamp() { return new SimpleDateFormat("MMM d h:mm:ss a", Locale.US).format(new Date()); }
+
+    private void note(String text) {
+        try { diag().edit().putString("pending", diag().getString("pending", "") + stamp() + "  " + text + "\n").commit(); } catch (Throwable ignored) {}
+    }
+
+    private void installCrashRecorder() {
+        if (recorderOn) return;
+        recorderOn = true;
+        final Thread.UncaughtExceptionHandler prev = Thread.getDefaultUncaughtExceptionHandler();
+        final Context app = getApplicationContext();
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            try {
+                StringWriter sw = new StringWriter(); e.printStackTrace(new PrintWriter(sw));
+                String trace = sw.toString(); if (trace.length() > 6000) trace = trace.substring(0, 6000);
+                SharedPreferences d = app.getSharedPreferences("diag", Context.MODE_PRIVATE);
+                d.edit().putString("pending", d.getString("pending", "") + stamp() + "  App error on " + t.getName() + ":\n" + trace + "\n").commit();
+            } catch (Throwable ignored) {}
+            if (prev != null) prev.uncaughtException(t, e);
+        });
+    }
+
+    private static String reasonName(int r) {
+        switch (r) {
+            case 2: return "Low memory (Android closed it)";
+            case 4: return "App error";
+            case 5: return "Native crash";
+            case 6: return "Not responding (ANR)";
+            case 7: return "Failed to start";
+            case 9: return "Used too many resources";
+            case 3: return "Killed by signal";
+            case 10: return "Killed by user";
+            case 13: return "Killed by Android";
+            default: return "Exit reason " + r;
+        }
+    }
+
+    private void reportLastExit() {
+        StringBuilder msg = new StringBuilder();
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ApplicationExitInfo> list = am.getHistoricalProcessExitReasons(getPackageName(), 0, 3);
+                long seen = diag().getLong("seenExit", 0);
+                if (!list.isEmpty() && list.get(0).getTimestamp() > seen) {
+                    ApplicationExitInfo x = list.get(0);
+                    diag().edit().putLong("seenExit", x.getTimestamp()).apply();
+                    int r = x.getReason();
+                    boolean bad = r == ApplicationExitInfo.REASON_CRASH || r == ApplicationExitInfo.REASON_CRASH_NATIVE
+                        || r == ApplicationExitInfo.REASON_ANR || r == ApplicationExitInfo.REASON_LOW_MEMORY
+                        || r == ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE || r == ApplicationExitInfo.REASON_INITIALIZATION_FAILURE
+                        || r == ApplicationExitInfo.REASON_SIGNALED;
+                    if (bad) {
+                        msg.append(new SimpleDateFormat("MMM d h:mm:ss a", Locale.US).format(new Date(x.getTimestamp())))
+                           .append("  ").append(reasonName(r));
+                        if (x.getDescription() != null) msg.append(": ").append(x.getDescription());
+                        msg.append("\nMemory: ").append(x.getPss() / 1024).append(" MB (pss), ").append(x.getRss() / 1024).append(" MB (rss)")
+                           .append(", status ").append(x.getStatus()).append(", importance ").append(x.getImportance()).append("\n");
+                        if (r == ApplicationExitInfo.REASON_CRASH_NATIVE || r == ApplicationExitInfo.REASON_ANR) {
+                            try (InputStream in = x.getTraceInputStream()) {
+                                if (in != null) {
+                                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                                    String line; int n = 0;
+                                    while ((line = br.readLine()) != null && n < 60) { msg.append(line).append("\n"); n++; }
+                                }
+                            } catch (Throwable ignored) {}
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        String pending = diag().getString("pending", "");
+        if (!pending.isEmpty()) { msg.append(pending); diag().edit().remove("pending").apply(); }
+        if (msg.length() == 0) return;
+        final String text = "Rolling Credits " + versionName() + " on Android " + Build.VERSION.RELEASE + "\n" + msg;
+        try {
+            new AlertDialog.Builder(this)
+                .setTitle("Rolling Credits closed unexpectedly")
+                .setMessage(text.length() > 1500 ? text.substring(0, 1500) + "\u2026" : text)
+                .setPositiveButton("Copy details", (d, w) -> {
+                    ClipboardManager cb = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    cb.setPrimaryClip(ClipData.newPlainText("Rolling Credits crash", text));
+                })
+                .setNegativeButton("Close", null)
+                .show();
+        } catch (Throwable ignored) {}
+    }
+
+    private String versionName() {
+        try { return getPackageManager().getPackageInfo(getPackageName(), 0).versionName; } catch (Throwable e) { return ""; }
     }
 }
