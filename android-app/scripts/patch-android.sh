@@ -56,6 +56,7 @@ prov = ('        <provider android:name="io.github.jwillhub.rollingcredits.Updat
         '        </provider>\n')
 assert '</application>' in s and '<application' in s
 s = s.replace('</application>', act + prov + '    </application>', 1)
+s = s.replace('<application', '<application android:largeHeap="true"', 1) if 'largeHeap' not in s else s
 s = s.replace('<application', '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.VIBRATE" />\n    <application', 1)
 open(p, 'w').write(s)
 PY

@@ -243,10 +243,11 @@ public class PlayerActivity extends AppCompatActivity {
         DefaultRenderersFactory renderers = new DefaultRenderersFactory(this)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             .setEnableDecoderFallback(true);
-        // Start after ~1 s of video; keep up to 3 minutes ready, capped at 300 MB of memory while playing
+        // Start after ~1 s of video; keep up to 3 minutes ready, capped at 160 MB of memory while playing.
+        // (The buffer lives in the app's own memory; 300 MB went past what Android allows and crashed on big 4K files.)
         DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
             .setBufferDurationsMs(50_000, 180_000, 1_000, 2_500)
-            .setTargetBufferBytes(300 * 1024 * 1024)
+            .setTargetBufferBytes(160 * 1024 * 1024)
             .setPrioritizeTimeOverSizeThresholds(false)
             .build();
         // Follow Real-Debrid's redirects and allow slower servers a little longer before giving up
