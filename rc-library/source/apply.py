@@ -488,23 +488,28 @@ rep("function sheet(html, opt = {}){", r"""// Textless key art and the title log
 async function appleArt(sh, id){
   const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
   let im;
+  // hold the title hidden until we know whether a logo replaces it (never longer than 0.9 s), so it never swaps in view
+  const tt = $('.mvhead h2', sh) || $('.shname', sh); let shown = false;
+  const show = () => { if(!shown){ shown = true; tt && tt.classList.remove('tpend'); } };
+  if(tt){ tt.classList.add('tpend'); setTimeout(show, 900); }
   try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
     const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
     const clean = best((x.posters || []).filter(p => !p.iso_639_1));
     const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
-  })); }catch(e){ return; }
-  if(!sh.isConnected || !im) return;
+  })); }catch(e){ show(); return; }
+  if(!sh.isConnected || !im){ show(); return; }
   const bd = $('.bdrop', sh) || $('.shbg', sh);
   const art = im.poster || (filmOf(id) || {}).poster;
   if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
   const h2 = $('.mvhead h2', sh) || $('.shname', sh);
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
-    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); show(); };
+    lg.onerror = show;
     lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
-  }
+  } else show();
 }
 function sheet(html, opt = {}){""")
 # ==== end APPLE TV ART ====
@@ -627,6 +632,72 @@ function showRecent(){
 }
 // opening a result counts as a search worth remembering
 $('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) return; if(e.target.closest('[data-id],[data-person]')) saveRecent($('#hq').value); }, true);""")
+
+
+# ---------- POSTER ZOOM: a tapped poster grows into the title page, and shrinks back on close ----------
+rep("""  host.append(bk, sh);
+  const s = { el:sh""", """  if(isPage && /mvsheet|shcard/.test(opt.cls || '') && zoomTap && Date.now() - zoomTap.at < 1200){ sh.classList.add('zoom'); bk.classList.add('zbk'); }   // before it's drawn, so it starts invisible
+  host.append(bk, sh);
+  const s = { el:sh""")
+rep("""  host.append(bk, sh);
+  const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };""",
+"""  host.append(bk, sh);
+  const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
+  if(isPage && /mvsheet|shcard/.test(opt.cls || '')) s.zoom = zoomIn(sh, /shcard/.test(opt.cls));
+  if(!s.zoom){ sh.classList.remove('zoom'); bk.classList.remove('zbk'); }""")
+rep("""    const t = sheetStack.pop();
+    t.el.classList.remove('in');""", """    const t = sheetStack.pop();
+    if(t.zoom) zoomOut(t);
+    t.el.classList.remove('in');""")
+rep("function sheet(html, opt = {}){", r"""let zoomTap = null;
+document.addEventListener('click', e => {
+  const h = e.target.closest && e.target.closest('.pw, .lshow, .lsea'), im = h && h.querySelector('img');
+  zoomTap = im ? { el:im, at:Date.now() } : null;
+}, true);
+// where the page's poster art sits: full width (or full height), top-aligned, like the page's background
+function zoomTarget(lib){
+  const W = innerWidth, pr = document.createElement('div'); pr.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
+  document.body.append(pr); const safe = pr.offsetHeight; pr.remove();
+  const H = Math.min(innerHeight * (lib ? .65 : .67), lib ? 580 : 600) + safe;
+  const w = Math.max(W, H * 2 / 3); return { left:(W - w) / 2, top:0, width:w, height:w * 1.5 };
+}
+function zoomClone(src, from, to, done){
+  const c = new Image(); c.src = src; c.className = 'zclone';
+  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px',
+    transform:`translate(${from.left - to.left}px,${from.top - to.top}px) scale(${from.width / to.width},${from.height / to.height})` });
+  document.body.append(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => { c.classList.add('go'); c.style.transform = ''; }));
+  setTimeout(() => done(c), 400);
+  return c;
+}
+function zoomIn(sh, lib){
+  const z = zoomTap; zoomTap = null;
+  if(!z || Date.now() - z.at > 1200 || !z.el.isConnected || !z.el.complete) return null;
+  const r = z.el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return null;
+  const to = zoomTarget(lib);
+  // the small poster stays under the big one until the big one has loaded, so the picture never blinks to black
+  requestAnimationFrame(() => { const bd = $('.bdrop', sh) || $('.shbg', sh); if(bd && bd.style.backgroundImage) bd.style.backgroundImage += `, url(${z.el.currentSrc || z.el.src})`; });
+  zoomClone(z.el.currentSrc || z.el.src, r, to, c => { c.style.opacity = '0'; setTimeout(() => c.remove(), 260); });
+  return { el:z.el, lib };
+}
+function zoomOut(t){
+  const z = t.zoom, el = z.el;
+  if(!el.isConnected) return;
+  const r = el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return;
+  const to = zoomTarget(z.lib);
+  // start as the big picture, then shrink into the poster's spot
+  const c = new Image(); c.src = el.currentSrc || el.src; c.className = 'zclone go';
+  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px' });
+  document.body.append(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    c.style.transform = `translate(${r.left - to.left}px,${r.top - to.top}px) scale(${r.width / to.width},${r.height / to.height})`; c.style.borderRadius = '14px'; }));
+  setTimeout(() => { c.style.transition = 'opacity .15s'; c.style.opacity = '0'; setTimeout(() => c.remove(), 160); }, 380);
+}
+function sheet(html, opt = {}){""")
+
+# ---------- POSTERS FADE IN as they load (with a safety net so none can stay hidden) ----------
+s = s.replace('</body>', """<script>document.addEventListener('load',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);</script>
+</body>""", 1)
 
 open(p, 'w').write(s)
 print('applied cast chips')

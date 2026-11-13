@@ -323,3 +323,45 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 /* season picker: keep room for its arrow (the generic tab-button padding was squeezing it over the number) */
 .shtabs .seapick{padding:10px 40px 10px 16px;font-size:15px;white-space:nowrap}
 
+
+/* ==== NO SHIFT on first open: title box keeps one size whether it holds text or a logo; rows hold their space ==== */
+.mvsheet .mvhead h2,.shcard .shname{height:118px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;transition:opacity .25s ease}
+.mtlogo,.mtlogo.tall{max-height:118px!important}
+.mvsheet .mvhead{margin-top:calc(var(--hero) - 310px + env(safe-area-inset-top))!important}
+.tpend{opacity:0}
+.mvsheet #mm,.shcard .shmeta{min-height:1.45em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:94%}
+.mvsheet #md,.mvsheet #md:empty{min-height:1.45em!important}
+.mvsheet #mimdb,.mvsheet #mimdb:empty{min-height:30px!important;margin-top:8px!important}
+.mvsheet .ov:empty,.shcard .shov:empty{min-height:4.6em}
+.shcard #mlib,.shcard #shplay{min-height:50px}
+.mvsheet #mimdb>*,.mvsheet #mwatch>*,.shcard #shplay>*,.shcard #mlib>*{animation:fadein .3s ease both}
+
+/* ==== POSTER ZOOM ==== */
+.zclone{position:fixed;z-index:200;object-fit:cover;border-radius:10px;transform-origin:0 0;pointer-events:none;will-change:transform}
+.zclone.go{transition:transform .4s cubic-bezier(.2,.85,.25,1),border-radius .4s,opacity .25s ease}
+.sh.page.zoom{transform:none!important;opacity:0;transition:opacity .28s ease .12s!important}
+.sh.page.zoom.in{opacity:1}
+.sh.page.zoom:not(.in){transition:opacity .22s ease!important}
+
+/* ==== POSTERS FADE IN (shown anyway after 1.5 s, so a missed load event can never hide one) ==== */
+@keyframes imgshow{to{opacity:1}}
+.pw img,.lshow img,.lsea img,.cwimg img,.epth img,.pp img,.apposter img{opacity:0;transition:opacity .35s ease;animation:imgshow 0s 1.5s forwards}
+.pw img.ld,.lshow img.ld,.lsea img.ld,.cwimg img.ld,.epth img.ld,.pp img.ld,.apposter img.ld{opacity:1}
+
+/* ==== FLOATING GLASS TAB BAR (solid glass, no live blur) ==== */
+.tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:7px 6px;border-radius:30px;pointer-events:auto;
+  background:linear-gradient(180deg,rgba(30,30,32,.94),rgba(10,10,11,.96))!important;border:1px solid rgba(255,255,255,.1);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.65)}
+.tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
+.tb svg{filter:none}
+.tb.on{background:rgba(255,255,255,.1)}
+html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,248,.97))!important;border-color:rgba(0,0,0,.07);
+  box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
+html.light .tb.on{background:rgba(0,0,0,.06)}
+
+/* ==== PRESS FEEDBACK: buttons and cards dip slightly when pressed ==== */
+.btn,.pill,.rdot,.ib,.pkp,.seapick,.updbtn,.sclr,.morecp,#lsort,.gsel,.accsw,.srow:not(.static),.epc,.cwc,.mact>*,.epnext>*,.gpk button{transition:transform .18s cubic-bezier(.3,.7,.4,1.4)}
+.btn:active,.pill:active,.ib:active,.pkp:active,.seapick:active,.updbtn:active,.sclr:active,.morecp:active,#lsort:active,.gsel:active,.accsw:active,.tb:active,.mact>*:active{transform:scale(.94)}
+.rdot:active,.epnext>*:active{transform:scale(.97)}
+.srow:not(.static):active,.epc:active,.cwc:active,.gpk button:active{transform:scale(.98)}
+.sbk.zbk{opacity:0!important;transition:none!important}

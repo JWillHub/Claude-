@@ -952,6 +952,48 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 /* season picker: keep room for its arrow (the generic tab-button padding was squeezing it over the number) */
 .shtabs .seapick{padding:10px 40px 10px 16px;font-size:15px;white-space:nowrap}
 
+
+/* ==== NO SHIFT on first open: title box keeps one size whether it holds text or a logo; rows hold their space ==== */
+.mvsheet .mvhead h2,.shcard .shname{height:118px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;transition:opacity .25s ease}
+.mtlogo,.mtlogo.tall{max-height:118px!important}
+.mvsheet .mvhead{margin-top:calc(var(--hero) - 310px + env(safe-area-inset-top))!important}
+.tpend{opacity:0}
+.mvsheet #mm,.shcard .shmeta{min-height:1.45em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:94%}
+.mvsheet #md,.mvsheet #md:empty{min-height:1.45em!important}
+.mvsheet #mimdb,.mvsheet #mimdb:empty{min-height:30px!important;margin-top:8px!important}
+.mvsheet .ov:empty,.shcard .shov:empty{min-height:4.6em}
+.shcard #mlib,.shcard #shplay{min-height:50px}
+.mvsheet #mimdb>*,.mvsheet #mwatch>*,.shcard #shplay>*,.shcard #mlib>*{animation:fadein .3s ease both}
+
+/* ==== POSTER ZOOM ==== */
+.zclone{position:fixed;z-index:200;object-fit:cover;border-radius:10px;transform-origin:0 0;pointer-events:none;will-change:transform}
+.zclone.go{transition:transform .4s cubic-bezier(.2,.85,.25,1),border-radius .4s,opacity .25s ease}
+.sh.page.zoom{transform:none!important;opacity:0;transition:opacity .28s ease .12s!important}
+.sh.page.zoom.in{opacity:1}
+.sh.page.zoom:not(.in){transition:opacity .22s ease!important}
+
+/* ==== POSTERS FADE IN (shown anyway after 1.5 s, so a missed load event can never hide one) ==== */
+@keyframes imgshow{to{opacity:1}}
+.pw img,.lshow img,.lsea img,.cwimg img,.epth img,.pp img,.apposter img{opacity:0;transition:opacity .35s ease;animation:imgshow 0s 1.5s forwards}
+.pw img.ld,.lshow img.ld,.lsea img.ld,.cwimg img.ld,.epth img.ld,.pp img.ld,.apposter img.ld{opacity:1}
+
+/* ==== FLOATING GLASS TAB BAR (solid glass, no live blur) ==== */
+.tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:7px 6px;border-radius:30px;pointer-events:auto;
+  background:linear-gradient(180deg,rgba(30,30,32,.94),rgba(10,10,11,.96))!important;border:1px solid rgba(255,255,255,.1);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.65)}
+.tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
+.tb svg{filter:none}
+.tb.on{background:rgba(255,255,255,.1)}
+html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,248,.97))!important;border-color:rgba(0,0,0,.07);
+  box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
+html.light .tb.on{background:rgba(0,0,0,.06)}
+
+/* ==== PRESS FEEDBACK: buttons and cards dip slightly when pressed ==== */
+.btn,.pill,.rdot,.ib,.pkp,.seapick,.updbtn,.sclr,.morecp,#lsort,.gsel,.accsw,.srow:not(.static),.epc,.cwc,.mact>*,.epnext>*,.gpk button{transition:transform .18s cubic-bezier(.3,.7,.4,1.4)}
+.btn:active,.pill:active,.ib:active,.pkp:active,.seapick:active,.updbtn:active,.sclr:active,.morecp:active,#lsort:active,.gsel:active,.accsw:active,.tb:active,.mact>*:active{transform:scale(.94)}
+.rdot:active,.epnext>*:active{transform:scale(.97)}
+.srow:not(.static):active,.epc:active,.cwc:active,.gpk button:active{transform:scale(.98)}
+.sbk.zbk{opacity:0!important;transition:none!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1078,6 +1120,7 @@ html.light body.libv .ltop{background-color:#fff!important}
 html.light .mvsheet .mvhead .meta{color:var(--text)!important}
 html.light .shcard .shmeta{color:var(--text)!important}
 html.light .morecp{color:var(--text)!important}
+html.light .tabbar{border-color:rgba(0,0,0,0.12)!important}
 html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
@@ -1423,23 +1466,72 @@ const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 2
 async function appleArt(sh, id){
   const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
   let im;
+  // hold the title hidden until we know whether a logo replaces it (never longer than 0.9 s), so it never swaps in view
+  const tt = $('.mvhead h2', sh) || $('.shname', sh); let shown = false;
+  const show = () => { if(!shown){ shown = true; tt && tt.classList.remove('tpend'); } };
+  if(tt){ tt.classList.add('tpend'); setTimeout(show, 900); }
   try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
     const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
     const clean = best((x.posters || []).filter(p => !p.iso_639_1));
     const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
-  })); }catch(e){ return; }
-  if(!sh.isConnected || !im) return;
+  })); }catch(e){ show(); return; }
+  if(!sh.isConnected || !im){ show(); return; }
   const bd = $('.bdrop', sh) || $('.shbg', sh);
   const art = im.poster || (filmOf(id) || {}).poster;
   if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
   const h2 = $('.mvhead h2', sh) || $('.shname', sh);
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
-    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); show(); };
+    lg.onerror = show;
     lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
-  }
+  } else show();
+}
+let zoomTap = null;
+document.addEventListener('click', e => {
+  const h = e.target.closest && e.target.closest('.pw, .lshow, .lsea'), im = h && h.querySelector('img');
+  zoomTap = im ? { el:im, at:Date.now() } : null;
+}, true);
+// where the page's poster art sits: full width (or full height), top-aligned, like the page's background
+function zoomTarget(lib){
+  const W = innerWidth, pr = document.createElement('div'); pr.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
+  document.body.append(pr); const safe = pr.offsetHeight; pr.remove();
+  const H = Math.min(innerHeight * (lib ? .65 : .67), lib ? 580 : 600) + safe;
+  const w = Math.max(W, H * 2 / 3); return { left:(W - w) / 2, top:0, width:w, height:w * 1.5 };
+}
+function zoomClone(src, from, to, done){
+  const c = new Image(); c.src = src; c.className = 'zclone';
+  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px',
+    transform:`translate(${from.left - to.left}px,${from.top - to.top}px) scale(${from.width / to.width},${from.height / to.height})` });
+  document.body.append(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => { c.classList.add('go'); c.style.transform = ''; }));
+  setTimeout(() => done(c), 400);
+  return c;
+}
+function zoomIn(sh, lib){
+  const z = zoomTap; zoomTap = null;
+  if(!z || Date.now() - z.at > 1200 || !z.el.isConnected || !z.el.complete) return null;
+  const r = z.el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return null;
+  const to = zoomTarget(lib);
+  // the small poster stays under the big one until the big one has loaded, so the picture never blinks to black
+  requestAnimationFrame(() => { const bd = $('.bdrop', sh) || $('.shbg', sh); if(bd && bd.style.backgroundImage) bd.style.backgroundImage += `, url(${z.el.currentSrc || z.el.src})`; });
+  zoomClone(z.el.currentSrc || z.el.src, r, to, c => { c.style.opacity = '0'; setTimeout(() => c.remove(), 260); });
+  return { el:z.el, lib };
+}
+function zoomOut(t){
+  const z = t.zoom, el = z.el;
+  if(!el.isConnected) return;
+  const r = el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return;
+  const to = zoomTarget(z.lib);
+  // start as the big picture, then shrink into the poster's spot
+  const c = new Image(); c.src = el.currentSrc || el.src; c.className = 'zclone go';
+  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px' });
+  document.body.append(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    c.style.transform = `translate(${r.left - to.left}px,${r.top - to.top}px) scale(${r.width / to.width},${r.height / to.height})`; c.style.borderRadius = '14px'; }));
+  setTimeout(() => { c.style.transition = 'opacity .15s'; c.style.opacity = '0'; setTimeout(() => c.remove(), 160); }, 380);
 }
 function sheet(html, opt = {}){
   const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));
@@ -1450,8 +1542,11 @@ function sheet(html, opt = {}){
   if(isPage) sh.classList.add('page');
   { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }
   if(opt.art != null) appleArt(sh, opt.art);
+  if(isPage && /mvsheet|shcard/.test(opt.cls || '') && zoomTap && Date.now() - zoomTap.at < 1200){ sh.classList.add('zoom'); bk.classList.add('zbk'); }   // before it's drawn, so it starts invisible
   host.append(bk, sh);
   const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
+  if(isPage && /mvsheet|shcard/.test(opt.cls || '')) s.zoom = zoomIn(sh, /shcard/.test(opt.cls));
+  if(!s.zoom){ sh.classList.remove('zoom'); bk.classList.remove('zbk'); }
   if(isPage){
     if(sheetStack.some(x => x.el.classList.contains('page'))) sh.classList.add('deep');
     $('.glback', sh).onclick = () => closeSheet(s);
@@ -1472,6 +1567,7 @@ function closeSheet(s, fromPop){
   let n = 0;
   while(sheetStack.length > i){
     const t = sheetStack.pop();
+    if(t.zoom) zoomOut(t);
     t.el.classList.remove('in'); t.el.style.transform = ''; t.bk.classList.remove('in');
     setTimeout(() => { t.el.remove(); t.bk.remove(); }, 330);
     t.onClose && t.onClose();
@@ -4314,5 +4410,6 @@ if(document.querySelector('.top.searching')){if(off)set(0,true);return}
 if(d>0){acc=0;if(n>0){let H=0;bars().forEach(b=>H=Math.max(H,b.offsetHeight+2));set(Math.min(H,off+d),false)}}
 else if(d<0&&off){set(Math.max(0,Math.min(off+d,n)),false)}},{passive:true});
 document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))set(0,false)},true);})();</script>
+<script>document.addEventListener('load',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);</script>
 </body>
 </html>
