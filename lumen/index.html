@@ -288,10 +288,32 @@ body.q .car{opacity:0;pointer-events:none}
   box-shadow:0 12px 30px rgba(0,0,0,.7);outline:1px solid rgba(255,255,255,.12);outline-offset:-1px;transition:box-shadow .4s}
 .ci .np{display:grid;place-items:center;padding:10px;text-align:center;font-size:11.5px;font-weight:300;color:var(--muted)}
 .ci.mid img{outline-color:rgba(255,255,255,.45)}
-.ccap{text-align:center;min-height:38px;transition:opacity .3s}
-.ccap b{display:block;font-weight:400;font-size:14px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 40px}
-.ccap span{font-size:11.5px;color:var(--muted);font-weight:300;letter-spacing:.06em}
-.ccap.fade{opacity:0}
+
+/* ================= title page: tall art, centered white title logo, one lit Play ================= */
+#tbody{position:relative}
+#tname{display:flex;justify-content:center;width:100%}
+.tp2{--hero:min(66dvh,600px);position:relative}
+.tart{position:absolute;left:-20px;right:-20px;top:0;height:calc(var(--hero) + var(--st));background:#000 center 30%/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
+.tart.in{opacity:1}
+.tart::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 20%,rgba(0,0,0,0) 40%,rgba(0,0,0,.72) 74%,#000 100%),radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,.6),transparent 70%)}
+.tp2 .bk{position:fixed;left:16px;top:calc(var(--st) + 14px);z-index:5;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.thead{position:relative;z-index:1;padding-top:calc(var(--hero) + var(--st) - 210px);display:flex;flex-direction:column;align-items:center;text-align:center}
+.tname{margin:0;font-weight:300;font-size:34px;line-height:1.08;letter-spacing:.01em;max-width:92%;text-shadow:0 2px 24px rgba(0,0,0,.8)}
+.tlogo{display:block;max-width:76%;max-height:104px;object-fit:contain;filter:brightness(0) invert(1) drop-shadow(0 0 16px rgba(255,255,255,.28));opacity:0;transition:opacity .6s}
+.tlogo.tall{max-width:52%;max-height:132px}
+.tlogo.in{opacity:1}
+.tmeta2{margin-top:14px;font-size:10.5px;font-weight:400;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.thead #tact{width:100%;display:flex;flex-direction:column;align-items:center}
+.thead .play{width:min(76%,300px);height:54px;margin-top:22px}
+.thead .row2{width:min(76%,300px);justify-content:center}
+.thead .row2 button{flex:none;width:auto;padding:0 18px;height:36px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.thead .row2 button{background:none;box-shadow:none}.thead .row2 button::before{display:none}
+.tdesc{margin-top:30px;padding-top:22px;position:relative}
+.tdesc::before{content:"";position:absolute;left:30%;right:30%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent)}
+.tdesc .ov{margin:0;text-align:center;font-size:13.5px;line-height:1.7;color:rgba(255,255,255,.72)}
+.tdesc .cast{text-align:center;margin-top:12px;font-size:11.5px;letter-spacing:.04em}
+.tp2 .lbl{text-align:center}
+.tp2 .chips{justify-content:safe center}
 </style>
 </head>
 <body>
@@ -309,7 +331,7 @@ body.q .car{opacity:0;pointer-events:none}
       </label>
     </div>
     <div class="hint" id="hint"></div>
-    <div class="car" id="car"><div class="ctrack" id="ctrack"></div><div class="ccap" id="ccap"></div></div>
+    <div class="car" id="car"><div class="ctrack" id="ctrack"></div></div>
   </div>
   <div class="res" id="res"><div class="in" id="resin"></div></div>
 </main>
@@ -425,11 +447,12 @@ function indexAll(){
 function busy(){ $('.sw').classList.toggle('busy', !!(syncing || indexing)); }
 async function details(m){
   const k = P + 'd.' + m.id, c = store.get(k, null);
-  if(c && c.cast && Date.now() - c.at < 7 * 864e5) return c;
+  if(c && c.v === 2 && Date.now() - c.at < 7 * 864e5) return c;
   if(typeof m.id !== 'number' && !m.tv) return null;
-  const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id, { append_to_response:m.tv ? 'aggregate_credits' : 'credits' });
+  const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id, { append_to_response:(m.tv ? 'aggregate_credits' : 'credits') + ',images', include_image_language:'en,null' });
   const cr = (m.tv ? d.aggregate_credits : d.credits) || {};
-  const out = { at:Date.now(), backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
+  const logos = ((d.images || {}).logos || []).sort((a, b) => (b.iso_639_1 === 'en') - (a.iso_639_1 === 'en') || b.vote_average - a.vote_average);
+  const out = { v:2, at:Date.now(), logo:logos[0] ? logos[0].file_path : null, logoAr:logos[0] ? logos[0].aspect_ratio : 0, backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
     genres:(d.genres || []).map(g => g.name), cast:(cr.cast || []).slice(0, 12).map(c => c.name), vote:d.vote_average || 0, seasons:(d.seasons || []).filter(s => s.season_number > 0).length };
   store.set(k, out);
   idx[m.id] = { g:out.genres, c:out.cast }; saveIdx();
@@ -621,9 +644,6 @@ function carPaint(){
   if(mid !== carMid){
     if(items[carMid]) items[carMid].classList.remove('mid');
     items[mid].classList.add('mid'); carMid = mid;
-    const t = carList[mid % carN], cap = $('#ccap');
-    cap.classList.add('fade'); clearTimeout(capT);
-    capT = setTimeout(() => { cap.innerHTML = t ? `<b>${esc(t.title)}</b><span>${esc([t.year, t.tv ? 'Series' : 'Film'].filter(Boolean).join(' · '))}</span>` : ''; cap.classList.remove('fade'); }, 160);
   }
 }
 $('#ctrack').addEventListener('scroll', () => {
@@ -713,22 +733,32 @@ async function openTitle(id, src){
   const t = titleById(id); if(!t) return;
   cur = { t, season:null, ver:null };
   const el = $('#title'), b = $('#tbody'); b.scrollTop = 0;
-  b.innerHTML = `<div class="hero" id="hero"><button class="ibtn glass press bk" id="tback" aria-label="Back"><svg class="ico" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button></div>
-    <div class="tbody"><h1 class="ttl">${esc(t.title)}</h1><div class="meta" id="tmeta">${esc([t.year, t.tv ? 'Series' : 'Film'].filter(Boolean).join(' · '))}</div>
-    <p class="ov" id="tov"></p><div class="cast" id="tcast"></div><div id="tact"></div><div id="tmore"></div></div>`;
+  b.innerHTML = `<div class="tp2"><div class="tart" id="tart"></div>
+    <button class="ibtn glass press bk" id="tback" aria-label="Back"><svg class="ico" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="thead"><div id="tname"><h1 class="tname">${esc(t.title)}</h1></div>
+      <div class="tmeta2" id="tmeta">${esc([t.year, t.tv ? 'Series' : 'Film'].filter(Boolean).join(' · '))}</div><div id="tact"></div></div>
+    <div class="tdesc" id="tdesc" hidden><p class="ov" id="tov"></p><div class="cast" id="tcast"></div></div>
+    <div id="tmore"></div></div>`;
   $('#tback').onclick = back;
   if(!el.classList.contains('open')){
     el.classList.add('open'); document.body.classList.add('tp');
     pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; });
   }
-  if(t.poster) $('#hero').style.backgroundImage = `url(${poster(t.poster, 'w780')})`;
-  if(!t.raw) details(t).then(d => {
+  const art = src => { const im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; const a = $('#tart'); a.style.backgroundImage = `url(${src})`; a.classList.add('in'); }; im.src = src; };
+  if(t.raw || !store.get(K_TM, '')){ if(t.poster) art(poster(t.poster, 'w780')); }
+  else details(t).then(d => {
     if(!d || !cur || cur.t !== t) return;
-    if(d.backdrop) $('#hero').style.backgroundImage = `url(${IMG}w1280${d.backdrop})`;
-    $('#tmeta').textContent = [t.year, ...d.genres.slice(0, 2), t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : '', d.vote ? '★ ' + d.vote.toFixed(1) : ''].filter(Boolean).join(' · ');
+    if(d.backdrop) art(IMG + 'w1280' + d.backdrop); else if(t.poster) art(poster(t.poster, 'w780'));
+    if(d.logo){
+      const lg = new Image(); lg.className = 'tlogo' + (d.logoAr && d.logoAr < 1.6 ? ' tall' : ''); lg.alt = t.title;
+      lg.onload = () => { if(!cur || cur.t !== t) return; const n = $('#tname'); n.innerHTML = ''; n.appendChild(lg); requestAnimationFrame(() => lg.classList.add('in')); };
+      lg.src = IMG + 'w500' + d.logo;
+    }
+    $('#tmeta').textContent = [t.year, ...d.genres.slice(0, 2), t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : '', d.vote ? '★\u00a0' + d.vote.toFixed(1) : ''].filter(Boolean).join('  ·  ');
     const ov = $('#tov'); ov.textContent = d.overview; ov.onclick = () => ov.classList.toggle('full');
     if(d.cast && d.cast.length) $('#tcast').textContent = 'With ' + d.cast.slice(0, 4).join(', ');
-  }).catch(() => {});
+    $('#tdesc').hidden = !d.overview && !(d.cast && d.cast.length);
+  }).catch(() => { if(t.poster) art(poster(t.poster, 'w780')); });
   $('#tact').innerHTML = `<button class="play glass busy press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
   let all;
   try{ all = (await Promise.all(t.tors.map(files))).flat(); }
