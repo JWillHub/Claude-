@@ -204,7 +204,7 @@ body.libv #v-library{padding-top:0}
 /* Library: no dot before the section headers */
 #v-library .cwdot{display:none}
 /* Rating pages: Apple TV style. Tall poster art fills the top and stays still; centered title and details over its fade */
-.mvsheet{--hero:min(62dvh,560px)}
+.mvsheet{--hero:min(67dvh,600px)}
 .mvsheet>.bdrop{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
 .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 78%,#000 100%)!important}
 .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000 calc(var(--hero) + env(safe-area-inset-top))) local!important}
@@ -224,7 +224,7 @@ body.libv #v-library{padding-top:0}
 .mvsheet .mvhead img.mtlogo{width:auto!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;background:none!important;box-shadow:none!important;border-radius:0!important;flex:none}
 /* ==== end APPLE TV ART ==== */
 /* ==== APPLE STYLE LIBRARY PAGES (delete this block to undo) ==== */
-.sh.shcard{--hero:min(60dvh,540px)}
+.sh.shcard{--hero:min(65dvh,580px)}
 .sh.shcard .shbg{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
 .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 42%,rgba(0,0,0,.8) 78%,#000 100%)!important}
 .sh.shcard .shhero{min-height:calc(var(--hero) + env(safe-area-inset-top))!important}
