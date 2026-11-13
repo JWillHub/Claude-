@@ -554,5 +554,79 @@ s = s.replace('</body>', _hide_js + '</body>', 1)
 # ---------- LIGHT MODE: set the theme before the page paints ----------
 s = s.replace('<style>', "<script>try{var _t=JSON.parse(localStorage.getItem('rclib.theme')||'\"dark\"');if(_t==='light'||(_t==='system'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light')}catch(e){}</script>\n<style>", 1)
 
+
+# ---------- GENRES: "All" type (films and series mixed), the default ----------
+rep("""async function pageOf(def, page){
+""", """async function pageOf(def, page){
+  if(def.mix){   // films and series together: one page of each, alternated (or merged by date for Newest)
+    const parts = await Promise.all(def.mix.map(d => page <= (d._total || 1e9) ? listPage(d.path, d.params || {}, page, d.tv).catch(() => null) : null));
+    parts.forEach((r, i) => { if(r) def.mix[i]._total = r.total; });
+    const lists = parts.map(r => r ? r.results : []);
+    let results = [];
+    if(def.byDate) results = lists.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    else for(let k = 0; k < Math.max(...lists.map(l => l.length), 0); k++) lists.forEach(l => l[k] && results.push(l[k]));
+    return { page, total:Math.max(...def.mix.map(d => d._total || 0), page), results };
+  }
+""")
+rep("const gb = { tv:false, g:'*', sort:'popular' };", """const gb = { tv:false, all:true, g:'*', sort:'popular' };
+// "All": movie genres, each matched to the closest series genre (none = films only); plus the series-only ones
+const G2TV = { 28:10759, 12:10759, 16:16, 35:35, 80:80, 99:99, 18:18, 10751:10751, 14:10765, 878:10765, 9648:9648, 10752:10768, 37:37 };
+const ALLGENRES = [...GENRES.map(([id, n]) => ['m' + id, n]), ['t10762', 'Kids'], ['t10764', 'Reality']].sort((a, b) => a[1].localeCompare(b[1]));
+function allDef(g, sort){
+  const mix = [];
+  if(g === '*' || g[0] === 'm') mix.push(genreDef(false, g === '*' ? null : +g.slice(1), sort, ''));
+  const tg = g === '*' ? null : g[0] === 't' ? +g.slice(1) : G2TV[+g.slice(1)];
+  if(g === '*' || tg) mix.push(genreDef(true, tg, sort, ''));
+  return mix.length === 1 ? mix[0] : { mix, byDate:sort === 'newest', path:'mix', tv:false };
+}""")
+rep("""  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'Series' }];
+  const list = gb.tv ? TVGENRES : GENRES;
+  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];""",
+"""  const types = [{ k:'all', label:'All' }, { k:'film', label:'Films' }, { k:'tv', label:'Series' }];
+  const list = gb.all ? ALLGENRES : gb.tv ? TVGENRES : GENRES;
+  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];""")
+rep("""pickPill('gbtype', gb.tv ? 'Series' : 'Films')""", """pickPill('gbtype', gb.all ? 'All' : gb.tv ? 'Series' : 'Films')""")
+rep("""  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });""",
+"""  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.all ? 'all' : gb.tv ? 'tv' : 'film', k => { gb.all = k === 'all'; gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });""")
+rep("""  const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
+  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });""",
+"""  const def = gb.all ? allDef(gb.g, gb.sort) : genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
+  setPageSource({ title:(gl.k === '*' ? (gb.all ? 'All' : gb.tv ? 'Series' : 'Films') : gl.label), def });""")
+rep("const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv;", "const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; gb.all = false;")
+
+
+# ---------- RECENT SEARCHES ----------
+rep('<div class="srch" id="srch" hidden><div id="fpeople">', '<div class="srch" id="srch" hidden><div id="srecent"></div><div id="fpeople">')
+rep("""  const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  q.focus();""", """  const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  showRecent();
+  q.focus();""")
+rep("""    if(!q){ panel.hidden = true; return; }
+    panel.hidden = false;""", """    if(!q){ $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = ''; showRecent(); return; }
+    $('#srecent').innerHTML = '';
+    panel.hidden = false;""")
+rep("""  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault();""", """  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); saveRecent(e.target.value);""")
+rep("const openFind = () => openSearch(false);", r"""const openFind = () => openSearch(false);
+// Recent searches: the last 8 things you searched and opened, shown when the search box is empty
+const K_RECENTQ = 'rclib.recentq';
+function saveRecent(q){ q = (q || '').trim(); if(q.length < 2) return;
+  const l = store.get(K_RECENTQ, []).filter(x => x.toLowerCase() !== q.toLowerCase()); l.unshift(q); store.set(K_RECENTQ, l.slice(0, 8)); }
+function showRecent(){
+  const box = $('#srecent'), panel = $('#srch'), l = store.get(K_RECENTQ, []);
+  const g = $('.grid', panel); g._gen = (g._gen || 0) + 1; g._obs && g._obs.disconnect(); g.innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  if(!l.length){ box.innerHTML = ''; panel.hidden = true; return; }
+  box.innerHTML = `<div class="srhd"><span>Recent</span><button class="srclr">Clear</button></div>` + l.map(q => `<div class="srrow" data-q="${esc(q)}">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>${esc(q)}</span><button class="srx" aria-label="Remove">×</button></div>`).join('');
+  panel.hidden = false;
+  $('.srclr', box).onclick = () => { store.set(K_RECENTQ, []); showRecent(); };
+  $$('.srrow', box).forEach(r => r.onclick = e => {
+    const q = r.dataset.q;
+    if(e.target.closest('.srx')){ store.set(K_RECENTQ, store.get(K_RECENTQ, []).filter(x => x !== q)); showRecent(); return; }
+    const inp = $('#hq'); inp.value = q; inp.blur(); saveRecent(q); inp.oninput({ target:inp, now:true });
+  });
+}
+// opening a result counts as a search worth remembering
+$('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) return; if(e.target.closest('[data-id],[data-person]')) saveRecent($('#hq').value); }, true);""")
+
 open(p, 'w').write(s)
 print('applied cast chips')

@@ -204,7 +204,7 @@ body.libv #v-library{padding-top:0}
 /* Library: no dot before the section headers */
 #v-library .cwdot{display:none}
 /* Rating pages: Apple TV style. Tall poster art fills the top and stays still; centered title and details over its fade */
-.mvsheet{--hero:min(72dvh,640px)}
+.mvsheet{--hero:min(62dvh,560px)}
 .mvsheet>.bdrop{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
 .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 78%,#000 100%)!important}
 .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000 calc(var(--hero) + env(safe-area-inset-top))) local!important}
@@ -224,7 +224,7 @@ body.libv #v-library{padding-top:0}
 .mvsheet .mvhead img.mtlogo{width:auto!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;background:none!important;box-shadow:none!important;border-radius:0!important;flex:none}
 /* ==== end APPLE TV ART ==== */
 /* ==== APPLE STYLE LIBRARY PAGES (delete this block to undo) ==== */
-.sh.shcard{--hero:min(70dvh,620px)}
+.sh.shcard{--hero:min(60dvh,540px)}
 .sh.shcard .shbg{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
 .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 42%,rgba(0,0,0,.8) 78%,#000 100%)!important}
 .sh.shcard .shhero{min-height:calc(var(--hero) + env(safe-area-inset-top))!important}
@@ -311,3 +311,12 @@ html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7
 html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
 html.light .subprev span{color:#fff}
 /* ==== end LIGHT MODE ==== */
+
+/* recent searches */
+#srecent .srhd{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 6px;font-weight:700;font-size:17px}
+#srecent .srclr{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;font-weight:500;padding:6px 0}
+#srecent .srrow{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.08);cursor:pointer}
+#srecent .srrow svg{width:19px;height:19px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round}
+#srecent .srrow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px}
+#srecent .srx{background:none;border:0;color:var(--muted);font-size:22px;line-height:1;padding:0 4px}
+html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}

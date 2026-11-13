@@ -834,7 +834,7 @@ body.libv #v-library{padding-top:0}
 /* Library: no dot before the section headers */
 #v-library .cwdot{display:none}
 /* Rating pages: Apple TV style. Tall poster art fills the top and stays still; centered title and details over its fade */
-.mvsheet{--hero:min(72dvh,640px)}
+.mvsheet{--hero:min(62dvh,560px)}
 .mvsheet>.bdrop{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
 .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 78%,#000 100%)!important}
 .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000 calc(var(--hero) + env(safe-area-inset-top))) local!important}
@@ -854,7 +854,7 @@ body.libv #v-library{padding-top:0}
 .mvsheet .mvhead img.mtlogo{width:auto!important;height:auto!important;aspect-ratio:auto!important;object-fit:contain!important;background:none!important;box-shadow:none!important;border-radius:0!important;flex:none}
 /* ==== end APPLE TV ART ==== */
 /* ==== APPLE STYLE LIBRARY PAGES (delete this block to undo) ==== */
-.sh.shcard{--hero:min(70dvh,620px)}
+.sh.shcard{--hero:min(60dvh,540px)}
 .sh.shcard .shbg{height:calc(var(--hero) + env(safe-area-inset-top))!important;background-position:center top!important;background-size:cover!important}
 .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 42%,rgba(0,0,0,.8) 78%,#000 100%)!important}
 .sh.shcard .shhero{min-height:calc(var(--hero) + env(safe-area-inset-top))!important}
@@ -941,6 +941,15 @@ html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7
 html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
 html.light .subprev span{color:#fff}
 /* ==== end LIGHT MODE ==== */
+
+/* recent searches */
+#srecent .srhd{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 6px;font-weight:700;font-size:17px}
+#srecent .srclr{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;font-weight:500;padding:6px 0}
+#srecent .srrow{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid rgba(255,255,255,.08);cursor:pointer}
+#srecent .srrow svg{width:19px;height:19px;flex:none;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round}
+#srecent .srrow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px}
+#srecent .srx{background:none;border:0;color:var(--muted);font-size:22px;line-height:1;padding:0 4px}
+html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1101,7 +1110,7 @@ html.light .shbg{background-color:#ececef!important}
   <section id="v-library" hidden></section>
   <section id="v-settings" hidden></section>
 </main>
-<div class="srch" id="srch" hidden><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
+<div class="srch" id="srch" hidden><div id="srecent"></div><div id="fpeople"></div><div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>
 <nav class="tabbar">
   <button class="tb on" data-v="discover"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Discover</button>
   <button class="tb" data-v="genres"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>Genres</button>
@@ -1872,6 +1881,15 @@ async function loadRow(sec){
 
 /* IMDb-ranked lists come from the nightly IMDb build; each title is matched to TMDB for its poster */
 async function pageOf(def, page){
+  if(def.mix){   // films and series together: one page of each, alternated (or merged by date for Newest)
+    const parts = await Promise.all(def.mix.map(d => page <= (d._total || 1e9) ? listPage(d.path, d.params || {}, page, d.tv).catch(() => null) : null));
+    parts.forEach((r, i) => { if(r) def.mix[i]._total = r.total; });
+    const lists = parts.map(r => r ? r.results : []);
+    let results = [];
+    if(def.byDate) results = lists.flat().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    else for(let k = 0; k < Math.max(...lists.map(l => l.length), 0); k++) lists.forEach(l => l[k] && results.push(l[k]));
+    return { page, total:Math.max(...def.mix.map(d => d._total || 0), page), results };
+  }
   if(def.imdbTop){ const d = await imdbTopPage(def.imdbTop, page).catch(() => null); if(d) return d; }
   return listPage(def.path, def.params || {}, page, def.tv);   // falls back to TMDB's ranking if the IMDb list isn't there
 }
@@ -1974,6 +1992,7 @@ function openSearch(tv){
   $('.top').classList.add('searching');
   const q = $('#hq'); q.value = ''; q.placeholder = tv ? 'Search any series…' : 'Search films, series or people…';
   const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  showRecent();
   q.focus();
 }
 function closeSearch(fromPop){
@@ -1984,10 +2003,11 @@ function closeSearch(fromPop){
 }
 {
   let t, gen = 0;
-  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); e.target.blur(); clearTimeout(t); $('#hq').oninput({ target:e.target, now:true }); } };
+  $('#hq').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); saveRecent(e.target.value); e.target.blur(); clearTimeout(t); $('#hq').oninput({ target:e.target, now:true }); } };
   $('#hq').oninput = e => { clearTimeout(t); const q = e.target.value.trim(); t = setTimeout(async () => {
     const my = ++gen, panel = $('#srch');
-    if(!q){ panel.hidden = true; return; }
+    if(!q){ $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = ''; showRecent(); return; }
+    $('#srecent').innerHTML = '';
     panel.hidden = false;
     const tv = searchTV;
     feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), tv ? { path:'/search/tv', params:{ query:q }, tv:true } : { path:'/search/multi', params:{ query:q } });
@@ -2002,6 +2022,26 @@ function closeSearch(fromPop){
   }, e.now ? 0 : 300); };
 }
 const openFind = () => openSearch(false);
+// Recent searches: the last 8 things you searched and opened, shown when the search box is empty
+const K_RECENTQ = 'rclib.recentq';
+function saveRecent(q){ q = (q || '').trim(); if(q.length < 2) return;
+  const l = store.get(K_RECENTQ, []).filter(x => x.toLowerCase() !== q.toLowerCase()); l.unshift(q); store.set(K_RECENTQ, l.slice(0, 8)); }
+function showRecent(){
+  const box = $('#srecent'), panel = $('#srch'), l = store.get(K_RECENTQ, []);
+  const g = $('.grid', panel); g._gen = (g._gen || 0) + 1; g._obs && g._obs.disconnect(); g.innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  if(!l.length){ box.innerHTML = ''; panel.hidden = true; return; }
+  box.innerHTML = `<div class="srhd"><span>Recent</span><button class="srclr">Clear</button></div>` + l.map(q => `<div class="srrow" data-q="${esc(q)}">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>${esc(q)}</span><button class="srx" aria-label="Remove">×</button></div>`).join('');
+  panel.hidden = false;
+  $('.srclr', box).onclick = () => { store.set(K_RECENTQ, []); showRecent(); };
+  $$('.srrow', box).forEach(r => r.onclick = e => {
+    const q = r.dataset.q;
+    if(e.target.closest('.srx')){ store.set(K_RECENTQ, store.get(K_RECENTQ, []).filter(x => x !== q)); showRecent(); return; }
+    const inp = $('#hq'); inp.value = q; inp.blur(); saveRecent(q); inp.oninput({ target:inp, now:true });
+  });
+}
+// opening a result counts as a search worth remembering
+$('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) return; if(e.target.closest('[data-id],[data-person]')) saveRecent($('#hq').value); }, true);
 
 /* ---------- Genres: one card, a tab per genre, swipe between them ---------- */
 const TVGENRES = [[10759,'Action & Adventure'],[16,'Animation'],[35,'Comedy'],[80,'Crime'],[99,'Documentary'],[18,'Drama'],[10751,'Family'],
@@ -2068,7 +2108,7 @@ function openGenrePage(def){
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
 }
-const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; setView('genres'); if(built.genres) buildGenreBrowse(); };
+const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; gb.all = false; setView('genres'); if(built.genres) buildGenreBrowse(); };
 
 /* Stremio-style Genres: Type / Genre / Sort over a three-across poster grid */
 const PICK_CHECK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -2092,23 +2132,33 @@ function fitPills(bar, lists){
   run();
   document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
-const gb = { tv:false, g:'*', sort:'popular' };
+const gb = { tv:false, all:true, g:'*', sort:'popular' };
+// "All": movie genres, each matched to the closest series genre (none = films only); plus the series-only ones
+const G2TV = { 28:10759, 12:10759, 16:16, 35:35, 80:80, 99:99, 18:18, 10751:10751, 14:10765, 878:10765, 9648:9648, 10752:10768, 37:37 };
+const ALLGENRES = [...GENRES.map(([id, n]) => ['m' + id, n]), ['t10762', 'Kids'], ['t10764', 'Reality']].sort((a, b) => a[1].localeCompare(b[1]));
+function allDef(g, sort){
+  const mix = [];
+  if(g === '*' || g[0] === 'm') mix.push(genreDef(false, g === '*' ? null : +g.slice(1), sort, ''));
+  const tg = g === '*' ? null : g[0] === 't' ? +g.slice(1) : G2TV[+g.slice(1)];
+  if(g === '*' || tg) mix.push(genreDef(true, tg, sort, ''));
+  return mix.length === 1 ? mix[0] : { mix, byDate:sort === 'newest', path:'mix', tv:false };
+}
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
-  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'Series' }];
-  const list = gb.tv ? TVGENRES : GENRES;
+  const types = [{ k:'all', label:'All' }, { k:'film', label:'Films' }, { k:'tv', label:'Series' }];
+  const list = gb.all ? ALLGENRES : gb.tv ? TVGENRES : GENRES;
   const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
   if(!genres.some(g => g.k === gb.g)) gb.g = '*';
   const gl = genres.find(g => g.k === gb.g);
-  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
+  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.all ? 'All' : gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
     <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
-  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
+  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.all ? 'all' : gb.tv ? 'tv' : 'film', k => { gb.all = k === 'all'; gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
   $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
   fitPills($('.pkbar', v));
-  const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
-  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });
+  const def = gb.all ? allDef(gb.g, gb.sort) : genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
+  setPageSource({ title:(gl.k === '*' ? (gb.all ? 'All' : gb.tv ? 'Series' : 'Films') : gl.label), def });
   feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
 }
 
@@ -3946,6 +3996,28 @@ async function showPage(pg, f, card){
   // episodes redraw themselves (long-press, finishing one): keep the button under the title
   new MutationObserver(() => { const slot = $('#shplay', pg), en = $('#sheps .epnext', pg); if(slot && en){ slot.innerHTML = ''; slot.append(en); } }).observe($('#sheps', pg), { childList:true, subtree:true });
   drawTabs(); drawEps();
+  // swipe left/right on the episode list to change season
+  if(sns.length > 1){
+    const box = $('#sheps', pg); let x0 = 0, y0 = 0, dx = 0, mode = 0;
+    box.addEventListener('touchstart', e => { if(e.touches.length !== 1) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; mode = 0; box.style.transition = 'none'; }, { passive:true });
+    box.addEventListener('touchmove', e => {
+      if(e.touches.length !== 1) return; const ddx = e.touches[0].clientX - x0, ddy = e.touches[0].clientY - y0;
+      if(!mode){ if(Math.abs(ddx) < 10 && Math.abs(ddy) < 10) return; mode = Math.abs(ddx) > Math.abs(ddy) * 1.4 ? 1 : 2; }
+      if(mode !== 1) return;
+      const i = sns.indexOf(showSeason), edge = (ddx > 0 && i === 0) || (ddx < 0 && i === sns.length - 1);
+      dx = ddx; box.style.transform = `translateX(${edge ? ddx * .15 : ddx * .5}px)`; box.style.opacity = String(1 - Math.min(.5, Math.abs(ddx) / 600));
+    }, { passive:true });
+    const end = () => {
+      if(mode !== 1){ mode = 0; return; } mode = 0;
+      const i = sns.indexOf(showSeason), j = dx < -70 ? i + 1 : dx > 70 ? i - 1 : i;
+      if(j === i || j < 0 || j >= sns.length){ box.style.transition = 'transform .3s cubic-bezier(.22,1,.36,1),opacity .3s'; box.style.transform = ''; box.style.opacity = ''; return; }
+      hap(); showSeason = sns[j]; drawTabs(); drawEps();
+      const from = dx < 0 ? 60 : -60;
+      box.style.transition = 'none'; box.style.transform = `translateX(${from}px)`; box.style.opacity = '0';
+      requestAnimationFrame(() => requestAnimationFrame(() => { box.style.transition = 'transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease'; box.style.transform = ''; box.style.opacity = ''; }));
+    };
+    box.addEventListener('touchend', end); box.addEventListener('touchcancel', end);
+  }
 }
 // One series picked: a poster for each season you have
 function showSeasonCards(f, eps, posters){

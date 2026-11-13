@@ -1028,6 +1028,28 @@ async function showPage(pg, f, card){
   // episodes redraw themselves (long-press, finishing one): keep the button under the title
   new MutationObserver(() => { const slot = $('#shplay', pg), en = $('#sheps .epnext', pg); if(slot && en){ slot.innerHTML = ''; slot.append(en); } }).observe($('#sheps', pg), { childList:true, subtree:true });
   drawTabs(); drawEps();
+  // swipe left/right on the episode list to change season
+  if(sns.length > 1){
+    const box = $('#sheps', pg); let x0 = 0, y0 = 0, dx = 0, mode = 0;
+    box.addEventListener('touchstart', e => { if(e.touches.length !== 1) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; mode = 0; box.style.transition = 'none'; }, { passive:true });
+    box.addEventListener('touchmove', e => {
+      if(e.touches.length !== 1) return; const ddx = e.touches[0].clientX - x0, ddy = e.touches[0].clientY - y0;
+      if(!mode){ if(Math.abs(ddx) < 10 && Math.abs(ddy) < 10) return; mode = Math.abs(ddx) > Math.abs(ddy) * 1.4 ? 1 : 2; }
+      if(mode !== 1) return;
+      const i = sns.indexOf(showSeason), edge = (ddx > 0 && i === 0) || (ddx < 0 && i === sns.length - 1);
+      dx = ddx; box.style.transform = `translateX(${edge ? ddx * .15 : ddx * .5}px)`; box.style.opacity = String(1 - Math.min(.5, Math.abs(ddx) / 600));
+    }, { passive:true });
+    const end = () => {
+      if(mode !== 1){ mode = 0; return; } mode = 0;
+      const i = sns.indexOf(showSeason), j = dx < -70 ? i + 1 : dx > 70 ? i - 1 : i;
+      if(j === i || j < 0 || j >= sns.length){ box.style.transition = 'transform .3s cubic-bezier(.22,1,.36,1),opacity .3s'; box.style.transform = ''; box.style.opacity = ''; return; }
+      hap(); showSeason = sns[j]; drawTabs(); drawEps();
+      const from = dx < 0 ? 60 : -60;
+      box.style.transition = 'none'; box.style.transform = `translateX(${from}px)`; box.style.opacity = '0';
+      requestAnimationFrame(() => requestAnimationFrame(() => { box.style.transition = 'transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease'; box.style.transform = ''; box.style.opacity = ''; }));
+    };
+    box.addEventListener('touchend', end); box.addEventListener('touchcancel', end);
+  }
 }
 // One series picked: a poster for each season you have
 function showSeasonCards(f, eps, posters){
