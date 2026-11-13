@@ -187,7 +187,7 @@ public class MainActivity extends BridgeActivity {
         if (isFinishing() || isDestroyed()) return;
         try {
             new AlertDialog.Builder(this)
-                .setTitle("Rolling Credits closed unexpectedly")
+                .setTitle("Rolling Credits problem report")
                 .setMessage(text.length() > 2500 ? text.substring(0, 2500) + "\u2026" : text)
                 .setPositiveButton("Copy details", (d, w) -> {
                     ClipboardManager cb = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);

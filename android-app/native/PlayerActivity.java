@@ -291,10 +291,7 @@ public class PlayerActivity extends AppCompatActivity {
                 if (hasNext() && autoplay && !nextCancelled) goNext(); else close(true);
             }
             @Override
-            public void onPlayerError(@NonNull PlaybackException e) {
-                error = e.getErrorCodeName();
-                close(false);
-            }
+            public void onPlayerError(@NonNull PlaybackException e) { handleError(e); }
             @Override
             public void onTrackSelectionParametersChanged(@NonNull TrackSelectionParameters p) {
                 userPickedTracks = true;   // you changed audio or subtitles in the player's menu
@@ -495,6 +492,7 @@ public class PlayerActivity extends AppCompatActivity {
             if (exo == null) return;
             try { check(); } catch (Exception ignored) {}
             if (SystemClock.uptimeMillis() - lastSaveAt > 8000) saveSpot();
+            if (retries > 0 && exo.isPlaying() && SystemClock.uptimeMillis() - lastErrAt > 60_000) retries = 0;
             ui.postDelayed(this, 500);
         }
     };
@@ -809,6 +807,98 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
+
+    // ---- Playback errors: reconnect on its own, and if that doesn't work, say what went wrong instead of closing ----
+    private int retries = 0;
+    private long lastErrAt = 0, resumeAt = 0;
+    private LinearLayout errPanel;
+    private TextView errText;
+
+    private void handleError(PlaybackException e) {
+        if (exo == null || done) return;
+        lastErrAt = SystemClock.uptimeMillis();
+        long pos = exo.getCurrentPosition();
+        if (pos > 0) resumeAt = pos;
+        int code = e.errorCode;
+        String detail = e.getErrorCodeName();
+        Throwable c = e.getCause();
+        if (c instanceof androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)
+            detail += " (HTTP " + ((androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) c).responseCode + ")";
+        else if (c != null && c.getMessage() != null) detail += " (" + c.getClass().getSimpleName() + ": " + (c.getMessage().length() > 120 ? c.getMessage().substring(0, 120) : c.getMessage()) + ")";
+        boolean network = code >= 2000 && code < 3000;
+        int maxTries = network ? 6 : 1;   // connection trouble: keep trying; decoder/file trouble: one more go
+        logError(detail + " at " + fmt(resumeAt) + (retries < maxTries ? ", retrying" : ", gave up"));
+        if (retries < maxTries) {
+            retries++;
+            show(network ? "Connection lost \u00b7 reconnecting\u2026" : "Playback hiccup \u00b7 retrying\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            final long at = resumeAt;
+            ui.postDelayed(() -> {
+                if (exo == null || done) return;
+                exo.seekTo(at); exo.prepare(); exo.setPlayWhenReady(true);
+            }, Math.min(1000L * retries * retries, 15_000L));
+            return;
+        }
+        error = e.getErrorCodeName();
+        showErrorPanel(friendly(code) + "\n\n" + detail);
+    }
+
+    private static String friendly(int code) {
+        if (code == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS) return "Real-Debrid refused the file. The link may have expired. Close and press Play again.";
+        if (code >= 2000 && code < 3000) return "Lost the connection to Real-Debrid and couldn't get it back.";
+        if (code >= 3000 && code < 4000) return "This file looks damaged or uses a format the player can't read. Try another version, or VLC.";
+        if (code >= 4000 && code < 5000) return "The phone couldn't decode this video or audio. Try another version, or VLC.";
+        return "Playback stopped.";
+    }
+
+    private String fmt(long ms) { long t = ms / 1000; return String.format(java.util.Locale.US, "%d:%02d:%02d", t / 3600, (t / 60) % 60, t % 60); }
+
+    // also goes into the "closed unexpectedly" report the app shows on its next start
+    private void logError(String text) {
+        try {
+            SharedPreferences d = getSharedPreferences("diag", MODE_PRIVATE);
+            String when = new java.text.SimpleDateFormat("MMM d h:mm:ss a", java.util.Locale.US).format(new java.util.Date());
+            String line = when + "  Player: " + text + (nameView != null ? " [" + nameView.getText() + "]" : "") + "\n";
+            String prev = d.getString("pending", "");
+            if (prev.length() > 4000) prev = prev.substring(prev.length() - 4000);
+            d.edit().putString("pending", prev + line).apply();
+        } catch (Throwable ignored) {}
+    }
+
+    private void showErrorPanel(String text) {
+        if (errPanel == null) {
+            errPanel = new LinearLayout(this);
+            errPanel.setOrientation(LinearLayout.VERTICAL);
+            errPanel.setGravity(Gravity.CENTER_HORIZONTAL);
+            errPanel.setPadding(dp(24), dp(20), dp(24), dp(20));
+            GradientDrawable bgp = new GradientDrawable(); bgp.setColor(0xD9000000); bgp.setCornerRadius(dp(18)); bgp.setStroke(dp(1), 0x33FFFFFF);
+            errPanel.setBackground(bgp);
+            errText = new TextView(this);
+            errText.setTextColor(Color.WHITE);
+            errText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+            errText.setGravity(Gravity.CENTER);
+            errText.setTextIsSelectable(true);
+            errPanel.addView(errText, new LinearLayout.LayoutParams(dp(420), ViewGroup.LayoutParams.WRAP_CONTENT));
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER);
+            TextView again = pillButton(); again.setText("Try again"); again.setVisibility(View.VISIBLE); again.setAlpha(1f);
+            TextView quit = pillButton(); quit.setText("Close"); quit.setVisibility(View.VISIBLE); quit.setAlpha(1f);
+            again.setOnClickListener(v -> {
+                errPanel.setVisibility(View.GONE); error = null; retries = 0;
+                if (exo != null) { exo.seekTo(resumeAt); exo.prepare(); exo.setPlayWhenReady(true); }
+            });
+            quit.setOnClickListener(v -> close(false));
+            LinearLayout.LayoutParams bl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            bl.setMargins(dp(8), dp(18), dp(8), 0);
+            row.addView(again, bl); row.addView(quit, new LinearLayout.LayoutParams(bl));
+            errPanel.addView(row);
+            ((FrameLayout) view.getParent()).addView(errPanel, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        }
+        errText.setText(text);
+        errPanel.setVisibility(View.VISIBLE);
+        errPanel.bringToFront();
+        view.hideController();
+    }
 
     // Hand the position back to the page, then leave
     private void close(boolean ended) {
