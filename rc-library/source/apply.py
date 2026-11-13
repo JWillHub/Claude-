@@ -634,67 +634,6 @@ function showRecent(){
 $('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) return; if(e.target.closest('[data-id],[data-person]')) saveRecent($('#hq').value); }, true);""")
 
 
-# ---------- POSTER ZOOM: a tapped poster grows into the title page, and shrinks back on close ----------
-rep("""  host.append(bk, sh);
-  const s = { el:sh""", """  if(isPage && /mvsheet|shcard/.test(opt.cls || '') && zoomTap && Date.now() - zoomTap.at < 1200){ sh.classList.add('zoom'); bk.classList.add('zbk'); }   // before it's drawn, so it starts invisible
-  host.append(bk, sh);
-  const s = { el:sh""")
-rep("""  host.append(bk, sh);
-  const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };""",
-"""  host.append(bk, sh);
-  const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
-  if(isPage && /mvsheet|shcard/.test(opt.cls || '')) s.zoom = zoomIn(sh, /shcard/.test(opt.cls));
-  if(!s.zoom){ sh.classList.remove('zoom'); bk.classList.remove('zbk'); }""")
-rep("""    const t = sheetStack.pop();
-    t.el.classList.remove('in');""", """    const t = sheetStack.pop();
-    if(t.zoom) zoomOut(t);
-    t.el.classList.remove('in');""")
-rep("function sheet(html, opt = {}){", r"""let zoomTap = null;
-document.addEventListener('click', e => {
-  const h = e.target.closest && e.target.closest('.pw, .lshow, .lsea'), im = h && h.querySelector('img');
-  zoomTap = im ? { el:im, at:Date.now() } : null;
-}, true);
-// where the page's poster art sits: full width (or full height), top-aligned, like the page's background
-function zoomTarget(lib){
-  const W = innerWidth, pr = document.createElement('div'); pr.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
-  document.body.append(pr); const safe = pr.offsetHeight; pr.remove();
-  const H = Math.min(innerHeight * (lib ? .65 : .67), lib ? 580 : 600) + safe;
-  const w = Math.max(W, H * 2 / 3); return { left:(W - w) / 2, top:0, width:w, height:w * 1.5 };
-}
-function zoomClone(src, from, to, done){
-  const c = new Image(); c.src = src; c.className = 'zclone';
-  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px',
-    transform:`translate(${from.left - to.left}px,${from.top - to.top}px) scale(${from.width / to.width},${from.height / to.height})` });
-  document.body.append(c);
-  requestAnimationFrame(() => requestAnimationFrame(() => { c.classList.add('go'); c.style.transform = ''; }));
-  setTimeout(() => done(c), 400);
-  return c;
-}
-function zoomIn(sh, lib){
-  const z = zoomTap; zoomTap = null;
-  if(!z || Date.now() - z.at > 1200 || !z.el.isConnected || !z.el.complete) return null;
-  const r = z.el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return null;
-  const to = zoomTarget(lib);
-  // the small poster stays under the big one until the big one has loaded, so the picture never blinks to black
-  requestAnimationFrame(() => { const bd = $('.bdrop', sh) || $('.shbg', sh); if(bd && bd.style.backgroundImage) bd.style.backgroundImage += `, url(${z.el.currentSrc || z.el.src})`; });
-  zoomClone(z.el.currentSrc || z.el.src, r, to, c => { c.style.opacity = '0'; setTimeout(() => c.remove(), 260); });
-  return { el:z.el, lib };
-}
-function zoomOut(t){
-  const z = t.zoom, el = z.el;
-  if(!el.isConnected) return;
-  const r = el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return;
-  const to = zoomTarget(z.lib);
-  // start as the big picture, then shrink into the poster's spot
-  const c = new Image(); c.src = el.currentSrc || el.src; c.className = 'zclone go';
-  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px' });
-  document.body.append(c);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    c.style.transform = `translate(${r.left - to.left}px,${r.top - to.top}px) scale(${r.width / to.width},${r.height / to.height})`; c.style.borderRadius = '14px'; }));
-  setTimeout(() => { c.style.transition = 'opacity .15s'; c.style.opacity = '0'; setTimeout(() => c.remove(), 160); }, 380);
-}
-function sheet(html, opt = {}){""")
-
 # ---------- POSTERS FADE IN as they load (with a safety net so none can stay hidden) ----------
 s = s.replace('</body>', """<script>document.addEventListener('load',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);</script>
 </body>""", 1)

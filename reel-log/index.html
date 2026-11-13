@@ -965,13 +965,6 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 .shcard #mlib,.shcard #shplay{min-height:50px}
 .mvsheet #mimdb>*,.mvsheet #mwatch>*,.shcard #shplay>*,.shcard #mlib>*{animation:fadein .3s ease both}
 
-/* ==== POSTER ZOOM ==== */
-.zclone{position:fixed;z-index:200;object-fit:cover;border-radius:10px;transform-origin:0 0;pointer-events:none;will-change:transform}
-.zclone.go{transition:transform .4s cubic-bezier(.2,.85,.25,1),border-radius .4s,opacity .25s ease}
-.sh.page.zoom{transform:none!important;opacity:0;transition:opacity .28s ease .12s!important}
-.sh.page.zoom.in{opacity:1}
-.sh.page.zoom:not(.in){transition:opacity .22s ease!important}
-
 /* ==== POSTERS FADE IN (shown anyway after 1.5 s, so a missed load event can never hide one) ==== */
 @keyframes imgshow{to{opacity:1}}
 .pw img,.lshow img,.lsea img,.cwimg img,.epth img,.pp img,.apposter img{opacity:0;transition:opacity .35s ease;animation:imgshow 0s 1.5s forwards}
@@ -993,7 +986,6 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 .btn:active,.pill:active,.ib:active,.pkp:active,.seapick:active,.updbtn:active,.sclr:active,.morecp:active,#lsort:active,.gsel:active,.accsw:active,.tb:active,.mact>*:active{transform:scale(.94)}
 .rdot:active,.epnext>*:active{transform:scale(.97)}
 .srow:not(.static):active,.epc:active,.cwc:active,.gpk button:active{transform:scale(.98)}
-.sbk.zbk{opacity:0!important;transition:none!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1489,50 +1481,6 @@ async function appleArt(sh, id){
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
   } else show();
 }
-let zoomTap = null;
-document.addEventListener('click', e => {
-  const h = e.target.closest && e.target.closest('.pw, .lshow, .lsea'), im = h && h.querySelector('img');
-  zoomTap = im ? { el:im, at:Date.now() } : null;
-}, true);
-// where the page's poster art sits: full width (or full height), top-aligned, like the page's background
-function zoomTarget(lib){
-  const W = innerWidth, pr = document.createElement('div'); pr.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden';
-  document.body.append(pr); const safe = pr.offsetHeight; pr.remove();
-  const H = Math.min(innerHeight * (lib ? .65 : .67), lib ? 580 : 600) + safe;
-  const w = Math.max(W, H * 2 / 3); return { left:(W - w) / 2, top:0, width:w, height:w * 1.5 };
-}
-function zoomClone(src, from, to, done){
-  const c = new Image(); c.src = src; c.className = 'zclone';
-  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px',
-    transform:`translate(${from.left - to.left}px,${from.top - to.top}px) scale(${from.width / to.width},${from.height / to.height})` });
-  document.body.append(c);
-  requestAnimationFrame(() => requestAnimationFrame(() => { c.classList.add('go'); c.style.transform = ''; }));
-  setTimeout(() => done(c), 400);
-  return c;
-}
-function zoomIn(sh, lib){
-  const z = zoomTap; zoomTap = null;
-  if(!z || Date.now() - z.at > 1200 || !z.el.isConnected || !z.el.complete) return null;
-  const r = z.el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return null;
-  const to = zoomTarget(lib);
-  // the small poster stays under the big one until the big one has loaded, so the picture never blinks to black
-  requestAnimationFrame(() => { const bd = $('.bdrop', sh) || $('.shbg', sh); if(bd && bd.style.backgroundImage) bd.style.backgroundImage += `, url(${z.el.currentSrc || z.el.src})`; });
-  zoomClone(z.el.currentSrc || z.el.src, r, to, c => { c.style.opacity = '0'; setTimeout(() => c.remove(), 260); });
-  return { el:z.el, lib };
-}
-function zoomOut(t){
-  const z = t.zoom, el = z.el;
-  if(!el.isConnected) return;
-  const r = el.getBoundingClientRect(); if(r.width < 30 || r.bottom < 0 || r.top > innerHeight) return;
-  const to = zoomTarget(z.lib);
-  // start as the big picture, then shrink into the poster's spot
-  const c = new Image(); c.src = el.currentSrc || el.src; c.className = 'zclone go';
-  Object.assign(c.style, { left:to.left + 'px', top:to.top + 'px', width:to.width + 'px', height:to.height + 'px' });
-  document.body.append(c);
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    c.style.transform = `translate(${r.left - to.left}px,${r.top - to.top}px) scale(${r.width / to.width},${r.height / to.height})`; c.style.borderRadius = '14px'; }));
-  setTimeout(() => { c.style.transition = 'opacity .15s'; c.style.opacity = '0'; setTimeout(() => c.remove(), 160); }, 380);
-}
 function sheet(html, opt = {}){
   const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));
   const host = $('#sheets'), z = 30 + sheetStack.length * 2;
@@ -1542,11 +1490,8 @@ function sheet(html, opt = {}){
   if(isPage) sh.classList.add('page');
   { const bd = /mvsheet/.test(opt.cls || '') && $('.sbody > .bdrop', sh); if(bd) sh.insertBefore(bd, sh.firstChild); }
   if(opt.art != null) appleArt(sh, opt.art);
-  if(isPage && /mvsheet|shcard/.test(opt.cls || '') && zoomTap && Date.now() - zoomTap.at < 1200){ sh.classList.add('zoom'); bk.classList.add('zbk'); }   // before it's drawn, so it starts invisible
   host.append(bk, sh);
   const s = { el:sh, body:$('.sbody', sh), bk, close:() => closeSheet(s), settled:new Promise(r => setTimeout(r, 380)) };
-  if(isPage && /mvsheet|shcard/.test(opt.cls || '')) s.zoom = zoomIn(sh, /shcard/.test(opt.cls));
-  if(!s.zoom){ sh.classList.remove('zoom'); bk.classList.remove('zbk'); }
   if(isPage){
     if(sheetStack.some(x => x.el.classList.contains('page'))) sh.classList.add('deep');
     $('.glback', sh).onclick = () => closeSheet(s);
@@ -1567,7 +1512,6 @@ function closeSheet(s, fromPop){
   let n = 0;
   while(sheetStack.length > i){
     const t = sheetStack.pop();
-    if(t.zoom) zoomOut(t);
     t.el.classList.remove('in'); t.el.style.transform = ''; t.bk.classList.remove('in');
     setTimeout(() => { t.el.remove(); t.bk.remove(); }, 330);
     t.onClose && t.onClose();

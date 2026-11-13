@@ -336,13 +336,6 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 .shcard #mlib,.shcard #shplay{min-height:50px}
 .mvsheet #mimdb>*,.mvsheet #mwatch>*,.shcard #shplay>*,.shcard #mlib>*{animation:fadein .3s ease both}
 
-/* ==== POSTER ZOOM ==== */
-.zclone{position:fixed;z-index:200;object-fit:cover;border-radius:10px;transform-origin:0 0;pointer-events:none;will-change:transform}
-.zclone.go{transition:transform .4s cubic-bezier(.2,.85,.25,1),border-radius .4s,opacity .25s ease}
-.sh.page.zoom{transform:none!important;opacity:0;transition:opacity .28s ease .12s!important}
-.sh.page.zoom.in{opacity:1}
-.sh.page.zoom:not(.in){transition:opacity .22s ease!important}
-
 /* ==== POSTERS FADE IN (shown anyway after 1.5 s, so a missed load event can never hide one) ==== */
 @keyframes imgshow{to{opacity:1}}
 .pw img,.lshow img,.lsea img,.cwimg img,.epth img,.pp img,.apposter img{opacity:0;transition:opacity .35s ease;animation:imgshow 0s 1.5s forwards}
@@ -364,4 +357,3 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 .btn:active,.pill:active,.ib:active,.pkp:active,.seapick:active,.updbtn:active,.sclr:active,.morecp:active,#lsort:active,.gsel:active,.accsw:active,.tb:active,.mact>*:active{transform:scale(.94)}
 .rdot:active,.epnext>*:active{transform:scale(.97)}
 .srow:not(.static):active,.epc:active,.cwc:active,.gpk button:active{transform:scale(.98)}
-.sbk.zbk{opacity:0!important;transition:none!important}
