@@ -953,23 +953,6 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 .shtabs .seapick{padding:10px 40px 10px 16px;font-size:15px;white-space:nowrap}
 
 
-/* ==== NO SHIFT on first open: title box keeps one size whether it holds text or a logo; rows hold their space ==== */
-.mvsheet .mvhead h2,.shcard .shname{height:118px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;transition:opacity .25s ease}
-.mtlogo,.mtlogo.tall{max-height:118px!important}
-.mvsheet .mvhead{margin-top:calc(var(--hero) - 310px + env(safe-area-inset-top))!important}
-.tpend{opacity:0}
-.mvsheet #mm,.shcard .shmeta{min-height:1.45em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:94%}
-.mvsheet #md,.mvsheet #md:empty{min-height:1.45em!important}
-.mvsheet #mimdb,.mvsheet #mimdb:empty{min-height:30px!important;margin-top:8px!important}
-.mvsheet .ov:empty,.shcard .shov:empty{min-height:4.6em}
-.shcard #mlib,.shcard #shplay{min-height:50px}
-.mvsheet #mimdb>*,.mvsheet #mwatch>*,.shcard #shplay>*,.shcard #mlib>*{animation:fadein .3s ease both}
-
-/* ==== POSTERS FADE IN (shown anyway after 1.5 s, so a missed load event can never hide one) ==== */
-@keyframes imgshow{to{opacity:1}}
-.pw img,.lshow img,.lsea img,.cwimg img,.epth img,.pp img,.apposter img{opacity:0;transition:opacity .35s ease;animation:imgshow 0s 1.5s forwards}
-.pw img.ld,.lshow img.ld,.lsea img.ld,.cwimg img.ld,.epth img.ld,.pp img.ld,.apposter img.ld{opacity:1}
-
 /* ==== FLOATING GLASS TAB BAR (solid glass, no live blur) ==== */
 .tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:7px 6px;border-radius:30px;pointer-events:auto;
   background:linear-gradient(180deg,rgba(30,30,32,.94),rgba(10,10,11,.96))!important;border:1px solid rgba(255,255,255,.1);
@@ -980,12 +963,6 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,248,.97))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
-
-/* ==== PRESS FEEDBACK: buttons and cards dip slightly when pressed ==== */
-.btn,.pill,.rdot,.ib,.pkp,.seapick,.updbtn,.sclr,.morecp,#lsort,.gsel,.accsw,.srow:not(.static),.epc,.cwc,.mact>*,.epnext>*,.gpk button{transition:transform .18s cubic-bezier(.3,.7,.4,1.4)}
-.btn:active,.pill:active,.ib:active,.pkp:active,.seapick:active,.updbtn:active,.sclr:active,.morecp:active,#lsort:active,.gsel:active,.accsw:active,.tb:active,.mact>*:active{transform:scale(.94)}
-.rdot:active,.epnext>*:active{transform:scale(.97)}
-.srow:not(.static):active,.epc:active,.cwc:active,.gpk button:active{transform:scale(.98)}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1458,28 +1435,23 @@ const GLASS_BTNS = '<button class="glback" aria-label="Back"><svg viewBox="0 0 2
 async function appleArt(sh, id){
   const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
   let im;
-  // hold the title hidden until we know whether a logo replaces it (never longer than 0.9 s), so it never swaps in view
-  const tt = $('.mvhead h2', sh) || $('.shname', sh); let shown = false;
-  const show = () => { if(!shown){ shown = true; tt && tt.classList.remove('tpend'); } };
-  if(tt){ tt.classList.add('tpend'); setTimeout(show, 900); }
   try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
     const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
     const clean = best((x.posters || []).filter(p => !p.iso_639_1));
     const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
-  })); }catch(e){ show(); return; }
-  if(!sh.isConnected || !im){ show(); return; }
+  })); }catch(e){ return; }
+  if(!sh.isConnected || !im) return;
   const bd = $('.bdrop', sh) || $('.shbg', sh);
   const art = im.poster || (filmOf(id) || {}).poster;
   if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
   const h2 = $('.mvhead h2', sh) || $('.shname', sh);
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
-    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); show(); };
-    lg.onerror = show;
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
     lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
-  } else show();
+  }
 }
 function sheet(html, opt = {}){
   const isPage = !!(opt.page || /mvsheet|shcard/.test(opt.cls || ''));
@@ -4354,6 +4326,5 @@ if(document.querySelector('.top.searching')){if(off)set(0,true);return}
 if(d>0){acc=0;if(n>0){let H=0;bars().forEach(b=>H=Math.max(H,b.offsetHeight+2));set(Math.min(H,off+d),false)}}
 else if(d<0&&off){set(Math.max(0,Math.min(off+d,n)),false)}},{passive:true});
 document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))set(0,false)},true);})();</script>
-<script>document.addEventListener('load',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);</script>
 </body>
 </html>

@@ -488,28 +488,23 @@ rep("function sheet(html, opt = {}){", r"""// Textless key art and the title log
 async function appleArt(sh, id){
   const tv = typeof id === 'string', tid = tv ? +String(id).slice(2) : id;
   let im;
-  // hold the title hidden until we know whether a logo replaces it (never longer than 0.9 s), so it never swaps in view
-  const tt = $('.mvhead h2', sh) || $('.shname', sh); let shown = false;
-  const show = () => { if(!shown){ shown = true; tt && tt.classList.remove('tpend'); } };
-  if(tt){ tt.classList.add('tpend'); setTimeout(show, 900); }
   try{ im = await cached('art1:' + id, 24*7, () => tmdb(`/${tv ? 'tv' : 'movie'}/${tid}/images`, { include_image_language:'en,null' }).then(x => {
     const best = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
     const clean = best((x.posters || []).filter(p => !p.iso_639_1));
     const logo = best((x.logos || []).filter(l => l.iso_639_1 === 'en')) || best(x.logos || []);
     return { poster:clean ? clean.file_path : '', logo:logo ? logo.file_path : '', ratio:logo ? logo.aspect_ratio : 0 };
-  })); }catch(e){ show(); return; }
-  if(!sh.isConnected || !im){ show(); return; }
+  })); }catch(e){ return; }
+  if(!sh.isConnected || !im) return;
   const bd = $('.bdrop', sh) || $('.shbg', sh);
   const art = im.poster || (filmOf(id) || {}).poster;
   if(bd && art){ const pic = new Image(); pic.onload = () => { bd.style.backgroundImage = `url(${pic.src})`; }; pic.src = IMG + 'original' + art; }
   const h2 = $('.mvhead h2', sh) || $('.shname', sh);
   if(h2 && im.logo){
     const lg = new Image(); lg.className = 'mtlogo'; lg.alt = h2.textContent;
-    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); show(); };
-    lg.onerror = show;
+    lg.onload = () => { if(!sh.isConnected) return; h2.classList.add('haslogo'); h2.prepend(lg); };
     lg.src = IMG + (im.logo.endsWith('.svg') ? 'original' : 'w500') + im.logo;
     if(im.ratio && im.ratio < 1.6) lg.classList.add('tall');
-  } else show();
+  }
 }
 function sheet(html, opt = {}){""")
 # ==== end APPLE TV ART ====
@@ -634,9 +629,6 @@ function showRecent(){
 $('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) return; if(e.target.closest('[data-id],[data-person]')) saveRecent($('#hq').value); }, true);""")
 
 
-# ---------- POSTERS FADE IN as they load (with a safety net so none can stay hidden) ----------
-s = s.replace('</body>', """<script>document.addEventListener('load',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);document.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG')t.classList.add('ld')},true);</script>
-</body>""", 1)
 
 open(p, 'w').write(s)
 print('applied cast chips')
