@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600&family=Michroma&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
@@ -57,18 +57,21 @@ img{display:block}
 .stage{position:absolute;left:0;right:0;top:41%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;padding:0 22px;
   transition:top .55s var(--ease),transform .55s var(--ease)}
 body.q .stage{top:calc(var(--st) + 18px);transform:none}
-.mark{font-weight:200;font-size:13px;letter-spacing:.72em;text-indent:.72em;color:rgba(255,255,255,.62);margin:0 0 26px;text-transform:uppercase;
-  transition:opacity .35s,margin .55s var(--ease),height .55s var(--ease);height:20px}
+.mark{font-family:'Michroma','Sora',sans-serif;font-weight:400;font-size:34px;line-height:1;letter-spacing:.34em;text-indent:.34em;color:#fff;margin:0 0 40px;text-transform:uppercase;
+  text-shadow:0 0 18px rgba(255,255,255,.35),0 0 42px rgba(255,255,255,.12);transition:opacity .35s,margin .55s var(--ease),height .55s var(--ease);height:36px}
 body.q .mark{opacity:0;margin:0;height:0}
 .sw{position:relative;width:min(560px,100%)}
-.halo{position:absolute;inset:-46px -34px;border-radius:999px;pointer-events:none;
-  background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,255,255,.34),rgba(255,255,255,.12) 50%,transparent 74%);
-  filter:blur(22px);animation:breathe 6s ease-in-out infinite;transition:opacity .4s}
-.sbar{box-shadow:inset 0 1px 0 rgba(255,255,255,.34),inset 0 0 24px rgba(255,255,255,.05),0 0 28px rgba(255,255,255,.14),0 0 70px rgba(255,255,255,.07),0 14px 40px rgba(0,0,0,.55)}
-.sw:focus-within .sbar{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 24px rgba(255,255,255,.06),0 0 34px rgba(255,255,255,.24),0 0 90px rgba(255,255,255,.1),0 14px 40px rgba(0,0,0,.55)}
-.sw:focus-within .halo{animation-duration:3s;opacity:1.35}
+.halo{position:absolute;inset:0;border-radius:999px;pointer-events:none;
+  box-shadow:0 0 14px rgba(255,255,255,.28),0 0 38px rgba(255,255,255,.12),inset 0 0 12px rgba(255,255,255,.08);
+  animation:breathe 5s ease-in-out infinite;transition:opacity .4s}
+/* the search bar: clear glass with a thin lit outline */
+.sbar.glass{background:rgba(255,255,255,.015);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+.sbar.glass::after{display:none}
+.sbar.glass::before{padding:1.2px;background:linear-gradient(100deg,rgba(255,255,255,.95),rgba(255,255,255,.35) 25%,rgba(255,255,255,.18) 50%,rgba(255,255,255,.35) 75%,rgba(255,255,255,.95))}
+.sw:focus-within .halo{box-shadow:0 0 18px rgba(255,255,255,.4),0 0 52px rgba(255,255,255,.16),inset 0 0 14px rgba(255,255,255,.1)}
+.sw:focus-within .halo{animation-duration:3s}
 body.q .halo{opacity:.45}
-@keyframes breathe{0%,100%{opacity:.72;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}}
+@keyframes breathe{0%,100%{opacity:.45}50%{opacity:1}}
 .sbar{height:60px;border-radius:999px;display:flex;align-items:center;gap:12px;padding:0 10px 0 22px}
 .sbar .ico{width:21px;height:21px;color:rgba(255,255,255,.7);flex:none}
 .sbar input{flex:1;min-width:0;height:100%;background:none;border:0;outline:none;font-size:16.5px;font-weight:300;letter-spacing:.01em}
