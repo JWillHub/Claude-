@@ -8,7 +8,7 @@ def rep(old, new, count=1):
 rep("if('serviceWorker' in navigator && location.protocol === 'https:')", "if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:')")
 rep('<link rel="manifest" href="manifest.json">', '<script src="capacitor.js"></script>')   # Capacitor's own bridge script (copied in at build time)
 # build stamp in Settings, filled in by the GitHub build, so it's easy to tell which version is installed
-rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\n#setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg)}')
+rep('.hero h2{font-size:31px}', '.hero h2{font-size:31px}\n#setTab{position:relative}#setTab.upd::after{content:"";position:absolute;top:6px;right:calc(50% - 16px);width:9px;height:9px;border-radius:50%;background:#ff1f3d;box-shadow:0 0 0 2px var(--bg),0 0 8px 2px rgba(255,31,61,.9),0 0 16px 4px rgba(255,31,61,.45)}')
 # TMDB details stay saved on the phone between launches (the app has its own storage, so this can't crowd out the website)
 rep('''  get(k, d){ try{ const v = sessionStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ sessionStorage.setItem(k, JSON.stringify(v)); }catch(e){} }''', '''  get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
