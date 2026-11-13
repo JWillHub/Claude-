@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600&family=Michroma&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600&family=Orbitron:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   color-scheme:dark;
@@ -34,8 +34,6 @@ img{display:block}
 .orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
 .orb.a{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
 .orb.b{width:60vmax;height:60vmax;right:-28vmax;bottom:-22vmax;background:radial-gradient(circle,rgba(200,200,210,.13),transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
-.grid{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1.2px);background-size:26px 26px;
-  -webkit-mask:radial-gradient(ellipse 60% 45% at 50% 46%,#000 0%,transparent 75%);mask:radial-gradient(ellipse 60% 45% at 50% 46%,#000 0%,transparent 75%);opacity:.55}
 @keyframes drift1{to{transform:translate(18vmax,14vmax) scale(1.1)}}
 @keyframes drift2{to{transform:translate(-16vmax,-12vmax) scale(1.15)}}
 
@@ -57,7 +55,7 @@ img{display:block}
 .stage{position:absolute;left:0;right:0;top:41%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;padding:0 22px;
   transition:top .55s var(--ease),transform .55s var(--ease)}
 body.q .stage{top:calc(var(--st) + 18px);transform:none}
-.mark{font-family:'Michroma','Sora',sans-serif;font-weight:400;font-size:34px;line-height:1;letter-spacing:.34em;text-indent:.34em;color:#fff;margin:0 0 40px;text-transform:uppercase;
+.mark{font-family:'Orbitron','Sora',sans-serif;font-weight:500;font-size:38px;line-height:1;letter-spacing:.3em;text-indent:.3em;color:#fff;margin:0 0 40px;text-transform:uppercase;
   text-shadow:0 0 18px rgba(255,255,255,.35),0 0 42px rgba(255,255,255,.12);transition:opacity .35s,margin .55s var(--ease),height .55s var(--ease);height:36px}
 body.q .mark{opacity:0;margin:0;height:0}
 .sw{position:relative;width:min(560px,100%)}
@@ -82,17 +80,6 @@ body.typed .clr{opacity:1;pointer-events:auto}
 .clr .ico{width:16px;height:16px}
 .hint{margin-top:22px;font-size:12px;font-weight:300;color:rgba(255,255,255,.4);letter-spacing:.06em;text-align:center;transition:opacity .3s;min-height:18px}
 body.q .hint{opacity:0}
-.cont{margin-top:26px;width:min(560px,100%);display:flex;flex-direction:column;gap:10px;transition:opacity .3s}
-body.q .cont{opacity:0;pointer-events:none}
-.crow{display:flex;align-items:center;gap:12px;border-radius:18px;padding:9px 14px 9px 9px;text-align:left;width:100%}
-.crow img,.crow .np{width:38px;height:56px;border-radius:9px;object-fit:cover;flex:none;background:rgba(255,255,255,.06)}
-.crow .ct{flex:1;min-width:0}
-.crow .ct b{display:block;font-weight:400;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.crow .ct span{font-size:11.5px;color:var(--muted);font-weight:300}
-.crow .bar{height:2px;border-radius:2px;background:rgba(255,255,255,.12);margin-top:7px;overflow:hidden}
-.crow .bar i{display:block;height:100%;background:#fff;box-shadow:0 0 8px #fff}
-.crow .pl{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.1)}
-.crow .pl svg{width:14px;height:14px;fill:#fff}
 
 /* results */
 .res{position:absolute;left:0;right:0;top:calc(var(--st) + 92px);bottom:0;overflow-y:auto;padding:4px 22px calc(120px + var(--sb));
@@ -110,10 +97,10 @@ body.q .res{opacity:1;pointer-events:auto}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}}
 
 /* ---------- dock ---------- */
-.dock{position:fixed;left:50%;bottom:calc(var(--sb) + 18px);transform:translateX(-50%);z-index:30;display:flex;gap:4px;padding:6px;border-radius:999px;
+.dock{position:fixed;left:50%;bottom:calc(var(--sb) + 18px);transform:translateX(-50%);z-index:30;display:flex;gap:6px;padding:7px;border-radius:20px;width:min(560px,calc(100% - 44px));
   transition:transform .45s var(--ease),opacity .3s}
 body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);opacity:0;pointer-events:none}
-.dk{display:flex;align-items:center;gap:9px;height:48px;padding:0 20px;border-radius:999px;color:rgba(255,255,255,.72);font-size:13px;font-weight:400;letter-spacing:.04em;transition:background .3s,color .3s}
+.dk{flex:1;display:flex;align-items:center;justify-content:center;gap:9px;height:50px;padding:0 20px;border-radius:14px;color:rgba(255,255,255,.72);font-size:13px;font-weight:400;letter-spacing:.04em;transition:background .3s,color .3s}
 .dk .ico{width:20px;height:20px}
 .dk.on{background:rgba(255,255,255,.16);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 0 18px rgba(255,255,255,.08)}
 
@@ -229,7 +216,7 @@ body.playing #player{display:block}
 </style>
 </head>
 <body>
-<div class="bg"><div class="orb a"></div><div class="orb b"></div><div class="grid"></div></div>
+<div class="bg"><div class="orb a"></div><div class="orb b"></div></div>
 
 <main id="home">
   <div class="stage">
@@ -243,7 +230,6 @@ body.playing #player{display:block}
       </label>
     </div>
     <div class="hint" id="hint"></div>
-    <div class="cont" id="cont"></div>
   </div>
   <div class="res" id="res"><div class="in" id="resin"></div></div>
 </main>
@@ -485,14 +471,6 @@ const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ
 function drawHome(){
   const n = titles().length, key = store.get(K_RD, '');
   $('#hint').textContent = !key ? 'Add your Real-Debrid token in Settings to begin' : n ? n + (n === 1 ? ' title' : ' titles') + ' in your library' : syncing ? 'Reading your library…' : 'Your library is empty';
-  const recent = Object.entries(prog).sort((a, b) => b[1].at - a[1].at).slice(0, 2);
-  $('#cont').innerHTML = recent.map(([k, p]) => {
-    const pr = p.poster || (lib.items[p.tid] && lib.items[p.tid].m && lib.items[p.tid].m.poster);
-    return `<button class="crow glass press" data-k="${esc(k)}">${pr ? `<img src="${poster(pr, 'w154')}" alt="">` : '<div class="np"></div>'}
-      <div class="ct"><b>${esc(p.name || p.title)}</b><span>${p.label ? esc(p.label) + ' · ' : ''}${left(p)}</span><div class="bar"><i style="width:${Math.min(100, p.t / p.d * 100).toFixed(1)}%"></i></div></div>
-      <span class="pl">${PLAY}</span></button>`;
-  }).join('');
-  $$('.crow').forEach(b => b.onclick = () => resume(b.dataset.k));
 }
 function drawResults(){
   const q = norm(qi.value);
