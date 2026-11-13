@@ -953,16 +953,6 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 /* season picker: keep room for its arrow (the generic tab-button padding was squeezing it over the number) */
 .shtabs .seapick{padding:10px 40px 10px 16px;font-size:15px;white-space:nowrap}
 
-/* ==== PROGRESSIVE BLUR on title-page art: sharp -> blurred -> black (white in light mode) ====
-   a pre-blurred copy of the same picture (inherits the background), revealed toward the bottom; drawn once, free while scrolling */
-.mvsheet>.bdrop,.sh.shcard .shbg{overflow:hidden}
-.mvsheet>.bdrop::before,.sh.shcard .shbg::before{content:"";position:absolute;inset:-30px -30px 0;background-image:inherit;background-size:cover;background-position:center top;
-  filter:blur(22px) saturate(1.15);transform:translateZ(0);
-  -webkit-mask-image:linear-gradient(180deg,transparent 38%,rgba(0,0,0,.55) 54%,#000 68%);mask-image:linear-gradient(180deg,transparent 38%,rgba(0,0,0,.55) 54%,#000 68%)}
-.mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 50%,rgba(0,0,0,.35) 68%,rgba(0,0,0,.8) 86%,#000 100%)!important}
-.sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 18%,rgba(0,0,0,0) 48%,rgba(0,0,0,.4) 68%,rgba(0,0,0,.85) 86%,#000 100%)!important}
-html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(255,255,255,0) 50%,rgba(255,255,255,.4) 68%,rgba(255,255,255,.85) 86%,#fff 100%)!important}
-html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(255,255,255,0) 48%,rgba(255,255,255,.45) 68%,rgba(255,255,255,.88) 86%,#fff 100%)!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
