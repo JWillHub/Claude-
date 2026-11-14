@@ -32,8 +32,8 @@ img{display:block}
 /* ---------- background: soft drifting light so the glass has something to bend ---------- */
 .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .orb{position:absolute;border-radius:50%;opacity:.55;will-change:transform}
-.orb.a{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,var(--amb),transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
-.orb.b{width:60vmax;height:60vmax;right:-28vmax;bottom:-22vmax;background:radial-gradient(circle,var(--amb2),transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
+.orb.a{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,rgba(var(--lc),.16),transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
+.orb.b{width:60vmax;height:60vmax;right:-28vmax;bottom:-22vmax;background:radial-gradient(circle,rgba(200,200,210,.13),transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
 @keyframes drift1{to{transform:translate(18vmax,14vmax) scale(1.1)}}
 @keyframes drift2{to{transform:translate(-16vmax,-12vmax) scale(1.15)}}
 
@@ -393,10 +393,10 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 @keyframes lfade{from{opacity:0}}
 @keyframes lrise{from{opacity:0;transform:translateY(24px)}}
 
-/* ambient light: a blurred copy of the poster glowing behind it (no colour reading needed, works everywhere) */
-.cglow{position:absolute;left:50%;top:0;width:136px;height:204px;margin-left:-68px;border-radius:18px;pointer-events:none;z-index:0;
-  background:center/cover no-repeat;filter:blur(14px) saturate(1.4);opacity:0;transition:opacity .6s ease}
-.cglow.on{opacity:.55}
+/* back glow: a soft rim of the Light colour behind the middle poster, only while the carousel is still */
+.cglow{position:absolute;left:50%;top:2px;width:132px;height:198px;margin-left:-66px;border-radius:18px;pointer-events:none;z-index:0;
+  background:rgb(var(--lc));filter:blur(14px);opacity:0;transition:opacity .12s ease}
+.cglow.on{opacity:.38;transition:opacity .5s ease}
 .ctrack{position:relative;z-index:1}
 .tglow{position:absolute;left:0;right:0;top:calc(var(--hero) + var(--st) - 300px);height:420px;pointer-events:none;z-index:0;
   background:center/cover no-repeat;filter:blur(60px) saturate(1.6);opacity:0;transition:opacity 1s ease;transform:scale(.9)}
@@ -773,7 +773,7 @@ function drawHome(){
       if(i === carMid) openTitle(carList[i % carN].id); else tr.scrollTo({ left:i * CAR_STEP, behavior:'smooth' });
     });
     carMid = -1;
-    requestAnimationFrame(() => { tr.scrollLeft = (carLoop ? carN : 0) * CAR_STEP; carPaint(); });
+    requestAnimationFrame(() => { tr.scrollLeft = (carLoop ? carN : 0) * CAR_STEP; carPaint(); carGlow(); });
   }
   $('#car').style.display = list.length ? '' : 'none';
   requestAnimationFrame(carPaint);
@@ -806,12 +806,8 @@ function ambientFrom(path, apply, wait = 220){
   }, wait);
 }
 let glowT;
-function carGlow(t){
-  const g = $('#cglow'); clearTimeout(glowT);
-  g.classList.remove('on');
-  if(!t || !t.poster) return;
-  glowT = setTimeout(() => { const im = new Image(); im.onload = () => { g.style.backgroundImage = `url(${im.src})`; g.classList.add('on'); }; im.src = poster(t.poster, 'w154'); }, 260);
-}
+// off the moment the carousel moves, back once it has settled on a poster
+function carGlow(){ const g = $('#cglow'); g.classList.remove('on'); clearTimeout(glowT); glowT = setTimeout(() => g.classList.add('on'), 260); }
 function carPaint(){
   carRaf = 0;
   const tr = $('#ctrack'), items = tr.children; if(!items.length) return;
@@ -827,12 +823,11 @@ function carPaint(){
     if(items[carMid]) items[carMid].classList.remove('mid');
     items[mid].classList.add('mid'); carMid = mid;
     if(carTouched) buzz(6);
-    carGlow(carList[mid % carN]);
-    { const t = carList[mid % carN]; if(t && t.poster) ambientFrom(t.poster, c => { const h = document.documentElement.style; h.setProperty('--amb', `rgba(${c},.05)`); h.setProperty('--amb2', `rgba(${c},.03)`); }); }
   }
 }
 $('#ctrack').addEventListener('scroll', () => {
   if(!carRaf) carRaf = requestAnimationFrame(carPaint);
+  carGlow();
   clearTimeout(carSettle);
   carSettle = setTimeout(() => {   // after the swipe settles, hop to the same poster in the middle copy
     const tr = $('#ctrack'); if(!carLoop) return;
@@ -976,7 +971,7 @@ async function openTitle(id, src){
     el.classList.add('open'); document.body.classList.add('tp'); coverState();
     pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; coverState(); document.documentElement.style.setProperty('--tamb', 'rgba(0,0,0,0)'); });
   }
-  if(t.poster){ const tg = $('#tglow'), im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; tg.style.backgroundImage = `url(${im.src})`; tg.classList.add('in'); }; im.src = poster(t.poster, 'w154'); }
+  if(false){ const tg = $('#tglow'), im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; tg.style.backgroundImage = `url(${im.src})`; tg.classList.add('in'); }; im.src = poster(t.poster, 'w154'); }
   const art = src => { const im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; const a = $('#tart'); a.style.backgroundImage = `url(${src})`; a.classList.add('in'); }; im.src = src; };
   // the poster fills the top at its natural shape (sharp, nothing cropped); the wide backdrop is only a fallback
   // textless key art at full quality (falls back to the normal poster); shown once, never swapped
