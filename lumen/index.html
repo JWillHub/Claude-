@@ -32,8 +32,8 @@ img{display:block}
 /* ---------- background: soft drifting light so the glass has something to bend ---------- */
 .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .orb{position:absolute;border-radius:50%;opacity:.55;will-change:transform}
-.orb.a{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,rgba(var(--lc),.16),transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
-.orb.b{width:60vmax;height:60vmax;right:-28vmax;bottom:-22vmax;background:radial-gradient(circle,rgba(200,200,210,.13),transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
+.orb.a{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,var(--amb),transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
+.orb.b{width:60vmax;height:60vmax;right:-28vmax;bottom:-22vmax;background:radial-gradient(circle,var(--amb2),transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
 @keyframes drift1{to{transform:translate(18vmax,14vmax) scale(1.1)}}
 @keyframes drift2{to{transform:translate(-16vmax,-12vmax) scale(1.15)}}
 
@@ -129,7 +129,7 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 .sortb .ico{width:15px;height:15px}
 
 /* poster grid */
-.pg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 10px}
+.pg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px 8px}
 .pg>.pt{min-width:0}
 @media(min-width:640px){.pg{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .pt{text-align:left;animation:rise .4s var(--ease) both}
@@ -221,10 +221,10 @@ body.playing #player{display:block}
   box-shadow:0 0 14px rgba(var(--lc),.045),inset 0 0 14px rgba(var(--lc),.025);transition:box-shadow .35s,transform .25s var(--ease),color .3s}
 .glass::after{display:none}
 .glass::before{background:linear-gradient(100deg,rgba(var(--lc),.6),rgba(var(--lc),.2) 22%,rgba(var(--lc),.09) 50%,rgba(var(--lc),.2) 78%,rgba(var(--lc),.6))}
-.glass.on{color:#fff;box-shadow:0 0 16px rgba(var(--lc),.22),0 0 42px rgba(var(--lc),.07),inset 0 0 12px rgba(var(--lc),.09)}
+.glass.on{color:#fff;box-shadow:0 0 10px rgba(var(--lc),.14),inset 0 0 10px rgba(var(--lc),.06)}
 .glass.on::before{display:block;background:linear-gradient(100deg,rgb(var(--lc)),rgba(var(--lc),.6) 30%,rgba(var(--lc),.42) 50%,rgba(var(--lc),.6) 70%,rgb(var(--lc)))}
 .chip.on{background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));color:#fff}
-.lit,.seg button.on,.dk.on{color:#fff;background:rgba(var(--lc),.045);box-shadow:inset 0 0 0 1px rgba(var(--lc),.72),0 0 14px rgba(var(--lc),.2),inset 0 0 10px rgba(var(--lc),.08)}
+.lit,.seg button.on,.dk.on{color:#fff;background:rgba(var(--lc),.045);box-shadow:inset 0 0 0 1px rgba(var(--lc),.72),0 0 8px rgba(var(--lc),.12),inset 0 0 8px rgba(var(--lc),.06)}
 /* a light that travels around the outline while something loads */
 .glass.busy::before,.sbar.glass.busy::before{background:conic-gradient(from var(--a),rgba(var(--lc),.16) 0deg,rgba(var(--lc),.16) 220deg,rgba(var(--lc),.7) 285deg,rgb(var(--lc)) 310deg,rgba(var(--lc),.16) 350deg);animation:orbit 1.8s linear infinite}
 @keyframes orbit{to{--a:360deg}}
@@ -237,7 +237,7 @@ body.playing #player{display:block}
 .pt .pf{box-shadow:inset 0 0 0 1px rgba(var(--lc),.14),0 0 14px rgba(var(--lc),.04)}
 .pt .pf::after{background:linear-gradient(160deg,rgba(var(--lc),.08),transparent 35%);box-shadow:inset 0 0 0 1px rgba(var(--lc),.14)}
 .pt:active .pf::after{box-shadow:inset 0 0 0 1px rgba(var(--lc),.7),0 0 14px rgba(var(--lc),.2)}
-.play{color:#fff;background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));box-shadow:0 0 18px rgba(var(--lc),.24),0 0 50px rgba(var(--lc),.08),inset 0 0 14px rgba(var(--lc),.1);animation:breathe2 5s ease-in-out infinite}
+.play{animation:none!important;color:#fff;background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));box-shadow:0 0 18px rgba(var(--lc),.24),0 0 50px rgba(var(--lc),.08),inset 0 0 14px rgba(var(--lc),.1);animation:breathe2 5s ease-in-out infinite}
 .play svg{fill:#fff}
 @keyframes breathe2{0%,100%{box-shadow:0 0 12px rgba(var(--lc),.16),0 0 34px rgba(var(--lc),.05),inset 0 0 12px rgba(var(--lc),.07)}50%{box-shadow:0 0 20px rgba(var(--lc),.3),0 0 56px rgba(var(--lc),.1),inset 0 0 16px rgba(var(--lc),.12)}}
 .cast{margin-top:10px;font-size:12px;color:var(--muted);font-weight:300;line-height:1.6}
@@ -375,6 +375,23 @@ body.covered #home{visibility:hidden;transition:visibility 0s .6s}
 .navrow small{display:block;margin-top:3px;font-size:12px;color:var(--muted);font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .navrow .chev{width:18px;height:18px;color:var(--faint);flex:none}
 #sub .shead h2{font-size:24px}
+
+@property --amb{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,.16)}
+@property --amb2{syntax:'<color>';inherits:true;initial-value:rgba(200,200,210,.13)}
+@property --tamb{syntax:'<color>';inherits:true;initial-value:rgba(0,0,0,0)}
+html{transition:--amb 1.6s ease,--amb2 2.2s ease,--tamb 1.2s ease}
+/* title page: a faint pool of the art's own colour behind the title */
+.tp2::before{content:"";position:absolute;left:-20px;right:-20px;top:calc(var(--hero) - 340px);height:680px;pointer-events:none;z-index:0;
+  background:radial-gradient(closest-side,var(--tamb),transparent)}
+/* launch: the light traces the search bar once, the name glows in, then the carousel rises */
+body.launch .mark{animation:lmark 1.1s cubic-bezier(.2,.8,.2,1) both}
+body.launch .sw{animation:lfade .7s .25s ease both}
+body.launch .sbar.glass::before,body.launch .halo::before{animation:orbit 1.3s .3s cubic-bezier(.55,0,.25,1) 1 both}
+body.launch .car{animation:lrise .9s .75s cubic-bezier(.2,.8,.2,1) both}
+body.launch .dock{animation:lfade .6s 1s ease both}
+@keyframes lmark{from{opacity:0;letter-spacing:.7em;text-indent:.7em;filter:blur(8px)}to{opacity:1}}
+@keyframes lfade{from{opacity:0}}
+@keyframes lrise{from{opacity:0;transform:translateY(24px)}}
 </style>
 </head>
 <body>
@@ -489,6 +506,11 @@ const PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></svg>';
 const CHEV = '<svg class="ico chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
 const CHECK = '<svg class="ico ck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.3 2.5 2.5 5-5.2"/></svg>';
 const poster = (p, w = 'w342') => p ? IMG + w + p : '';
+
+/* ================= haptics ================= */
+// short, light taps (Android); silently nothing where the phone or browser has no vibration
+const buzz = ms => { try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
+document.addEventListener('click', e => { if(e.target.closest('.dk,.play,.navrow,.seg button,.chip,.swc')) buzz(5); }, true);
 
 /* ================= Android app ================= */
 // Inside the Lumen Android app: Real-Debrid is called directly and Play opens the native player.
@@ -749,6 +771,30 @@ function drawHome(){
 // posters grow and brighten toward the middle, and fade out evenly on both sides
 const CAR_STEP = 100 + 26;
 let carList = [], carN = 0, carLoop = false, carMid = -1, carRaf = 0, capT, carSettle;
+let carTouched = false;
+$('#ctrack').addEventListener('touchstart', () => { carTouched = true; }, { passive:true });
+// a soft colour from the poster, for the light behind it (kept dim so it never competes with the search bar)
+// colour is read from a tiny separate copy of the poster, so the posters you see never depend on it
+const ambMem = {};
+let ambT;
+function ambientFrom(path, apply, wait = 220){
+  clearTimeout(ambT);
+  ambT = setTimeout(() => {
+    if(ambMem[path]) return apply(ambMem[path]);
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try{
+        const c = document.createElement('canvas'); c.width = c.height = 12;
+        const x = c.getContext('2d', { willReadFrequently:true }); x.drawImage(img, 0, 0, 12, 12);
+        const d = x.getImageData(0, 0, 12, 12).data; let r = 0, g = 0, b = 0, n = 0;
+        for(let i = 0; i < d.length; i += 4){ const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]); const w = 1 + (mx - mn) / 32; r += d[i] * w; g += d[i + 1] * w; b += d[i + 2] * w; n += w; }
+        const m = Math.max(r / n, g / n, b / n, 1), k = 235 / m;   // same hue, brightened, so the glow is colour rather than grey
+        apply(ambMem[path] = [Math.round(r / n * k), Math.round(g / n * k), Math.round(b / n * k)]);
+      }catch(e){}
+    };
+    img.src = IMG + 'w92' + path;
+  }, wait);
+}
 function carPaint(){
   carRaf = 0;
   const tr = $('#ctrack'), items = tr.children; if(!items.length) return;
@@ -763,6 +809,8 @@ function carPaint(){
   if(mid !== carMid){
     if(items[carMid]) items[carMid].classList.remove('mid');
     items[mid].classList.add('mid'); carMid = mid;
+    if(carTouched) buzz(6);
+    { const t = carList[mid % carN]; if(t && t.poster) ambientFrom(t.poster, c => { const h = document.documentElement.style; h.setProperty('--amb', `rgba(${c},.17)`); h.setProperty('--amb2', `rgba(${c},.09)`); }); }
   }
 }
 $('#ctrack').addEventListener('scroll', () => {
@@ -826,7 +874,7 @@ function drawLib(){
     ${!key ? '<div class="empty">Add your Real-Debrid token in Settings and your library appears here.</div>'
       : !list.length ? `<div class="empty">${syncing ? 'Reading your library…' : 'Nothing here yet.'}</div>`
       : `<div class="pg">${list.map((t, i) => { const p = progOf(t);
-        return `<button class="pt press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 15) * 20}ms"><div class="pf">${t.poster ? `<img src="${poster(t.poster)}" alt="" loading="lazy" decoding="async">` : `<div class="np">${esc(t.title)}</div>`}${p ? `<div class="pb"><i style="width:${(p.t / p.d * 100).toFixed(1)}%"></i></div>` : ''}</div><div class="cap">${esc(t.title)}</div></button>`; }).join('')}</div>`}`;
+        return `<button class="pt press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 15) * 20}ms"><div class="pf">${t.poster ? `<img src="${poster(t.poster)}" alt="" loading="lazy" decoding="async">` : `<div class="np">${esc(t.title)}</div>`}${p ? `<div class="pb"><i style="width:${(p.t / p.d * 100).toFixed(1)}%"></i></div>` : ''}</div></button>`; }).join('')}</div>`}`;
   $$('.seg button', b).forEach(x => x.onclick = () => { store.set(K_KIND, x.dataset.k); drawLib(); });
   $('#sortb').onclick = () => { const ks = Object.keys(SORTS); store.set(K_SORT, ks[(ks.indexOf(sort) + 1) % ks.length]); drawLib(); };
   $$('.pt', b).forEach(x => x.onclick = () => openTitle(x.dataset.id, $('.pf', x)));
@@ -872,6 +920,7 @@ $('#sync').onclick = () => syncNow();
     body.style.transform = `translateY(${pull}px)`;
     ptr.style.opacity = Math.min(1, pull / 60);
     ptr.style.transform = `translateY(${pull * 0.45 - 30}px) rotate(${pull * 4}deg) scale(${0.6 + Math.min(.4, pull / 150)})`;
+    if((pull > 64) !== ptr.classList.contains('on')) buzz(pull > 64 ? 10 : 4);
     ptr.classList.toggle('on', pull > 64);
   }, { passive:false });
   body.addEventListener('touchend', () => {
@@ -907,8 +956,9 @@ async function openTitle(id, src){
   $('#tback').onclick = back;
   if(!el.classList.contains('open')){
     el.classList.add('open'); document.body.classList.add('tp'); coverState();
-    pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; coverState(); });
+    pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; coverState(); document.documentElement.style.setProperty('--tamb', 'rgba(0,0,0,0)'); });
   }
+  if(t.poster) ambientFrom(t.poster, c => { if(cur && cur.t === t) document.documentElement.style.setProperty('--tamb', `rgba(${c},.16)`); }, 0);
   const art = src => { const im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; const a = $('#tart'); a.style.backgroundImage = `url(${src})`; a.classList.add('in'); }; im.src = src; };
   // the poster fills the top at its natural shape (sharp, nothing cropped); the wide backdrop is only a fallback
   // textless key art at full quality (falls back to the normal poster); shown once, never swapped
@@ -1106,7 +1156,7 @@ async function nativePlay(o, retry = false){
     const startT = !o.fromStart && prog[key] && prog[key].t > 20 ? prog[key].t : 0;
     const queue = (o.queue || []).map(x => { const k = x.tid + '|' + x.path;
       return { link:x.link, key:k, tid:x.tid, s:x.ep.s, e:x.ep.e, label:`S${x.ep.s} E${x.ep.e}`, url:'', startMs:prog[k] && prog[k].t > 20 ? Math.floor(prog[k].t * 1000) : 0 }; });
-    const opts = { ...playerPrefs(), url:s.url, title:full, startMs:Math.floor(startT * 1000), key };
+    const opts = { ...playerPrefs(), url:s.url, title:full, startMs:Math.floor(startT * 1000), key, light:getComputedStyle(document.documentElement).getPropertyValue('--lc').trim() || '255,255,255' };
     if(o.tv) Object.assign(opts, { show:o.title, tmdbId:o.tmdbId || 0, season:o.ep ? o.ep.s : 0, episode:o.ep ? o.ep.e : 0,
       queue:JSON.stringify(queue), rdToken:store.get(K_RD, ''), autoplay:store.get(K_PL_AUTO, true) });
     const ctx = { key, tid:o.f.tid, link, o:{ id:o.id, title:o.title, label:o.label || '', poster:o.poster || null }, queue, at:Date.now() };
@@ -1305,6 +1355,7 @@ function refresh(){
   if($('#watch').classList.contains('open')) drawWatch();
   if(cur && $('#title').classList.contains('open') && cur.files){ const eps = cur.files.filter(f => epOf(f.path)); if(cur.t.tv || eps.length > 1) drawShow(eps.length ? eps : cur.files); else drawMovie(cur.files); }
 }
+document.body.classList.add('launch'); setTimeout(() => document.body.classList.remove('launch'), 1900);
 drawHome(); indexAll();
 if(store.get(K_RD, '') && Date.now() - lib.synced > 10 * 60e3) sync().catch(e => { if(!titles().length) $('#hint').textContent = errMsg(e); });
 document.addEventListener('visibilitychange', () => { if(!document.hidden && !pl && store.get(K_RD, '') && Date.now() - lib.synced > 30 * 60e3) sync().catch(() => {}); });

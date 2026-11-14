@@ -87,6 +87,7 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean done = false, wasPip = false, userPickedTracks = false;
     private String error = null;
     private SharedPreferences prefs;
+    private int lc = Color.WHITE;   // Lumen's light colour
     private LinearLayout hud;        // small see-through pill: "+10s", or Volume/Brightness with a thin level bar
     private TextView hudLabel, hudPct;
     private FrameLayout hudBar;
@@ -145,6 +146,7 @@ public class PlayerActivity extends AppCompatActivity {
         try { queue = new JSONArray(str(in.getStringExtra("queue")).isEmpty() ? "[]" : in.getStringExtra("queue")); } catch (Exception e) { queue = new JSONArray(); }
         midnight = in.getBooleanExtra("midnightDefault", false);   // Settings → Player → Midnight mode by default
         autoSkip = in.getBooleanExtra("autoSkip", false);
+        try { String[] c = str(in.getStringExtra("light")).split(","); if (c.length == 3) lc = 0xFF000000 | (Integer.parseInt(c[0].trim()) << 16) | (Integer.parseInt(c[1].trim()) << 8) | Integer.parseInt(c[2].trim()); } catch (Exception e) { lc = Color.WHITE; }
 
         view = new PlayerView(this);
         view.setBackgroundColor(Color.BLACK);
@@ -160,23 +162,28 @@ public class PlayerActivity extends AppCompatActivity {
         bar.setGravity(Gravity.CENTER_VERTICAL);
         bar.setPadding(dp(28), dp(14), dp(28), dp(14));
         TextView back = new TextView(this);
-        back.setText("←");
+        back.setText("‹");
         back.setTextColor(Color.WHITE);
-        back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
-        back.setPadding(dp(10), dp(2), dp(16), dp(6));
+        back.setTextSize(TypedValue.COMPLEX_UNIT_SP, 26);
+        back.setGravity(Gravity.CENTER);
+        back.setPadding(0, 0, dp(2), dp(4));
+        back.setBackground(glass(true));
         back.setContentDescription("Back");
         back.setOnClickListener(v -> close(false));
         TextView name = new TextView(this);
         nameView = name;
         name.setText(title);
         name.setTextColor(Color.WHITE);
-        name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
+        name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        name.setTypeface(android.graphics.Typeface.create("sans-serif-light", android.graphics.Typeface.NORMAL));
+        name.setLetterSpacing(0.03f);
+        name.setPadding(dp(14), 0, 0, 0);
         name.setSingleLine(true);
         name.setEllipsize(TextUtils.TruncateAt.END);
         name.setShadowLayer(6f, 0f, 1f, Color.BLACK);
-        bar.addView(back);
+        bar.addView(back, new LinearLayout.LayoutParams(dp(42), dp(42)));
         bar.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        bar.setBackgroundColor(0x66000000);
+        bar.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{ 0x8C000000, 0x00000000 }));
         root.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
         view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(isPip() ? View.GONE : visibility));
 
@@ -188,7 +195,7 @@ public class PlayerActivity extends AppCompatActivity {
         GradientDrawable pill = new GradientDrawable();
         pill.setColor(0x59000000);
         pill.setCornerRadius(dp(22));
-        pill.setStroke(dp(1), 0x33FFFFFF);
+        pill.setStroke(dp(1), withAlpha(lc, 0x66));
         hud.setBackground(pill);
         hudLabel = new TextView(this);
         hudLabel.setTextColor(Color.WHITE);
@@ -199,7 +206,7 @@ public class PlayerActivity extends AppCompatActivity {
         GradientDrawable trackBg = new GradientDrawable(); trackBg.setColor(0x40FFFFFF); trackBg.setCornerRadius(dp(2));
         track.setBackground(trackBg);
         hudFill = new View(this);
-        GradientDrawable fillBg = new GradientDrawable(); fillBg.setColor(Color.WHITE); fillBg.setCornerRadius(dp(2));
+        GradientDrawable fillBg = new GradientDrawable(); fillBg.setColor(lc); fillBg.setCornerRadius(dp(2));
         hudFill.setBackground(fillBg);
         hudBar.addView(track, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(3)));
         hudBar.addView(hudFill, new FrameLayout.LayoutParams(0, dp(3)));
@@ -228,7 +235,7 @@ public class PlayerActivity extends AppCompatActivity {
             fade(skipBtn, false);
         });
         nextBtn = pillButton();
-        GradientDrawable fillShape = new GradientDrawable(); fillShape.setColor(0x40FFFFFF); fillShape.setCornerRadius(dp(22));
+        GradientDrawable fillShape = new GradientDrawable(); fillShape.setColor(withAlpha(lc, 0x40)); fillShape.setCornerRadius(dp(22));
         nextFill = new ClipDrawable(fillShape, Gravity.START, ClipDrawable.HORIZONTAL);
         nextBtn.setBackground(new LayerDrawable(new Drawable[]{ nextBtn.getBackground(), nextFill }));
         nextBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); goNext(); });
@@ -313,6 +320,7 @@ public class PlayerActivity extends AppCompatActivity {
         updatePip();
         applyMidnight();
         addMoonButton();
+        styleControls();
         fetchSegments();
         ui.postDelayed(tick, 500);
 
@@ -466,14 +474,46 @@ public class PlayerActivity extends AppCompatActivity {
         } catch (Exception ignored) {}
     }
 
+    // ---- Lumen look for the built-in controls: lighter shade, glass circles with a lit outline, a thin bar in the light colour ----
+    private static int withAlpha(int c, int a) { return (c & 0x00FFFFFF) | (a << 24); }
+    private GradientDrawable glass(boolean circle) {
+        GradientDrawable g = new GradientDrawable();
+        g.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
+        if (!circle) g.setCornerRadius(dp(22));
+        g.setColor(0x33000000);
+        g.setStroke(dp(1), withAlpha(lc, 0x8C));
+        return g;
+    }
+    private View byName(String id) {
+        int r = getResources().getIdentifier(id, "id", getPackageName());
+        return r == 0 ? null : view.findViewById(r);
+    }
+    private void styleControls() {
+        try {
+            View shade = byName("exo_controls_background");
+            if (shade != null) shade.setBackgroundColor(0x59000000);
+            View tb = byName("exo_progress");
+            if (tb instanceof androidx.media3.ui.DefaultTimeBar) {
+                androidx.media3.ui.DefaultTimeBar t = (androidx.media3.ui.DefaultTimeBar) tb;
+                t.setPlayedColor(lc); t.setScrubberColor(lc);
+                t.setBufferedColor(withAlpha(lc, 0x59)); t.setUnplayedColor(withAlpha(lc, 0x26));
+            }
+            for (String id : new String[]{ "exo_play_pause", "exo_rew_with_amount", "exo_ffwd_with_amount", "exo_prev", "exo_next" }) {
+                View b = byName(id);
+                if (b != null) b.setBackground(glass(true));
+            }
+        } catch (Exception ignored) {}
+    }
+
     private TextView pillButton() {
         TextView b = new TextView(this);
         b.setTextColor(Color.WHITE);
         b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        b.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        b.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        b.setLetterSpacing(0.04f);
         b.setPadding(dp(20), dp(11), dp(20), dp(11));
         GradientDrawable bg0 = new GradientDrawable();
-        bg0.setColor(0x59000000); bg0.setCornerRadius(dp(22)); bg0.setStroke(dp(1), 0xCCFFFFFF);
+        bg0.setColor(0x66000000); bg0.setCornerRadius(dp(22)); bg0.setStroke(dp(1), withAlpha(lc, 0xCC));
         b.setBackground(bg0);
         b.setVisibility(View.GONE); b.setAlpha(0f);
         return b;
