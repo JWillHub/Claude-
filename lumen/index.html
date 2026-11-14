@@ -129,8 +129,9 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 .sortb .ico{width:15px;height:15px}
 
 /* poster grid */
-.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px}
-@media(min-width:640px){.pg{grid-template-columns:repeat(5,1fr)}}
+.pg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 10px}
+.pg>.pt{min-width:0}
+@media(min-width:640px){.pg{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .pt{text-align:left;animation:rise .4s var(--ease) both}
 .pt .pf{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:rgba(var(--lc),.05);
   box-shadow:0 0 0 1px rgba(var(--lc),.09) inset,0 10px 24px rgba(0,0,0,.5)}
