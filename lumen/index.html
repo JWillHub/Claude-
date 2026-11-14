@@ -31,7 +31,7 @@ img{display:block}
 
 /* ---------- background: soft drifting light so the glass has something to bend ---------- */
 .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.orb{position:absolute;border-radius:50%;opacity:.55;will-change:transform}
 .orb.a{width:70vmax;height:70vmax;left:-25vmax;top:-30vmax;background:radial-gradient(circle,rgba(var(--lc),.16),transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
 .orb.b{width:60vmax;height:60vmax;right:-28vmax;bottom:-22vmax;background:radial-gradient(circle,rgba(200,200,210,.13),transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
 @keyframes drift1{to{transform:translate(18vmax,14vmax) scale(1.1)}}
@@ -228,7 +228,7 @@ body.playing #player{display:block}
 /* a light that travels around the outline while something loads */
 .glass.busy::before,.sbar.glass.busy::before{background:conic-gradient(from var(--a),rgba(var(--lc),.16) 0deg,rgba(var(--lc),.16) 220deg,rgba(var(--lc),.7) 285deg,rgb(var(--lc)) 310deg,rgba(var(--lc),.16) 350deg);animation:orbit 1.8s linear infinite}
 @keyframes orbit{to{--a:360deg}}
-.sheet{background:color-mix(in srgb,var(--bgc) 94%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.sheet{background:color-mix(in srgb,var(--bgc) 97%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* dock: a pill with four tabs; a little dark tint so it reads over posters */
 .dock{border-radius:999px;width:min(430px,calc(100% - 36px));gap:4px;padding:6px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .dk{flex-direction:column;gap:4px;height:54px;padding:0;border-radius:999px;font-size:10.5px;letter-spacing:.08em;color:rgba(var(--lc),.55)}
@@ -347,6 +347,27 @@ body.q .car{opacity:0;pointer-events:none}
 .selr select option{background:#111;color:#fff}
 .dk{position:relative}
 .dk.upd::after{content:"";position:absolute;top:9px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:rgb(var(--lc));box-shadow:0 0 8px rgb(var(--lc))}
+
+/* smoothness: nothing animates behind a covering page, offscreen posters skip layout, calmer motion if the phone asks */
+body.covered .orb,body.covered .halo::before,body.covered .sbar.glass::before,body.covered .play{animation-play-state:paused}
+#home{transition:visibility 0s}
+body.covered #home{visibility:hidden;transition:visibility 0s .6s}
+.pg>.pt{content-visibility:auto;contain-intrinsic-size:auto 200px}
+.eps>.ep,.wl>.wr{content-visibility:auto;contain-intrinsic-size:auto 90px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+/* settings additions */
+.subprev{margin:12px 0 4px;border-radius:14px;height:86px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;
+  background:radial-gradient(ellipse at 30% 30%,rgba(var(--lc),.18),transparent 60%),linear-gradient(135deg,#1d2430,#2b2520);box-shadow:inset 0 0 0 1px rgba(var(--lc),.14)}
+.subprev span{color:#fff;font-weight:500;font-size:15px;text-align:center;padding:1px 6px;text-shadow:0 1px 3px #000,0 0 2px #000}
+.subprev.outline span{text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.subprev.box span{background:rgba(0,0,0,.72);text-shadow:none;border-radius:3px}
+.subprev.yellow span{color:#ffe14d}
+.subprev.s-s span{font-size:12.5px}.subprev.s-l span{font-size:18px}.subprev.s-xl span{font-size:21px}
+.stbar{display:block;height:3px;border-radius:3px;background:rgba(var(--lc),.12);margin-top:9px;overflow:hidden}
+.stbar b{display:block;height:100%;width:0;background:rgb(var(--lc));box-shadow:0 0 8px rgb(var(--lc));transition:width .6s var(--ease)}
+.row2b{display:flex;gap:10px;margin-top:12px}
+.row2b .wide{flex:1}
+.tg>span{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -665,7 +686,8 @@ function openSheet(id){
   pushLayer(id, () => { el.classList.remove('open'); dockState(); });
 }
 const isOpen = s => s === 'home' ? !['lib', 'set', 'watch'].some(x => $('#' + x).classList.contains('open')) : $('#' + s).classList.contains('open');
-function dockState(){ $$('.dk').forEach(b => b.classList.toggle('on', isOpen(b.dataset.sheet))); }
+function coverState(){ document.body.classList.toggle('covered', ['lib', 'set', 'watch', 'title'].some(x => $('#' + x).classList.contains('open'))); }
+function dockState(){ coverState(); $$('.dk').forEach(b => b.classList.toggle('on', isOpen(b.dataset.sheet))); }
 $$('.dk').forEach(b => b.onclick = () => {
   const s = b.dataset.sheet;
   if(s === 'home'){ if(layers.length) history.go(-layers.length); else qi.focus(); return; }
@@ -762,7 +784,7 @@ function drawResults(){
     return null;
   }).filter(Boolean).sort((a, b) => a[0] - b[0] || a[1].title.localeCompare(b[1].title)).slice(0, 60);
   $('#resin').innerHTML = list.length ? list.map(([, t, why], i) => { const p = progOf(t);
-    return `<button class="ri glass press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 8) * 35}ms">${t.poster ? `<img src="${poster(t.poster, 'w154')}" alt="" loading="lazy">` : '<div class="np"></div>'}
+    return `<button class="ri glass press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 8) * 35}ms">${t.poster ? `<img src="${poster(t.poster, 'w154')}" alt="" loading="lazy" decoding="async">` : '<div class="np"></div>'}
       <div class="t"><b>${esc(t.title)}</b><span>${esc([t.year, t.tv ? 'Series' : 'Film', why || (p ? left(p) : '')].filter(Boolean).join(' · '))}</span></div>${CHEV}</button>`; }).join('')
     : `<div class="empty">${indexing ? 'Still learning your library’s cast and genres…' : `Nothing in your library matches “${esc(qi.value.trim())}”.`}</div>`;
   $$('.ri').forEach(b => b.onclick = () => { qi.blur(); openTitle(b.dataset.id, $('img', b)); });
@@ -790,7 +812,7 @@ function drawLib(){
     ${!key ? '<div class="empty">Add your Real-Debrid token in Settings and your library appears here.</div>'
       : !list.length ? `<div class="empty">${syncing ? 'Reading your library…' : 'Nothing here yet.'}</div>`
       : `<div class="pg">${list.map((t, i) => { const p = progOf(t);
-        return `<button class="pt press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 15) * 20}ms"><div class="pf">${t.poster ? `<img src="${poster(t.poster)}" alt="" loading="lazy">` : `<div class="np">${esc(t.title)}</div>`}${p ? `<div class="pb"><i style="width:${(p.t / p.d * 100).toFixed(1)}%"></i></div>` : ''}</div><div class="cap">${esc(t.title)}</div></button>`; }).join('')}</div>`}`;
+        return `<button class="pt press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 15) * 20}ms"><div class="pf">${t.poster ? `<img src="${poster(t.poster)}" alt="" loading="lazy" decoding="async">` : `<div class="np">${esc(t.title)}</div>`}${p ? `<div class="pb"><i style="width:${(p.t / p.d * 100).toFixed(1)}%"></i></div>` : ''}</div><div class="cap">${esc(t.title)}</div></button>`; }).join('')}</div>`}`;
   $$('.seg button', b).forEach(x => x.onclick = () => { store.set(K_KIND, x.dataset.k); drawLib(); });
   $('#sortb').onclick = () => { const ks = Object.keys(SORTS); store.set(K_SORT, ks[(ks.indexOf(sort) + 1) % ks.length]); drawLib(); };
   $$('.pt', b).forEach(x => x.onclick = () => openTitle(x.dataset.id, $('.pf', x)));
@@ -846,6 +868,16 @@ $('#sync').onclick = () => syncNow();
   });
 })();
 
+/* ================= warm-up ================= */
+// touching a poster fetches its details, so the title page opens complete
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('[data-id]'), ci = e.target.closest('.ci');
+  const t = el ? titleById(el.dataset.id) : ci && carList.length ? carList[+ci.dataset.i % carN] : null;
+  if(t && !t.raw && store.get(K_TM, '')) details(t).catch(() => {});
+}, { passive:true });
+// opening a title gets its stream ready in the background, so Play starts right away
+function warm(f){ if(f && f.link && store.get(K_RD, '')) setTimeout(() => stream(f.link).catch(() => {}), 350); }
+
 /* ================= title page ================= */
 let cur = null;
 async function openTitle(id, src){
@@ -860,8 +892,8 @@ async function openTitle(id, src){
     <div id="tmore"></div></div>`;
   $('#tback').onclick = back;
   if(!el.classList.contains('open')){
-    el.classList.add('open'); document.body.classList.add('tp');
-    pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; });
+    el.classList.add('open'); document.body.classList.add('tp'); coverState();
+    pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; coverState(); });
   }
   const art = src => { const im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; const a = $('#tart'); a.style.backgroundImage = `url(${src})`; a.classList.add('in'); }; im.src = src; };
   if(t.raw || !store.get(K_TM, '')){ if(t.poster) art(poster(t.poster, 'w780')); }
@@ -895,6 +927,7 @@ function drawMovie(all){
   const withProg = vers.find(f => prog[f.tid + '|' + f.path]);
   if(!cur.ver) cur.ver = withProg || vers.slice().sort((a, b) => b.bytes - a.bytes)[0];
   const f = cur.ver, k = f.tid + '|' + f.path, p = prog[k];
+  warm(f);
   $('#tact').innerHTML = `<button class="play glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'}</button>
     <div class="psub">${p ? left(p) + ' · ' : done[k] ? 'Watched · ' : ''}${[qualOf(f.path), fmtSize(f.bytes)].filter(Boolean).join(' · ')}</div>
     ${p ? '<div class="row2"><button class="glass press" id="over">Start over</button></div>' : ''}`;
@@ -914,7 +947,7 @@ function drawShow(eps){
   const last = Object.entries(prog).filter(([, p]) => t.tors.includes(p.tid)).sort((a, b) => b[1].at - a[1].at)[0];
   // the episode to play: the one in progress, else the first not yet watched
   const target = (last && list.find(x => x.tid + '|' + x.path === last[0])) || list.find(x => !done[x.tid + '|' + x.path]) || list[0];
-  if(cur.season == null) cur.season = target ? target.ep.s : seasons[0];
+  if(cur.season == null){ cur.season = target ? target.ep.s : seasons[0]; warm(target); }
   const p = target && prog[target.tid + '|' + target.path];
   $('#tact').innerHTML = target ? `<button class="play glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'} ${target.ep.s ? 'S' + target.ep.s + ' E' + target.ep.e : ''}</button><div class="psub">${p ? left(p) : ''}</div>` : '';
   if(target) $('#pbtn').onclick = () => playEp(target);
@@ -925,7 +958,7 @@ function drawShow(eps){
   const inS = list.filter(x => x.ep.s === cur.season);
   const draw = meta => {
     $('#eps').innerHTML = inS.map(x => { const k = x.tid + '|' + x.path, pr = prog[k], m = meta[x.ep.e] || {};
-      return `<button class="ep glass press" data-k="${esc(k)}"><div class="th">${m.still ? `<img src="${IMG}w300${m.still}" alt="" loading="lazy">` : ''}${pr ? `<div class="pb"><i style="width:${(pr.t / pr.d * 100).toFixed(1)}%"></i></div>` : ''}</div>
+      return `<button class="ep glass press" data-k="${esc(k)}"><div class="th">${m.still ? `<img src="${IMG}w300${m.still}" alt="" loading="lazy" decoding="async">` : ''}${pr ? `<div class="pb"><i style="width:${(pr.t / pr.d * 100).toFixed(1)}%"></i></div>` : ''}</div>
         <div class="et"><b>${x.ep.e}. ${esc(m.name || 'Episode ' + x.ep.e)}</b><span>${[pr ? left(pr) : m.rt ? m.rt + 'm' : '', qualOf(x.path)].filter(Boolean).join(' · ')}</span></div>${done[k] ? CHECK : ''}</button>`; }).join('');
     $$('#eps .ep').forEach(b => b.onclick = () => playEp(inS.find(x => x.tid + '|' + x.path === b.dataset.k)));
   };
@@ -1148,19 +1181,27 @@ function drawSettings(){
     ${sel('ptl', 'Language', store.get(K_PL_TXT, ''), [['', 'Last used'], ['off', 'Off'], ...LANGS])}
     ${sel('pts', 'Size', store.get(K_PL_SIZE, 'm'), [['s', 'Small'], ['m', 'Medium'], ['l', 'Large'], ['xl', 'Extra large']])}
     ${sel('pst', 'Style', store.get(K_PL_STYLE, 'shadow'), [['shadow', 'Shadow'], ['outline', 'Outline'], ['box', 'Dark box'], ['yellow', 'Yellow']])}
+    <div class="subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}" id="subprev"><span>This is how subtitles will look.</span></div>
     <button class="tg" id="tclear" style="margin-top:16px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`
   : `<div class="card glass"><h3>Playback</h3><p>Videos play here when the format allows. 4K and HEVC files open in VLC automatically on phones.</p>
     ${mobile ? `<button class="tg ${store.get(K_VLC, false) ? 'on' : ''}" id="tvlc"><span>Always open in VLC<small>Skip the built-in player</small></span><i class="sw2"></i></button>` : ''}
     <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`}
   <div class="card glass"><h3>Library</h3><p>Lumen reads what is already in your Real-Debrid account. New downloads show up after a sync.</p>
     <button class="wide glass press" id="ssync">Sync now</button>
-    <button class="wide glass press" id="rematch" style="margin-top:10px">Re-match all titles</button></div>
+    <button class="wide glass press" id="rematch" style="margin-top:10px">Re-match all titles</button>
+    ${rk ? '<button class="tg" id="rddisc" style="margin-top:14px"><span>Disconnect Real-Debrid<small>Removes the token and library list from this device</small></span></button>' : ''}</div>
+  <div class="card glass"><h3>Your data</h3><p>Watch progress and settings, in one file. Your tokens are never included.</p>
+    <div class="row2b"><button class="wide glass press" id="bkexp">Back up</button><button class="wide glass press" id="bkimp">Restore</button></div>
+    <input type="file" id="bkfile" accept="application/json,.json" hidden>
+    <div class="tg" style="margin-top:16px;pointer-events:none"><span>Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span></div>
+    <button class="wide glass press" id="stclr" style="margin-top:12px">Clear cache</button></div>
   ${NATIVE ? '<div class="card glass"><h3>App</h3><div id="appver"></div></div>' : ''}
   <div class="ver">LUMEN${APP_BUILD ? ' · BUILD ' + APP_BUILD : ''}</div>`;
   if(NATIVE){
     fillVersion();
     [['pauto', K_PL_AUTO, true], ['pskip', K_PL_SKIP, false], ['pmid', K_PL_MID, false]].forEach(([id, k, d]) => $('#' + id).onclick = e => { const on = !store.get(k, d); store.set(k, on); e.currentTarget.classList.toggle('on', on); });
-    [['pal', K_PL_AUD], ['ptl', K_PL_TXT], ['pts', K_PL_SIZE], ['pst', K_PL_STYLE]].forEach(([id, k]) => $('#' + id).onchange = e => store.set(k, e.target.value));
+    [['pal', K_PL_AUD], ['ptl', K_PL_TXT], ['pts', K_PL_SIZE], ['pst', K_PL_STYLE]].forEach(([id, k]) => $('#' + id).onchange = e => {
+      store.set(k, e.target.value); $('#subprev').className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; });
   }
   $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
   $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); $$('#swb button').forEach(y => y.classList.toggle('on', y === x)); });
@@ -1177,8 +1218,45 @@ function drawSettings(){
   };
   if($('#tvlc')) $('#tvlc').onclick = e => { const on = !store.get(K_VLC, false); store.set(K_VLC, on); e.currentTarget.classList.toggle('on', on); };
   $('#tclear').onclick = () => { if(!confirmTap('#tclear')) return; prog = {}; done = {}; saveProg(); refresh(); toast('Watch progress cleared'); };
+  dataCard();
+  if($('#rddisc')) $('#rddisc').onclick = () => { if(!confirmTap('#rddisc')) return; store.set(K_RD, ''); lib = { synced:0, items:{} }; saveLib(); refresh(); drawSettings(); toast('Real-Debrid disconnected'); };
   $('#ssync').onclick = () => sync().then(() => { toast('Library up to date'); drawSettings(); }).catch(e => toast(errMsg(e)));
   $('#rematch').onclick = () => { Object.values(lib.items).forEach(it => delete it.m); saveLib(); sync().then(() => { toast('Titles re-matched'); drawSettings(); }).catch(e => toast(errMsg(e))); };
+}
+// backup, restore and storage
+const BACKUP_KEYS = [K_PROG, K_DONE, K_THEME, K_SORT, K_KIND, K_VLC, K_PL_AUTO, K_PL_SKIP, K_PL_MID, K_PL_AUD, K_PL_TXT, K_PL_SIZE, K_PL_STYLE];
+const isCacheKey = k => k.startsWith(P + 'd.');
+function dataCard(){
+  const measure = () => {
+    let mine = 0, cache = 0;
+    for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i), n = (k.length + (localStorage.getItem(k) || '').length) * 2; if(isCacheKey(k)) cache += n; else mine += n; }
+    const mb = n => n < 1e6 ? Math.max(1, Math.round(n / 1e3)) + ' KB' : (n / 1e6).toFixed(1) + ' MB';
+    if(!$('#stinfo')) return;
+    $('#stinfo').textContent = `Yours ${mb(mine)} · Cache ${mb(cache)} · 5 MB max`;
+    requestAnimationFrame(() => { $('#stfill').style.width = Math.min(100, (mine + cache) / 5e6 * 100).toFixed(1) + '%'; });
+  };
+  measure();
+  $('#stclr').onclick = () => {
+    for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
+    Object.keys(linkMem).forEach(k => delete linkMem[k]); Object.keys(infoMem).forEach(k => delete infoMem[k]);
+    measure(); toast('Cache cleared. Your progress is untouched.');
+  };
+  $('#bkexp').onclick = async () => {
+    const data = { app:'lumen', v:1, at:Date.now(), keys:{} };
+    BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if(v != null) data.keys[k] = v; });
+    const json = JSON.stringify(data), name = `lumen-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    if(NATIVE){ try{ const r = await callNative('RCFiles', 'save', { name, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); return; }catch(e){} }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type:'application/json' })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+  $('#bkimp').onclick = () => $('#bkfile').click();
+  $('#bkfile').onchange = async e => {
+    const f = e.target.files[0]; if(!f) return;
+    try{
+      const d = JSON.parse(await f.text()); if(d.app !== 'lumen' || !d.keys) throw 0;
+      Object.entries(d.keys).forEach(([k, v]) => { if(BACKUP_KEYS.includes(k)) localStorage.setItem(k, v); });
+      prog = store.get(K_PROG, {}); done = store.get(K_DONE, {}); applyTheme(); refresh(); drawSettings(); toast('Backup restored');
+    }catch(err){ toast("That file isn't a Lumen backup"); }
+  };
 }
 // a second tap confirms (no pop-up dialogs)
 function confirmTap(sel){ const el = $(sel); if(el.dataset.arm){ delete el.dataset.arm; return true; } el.dataset.arm = 1; const s = $('span', el).firstChild; const old = s.textContent; s.textContent = 'Tap again to confirm'; setTimeout(() => { delete el.dataset.arm; if(s.isConnected) s.textContent = old; }, 2600); return false; }
