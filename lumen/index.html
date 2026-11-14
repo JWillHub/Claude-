@@ -54,10 +54,10 @@ img{display:block}
 #home{position:fixed;inset:0;z-index:1}
 .stage{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;padding:0 22px;
   transition:top .55s var(--ease),transform .55s var(--ease)}
-body.q .stage{top:calc(var(--st) + 18px);transform:none}
+body.q .stage{transform:translateY(-50%) translateY(var(--lift,0px))}
 .mark{font-family:'Orbitron','Sora',sans-serif;font-weight:500;font-size:38px;line-height:1;letter-spacing:.3em;text-indent:.3em;color:#fff;margin:0 0 40px;text-transform:uppercase;
-  text-shadow:0 0 18px rgba(var(--lc),.35),0 0 42px rgba(var(--lc),.12);transition:opacity .35s,margin .55s var(--ease),height .55s var(--ease);height:36px}
-body.q .mark{opacity:0;margin:0;height:0}
+  text-shadow:0 0 18px rgba(var(--lc),.35),0 0 42px rgba(var(--lc),.12);transition:opacity .3s,filter .45s;height:36px}
+body.q .mark{opacity:0;filter:blur(6px)}
 .sw{position:relative;width:min(560px,100%)}
 .halo{position:absolute;inset:0;border-radius:999px;pointer-events:none;
   box-shadow:0 0 14px rgba(var(--lc),.28),0 0 38px rgba(var(--lc),.12),inset 0 0 12px rgba(var(--lc),.08);
@@ -634,6 +634,14 @@ dockState();
 
 /* ================= home + search ================= */
 const qi = $('#q');
+// distance to move the stage so the search bar sits at the top; kept right if the keyboard resizes the screen
+function liftStage(){
+  const stg = $('.stage'), cur = parseFloat(stg.style.getPropertyValue('--lift')) || 0;
+  const now = document.body.classList.contains('q') ? cur : 0;
+  stg.style.setProperty('--lift', (safeTop() + 18 - ($('.sw').getBoundingClientRect().top - now)) + 'px');
+}
+addEventListener('resize', () => { if(document.body.classList.contains('q')){ const stg = $('.stage'); stg.style.transition = 'none'; liftStage(); stg.offsetWidth; stg.style.transition = ''; } });
+const safeTop = () => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top,0px)'; document.body.appendChild(d); const h = d.offsetHeight; d.remove(); return h; };
 const GEN = { 'sci fi':'science fiction', 'scifi':'science fiction', 'sf':'science fiction', 'rom com':'romance', 'romcom':'romance', 'romantic':'romance',
   'doc':'documentary', 'docs':'documentary', 'animated':'animation', 'anime':'animation', 'cartoon':'animation', 'scary':'horror', 'funny':'comedy',
   'kids':'family', 'thrillers':'thriller', 'war movies':'war', 'crime drama':'crime', 'detective':'mystery', 'western':'western' };
@@ -692,7 +700,11 @@ $('#ctrack').addEventListener('scroll', () => {
 function drawResults(){
   const q = norm(qi.value);
   document.body.classList.toggle('typed', !!qi.value);
-  document.body.classList.toggle('q', !!q);
+  if(!!q !== document.body.classList.contains('q')){
+    // slide the whole stage up as one piece so the bar rises straight into place and the title fades above it
+    if(q) liftStage();
+    document.body.classList.toggle('q', !!q);
+  }
   if(!q){ $('#resin').innerHTML = ''; return; }
   const words = q.split(' ');
   const gq = GEN[q] || q, yr = /^\d{4}$/.test(q) ? q : null, dec = q.match(/^(19|20)?(\d)0 ?s$/);
@@ -732,7 +744,7 @@ function drawLib(){
   const SORTS = { added:'Recent', watched:'Watched', az:'A–Z' };
   const b = $('#libbody');
   const key = store.get(K_RD, '');
-  b.innerHTML = (key ? `<div class="synced">${syncing ? 'Syncing…' : lib.synced ? 'Synced ' + ago(lib.synced) + ' · pull down to sync' : 'Pull down to sync'}</div>` : '') + `<div class="ctrls"><div class="seg glass">${[['all', 'All'], ['movie', 'Films'], ['tv', 'Shows']].map(([k, l]) => `<button data-k="${k}" class="${k === kind ? 'on' : ''}">${l}</button>`).join('')}</div>
+  b.innerHTML = `<div class="ctrls"><div class="seg glass">${[['all', 'All'], ['movie', 'Films'], ['tv', 'Shows']].map(([k, l]) => `<button data-k="${k}" class="${k === kind ? 'on' : ''}">${l}</button>`).join('')}</div>
     <button class="sortb glass press" id="sortb"><svg class="ico" viewBox="0 0 24 24"><path d="M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3"/></svg>${SORTS[sort]}</button></div>
     ${!key ? '<div class="empty">Add your Real-Debrid token in Settings and your library appears here.</div>'
       : !list.length ? `<div class="empty">${syncing ? 'Reading your library…' : 'Nothing here yet.'}</div>`
