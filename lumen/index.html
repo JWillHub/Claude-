@@ -294,7 +294,7 @@ body.q .car{opacity:0;pointer-events:none}
 #tbody{position:relative}
 #tname{display:flex;justify-content:center;width:100%}
 .tp2{--hero:min(150vw,760px);position:relative}
-.tart{position:absolute;left:-20px;right:-20px;top:0;height:calc(var(--hero) + var(--st));background:var(--bgc) center top/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
+.tart{position:fixed;left:0;right:0;top:0;height:calc(var(--hero) + var(--st));background:var(--bgc) center top/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
 .tart.in{opacity:1}
 .tart::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 20%,rgba(0,0,0,0) 40%,rgba(0,0,0,.72) 74%,var(--bgc) 100%),radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,.6),transparent 70%)}
 .tp2 .bk{position:fixed;left:16px;top:calc(var(--st) + 14px);z-index:5;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
@@ -402,6 +402,9 @@ body.launch .dock{animation:lfade .6s 1s ease both}
   background:center/cover no-repeat;filter:blur(60px) saturate(1.6);opacity:0;transition:opacity 1s ease;transform:scale(.9)}
 .tglow.in{opacity:.18}
 .thead,.tdesc,#tmore{position:relative;z-index:1}
+
+/* the art stays put while the page scrolls over it, and dims as text covers it */
+.tart::before{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:var(--tdim,0);pointer-events:none}
 </style>
 </head>
 <body>
@@ -969,6 +972,8 @@ async function openTitle(id, src){
     <div class="tdesc" id="tdesc" hidden><p class="ov" id="tov"></p><div class="cast" id="tcast"></div></div>
     <div id="tmore"></div></div>`;
   $('#tback').onclick = back;
+  b.style.setProperty('--tdim', 0);
+  b.onscroll = () => { b.style.setProperty('--tdim', Math.min(.7, b.scrollTop / (innerHeight * .9)).toFixed(3)); };
   if(!el.classList.contains('open')){
     el.classList.add('open'); document.body.classList.add('tp'); coverState();
     pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; coverState(); document.documentElement.style.setProperty('--tamb', 'rgba(0,0,0,0)'); });
