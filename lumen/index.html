@@ -300,7 +300,7 @@ body.q .car{opacity:0;pointer-events:none}
 .tp2 .bk{position:fixed;left:16px;top:calc(var(--st) + 14px);z-index:5;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .thead{position:relative;z-index:1;padding-top:calc(var(--hero) + var(--st) - 210px);display:flex;flex-direction:column;align-items:center;text-align:center}
 .tname{margin:0;font-weight:300;font-size:34px;line-height:1.08;letter-spacing:.01em;max-width:92%;text-shadow:0 2px 24px rgba(0,0,0,.8)}
-.tlogo{display:block;max-width:76%;max-height:104px;object-fit:contain;filter:brightness(0) invert(1) drop-shadow(0 0 16px rgba(var(--lc),.28));opacity:0;transition:opacity .6s}
+.tlogo{display:block;max-width:76%;max-height:110px;object-fit:contain;filter:drop-shadow(0 4px 18px rgba(0,0,0,.65));opacity:0;transition:opacity .6s}
 .tlogo.tall{max-width:52%;max-height:132px}
 .tlogo.in{opacity:1}
 .tmeta2{margin-top:14px;font-size:10.5px;font-weight:400;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:rgba(var(--lc),.62)}
@@ -368,6 +368,13 @@ body.covered #home{visibility:hidden;transition:visibility 0s .6s}
 .row2b{display:flex;gap:10px;margin-top:12px}
 .row2b .wide{flex:1}
 .tg>span{flex:1;min-width:0}
+
+.navrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border-radius:22px;padding:18px 16px 18px 18px;margin-bottom:14px}
+.navrow span{flex:1;min-width:0}
+.navrow b{display:block;font-weight:400;font-size:15px}
+.navrow small{display:block;margin-top:3px;font-size:12px;color:var(--muted);font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navrow .chev{width:18px;height:18px;color:var(--faint);flex:none}
+#sub .shead h2{font-size:24px}
 </style>
 </head>
 <body>
@@ -406,6 +413,11 @@ body.covered #home{visibility:hidden;transition:visibility 0s .6s}
 <section class="sheet" id="watch">
   <div class="shead"><h2>Watching</h2></div>
   <div class="sbody" id="watchbody"></div>
+</section>
+
+<section class="sheet z2" id="sub">
+  <div class="shead"><button class="ibtn glass press" id="subback" aria-label="Back"><svg class="ico" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="subt"></h2></div>
+  <div class="sbody" id="subbody"></div>
 </section>
 
 <section class="sheet z2" id="title"><div class="sbody" id="tbody"></div></section>
@@ -543,12 +555,14 @@ function indexAll(){
 function busy(){ $('.sw').classList.toggle('busy', !!(syncing || indexing)); }
 async function details(m){
   const k = P + 'd.' + m.id, c = store.get(k, null);
-  if(c && c.v === 2 && Date.now() - c.at < 7 * 864e5) return c;
+  if(c && c.v === 3 && Date.now() - c.at < 7 * 864e5) return c;
   if(typeof m.id !== 'number' && !m.tv) return null;
   const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id, { append_to_response:(m.tv ? 'aggregate_credits' : 'credits') + ',images', include_image_language:'en,null' });
   const cr = (m.tv ? d.aggregate_credits : d.credits) || {};
   const logos = ((d.images || {}).logos || []).sort((a, b) => (b.iso_639_1 === 'en') - (a.iso_639_1 === 'en') || b.vote_average - a.vote_average);
-  const out = { v:2, at:Date.now(), logo:logos[0] ? logos[0].file_path : null, logoAr:logos[0] ? logos[0].aspect_ratio : 0, backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
+  const bestImg = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
+  const clean = bestImg(((d.images || {}).posters || []).filter(x => !x.iso_639_1));   // textless key art
+  const out = { v:3, at:Date.now(), art:clean ? clean.file_path : null, logo:logos[0] ? logos[0].file_path : null, logoAr:logos[0] ? logos[0].aspect_ratio : 0, backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
     genres:(d.genres || []).map(g => g.name), cast:(cr.cast || []).slice(0, 12).map(c => c.name), vote:d.vote_average || 0, seasons:(d.seasons || []).filter(s => s.season_number > 0).length };
   store.set(k, out);
   idx[m.id] = { g:out.genres, c:out.cast }; saveIdx();
@@ -897,21 +911,21 @@ async function openTitle(id, src){
   }
   const art = src => { const im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; const a = $('#tart'); a.style.backgroundImage = `url(${src})`; a.classList.add('in'); }; im.src = src; };
   // the poster fills the top at its natural shape (sharp, nothing cropped); the wide backdrop is only a fallback
-  if(t.poster) art(poster(t.poster, 'w780'));
-  if(t.raw || !store.get(K_TM, '')){ /* nothing more to load */ }
+  // textless key art at full quality (falls back to the normal poster); shown once, never swapped
+  if(t.raw || !store.get(K_TM, '')){ if(t.poster) art(poster(t.poster, 'w780')); }
   else details(t).then(d => {
     if(!d || !cur || cur.t !== t) return;
-    if(!t.poster && d.backdrop) art(IMG + 'w1280' + d.backdrop);
+    if(d.art) art(IMG + 'original' + d.art); else if(t.poster) art(poster(t.poster, 'original')); else if(d.backdrop) art(IMG + 'w1280' + d.backdrop);
     if(d.logo){
       const lg = new Image(); lg.className = 'tlogo' + (d.logoAr && d.logoAr < 1.6 ? ' tall' : ''); lg.alt = t.title;
       lg.onload = () => { if(!cur || cur.t !== t) return; const n = $('#tname'); n.innerHTML = ''; n.appendChild(lg); requestAnimationFrame(() => lg.classList.add('in')); };
-      lg.src = IMG + 'w500' + d.logo;
+      lg.src = IMG + (d.logo.endsWith('.svg') ? 'original' : 'w500') + d.logo;
     }
     $('#tmeta').textContent = [t.year, ...d.genres.slice(0, 2), t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : '', d.vote ? '★\u00a0' + d.vote.toFixed(1) : ''].filter(Boolean).join('  ·  ');
     const ov = $('#tov'); ov.textContent = d.overview; ov.onclick = () => ov.classList.toggle('full');
     if(d.cast && d.cast.length) $('#tcast').textContent = 'With ' + d.cast.slice(0, 4).join(', ');
     $('#tdesc').hidden = !d.overview && !(d.cast && d.cast.length);
-  }).catch(() => {});
+  }).catch(() => { if(t.poster) art(poster(t.poster, 'w780')); });
   $('#tact').innerHTML = `<button class="play glass busy press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
   let all;
   try{ all = (await Promise.all(t.tors.map(files))).flat(); }
@@ -1164,14 +1178,19 @@ function drawSettings(){
   const b = $('#setbody'), rk = store.get(K_RD, ''), tk = store.get(K_TM, ''), n = titles().length;
   const mobile = IS_ANDROID || IS_IOS;
   b.innerHTML = `
+  <button class="navrow glass press" data-sub="conn"><span><b>Connections</b><small>${rk ? 'Real-Debrid connected' : 'Real-Debrid not connected'} · ${tk ? 'TMDB connected' : 'TMDB not connected'}</small></span>${CHEV}</button>
+  <button class="navrow glass press" data-sub="player"><span><b>${NATIVE ? 'Player' : 'Playback'}</b><small>${NATIVE ? 'Episodes, sound and subtitles' : 'In-browser player and VLC'}</small></span>${CHEV}</button>
+  <div class="card glass"><h3>Appearance</h3>
+    <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, c]) => `<button class="swc ${(store.get(K_THEME, {}).light || 'White') === n ? 'on' : ''}" data-n="${n}" style="--c:${c}"><i></i>${n}</button>`).join('')}</div>
+    <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(store.get(K_THEME, {}).bg || 'Black') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+  <div id="sp-conn" hidden>
   <div class="card glass"><h3>Real-Debrid</h3><p>Your API token from <a href="https://real-debrid.com/apitoken" target="_blank" rel="noopener">real-debrid.com/apitoken</a>. It stays on this device.</p>
     <div class="fld"><input id="rdk" type="password" placeholder="Paste token" value="${esc(rk)}" autocomplete="off"><button id="rdshow">Show</button><button class="sv" id="rdsave">Save</button></div>
     <div class="stat" id="rdstat">${rk ? (n ? n + ' titles · ' : '') + (lib.synced ? 'synced ' + ago(lib.synced) : 'not synced yet') : 'Not connected'}</div></div>
   <div class="card glass"><h3>TMDB</h3><p>Used for posters, names and episode titles. Your free key or read token from themoviedb.org.</p>
     <div class="fld"><input id="tmk" type="password" placeholder="Paste key" value="${esc(tk)}" autocomplete="off"><button id="tmshow">Show</button><button class="sv" id="tmsave">Save</button></div></div>
-  <div class="card glass"><h3>Appearance</h3>
-    <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, c]) => `<button class="swc ${(store.get(K_THEME, {}).light || 'White') === n ? 'on' : ''}" data-n="${n}" style="--c:${c}"><i></i>${n}</button>`).join('')}</div>
-    <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(store.get(K_THEME, {}).bg || 'Black') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+  </div>
+  <div id="sp-player" hidden>
   ${NATIVE ? `<div class="card glass"><h3>Player</h3>
     <div class="sub">Episodes</div>
     ${tgl('pauto', 'Play next episode', 'A countdown when the credits start', store.get(K_PL_AUTO, true))}
@@ -1188,6 +1207,7 @@ function drawSettings(){
   : `<div class="card glass"><h3>Playback</h3><p>Videos play here when the format allows. 4K and HEVC files open in VLC automatically on phones.</p>
     ${mobile ? `<button class="tg ${store.get(K_VLC, false) ? 'on' : ''}" id="tvlc"><span>Always open in VLC<small>Skip the built-in player</small></span><i class="sw2"></i></button>` : ''}
     <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`}
+  </div>
   <div class="card glass"><h3>Library</h3><p>Lumen reads what is already in your Real-Debrid account. New downloads show up after a sync.</p>
     <button class="wide glass press" id="ssync">Sync now</button>
     <button class="wide glass press" id="rematch" style="margin-top:10px">Re-match all titles</button>
@@ -1205,6 +1225,8 @@ function drawSettings(){
     [['pal', K_PL_AUD], ['ptl', K_PL_TXT], ['pts', K_PL_SIZE], ['pst', K_PL_STYLE]].forEach(([id, k]) => $('#' + id).onchange = e => {
       store.set(k, e.target.value); $('#subprev').className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; });
   }
+  $$('.navrow[data-sub]', b).forEach(x => x.onclick = () => openSub(x.dataset.sub));
+  if(curSub && $('#sub').classList.contains('open')) showSub(curSub);
   $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
   $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); $$('#swb button').forEach(y => y.classList.toggle('on', y === x)); });
   const show = (i, btn) => { const x = $(i); x.type = x.type === 'password' ? 'text' : 'password'; $(btn).textContent = x.type === 'password' ? 'Show' : 'Hide'; };
@@ -1225,6 +1247,19 @@ function drawSettings(){
   $('#ssync').onclick = () => sync().then(() => { toast('Library up to date'); drawSettings(); }).catch(e => toast(errMsg(e)));
   $('#rematch').onclick = () => { Object.values(lib.items).forEach(it => delete it.m); saveLib(); sync().then(() => { toast('Titles re-matched'); drawSettings(); }).catch(e => toast(errMsg(e))); };
 }
+// Connections and Player open as their own page over Settings (same cards, just one level in)
+let curSub = null;
+function showSub(name){
+  const n = $('#setbody #sp-' + name); if(!n) return;
+  $('#subbody').innerHTML = ''; n.hidden = false; $('#subbody').appendChild(n);
+}
+function openSub(name){
+  curSub = name; $('#subt').textContent = name === 'conn' ? 'Connections' : NATIVE ? 'Player' : 'Playback';
+  showSub(name); $('#subbody').scrollTop = 0;
+  const el = $('#sub'); el.classList.add('open');
+  pushLayer('sub', () => { el.classList.remove('open'); curSub = null; if($('#set').classList.contains('open')) setTimeout(drawSettings, 450); });
+}
+$('#subback').onclick = back;
 // backup, restore and storage
 const BACKUP_KEYS = [K_PROG, K_DONE, K_THEME, K_SORT, K_KIND, K_VLC, K_PL_AUTO, K_PL_SKIP, K_PL_MID, K_PL_AUD, K_PL_TXT, K_PL_SIZE, K_PL_STYLE];
 const isCacheKey = k => k.startsWith(P + 'd.');
