@@ -293,8 +293,8 @@ body.q .car{opacity:0;pointer-events:none}
 /* ================= title page: tall art, centered white title logo, one lit Play ================= */
 #tbody{position:relative}
 #tname{display:flex;justify-content:center;width:100%}
-.tp2{--hero:min(66dvh,600px);position:relative}
-.tart{position:absolute;left:-20px;right:-20px;top:0;height:calc(var(--hero) + var(--st));background:var(--bgc) center 30%/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
+.tp2{--hero:min(150vw,760px);position:relative}
+.tart{position:absolute;left:-20px;right:-20px;top:0;height:calc(var(--hero) + var(--st));background:var(--bgc) center top/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
 .tart.in{opacity:1}
 .tart::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 20%,rgba(0,0,0,0) 40%,rgba(0,0,0,.72) 74%,var(--bgc) 100%),radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,.6),transparent 70%)}
 .tp2 .bk{position:fixed;left:16px;top:calc(var(--st) + 14px);z-index:5;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
@@ -896,10 +896,12 @@ async function openTitle(id, src){
     pushLayer('title', () => { el.classList.remove('open'); document.body.classList.remove('tp'); cur = null; coverState(); });
   }
   const art = src => { const im = new Image(); im.onload = () => { if(!cur || cur.t !== t) return; const a = $('#tart'); a.style.backgroundImage = `url(${src})`; a.classList.add('in'); }; im.src = src; };
-  if(t.raw || !store.get(K_TM, '')){ if(t.poster) art(poster(t.poster, 'w780')); }
+  // the poster fills the top at its natural shape (sharp, nothing cropped); the wide backdrop is only a fallback
+  if(t.poster) art(poster(t.poster, 'w780'));
+  if(t.raw || !store.get(K_TM, '')){ /* nothing more to load */ }
   else details(t).then(d => {
     if(!d || !cur || cur.t !== t) return;
-    if(d.backdrop) art(IMG + 'w1280' + d.backdrop); else if(t.poster) art(poster(t.poster, 'w780'));
+    if(!t.poster && d.backdrop) art(IMG + 'w1280' + d.backdrop);
     if(d.logo){
       const lg = new Image(); lg.className = 'tlogo' + (d.logoAr && d.logoAr < 1.6 ? ' tall' : ''); lg.alt = t.title;
       lg.onload = () => { if(!cur || cur.t !== t) return; const n = $('#tname'); n.innerHTML = ''; n.appendChild(lg); requestAnimationFrame(() => lg.classList.add('in')); };
@@ -909,7 +911,7 @@ async function openTitle(id, src){
     const ov = $('#tov'); ov.textContent = d.overview; ov.onclick = () => ov.classList.toggle('full');
     if(d.cast && d.cast.length) $('#tcast').textContent = 'With ' + d.cast.slice(0, 4).join(', ');
     $('#tdesc').hidden = !d.overview && !(d.cast && d.cast.length);
-  }).catch(() => { if(t.poster) art(poster(t.poster, 'w780')); });
+  }).catch(() => {});
   $('#tact').innerHTML = `<button class="play glass busy press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
   let all;
   try{ all = (await Promise.all(t.tors.map(files))).flat(); }
