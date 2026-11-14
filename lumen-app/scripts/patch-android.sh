@@ -19,16 +19,16 @@ dependencies {
 }
 GRADLE
 
-# Sign every build with the same key (lumen-app/debug.keystore), so a new version installs over the old one
+# Sign every build with the same private key (unlocked in the workflow from signing.keystore.enc), so a new version installs over the old one
 cat >> android/app/build.gradle <<'GRADLE'
 
 android {
     signingConfigs {
         debug {
             storeFile file("../../debug.keystore")
-            storePassword "android"
+            storePassword(System.getenv("KS_PASS") ?: "android")
             keyAlias "androiddebugkey"
-            keyPassword "android"
+            keyPassword(System.getenv("KS_PASS") ?: "android")
         }
     }
     buildTypes {

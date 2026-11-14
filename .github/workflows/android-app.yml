@@ -37,13 +37,24 @@ jobs:
           npx cap add android
           ./scripts/patch-android.sh
           npx cap sync android
+      - name: Unlock the private signing key (SIGNING_PASSPHRASE secret)
+        env:
+          PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: |
+          if [ -n "$PASSPHRASE" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in signing.keystore.enc -out debug.keystore -pass env:PASSPHRASE
+            echo "KS_PASS=$PASSPHRASE" >> "$GITHUB_ENV"
+          else
+            echo "::warning::SIGNING_PASSPHRASE secret is not set, so this build uses the old public key"
+            echo "KS_PASS=android" >> "$GITHUB_ENV"
+          fi
       - name: Build APK
         working-directory: android-app/android
         run: ./gradlew --no-daemon assembleDebug
       - name: Rename and check it's signed with the app's own key
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk rolling-credits.apk
-          want=$(keytool -list -v -keystore debug.keystore -storepass android | grep -m1 'SHA256:' | awk '{print $2}')
+          want=$(keytool -list -v -keystore debug.keystore -storepass "$KS_PASS" | grep -m1 'SHA256:' | awk '{print $2}')
           got=$(keytool -printcert -jarfile rolling-credits.apk | grep -m1 'SHA256:' | awk '{print $2}')
           echo "want $want"; echo "got  $got"
           test "$want" = "$got"
