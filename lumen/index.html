@@ -394,13 +394,13 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 @keyframes lrise{from{opacity:0;transform:translateY(24px)}}
 
 /* ambient light: a blurred copy of the poster glowing behind it (no colour reading needed, works everywhere) */
-.cglow{position:absolute;left:50%;top:14px;width:130px;height:200px;margin-left:-65px;pointer-events:none;z-index:0;
-  background:center/cover no-repeat;filter:blur(30px) saturate(1.3);opacity:0;transition:opacity .6s ease}
-.cglow.on{opacity:.24}
+.cglow{position:absolute;left:50%;top:8px;width:150px;height:220px;margin-left:-75px;pointer-events:none;z-index:0;
+  background:center/cover no-repeat;filter:blur(32px) saturate(1.4);opacity:0;transition:opacity .6s ease}
+.cglow.on{opacity:.5}
 .ctrack{position:relative;z-index:1}
 .tglow{position:absolute;left:0;right:0;top:calc(var(--hero) + var(--st) - 300px);height:420px;pointer-events:none;z-index:0;
   background:center/cover no-repeat;filter:blur(60px) saturate(1.6);opacity:0;transition:opacity 1s ease;transform:scale(.9)}
-.tglow.in{opacity:.16}
+.tglow.in{opacity:.26}
 .thead,.tdesc,#tmore{position:relative;z-index:1}
 </style>
 </head>
@@ -828,7 +828,7 @@ function carPaint(){
     items[mid].classList.add('mid'); carMid = mid;
     if(carTouched) buzz(6);
     carGlow(carList[mid % carN]);
-    { const t = carList[mid % carN]; if(t && t.poster) ambientFrom(t.poster, c => { const h = document.documentElement.style; h.setProperty('--amb', `rgba(${c},.06)`); h.setProperty('--amb2', `rgba(${c},.035)`); }); }
+    { const t = carList[mid % carN]; if(t && t.poster) ambientFrom(t.poster, c => { const h = document.documentElement.style; h.setProperty('--amb', `rgba(${c},.09)`); h.setProperty('--amb2', `rgba(${c},.045)`); }); }
   }
 }
 $('#ctrack').addEventListener('scroll', () => {
