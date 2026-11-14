@@ -1,0 +1,7 @@
+node_modules/
+android/
+package-lock.json
+lumen.apk
+version.json
+www/*
+!www/.gitkeep

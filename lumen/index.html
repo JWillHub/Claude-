@@ -335,6 +335,17 @@ body.q .car{opacity:0;pointer-events:none}
 .swc.on i{box-shadow:inset 0 0 0 1.5px rgb(var(--c)),0 0 18px rgba(var(--c),.6),0 0 40px rgba(var(--c),.2)}
 .card .sub{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);margin:16px 0 10px}
 .card .sub:first-of-type{margin-top:6px}
+
+/* app: Player settings, update dot */
+.selr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;margin-top:6px}
+.selr span{font-size:14px;font-weight:300}
+.selr select{appearance:none;-webkit-appearance:none;background:transparent;color:#fff;font:inherit;font-size:13px;font-weight:300;letter-spacing:.02em;
+  border:0;border-radius:999px;padding:9px 30px 9px 16px;min-width:150px;box-shadow:inset 0 0 0 1px rgba(var(--lc),.35),0 0 10px rgba(var(--lc),.08);outline:none;
+  background-image:linear-gradient(45deg,transparent 50%,rgba(var(--lc),.8) 50%),linear-gradient(135deg,rgba(var(--lc),.8) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 55%,calc(100% - 12px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.selr select option{background:#111;color:#fff}
+.dk{position:relative}
+.dk.upd::after{content:"";position:absolute;top:9px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:rgb(var(--lc));box-shadow:0 0 8px rgb(var(--lc))}
 </style>
 </head>
 <body>
@@ -445,6 +456,35 @@ const CHEV = '<svg class="ico chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/>
 const CHECK = '<svg class="ico ck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8.3 12.3 2.5 2.5 5-5.2"/></svg>';
 const poster = (p, w = 'w342') => p ? IMG + w + p : '';
 
+/* ================= Android app ================= */
+// Inside the Lumen Android app: Real-Debrid is called directly and Play opens the native player.
+const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+function callNative(plugin, method, opts){
+  const C = window.Capacitor || {};
+  if(C.Plugins && C.Plugins[plugin] && typeof C.Plugins[plugin][method] === 'function') return C.Plugins[plugin][method](opts);
+  if(typeof C.registerPlugin === 'function') return C.registerPlugin(plugin)[method](opts);
+  return Promise.reject(new Error('not available'));
+}
+const K_PL_AUTO = P + 'pl.autoplay', K_PL_SKIP = P + 'pl.autoskip', K_PL_MID = P + 'pl.midnight', K_PL_AUD = P + 'pl.audio', K_PL_TXT = P + 'pl.text', K_PL_SIZE = P + 'pl.subsize', K_PL_STYLE = P + 'pl.substyle';
+const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), midnightDefault:!!store.get(K_PL_MID, false), audioLang:store.get(K_PL_AUD, ''),
+  textLang:store.get(K_PL_TXT, ''), subSize:store.get(K_PL_SIZE, 'm'), subStyle:store.get(K_PL_STYLE, 'shadow') });
+const APP_BUILD = parseInt('__BUILDNUM__', 10) || 0;
+const REL = 'https://github.com/JWillHub/Claude-/releases/download/lumen-latest/';
+let latestBuild = 0;
+async function checkForUpdate(){
+  if(!NATIVE || !APP_BUILD) return;
+  try{ const r = await fetch(REL + 'version.json?t=' + Date.now()); latestBuild = +JSON.parse(await r.text()).build || 0; }catch(e){ return; }
+  const d = $('.dk[data-sheet=set]'); if(d) d.classList.toggle('upd', latestBuild > APP_BUILD);
+  if($('#set').classList.contains('open') && $('#appver')) fillVersion();
+}
+if(NATIVE){
+  document.documentElement.classList.add('native');
+  window.rcBack = () => false;   // nothing left to close: Android's back leaves the app
+  setTimeout(() => callNative('RCUpdate', 'setBars', { light:false }).catch(() => {}), 300);
+  setTimeout(checkForUpdate, 2500);
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) checkForUpdate(); });
+}
+
 /* ================= TMDB ================= */
 let inF = 0; const waitQ = [];
 const slot = () => inF < 6 ? (inF++, Promise.resolve()) : new Promise(r => waitQ.push(r));
@@ -502,7 +542,7 @@ async function seasonEps(tid, n){
 
 /* ================= Real-Debrid ================= */
 // Browsers can't call Real-Debrid directly; requests go through the rc-relay worker (allowed for jwillhub.github.io)
-const RD_API = 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
+const RD_API = NATIVE ? 'https://api.real-debrid.com/rest/1.0' : 'https://rc-relay-3cfe.jwill-personalacc.workers.dev/rd';
 async function rd(path, opt = {}){
   const key = store.get(K_RD, ''); if(!key) throw new Error('rdnokey');
   const u = new URL(RD_API + path); Object.entries(opt.q || {}).forEach(([k, v]) => u.searchParams.set(k, v));
@@ -893,7 +933,8 @@ function drawShow(eps){
 }
 function playEp(x){
   const t = cur.t, i = cur.list.indexOf(x), nx = cur.list[i + 1];
-  play({ f:x, title:t.title, id:t.id, poster:t.poster, label:x.ep.s ? `S${x.ep.s} E${x.ep.e}` : '', next:nx ? () => playEp(nx) : null });
+  play({ f:x, title:t.title, id:t.id, poster:t.poster, label:x.ep.s ? `S${x.ep.s} E${x.ep.e}` : '', next:nx ? () => playEp(nx) : null,
+    tv:true, tmdbId:t.tid || 0, ep:x.ep, queue:cur.list.slice(i + 1, i + 41).filter(y => y.ep && y.ep.s) });
 }
 function resume(k){
   const p = prog[k]; if(!p) return;
@@ -919,6 +960,7 @@ $('#player').addEventListener('pointermove', showTop); $('#player').addEventList
 v.addEventListener('pause', showTop);
 
 async function play(o, fresh){
+  if(NATIVE) return nativePlay(o);
   const key = o.f.tid + '|' + o.f.path, full = o.title + (o.label ? ' · ' + o.label : '');
   if(pl) stopPlayer(true);
   pl = { ...o, key, full, busy:false, finished:false, lastSave:0 };
@@ -998,7 +1040,90 @@ function stopPlayer(keepLayer){
 $('#pclose').onclick = back;
 $('#pnext').onclick = () => { const n = pl && pl.next; if(n){ saveNow(); n(); } };
 
+/* ================= native player (Android app) ================= */
+const K_INPL = P + 'inplayer';
+let launching = 0;
+async function nativePlay(o, retry = false){
+  if(!retry && Date.now() - launching < 4000) return;   // ignore a double tap
+  launching = Date.now();
+  const key = o.f.tid + '|' + o.f.path, full = o.title + (o.label ? ' · ' + o.label : '');
+  if(!retry) toast('Opening the player…');
+  try{
+    let link = o.f.link;
+    if(!link){ const f = (await files(o.f.tid)).find(x => x.path === o.f.path); if(!f) throw new Error('This file is no longer in your Real-Debrid account.'); link = f.link; }
+    const s = await stream(link, retry);
+    const remembered = !retry && Date.now() - s.at > 10000;
+    const startT = !o.fromStart && prog[key] && prog[key].t > 20 ? prog[key].t : 0;
+    const queue = (o.queue || []).map(x => { const k = x.tid + '|' + x.path;
+      return { link:x.link, key:k, tid:x.tid, s:x.ep.s, e:x.ep.e, label:`S${x.ep.s} E${x.ep.e}`, url:'', startMs:prog[k] && prog[k].t > 20 ? Math.floor(prog[k].t * 1000) : 0 }; });
+    const opts = { ...playerPrefs(), url:s.url, title:full, startMs:Math.floor(startT * 1000), key };
+    if(o.tv) Object.assign(opts, { show:o.title, tmdbId:o.tmdbId || 0, season:o.ep ? o.ep.s : 0, episode:o.ep ? o.ep.e : 0,
+      queue:JSON.stringify(queue), rdToken:store.get(K_RD, ''), autoplay:store.get(K_PL_AUTO, true) });
+    const ctx = { key, tid:o.f.tid, link, o:{ id:o.id, title:o.title, label:o.label || '', poster:o.poster || null }, queue, at:Date.now() };
+    store.set(K_INPL, ctx);
+    let r;
+    try{ r = await callNative('RCPlayer', 'play', opts); }
+    catch(e){ store.set(K_INPL, null); toast('Could not open the player'); return; }
+    if(r.error && remembered && (!r.lastKey || r.lastKey === key)){ delete linkMem[link]; launching = 0; return nativePlay({ ...o, f:{ ...o.f, link } }, true); }
+    if(r.error) toast(r.error === 'NEXT_EPISODE_UNAVAILABLE' ? "Couldn't load the next episode" : "The player couldn't play this file");
+    applyResult(r, ctx);
+  }catch(e){ toast(e.message && e.message.startsWith('This file') ? e.message : errMsg(e)); }
+  finally{ launching = 0; }
+}
+// what the player reports when it closes: episodes it finished on its own, and where you stopped
+function applyResult(r, ctx){
+  const byKey = {}; (ctx.queue || []).forEach(q => byKey[q.key] = q);
+  let played = r.played; if(typeof played === 'string'){ try{ played = JSON.parse(played); }catch(e){ played = []; } }
+  (Array.isArray(played) ? played : []).forEach(x => { if(x && x.key && x.finished){ done[x.key] = Date.now(); delete prog[x.key]; } });
+  let key = ctx.key, tid = ctx.tid, link = ctx.link, label = ctx.o.label;
+  if(r.lastKey && r.lastKey !== key && byKey[r.lastKey]){ const q = byKey[r.lastKey]; key = q.key; tid = q.tid; link = q.link; label = q.label; }
+  const t = (r.positionMs || 0) / 1000, d = (r.durationMs || 0) / 1000;
+  if(d > 0){
+    if(r.finished || r.ended || t / d >= 0.92){ done[key] = Date.now(); delete prog[key]; }
+    else if(t > 5) prog[key] = { t, d, at:Date.now(), tid, id:ctx.o.id, title:ctx.o.title, name:ctx.o.title, label, link, poster:ctx.o.poster };
+  }
+  saveProg(); store.set(K_INPL, null); callNative('RCPlayer', 'clearSaved', {}).catch(() => {});
+  refresh();
+}
+// the player wrote its spot down but the app was closed before it could report back
+async function recoverSpot(){
+  if(!NATIVE || launching) return;
+  const ctx = store.get(K_INPL, null); if(!ctx || !ctx.key) return;
+  if(Date.now() - (ctx.at || 0) > 14 * 864e5){ store.set(K_INPL, null); return; }
+  let r; try{ r = await callNative('RCPlayer', 'saved', {}); }catch(e){ return; }
+  if(launching) return;
+  if(!r || !r.lastKey || !r.durationMs){ store.set(K_INPL, null); return; }
+  if(r.at && r.at < ctx.at - 60000) return;
+  applyResult(r, ctx);
+}
+if(NATIVE){ setTimeout(recoverSpot, 1500); document.addEventListener('visibilitychange', () => { if(!document.hidden) setTimeout(recoverSpot, 1500); }); }
+// app version, with an Update button when a newer build is out
+let updating = false;
+function fillVersion(){
+  const box = $('#appver'); if(!box || updating) return;
+  const newer = latestBuild > APP_BUILD;
+  box.innerHTML = `<div class="tg" style="pointer-events:none"><span>Version ${APP_BUILD || '?'}<small>${newer ? 'Version ' + latestBuild + ' is ready' : 'Up to date'}</small></span></div>
+    ${newer ? `<button class="wide glass on press" id="updbtn" style="margin-top:12px">Update to ${latestBuild}</button>` : ''}`;
+  const btn = $('#updbtn'); if(!btn) return;
+  btn.onclick = async () => {
+    const url = REL + 'lumen.apk?v=' + latestBuild;
+    btn.disabled = true; btn.classList.add('busy'); btn.textContent = 'Downloading…'; updating = true;
+    const C = window.Capacitor || {}, Pl = (C.Plugins && C.Plugins.RCUpdate) || (C.registerPlugin && C.registerPlugin('RCUpdate'));
+    let h = null;
+    try{ if(Pl && Pl.addListener) h = await Pl.addListener('progress', e => { btn.textContent = e.pct >= 0 ? `Downloading… ${e.pct}%` : `Downloading… ${e.mb} MB`; }); }catch(e){}
+    try{
+      const r = await callNative('RCUpdate', 'install', { url });
+      if(r && r.needsPermission){ toast('Turn on "Allow from this source", come back, then tap Update again'); btn.textContent = 'Update to ' + latestBuild; btn.disabled = false; }
+      else btn.textContent = 'Installing…';
+    }catch(e){ btn.textContent = 'Download in browser'; btn.disabled = false; btn.onclick = () => callNative('RCUpdate', 'openInBrowser', { url }).catch(() => { location.href = url; }); }
+    finally{ updating = false; btn.classList.remove('busy'); h && h.remove && h.remove(); }
+  };
+}
+
 /* ================= settings ================= */
+const LANGS = [['en', 'English'], ['es', 'Spanish'], ['fr', 'French'], ['de', 'German'], ['it', 'Italian'], ['pt', 'Portuguese'], ['ja', 'Japanese'], ['ko', 'Korean'], ['zh', 'Chinese'], ['hi', 'Hindi'], ['ru', 'Russian']];
+const tgl = (id, label, sub, on) => `<button class="tg ${on ? 'on' : ''}" id="${id}"><span>${label}<small>${sub}</small></span><i class="sw2"></i></button>`;
+const sel = (id, label, v, opts) => `<label class="selr"><span>${label}</span><select id="${id}">${opts.map(([k, l]) => `<option value="${k}" ${k === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
 function drawSettings(){
   const b = $('#setbody'), rk = store.get(K_RD, ''), tk = store.get(K_TM, ''), n = titles().length;
   const mobile = IS_ANDROID || IS_IOS;
@@ -1011,13 +1136,31 @@ function drawSettings(){
   <div class="card glass"><h3>Appearance</h3>
     <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, c]) => `<button class="swc ${(store.get(K_THEME, {}).light || 'White') === n ? 'on' : ''}" data-n="${n}" style="--c:${c}"><i></i>${n}</button>`).join('')}</div>
     <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(store.get(K_THEME, {}).bg || 'Black') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
-  <div class="card glass"><h3>Playback</h3><p>Videos play here when the format allows. 4K and HEVC files open in VLC automatically on phones.</p>
+  ${NATIVE ? `<div class="card glass"><h3>Player</h3>
+    <div class="sub">Episodes</div>
+    ${tgl('pauto', 'Play next episode', 'A countdown when the credits start', store.get(K_PL_AUTO, true))}
+    ${tgl('pskip', 'Skip intros', 'Jumps past intros and recaps, with a tap to undo', store.get(K_PL_SKIP, false))}
+    <div class="sub">Sound</div>
+    ${tgl('pmid', 'Midnight mode', 'Evens out loud peaks from the start', store.get(K_PL_MID, false))}
+    ${sel('pal', 'Audio language', store.get(K_PL_AUD, ''), [['', 'Last used'], ...LANGS])}
+    <div class="sub">Subtitles</div>
+    ${sel('ptl', 'Language', store.get(K_PL_TXT, ''), [['', 'Last used'], ['off', 'Off'], ...LANGS])}
+    ${sel('pts', 'Size', store.get(K_PL_SIZE, 'm'), [['s', 'Small'], ['m', 'Medium'], ['l', 'Large'], ['xl', 'Extra large']])}
+    ${sel('pst', 'Style', store.get(K_PL_STYLE, 'shadow'), [['shadow', 'Shadow'], ['outline', 'Outline'], ['box', 'Dark box'], ['yellow', 'Yellow']])}
+    <button class="tg" id="tclear" style="margin-top:16px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`
+  : `<div class="card glass"><h3>Playback</h3><p>Videos play here when the format allows. 4K and HEVC files open in VLC automatically on phones.</p>
     ${mobile ? `<button class="tg ${store.get(K_VLC, false) ? 'on' : ''}" id="tvlc"><span>Always open in VLC<small>Skip the built-in player</small></span><i class="sw2"></i></button>` : ''}
-    <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>
+    <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`}
   <div class="card glass"><h3>Library</h3><p>Lumen reads what is already in your Real-Debrid account. New downloads show up after a sync.</p>
     <button class="wide glass press" id="ssync">Sync now</button>
     <button class="wide glass press" id="rematch" style="margin-top:10px">Re-match all titles</button></div>
-  <div class="ver">LUMEN · 1.0</div>`;
+  ${NATIVE ? '<div class="card glass"><h3>App</h3><div id="appver"></div></div>' : ''}
+  <div class="ver">LUMEN${APP_BUILD ? ' · BUILD ' + APP_BUILD : ''}</div>`;
+  if(NATIVE){
+    fillVersion();
+    [['pauto', K_PL_AUTO, true], ['pskip', K_PL_SKIP, false], ['pmid', K_PL_MID, false]].forEach(([id, k, d]) => $('#' + id).onclick = e => { const on = !store.get(k, d); store.set(k, on); e.currentTarget.classList.toggle('on', on); });
+    [['pal', K_PL_AUD], ['ptl', K_PL_TXT], ['pts', K_PL_SIZE], ['pst', K_PL_STYLE]].forEach(([id, k]) => $('#' + id).onchange = e => store.set(k, e.target.value));
+  }
   $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
   $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); $$('#swb button').forEach(y => y.classList.toggle('on', y === x)); });
   const show = (i, btn) => { const x = $(i); x.type = x.type === 'password' ? 'text' : 'password'; $(btn).textContent = x.type === 'password' ? 'Show' : 'Hide'; };
@@ -1049,7 +1192,7 @@ function refresh(){
 drawHome(); indexAll();
 if(store.get(K_RD, '') && Date.now() - lib.synced > 10 * 60e3) sync().catch(e => { if(!titles().length) $('#hint').textContent = errMsg(e); });
 document.addEventListener('visibilitychange', () => { if(!document.hidden && !pl && store.get(K_RD, '') && Date.now() - lib.synced > 30 * 60e3) sync().catch(() => {}); });
-if('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>

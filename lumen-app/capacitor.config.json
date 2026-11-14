@@ -1,0 +1,9 @@
+{
+  "appId": "io.github.jwillhub.lumen",
+  "appName": "Lumen",
+  "webDir": "www",
+  "android": { "backgroundColor": "#000000" },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}

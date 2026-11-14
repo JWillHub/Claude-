@@ -1,0 +1,67 @@
+# Builds the Lumen Android app (lumen-app/, screens from lumen/) and publishes the APK as the "lumen-latest" release.
+name: Lumen app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['lumen/**', 'lumen-app/**', '.github/workflows/lumen-app.yml']
+permissions:
+  contents: write
+concurrency: lumen-app
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: lumen-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Android SDK (preinstalled on GitHub's runners)
+        run: echo "ANDROID_HOME=$ANDROID_HOME" && ls "$ANDROID_HOME/platforms" | tail -3
+      - name: Install Capacitor
+        run: npm install --no-audit --no-fund
+      - name: Create the Android project
+        run: |
+          # the screens are the published Lumen page, so the app and the web version always match
+          cp ../lumen/index.html ../lumen/manifest.json ../lumen/icon-192.png ../lumen/icon-512.png ../lumen/apple-touch-icon.png www/
+          sed -i 's#<head>#<head>\n<script src="capacitor.js"></script>#' www/index.html
+          cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
+          sed -i "s/__BUILDNUM__/${GITHUB_RUN_NUMBER}/g" www/index.html
+          sed -i "s/__BUILD__/${GITHUB_RUN_NUMBER} · $(TZ=America/Chicago date '+%b %-d, %-I:%M %p')/" www/index.html
+          echo "{\"build\": ${GITHUB_RUN_NUMBER}}" > version.json
+          npx cap add android
+          ./scripts/patch-android.sh
+          npx cap sync android
+      - name: Build APK
+        working-directory: lumen-app/android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Rename and check it's signed with the app's own key
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk lumen.apk
+          want=$(keytool -list -v -keystore debug.keystore -storepass android | grep -m1 'SHA256:' | awk '{print $2}')
+          got=$(keytool -printcert -jarfile lumen.apk | grep -m1 'SHA256:' | awk '{print $2}')
+          echo "want $want"; echo "got  $got"
+          test "$want" = "$got"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lumen.apk
+          path: lumen-app/lumen.apk
+      - name: Publish as the android-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: lumen-latest
+          name: Lumen for Android (latest build)
+          body: "Latest build from ${{ github.sha }}. Download lumen.apk on your phone and open it to install or update."
+          prerelease: false
+          make_latest: false
+          files: |
+            lumen-app/lumen.apk
+            lumen-app/version.json
