@@ -16,7 +16,7 @@
 <style>
 :root{
   color-scheme:dark;
-  --bg:#000;--lc:255,255,255;--bgc:#000;--text:#f2f2f2;--muted:rgba(var(--lc),.52);--faint:rgba(var(--lc),.28);
+  --bg:#000;--lc:255,255,255;--bgc:#000;--bgr:0,0,0;--text:#f2f2f2;--tr:242,242,242;--muted:rgba(var(--tr),.52);--faint:rgba(var(--tr),.3);
   --font:'Sora',system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
   --ease:cubic-bezier(.22,.9,.24,1);
@@ -55,7 +55,7 @@ img{display:block}
 .stage{position:absolute;left:0;right:0;top:49%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;padding:0 22px;
   transition:top .55s var(--ease),transform .55s var(--ease)}
 body.q .stage{transform:translateY(-50%) translateY(var(--lift,0px))}
-.mark{font-family:'Orbitron','Sora',sans-serif;font-weight:500;font-size:38px;line-height:1;letter-spacing:.3em;text-indent:.3em;color:#fff;margin:0 0 40px;text-transform:uppercase;
+.mark{font-family:'Orbitron','Sora',sans-serif;font-weight:500;font-size:38px;line-height:1;letter-spacing:.3em;text-indent:.3em;color:var(--text);margin:0 0 40px;text-transform:uppercase;
   text-shadow:0 0 18px rgba(var(--lc),.35),0 0 42px rgba(var(--lc),.12);transition:opacity .3s,filter .45s;height:36px}
 body.q .mark{opacity:0;filter:blur(6px)}
 .sw{position:relative;width:min(560px,100%)}
@@ -102,7 +102,7 @@ body.q .res{opacity:1;pointer-events:auto}
 body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);opacity:0;pointer-events:none}
 .dk{flex:1;display:flex;align-items:center;justify-content:center;gap:9px;height:50px;padding:0 20px;border-radius:14px;color:rgba(var(--lc),.72);font-size:13px;font-weight:400;letter-spacing:.04em;transition:background .3s,color .3s}
 .dk .ico{width:20px;height:20px}
-.dk.on{background:rgba(var(--lc),.16);color:#fff;box-shadow:inset 0 1px 0 rgba(var(--lc),.25),0 0 18px rgba(var(--lc),.08)}
+.dk.on{background:rgba(var(--lc),.16);color:var(--text);box-shadow:inset 0 1px 0 rgba(var(--lc),.25),0 0 18px rgba(var(--lc),.08)}
 
 /* ---------- sheets ---------- */
 .sheet{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(34px) saturate(140%);backdrop-filter:blur(34px) saturate(140%);
@@ -113,7 +113,7 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 .shead{flex:none;display:flex;align-items:center;gap:12px;padding:calc(var(--st) + 16px) 20px 12px}
 .shead h2{margin:0;font-weight:300;font-size:26px;letter-spacing:.02em;flex:1}
 .shead small{font-size:12px;color:var(--muted);font-weight:300;letter-spacing:.04em}
-.ibtn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;color:#fff}
+.ibtn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--text)}
 .ibtn .ico{width:19px;height:19px}
 .ibtn.spin .ico{animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -124,7 +124,7 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 .ctrls{display:flex;gap:10px;align-items:center;margin:4px 0 18px}
 .seg{display:flex;padding:4px;border-radius:999px;flex:1}
 .seg button{flex:1;height:34px;border-radius:999px;font-size:12.5px;color:rgba(var(--lc),.6);letter-spacing:.03em;transition:background .3s,color .3s}
-.seg button.on{background:rgba(var(--lc),.17);color:#fff;box-shadow:inset 0 1px 0 rgba(var(--lc),.22)}
+.seg button.on{background:rgba(var(--lc),.17);color:var(--text);box-shadow:inset 0 1px 0 rgba(var(--lc),.22)}
 .sortb{height:42px;padding:0 16px;border-radius:999px;font-size:12.5px;color:rgba(var(--lc),.8);display:flex;align-items:center;gap:7px;flex:none}
 .sortb .ico{width:15px;height:15px}
 
@@ -179,7 +179,7 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 .card{border-radius:24px;padding:18px;margin-bottom:14px}
 .card h3{margin:0 0 4px;font-weight:400;font-size:15px}
 .card p{margin:0 0 14px;font-size:12.5px;color:var(--muted);font-weight:300;line-height:1.55}
-.card p a{color:#fff}
+.card p a{color:var(--text)}
 .fld{display:flex;align-items:center;gap:8px;height:50px;border-radius:16px;padding:0 6px 0 16px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(var(--lc),.12)}
 .fld input{flex:1;min-width:0;background:none;border:0;outline:none;font-size:14px;font-weight:300;height:100%}
 .fld button{height:38px;padding:0 14px;border-radius:12px;font-size:12.5px;color:rgba(var(--lc),.75)}
@@ -221,29 +221,29 @@ body.playing #player{display:block}
   box-shadow:0 0 14px rgba(var(--lc),.045),inset 0 0 14px rgba(var(--lc),.025);transition:box-shadow .35s,transform .25s var(--ease),color .3s}
 .glass::after{display:none}
 .glass::before{background:linear-gradient(100deg,rgba(var(--lc),.6),rgba(var(--lc),.2) 22%,rgba(var(--lc),.09) 50%,rgba(var(--lc),.2) 78%,rgba(var(--lc),.6))}
-.glass.on{color:#fff;box-shadow:0 0 10px rgba(var(--lc),.14),inset 0 0 10px rgba(var(--lc),.06)}
+.glass.on{color:var(--text);box-shadow:0 0 10px rgba(var(--lc),.14),inset 0 0 10px rgba(var(--lc),.06)}
 .glass.on::before{display:block;background:linear-gradient(100deg,rgb(var(--lc)),rgba(var(--lc),.6) 30%,rgba(var(--lc),.42) 50%,rgba(var(--lc),.6) 70%,rgb(var(--lc)))}
-.chip.on{background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));color:#fff}
-.lit,.seg button.on,.dk.on{color:#fff;background:rgba(var(--lc),.045);box-shadow:inset 0 0 0 1px rgba(var(--lc),.72),0 0 8px rgba(var(--lc),.12),inset 0 0 8px rgba(var(--lc),.06)}
+.chip.on{background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));color:var(--text)}
+.lit,.seg button.on,.dk.on{color:var(--text);background:rgba(var(--lc),.045);box-shadow:inset 0 0 0 1px rgba(var(--lc),.72),0 0 8px rgba(var(--lc),.12),inset 0 0 8px rgba(var(--lc),.06)}
 /* a light that travels around the outline while something loads */
 .glass.busy::before,.sbar.glass.busy::before{background:conic-gradient(from var(--a),rgba(var(--lc),.16) 0deg,rgba(var(--lc),.16) 220deg,rgba(var(--lc),.7) 285deg,rgb(var(--lc)) 310deg,rgba(var(--lc),.16) 350deg);animation:orbit 1.8s linear infinite}
 @keyframes orbit{to{--a:360deg}}
 .sheet{background:color-mix(in srgb,var(--bgc) 97%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none}
 /* dock: a pill with four tabs; a little dark tint so it reads over posters */
-.dock{border-radius:999px;width:min(430px,calc(100% - 36px));gap:4px;padding:6px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.dock{border-radius:999px;width:min(430px,calc(100% - 36px));gap:4px;padding:6px;background:rgba(var(--bgr),.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .dk{flex-direction:column;gap:4px;height:54px;padding:0;border-radius:999px;font-size:10.5px;letter-spacing:.08em;color:rgba(var(--lc),.55)}
 .dk .ico{width:21px;height:21px}
 /* posters wait in black and white and come into color when touched */
 .pt .pf{box-shadow:inset 0 0 0 1px rgba(var(--lc),.14),0 0 14px rgba(var(--lc),.04)}
 .pt .pf::after{background:linear-gradient(160deg,rgba(var(--lc),.08),transparent 35%);box-shadow:inset 0 0 0 1px rgba(var(--lc),.14)}
 .pt:active .pf::after{box-shadow:inset 0 0 0 1px rgba(var(--lc),.7),0 0 14px rgba(var(--lc),.2)}
-.play{animation:none!important;color:#fff;background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));box-shadow:0 0 18px rgba(var(--lc),.24),0 0 50px rgba(var(--lc),.08),inset 0 0 14px rgba(var(--lc),.1);animation:breathe2 5s ease-in-out infinite}
-.play svg{fill:#fff}
+.play{animation:none!important;color:var(--text);background:linear-gradient(180deg,rgba(var(--lc),.07),rgba(var(--lc),.015));box-shadow:0 0 18px rgba(var(--lc),.24),0 0 50px rgba(var(--lc),.08),inset 0 0 14px rgba(var(--lc),.1);animation:breathe2 5s ease-in-out infinite}
+.play svg{fill:var(--text)}
 @keyframes breathe2{0%,100%{box-shadow:0 0 12px rgba(var(--lc),.16),0 0 34px rgba(var(--lc),.05),inset 0 0 12px rgba(var(--lc),.07)}50%{box-shadow:0 0 20px rgba(var(--lc),.3),0 0 56px rgba(var(--lc),.1),inset 0 0 16px rgba(var(--lc),.12)}}
 .cast{margin-top:10px;font-size:12px;color:var(--muted);font-weight:300;line-height:1.6}
 .fld{background:transparent;box-shadow:inset 0 0 0 1px rgba(var(--lc),.16)}
 .fld:focus-within{box-shadow:inset 0 0 0 1px rgba(var(--lc),.55),0 0 14px rgba(var(--lc),.12)}
-.fld button.sv{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(var(--lc),.75),0 0 12px rgba(var(--lc),.18)}
+.fld button.sv{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px rgba(var(--lc),.75),0 0 12px rgba(var(--lc),.18)}
 .sw2{background:transparent}
 .tg.on .sw2{background:rgba(var(--lc),.05);box-shadow:inset 0 0 0 1px rgba(var(--lc),.8),0 0 14px rgba(var(--lc),.24)}
 .tg.on .sw2::after{background:rgb(var(--lc));box-shadow:0 0 10px rgba(var(--lc),.8)}
@@ -258,7 +258,7 @@ body.playing #player{display:block}
 .wr .bar{height:2px;border-radius:2px;background:rgba(var(--lc),.12);margin-top:8px;overflow:hidden}
 .wr .bar i{display:block;height:100%;background:rgb(var(--lc));box-shadow:0 0 8px rgb(var(--lc))}
 .wr .pl{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(var(--lc),.55),0 0 12px rgba(var(--lc),.15)}
-.wr .pl svg{width:13px;height:13px;fill:#fff}
+.wr .pl svg{width:13px;height:13px;fill:var(--text)}
 
 /* search bar: a soft light that travels clockwise around the outline */
 .sbar.glass{box-shadow:0 0 16px rgba(var(--lc),.08),inset 0 0 14px rgba(var(--lc),.03)}
@@ -296,8 +296,8 @@ body.q .car{opacity:0;pointer-events:none}
 .tp2{--hero:min(150vw,760px);position:relative}
 .tart{position:fixed;left:0;right:0;top:0;height:calc(var(--hero) + var(--st));background:var(--bgc) center top/cover no-repeat;opacity:0;transition:opacity .9s ease;pointer-events:none}
 .tart.in{opacity:1}
-.tart::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 20%,rgba(0,0,0,0) 40%,rgba(0,0,0,.72) 74%,var(--bgc) 100%),radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,.6),transparent 70%)}
-.tp2 .bk{position:fixed;left:16px;top:calc(var(--st) + 14px);z-index:5;background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.tart::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 20%,rgba(0,0,0,0) 40%,rgba(var(--bgr),.72) 74%,var(--bgc) 100%),radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,.6),transparent 70%)}
+.tp2 .bk{position:fixed;left:16px;top:calc(var(--st) + 14px);z-index:5;background:rgba(var(--bgr),.35);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .thead{position:relative;z-index:1;padding-top:calc(var(--hero) + var(--st) - 210px);display:flex;flex-direction:column;align-items:center;text-align:center}
 .tname{margin:0;font-weight:300;font-size:34px;line-height:1.08;letter-spacing:.01em;max-width:92%;text-shadow:0 2px 24px rgba(0,0,0,.8)}
 .tlogo{display:block;max-width:76%;max-height:110px;object-fit:contain;filter:drop-shadow(0 4px 18px rgba(0,0,0,.65));opacity:0;transition:opacity .6s}
@@ -332,7 +332,7 @@ body.q .car{opacity:0;pointer-events:none}
 .swc{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:10px;letter-spacing:.04em;color:var(--muted);width:44px}
 .swc i{width:34px;height:34px;border-radius:50%;display:block;background:radial-gradient(circle at 50% 40%,rgba(var(--c),.35),rgba(var(--c),.06) 70%);
   box-shadow:inset 0 0 0 1px rgba(var(--c),.55),0 0 10px rgba(var(--c),.2);transition:box-shadow .3s}
-.swc.on{color:#fff}
+.swc.on{color:var(--text)}
 .swc.on i{box-shadow:inset 0 0 0 1.5px rgb(var(--c)),0 0 18px rgba(var(--c),.6),0 0 40px rgba(var(--c),.2)}
 .card .sub{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);margin:16px 0 10px}
 .card .sub:first-of-type{margin-top:6px}
@@ -340,11 +340,11 @@ body.q .car{opacity:0;pointer-events:none}
 /* app: Player settings, update dot */
 .selr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;margin-top:6px}
 .selr span{font-size:14px;font-weight:300}
-.selr select{appearance:none;-webkit-appearance:none;background:transparent;color:#fff;font:inherit;font-size:13px;font-weight:300;letter-spacing:.02em;
+.selr select{appearance:none;-webkit-appearance:none;background:transparent;color:var(--text);font:inherit;font-size:13px;font-weight:300;letter-spacing:.02em;
   border:0;border-radius:999px;padding:9px 30px 9px 16px;min-width:150px;box-shadow:inset 0 0 0 1px rgba(var(--lc),.35),0 0 10px rgba(var(--lc),.08);outline:none;
   background-image:linear-gradient(45deg,transparent 50%,rgba(var(--lc),.8) 50%),linear-gradient(135deg,rgba(var(--lc),.8) 50%,transparent 50%);
   background-position:calc(100% - 17px) 55%,calc(100% - 12px) 55%;background-size:5px 5px;background-repeat:no-repeat}
-.selr select option{background:#111;color:#fff}
+.selr select option{background:var(--bgc);color:var(--text)}
 .dk{position:relative}
 .dk.upd::after{content:"";position:absolute;top:9px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:rgb(var(--lc));box-shadow:0 0 8px rgb(var(--lc))}
 
@@ -404,7 +404,7 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 .thead,.tdesc,#tmore{position:relative;z-index:1}
 
 /* the art stays put while the page scrolls over it, and dims as text covers it */
-.tart::before{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:var(--tdim,0);pointer-events:none}
+.tart::before{content:"";position:absolute;inset:0;z-index:1;background:rgb(var(--bgr));opacity:var(--tdim,0);pointer-events:none}
 
 /* wordmark: lowercase lumen drawn in light, the l rising as a beam */
 .mark{height:auto!important;text-shadow:none!important;letter-spacing:0!important;text-indent:0!important;margin-bottom:30px!important}
@@ -418,15 +418,35 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 /* 3 icon-only tab bar: the selected tab is a brighter icon with a small point of light under it */
 .dk{font-size:0!important;height:52px!important;gap:0!important}
 .dk .ico{width:22px!important;height:22px!important;transition:color .3s,filter .3s}
-.dk.on,.lit.dk{background:none!important;box-shadow:none!important;color:#fff}
+.dk.on,.lit.dk{background:none!important;box-shadow:none!important;color:var(--text)}
 .dk.on .ico{filter:drop-shadow(0 0 6px rgba(var(--lc),.5))}
 .dock{width:min(320px,calc(100% - 60px))!important}
 
 /* the current tab: a soft pool of light that glides behind its icon */
 .dkind{position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 60% 70% at 50% 50%,rgba(var(--lc),.2),rgba(var(--lc),.06) 55%,transparent 75%);
+  background:linear-gradient(180deg,rgba(var(--lc),.24),rgba(var(--lc),.12));box-shadow:inset 0 1px 0 rgba(var(--lc),.3),0 0 12px rgba(var(--lc),.12);
   transition:transform .5s var(--ease),width .5s var(--ease),opacity .3s}
 .dk{z-index:1}
+
+/* light mode */
+html.light{color-scheme:light}
+html.light .tname{text-shadow:0 2px 20px rgba(255,255,255,.7)}
+html.light .tlogo{filter:drop-shadow(0 3px 12px rgba(0,0,0,.35))}
+html.light .tart::after{background:linear-gradient(180deg,rgba(var(--bgr),.25) 0%,rgba(var(--bgr),0) 20%,rgba(var(--bgr),0) 45%,rgba(var(--bgr),.8) 76%,var(--bgc) 100%)}
+html.light .orb.b{background:radial-gradient(circle,rgba(var(--lc),.06),transparent 62%)}
+html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
+/* accent swatches: two rows */
+.sws{display:grid!important;grid-template-columns:repeat(5,1fr);gap:14px 4px!important;justify-items:center}
+/* buttons that do something get the accent colour */
+.acc,.fld button.sv{color:var(--text)!important;background:rgba(var(--lc),.14)!important;box-shadow:inset 0 0 0 1px rgba(var(--lc),.85),0 0 14px rgba(var(--lc),.22)!important}
+.acc::before{display:none}
+.acc.busy{background:rgba(var(--lc),.22)!important}
+
+/* accent swatches: solid, bright colours */
+.swc i{background:rgb(var(--c))!important;box-shadow:0 0 12px rgba(var(--c),.45)!important}
+.swc.on i{box-shadow:0 0 0 3px var(--bgc),0 0 0 4.5px rgb(var(--c)),0 0 18px rgba(var(--c),.6)!important}
+.swc.on{color:var(--text)}
+html.light .orb.a{opacity:.35}
 </style>
 </head>
 <body>
@@ -435,7 +455,7 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 <main id="home">
   <div class="stage">
     <div class="mark" aria-label="Lumen"><svg viewBox="-8 -30 244 96" aria-hidden="true">
-      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="lc"/><stop offset=".43" class="lc"/><stop offset="1" class="lc" style="stop-opacity:0"><animate attributeName="offset" from=".445" to="1" begin=".5s" dur="2.2s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .1 .25 1"/></stop></linearGradient>
+      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="lc"/><stop offset=".43" class="lc"/><stop offset=".445" class="lc" style="stop-opacity:0"><animate attributeName="offset" values=".445;.445;1" keyTimes="0;.2;1" dur="2.7s" begin="0s" fill="freeze" calcMode="spline" keySplines="0 0 1 1;.25 .1 .25 1"/></stop></linearGradient>
       <filter id="lglow" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
       <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lglow)" style="stroke:rgb(var(--lc))">
         <rect x="-1.5" y="-26" width="3" height="87.5" rx="1.5" fill="url(#lray)" stroke="none"/><path d="M16 24V44A16 16 0 0 0 48 44"/><path d="M48 24V60"/><path d="M64 60V24M64 40A16 16 0 0 1 96 40V60M96 40A16 16 0 0 1 128 40V60"/>
@@ -526,14 +546,22 @@ const store = {
 
 // appearance: the colour of the light, and the background
 const K_THEME = P + 'theme';
-const LIGHTS = [['White', '255,255,255'], ['Ice', '165,212,255'], ['Mint', '150,250,210'], ['Amber', '255,198,120'], ['Violet', '196,168,255'], ['Rose', '255,165,190']];
-const BGS = [['Black', '#000000'], ['Graphite', '#0b0c10'], ['Midnight', '#03060f']];
+// accent: [name, on dark backgrounds, on the light background]
+const LIGHTS = [['Mono', '255,255,255', '28,28,34'], ['Cyan', '80,215,255', '0,125,170'], ['Blue', '95,145,255', '30,85,215'], ['Purple', '170,130,255', '105,60,215'],
+  ['Pink', '255,105,195', '195,25,130'], ['Red', '255,85,95', '205,30,45'], ['Orange', '255,140,60', '210,90,10'], ['Gold', '255,205,80', '170,115,0'],
+  ['Green', '100,235,140', '20,140,70'], ['Teal', '60,225,200', '0,135,120']];
+const OLD_LIGHT = { White:'Mono', Ice:'Cyan', Mint:'Green', Amber:'Gold', Violet:'Purple', Rose:'Pink' };
+const BGS = [['Black', '#000000', '0,0,0'], ['Graphite', '#1a1b20', '26,27,32'], ['Midnight', '#060d22', '6,13,34'], ['Light', '#f2f2f5', '242,242,245']];
 function applyTheme(){
   const th = store.get(K_THEME, {});
-  const lc = (LIGHTS.find(x => x[0] === th.light) || LIGHTS[0])[1], bg = (BGS.find(x => x[0] === th.bg) || BGS[0])[1];
-  document.documentElement.style.setProperty('--lc', lc);
-  document.documentElement.style.setProperty('--bgc', bg);
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = bg;
+  const ln = OLD_LIGHT[th.light] || th.light, B = BGS.find(x => x[0] === th.bg) || BGS[0], light = B[0] === 'Light';
+  const L = LIGHTS.find(x => x[0] === ln) || LIGHTS[0], h = document.documentElement;
+  h.classList.toggle('light', light);
+  h.style.setProperty('--lc', light ? L[2] : L[1]);
+  h.style.setProperty('--bgc', B[1]); h.style.setProperty('--bgr', B[2]);
+  h.style.setProperty('--text', light ? '#141418' : '#f2f2f2'); h.style.setProperty('--tr', light ? '20,20,24' : '242,242,242');
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = B[1];
+  const C = window.Capacitor; if(C && C.isNativePlatform && C.isNativePlatform()) callNative('RCUpdate', 'setBars', { light }).catch(() => {});
 }
 applyTheme();
 let toastT;
@@ -576,7 +604,7 @@ async function checkForUpdate(){
 if(NATIVE){
   document.documentElement.classList.add('native');
   window.rcBack = () => false;   // nothing left to close: Android's back leaves the app
-  setTimeout(() => callNative('RCUpdate', 'setBars', { light:false }).catch(() => {}), 300);
+  setTimeout(applyTheme, 300);
   setTimeout(checkForUpdate, 2500);
   document.addEventListener('visibilitychange', () => { if(!document.hidden) checkForUpdate(); });
 }
@@ -1284,7 +1312,7 @@ function drawSettings(){
   <button class="navrow glass press" data-sub="conn"><span><b>Connections</b><small>${rk ? 'Real-Debrid connected' : 'Real-Debrid not connected'} · ${tk ? 'TMDB connected' : 'TMDB not connected'}</small></span>${CHEV}</button>
   <button class="navrow glass press" data-sub="player"><span><b>${NATIVE ? 'Player' : 'Playback'}</b><small>${NATIVE ? 'Episodes, sound and subtitles' : 'In-browser player and VLC'}</small></span>${CHEV}</button>
   <div class="card glass"><h3>Appearance</h3>
-    <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, c]) => `<button class="swc ${(store.get(K_THEME, {}).light || 'White') === n ? 'on' : ''}" data-n="${n}" style="--c:${c}"><i></i>${n}</button>`).join('')}</div>
+    <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, cd, cl]) => `<button class="swc ${(OLD_LIGHT[store.get(K_THEME, {}).light] || store.get(K_THEME, {}).light || 'Mono') === n ? 'on' : ''}" data-n="${n}" style="--c:${document.documentElement.classList.contains('light') ? cl : cd}"><i></i>${n}</button>`).join('')}</div>
     <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(store.get(K_THEME, {}).bg || 'Black') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
   <div id="sp-conn" hidden>
   <div class="card glass"><h3>Real-Debrid</h3><p>Your API token from <a href="https://real-debrid.com/apitoken" target="_blank" rel="noopener">real-debrid.com/apitoken</a>. It stays on this device.</p>
@@ -1312,14 +1340,14 @@ function drawSettings(){
     <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`}
   </div>
   <div class="card glass"><h3>Library</h3><p>Lumen reads what is already in your Real-Debrid account. New downloads show up after a sync.</p>
-    <button class="wide glass press" id="ssync">Sync now</button>
+    <button class="wide glass press acc" id="ssync">Sync now</button>
     <button class="wide glass press" id="rematch" style="margin-top:10px">Re-match all titles</button>
     ${rk ? '<button class="tg" id="rddisc" style="margin-top:14px"><span>Disconnect Real-Debrid<small>Removes the token and library list from this device</small></span></button>' : ''}</div>
   <div class="card glass"><h3>Your data</h3><p>Watch progress and settings, in one file. Your tokens are never included.</p>
     <div class="row2b"><button class="wide glass press" id="bkexp">Back up</button><button class="wide glass press" id="bkimp">Restore</button></div>
     <input type="file" id="bkfile" accept="application/json,.json" hidden>
     <div class="tg" style="margin-top:16px;pointer-events:none"><span>Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span></div>
-    <button class="wide glass press" id="stclr" style="margin-top:12px">Clear cache</button></div>
+    <button class="wide glass press acc" id="stclr" style="margin-top:12px">Clear cache</button></div>
   ${NATIVE ? '<div class="card glass"><h3>App</h3><div id="appver"></div></div>' : ''}
   <div class="ver">LUMEN${APP_BUILD ? ' · BUILD ' + APP_BUILD : ''}</div>`;
   if(NATIVE){
@@ -1331,7 +1359,7 @@ function drawSettings(){
   $$('.navrow[data-sub]', b).forEach(x => x.onclick = () => openSub(x.dataset.sub));
   if(curSub && $('#sub').classList.contains('open')) showSub(curSub);
   $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
-  $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); $$('#swb button').forEach(y => y.classList.toggle('on', y === x)); });
+  $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); drawSettings(); });
   const show = (i, btn) => { const x = $(i); x.type = x.type === 'password' ? 'text' : 'password'; $(btn).textContent = x.type === 'password' ? 'Show' : 'Hide'; };
   $('#rdshow').onclick = () => show('#rdk', '#rdshow'); $('#tmshow').onclick = () => show('#tmk', '#tmshow');
   $('#rdsave').onclick = () => {
