@@ -444,6 +444,7 @@ html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .play.acc{animation:none!important;height:56px;border:0!important;outline:0}
 .play.acc::before,.play.acc::after{display:none!important}
 .play.acc svg{fill:var(--text)}
+#appver .play{margin-top:18px}
 .acc.busy{background:rgba(var(--lc),.55)!important}
 
 /* accent swatches: solid, bright colours */
@@ -1341,8 +1342,7 @@ let updating = false;
 function fillVersion(){
   const box = $('#appver'); if(!box || updating) return;
   const newer = latestBuild > APP_BUILD;
-  box.innerHTML = `<div class="tg" style="pointer-events:none"><span>Version ${APP_BUILD || '?'}<small>${newer ? 'Version ' + latestBuild + ' is ready' : 'Up to date'}</small></span></div>
-    ${newer ? `<button class="wide glass on press" id="updbtn" style="margin-top:12px">Update to ${latestBuild}</button>` : ''}`;
+  box.innerHTML = newer ? `<button class="play acc glass press" id="updbtn">Update to version ${latestBuild}</button>` : '';
   const btn = $('#updbtn'); if(!btn) return;
   btn.onclick = async () => {
     const url = REL + 'lumen.apk?v=' + latestBuild;
@@ -1371,7 +1371,6 @@ function drawSettings(){
   <button class="navrow glass press" data-sub="player"><span><b>${NATIVE ? 'Player' : 'Playback'}</b><small>${NATIVE ? 'Episodes, sound and subtitles' : 'In-browser player and VLC'}</small></span>${CHEV}</button>
   <button class="navrow glass press" data-sub="appear"><span><b>Appearance</b><small>Light colour and background</small></span>${CHEV}</button>
   <button class="navrow glass press" data-sub="data"><span><b>Your data</b><small>Back up, restore and storage</small></span>${CHEV}</button>
-  ${NATIVE ? `<button class="navrow glass press" data-sub="app"><span><b>App</b><small>Version and updates${latestBuild > APP_BUILD ? ' · update ready' : ''}</small></span>${CHEV}</button>` : ''}
   <div id="sp-appear" hidden>
   <div class="card glass">
     <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, cd, cl]) => `<button class="swc ${(OLD_LIGHT[store.get(K_THEME, {}).light] || store.get(K_THEME, {}).light || 'Mono') === n ? 'on' : ''}" data-n="${n}" style="--c:${document.documentElement.classList.contains('light') ? cl : cd}"><i></i>${n}</button>`).join('')}</div>
@@ -1409,7 +1408,7 @@ function drawSettings(){
     <div class="tg" style="margin-top:16px;pointer-events:none"><span>Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span></div>
     <button class="wide glass press acc" id="stclr" style="margin-top:12px">Clear cache</button></div>
   </div>
-  ${NATIVE ? '<div id="sp-app" hidden><div class="card glass"><h3>App</h3><div id="appver"></div></div></div>' : ''}
+  ${NATIVE ? '<div id="appver"></div>' : ''}
   <div class="ver">LUMEN${APP_BUILD ? ' · BUILD ' + APP_BUILD : ''}</div>`;
   if(NATIVE){
     fillVersion();
