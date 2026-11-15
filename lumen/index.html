@@ -447,6 +447,8 @@ html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .swc.on i{box-shadow:0 0 0 3px var(--bgc),0 0 0 4.5px rgb(var(--c)),0 0 18px rgba(var(--c),.6)!important}
 .swc.on{color:var(--text)}
 html.light .orb.a{opacity:.35}
+
+#libbody.quiet .pt{animation:none}
 </style>
 </head>
 <body>
@@ -455,10 +457,11 @@ html.light .orb.a{opacity:.35}
 <main id="home">
   <div class="stage">
     <div class="mark" aria-label="Lumen"><svg viewBox="-8 -30 244 96" aria-hidden="true">
-      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="lc"/><stop offset=".43" class="lc"/><stop offset=".445" class="lc" style="stop-opacity:0"><animate attributeName="offset" values=".445;.445;1" keyTimes="0;.2;1" dur="2.7s" begin="0s" fill="freeze" calcMode="spline" keySplines="0 0 1 1;.25 .1 .25 1"/></stop></linearGradient>
+      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="lc"/><stop offset=".43" class="lc"/><stop offset="1" class="lc" style="stop-opacity:0"/></linearGradient>
+      <clipPath id="lgrow"><rect x="-6" y="61.5" width="12" height="0"><animate attributeName="y" values="61.5;61.5;-30" keyTimes="0;.15;1" dur="2.3s" fill="freeze" calcMode="spline" keySplines="0 0 1 1;.3 .05 .2 1"/><animate attributeName="height" values="0;0;92" keyTimes="0;.15;1" dur="2.3s" fill="freeze" calcMode="spline" keySplines="0 0 1 1;.3 .05 .2 1"/></rect></clipPath>
       <filter id="lglow" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
       <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lglow)" style="stroke:rgb(var(--lc))">
-        <rect x="-1.5" y="-26" width="3" height="87.5" rx="1.5" fill="url(#lray)" stroke="none"/><path d="M16 24V44A16 16 0 0 0 48 44"/><path d="M48 24V60"/><path d="M64 60V24M64 40A16 16 0 0 1 96 40V60M96 40A16 16 0 0 1 128 40V60"/>
+        <rect x="-1.5" y="-26" width="3" height="87.5" rx="1.5" fill="url(#lray)" stroke="none" clip-path="url(#lgrow)"/><path d="M16 24V44A16 16 0 0 0 48 44"/><path d="M48 24V60"/><path d="M64 60V24M64 40A16 16 0 0 1 96 40V60M96 40A16 16 0 0 1 128 40V60"/>
         <path d="M144 42H180A18 18 0 1 0 174 55"/><path d="M196 60V24M196 40A16 16 0 0 1 228 40V60"/></g></svg></div>
     <div class="sw">
       <div class="halo"></div>
@@ -937,7 +940,8 @@ qi.addEventListener('blur', () => setTimeout(() => document.body.classList.remov
 $('#clr').onclick = e => { e.preventDefault(); qi.value = ''; drawResults(); qi.focus(); };
 
 /* ================= library ================= */
-function drawLib(){
+let libSig = '';
+function drawLib(quiet){
   const kind = store.get(K_KIND, 'all'), sort = store.get(K_SORT, 'added');
   let list = titles();
   $('#libn').textContent = list.length ? list.length : '';
@@ -948,6 +952,10 @@ function drawLib(){
   const SORTS = { added:'Recent', watched:'Watched', az:'A–Z' };
   const b = $('#libbody');
   const key = store.get(K_RD, '');
+  const sig = [kind, sort, list.map(t => t.id + ':' + (progOf(t) ? Math.round(progOf(t).t) : '')).join(','), key ? 1 : 0, !list.length && syncing ? 1 : 0].join('|');
+  if(quiet && sig === libSig) return;           // nothing changed: leave the grid alone
+  libSig = sig;
+  b.classList.toggle('quiet', !!quiet);
   b.innerHTML = `<div class="ctrls"><div class="seg glass">${[['all', 'All'], ['movie', 'Films'], ['tv', 'Shows']].map(([k, l]) => `<button data-k="${k}" class="${k === kind ? 'on' : ''}">${l}</button>`).join('')}</div>
     <button class="sortb glass press" id="sortb"><svg class="ico" viewBox="0 0 24 24"><path d="M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3"/></svg>${SORTS[sort]}</button></div>
     ${!key ? '<div class="empty">Add your Real-Debrid token in Settings and your library appears here.</div>'
@@ -978,11 +986,10 @@ function drawWatch(){
 function syncNow(quiet){
   const before = new Set(titles().map(t => String(t.id)));
   const ptr = $('#ptr'); ptr.classList.add('busy'); $('#libbody').classList.add('syncing'); $('#sync').classList.add('spin');
-  if($('#lib').classList.contains('open')) drawLib();
   return sync().then(() => {
     const n = titles().filter(t => !before.has(String(t.id))).length;
     if(n || !quiet) toast(n ? n + (n === 1 ? ' new title' : ' new titles') : 'Library up to date');
-  }).catch(e => toast(errMsg(e))).finally(() => { ptr.classList.remove('busy'); $('#libbody').classList.remove('syncing'); if($('#lib').classList.contains('open')) drawLib(); });
+  }).catch(e => toast(errMsg(e))).finally(() => { ptr.classList.remove('busy'); $('#libbody').classList.remove('syncing'); });
 }
 $('#sync').onclick = () => syncNow();
 // pull down from the top of the library to sync with Real-Debrid
@@ -1228,7 +1235,6 @@ async function nativePlay(o, retry = false){
   if(!retry && Date.now() - launching < 4000) return;   // ignore a double tap
   launching = Date.now();
   const key = o.f.tid + '|' + o.f.path, full = o.title + (o.label ? ' · ' + o.label : '');
-  if(!retry) toast('Opening the player…');
   try{
     let link = o.f.link;
     if(!link){ const f = (await files(o.f.tid)).find(x => x.path === o.f.path); if(!f) throw new Error('This file is no longer in your Real-Debrid account.'); link = f.link; }
@@ -1432,7 +1438,7 @@ function confirmTap(sel){ const el = $(sel); if(el.dataset.arm){ delete el.datas
 /* ================= start ================= */
 function refresh(){
   drawHome(); if(qi.value) drawResults();
-  if($('#lib').classList.contains('open')) drawLib();
+  if($('#lib').classList.contains('open')) drawLib(true);
   if($('#watch').classList.contains('open')) drawWatch();
   if(cur && $('#title').classList.contains('open') && cur.files){ const eps = cur.files.filter(f => epOf(f.path)); if(cur.t.tv || eps.length > 1) drawShow(eps.length ? eps : cur.files); else drawMovie(cur.files); }
 }

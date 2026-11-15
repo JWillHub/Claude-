@@ -727,9 +727,9 @@ public class PlayerActivity extends AppCompatActivity {
                 DynamicsProcessing.VARIANT_FAVOR_FREQUENCY_RESOLUTION, 2, false, 0, true, 1, false, 0, true).build();
             dyn = new DynamicsProcessing(0, sid, cfg);
             // above -32 dB, every 3.5 dB louder only comes out 1 dB louder; then quiet parts are lifted 8 dB
-            dyn.setMbcBandAllChannelsTo(0, new DynamicsProcessing.MbcBand(true, 20000f, 5f, 250f, 3.5f, -32f, 6f, -90f, 1f, 0f, 8f));
+            dyn.setMbcBandAllChannelsTo(0, new DynamicsProcessing.MbcBand(true, 20000f, 3f, 300f, 8f, -42f, 6f, -90f, 1f, 0f, 15f));
             // hard ceiling: nothing goes above -9 dB
-            dyn.setLimiterAllChannelsTo(new DynamicsProcessing.Limiter(true, true, 0, 1f, 80f, 12f, -9f, 0f));
+            dyn.setLimiterAllChannelsTo(new DynamicsProcessing.Limiter(true, true, 0, 1f, 60f, 20f, -12f, 0f));
             dyn.setEnabled(true);
         } catch (Throwable t) { dyn = null; }
     }
