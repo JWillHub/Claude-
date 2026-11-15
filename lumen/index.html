@@ -52,7 +52,7 @@ img{display:block}
 
 /* ---------- home ---------- */
 #home{position:fixed;inset:0;z-index:1}
-.stage{position:absolute;left:0;right:0;top:44%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;padding:0 22px;
+.stage{position:absolute;left:0;right:0;top:49%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;padding:0 22px;
   transition:top .55s var(--ease),transform .55s var(--ease)}
 body.q .stage{transform:translateY(-50%) translateY(var(--lift,0px))}
 .mark{font-family:'Orbitron','Sora',sans-serif;font-weight:500;font-size:38px;line-height:1;letter-spacing:.3em;text-indent:.3em;color:#fff;margin:0 0 40px;text-transform:uppercase;
@@ -280,12 +280,12 @@ body.q .halo{opacity:.5}
 /* library carousel on the home screen */
 .car{position:relative;width:100vw;margin:34px -22px 0;transition:opacity .35s}
 body.q .car{opacity:0;pointer-events:none}
-.ctrack{display:flex;gap:26px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
-  padding:30px calc(50vw - 50px) 48px;
+.ctrack{display:flex;gap:30px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
+  padding:34px calc(50vw - 60px) 52px;
   -webkit-mask:linear-gradient(90deg,transparent 2%,#000 40%,#000 60%,transparent 98%);mask:linear-gradient(90deg,transparent 2%,#000 40%,#000 60%,transparent 98%)}
 .ctrack::-webkit-scrollbar{display:none}
-.ci{flex:none;width:100px;scroll-snap-align:center;transform-origin:50% 50%}
-.ci img,.ci .np{width:100px;height:150px;border-radius:14px;object-fit:cover;display:block;background:rgba(var(--lc),.05);
+.ci{flex:none;width:120px;scroll-snap-align:center;transform-origin:50% 50%}
+.ci img,.ci .np{width:120px;height:180px;border-radius:14px;object-fit:cover;display:block;background:rgba(var(--lc),.05);
   outline:1px solid rgba(var(--lc),.12);outline-offset:-1px;transition:box-shadow .4s}
 .ci .np{display:grid;place-items:center;padding:10px;text-align:center;font-size:11.5px;font-weight:300;color:var(--muted)}
 .ci.mid img{outline-color:rgba(var(--lc),.45);box-shadow:0 16px 24px -10px rgba(0,0,0,.95),0 6px 12px -4px rgba(0,0,0,.7)}
@@ -394,7 +394,7 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 @keyframes lrise{from{opacity:0;transform:translateY(24px)}}
 
 /* back glow: a soft rim of the Light colour behind the middle poster, only while the carousel is still */
-.cglow{position:absolute;left:50%;top:7px;width:128px;height:192px;margin-left:-64px;border-radius:18px;pointer-events:none;z-index:0;
+.cglow{position:absolute;left:50%;top:10px;width:152px;height:228px;margin-left:-76px;border-radius:18px;pointer-events:none;z-index:0;
   background:rgb(var(--lc));filter:blur(9px);opacity:0;transition:opacity .12s ease}
 .cglow.on{opacity:.2;transition:opacity .5s ease}
 .ctrack{position:relative;z-index:1}
@@ -410,6 +410,21 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 .mark{height:auto!important;text-shadow:none!important;letter-spacing:0!important;text-indent:0!important;margin-bottom:30px!important}
 .mark svg{display:block;width:min(220px,58vw);height:auto;overflow:visible}
 @keyframes lmark{from{opacity:0;filter:blur(8px);transform:translateY(6px)}to{opacity:1}}
+
+.mark .lc{stop-color:rgb(var(--lc))}
+body.launch .mark .beam{animation:beamon 1.8s .6s ease both}
+@keyframes beamon{from{stop-opacity:0}}
+/* 2 lighter type to match the thin wordmark */
+.sbar input{font-weight:200!important;letter-spacing:.02em}
+.sbar input::placeholder{font-weight:200}
+/* 3 icon-only tab bar: the selected tab is a brighter icon with a small point of light under it */
+.dk{font-size:0!important;height:52px!important;gap:0!important}
+.dk .ico{width:22px!important;height:22px!important;transition:color .3s,filter .3s}
+.dk.on,.lit.dk{background:none!important;box-shadow:none!important;color:#fff}
+.dk.on .ico{filter:drop-shadow(0 0 6px rgba(var(--lc),.5))}
+.dk::before{content:"";position:absolute;left:50%;bottom:7px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:rgb(var(--lc));box-shadow:0 0 6px rgb(var(--lc));opacity:0;transform:scale(.4);transition:opacity .3s,transform .35s var(--ease)}
+.dk.on::before{opacity:1;transform:none}
+.dock{width:min(320px,calc(100% - 60px))!important}
 </style>
 </head>
 <body>
@@ -418,9 +433,9 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 <main id="home">
   <div class="stage">
     <div class="mark" aria-label="Lumen"><svg viewBox="-8 -30 244 96" aria-hidden="true">
-      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff"/><stop offset=".43" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" class="lc"/><stop offset=".43" class="lc"/><stop offset=".44" class="lc beam"/><stop offset="1" class="lc" style="stop-opacity:0"/></linearGradient>
       <filter id="lglow" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-      <g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lglow)">
+      <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lglow)" style="stroke:rgb(var(--lc))">
         <rect x="-1.5" y="-26" width="3" height="87.5" rx="1.5" fill="url(#lray)" stroke="none"/><path d="M16 24V44A16 16 0 0 0 48 44"/><path d="M48 24V60"/><path d="M64 60V24M64 40A16 16 0 0 1 96 40V60M96 40A16 16 0 0 1 128 40V60"/>
         <path d="M144 42H180A18 18 0 1 0 174 55"/><path d="M196 60V24M196 40A16 16 0 0 1 228 40V60"/></g></svg></div>
     <div class="sw">
@@ -747,6 +762,7 @@ function openSheet(id){
 const isOpen = s => s === 'home' ? !['lib', 'set', 'watch'].some(x => $('#' + x).classList.contains('open')) : $('#' + s).classList.contains('open');
 function coverState(){ document.body.classList.toggle('covered', ['lib', 'set', 'watch', 'title'].some(x => $('#' + x).classList.contains('open'))); }
 function dockState(){ coverState(); $$('.dk').forEach(b => b.classList.toggle('on', isOpen(b.dataset.sheet))); }
+$$('.dk').forEach(b => b.setAttribute('aria-label', b.textContent.trim()));
 $$('.dk').forEach(b => b.onclick = () => {
   const s = b.dataset.sheet;
   if(s === 'home'){ if(layers.length) history.go(-layers.length); else qi.focus(); return; }
@@ -792,7 +808,7 @@ function drawHome(){
   requestAnimationFrame(carPaint);
 }
 // posters grow and brighten toward the middle, and fade out evenly on both sides
-const CAR_STEP = 100 + 26;
+const CAR_STEP = 120 + 30;
 let carList = [], carN = 0, carLoop = false, carMid = -1, carRaf = 0, capT, carSettle;
 let carTouched = false;
 $('#ctrack').addEventListener('touchstart', () => { carTouched = true; }, { passive:true });
