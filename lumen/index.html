@@ -424,7 +424,7 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 
 /* the current tab: a soft pool of light that glides behind its icon */
 .dkind{position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;pointer-events:none;z-index:0;
-  background:linear-gradient(180deg,rgba(var(--lc),.24),rgba(var(--lc),.12));box-shadow:inset 0 1px 0 rgba(var(--lc),.3),0 0 12px rgba(var(--lc),.12);
+  background:linear-gradient(180deg,rgba(var(--lc),.36),rgba(var(--lc),.2));box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3);
   transition:transform .6s cubic-bezier(.3,1.45,.5,1),width .5s var(--ease),opacity .3s;will-change:transform}
 .dock.dragging .dkind{transition:none}
 .dk{z-index:1}
@@ -439,7 +439,7 @@ html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
 /* accent swatches: two rows */
 .sws{display:grid!important;grid-template-columns:repeat(5,1fr);gap:14px 4px!important;justify-items:center}
 /* buttons that do something get the accent colour */
-.acc,.fld button.sv{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.46),rgba(var(--lc),.3))!important;box-shadow:inset 0 0 0 1px rgba(var(--lc),.9),inset 0 1px 0 rgba(255,255,255,.18),0 0 14px rgba(var(--lc),.25)!important;font-weight:400}
+.acc,.fld button.sv{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.46),rgba(var(--lc),.3))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 0 rgba(0,0,0,.2),0 5px 12px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3)!important;font-weight:400}
 .acc::before{display:none}
 .acc.busy{background:rgba(var(--lc),.55)!important}
 
@@ -453,9 +453,11 @@ html.light .orb.a{opacity:.35}
 #libbody.quiet .pt{animation:none}
 
 /* every selected tab/segment/chip: the same filled accent bubble as the tab bar */
-.seg button.on,.chip.on,.chip.glass.on{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.24),rgba(var(--lc),.12))!important;
-  box-shadow:inset 0 1px 0 rgba(var(--lc),.3),0 0 12px rgba(var(--lc),.12)!important}
+.seg button.on,.chip.on,.chip.glass.on{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.36),rgba(var(--lc),.2))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3)!important}
 .chip.on::before{display:none}
+.dock{touch-action:none}
+html.light .seg button.on,html.light .chip.on,html.light .dkind,html.light .acc,html.light .fld button.sv{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.12)!important}
 </style>
 </head>
 <body>

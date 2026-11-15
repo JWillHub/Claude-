@@ -168,6 +168,7 @@ public class PlayerActivity extends AppCompatActivity {
         back.setGravity(Gravity.CENTER);
         back.setPadding(0, 0, dp(2), dp(4));
         back.setBackground(glass(true));
+        back.setElevation(dp(4));
         back.setContentDescription("Back");
         back.setOnClickListener(v -> close(false));
         TextView name = new TextView(this);
@@ -192,11 +193,7 @@ public class PlayerActivity extends AppCompatActivity {
         hud.setOrientation(LinearLayout.HORIZONTAL);
         hud.setGravity(Gravity.CENTER_VERTICAL);
         hud.setPadding(dp(16), dp(9), dp(16), dp(9));
-        GradientDrawable pill = new GradientDrawable();
-        pill.setColor(0x59000000);
-        pill.setCornerRadius(dp(22));
-        pill.setStroke(dp(1), withAlpha(lc, 0x66));
-        hud.setBackground(pill);
+        hud.setBackground(glass(false));
         hudLabel = new TextView(this);
         hudLabel.setTextColor(Color.WHITE);
         hudLabel.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
@@ -476,13 +473,16 @@ public class PlayerActivity extends AppCompatActivity {
 
     // ---- Lumen look for the built-in controls: lighter shade, glass circles with a lit outline, a thin bar in the light colour ----
     private static int withAlpha(int c, int a) { return (c & 0x00FFFFFF) | (a << 24); }
-    private GradientDrawable glass(boolean circle) {
-        GradientDrawable g = new GradientDrawable();
-        g.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
-        if (!circle) g.setCornerRadius(dp(22));
-        g.setColor(0x33000000);
-        g.setStroke(dp(1), withAlpha(lc, 0x8C));
-        return g;
+    // filled, raised buttons: a solid dark base with the light colour shading it from the top, no outline
+    private android.graphics.drawable.Drawable glass(boolean circle) {
+        GradientDrawable base = new GradientDrawable();
+        base.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
+        if (!circle) base.setCornerRadius(dp(22));
+        base.setColor(0xD9141418);
+        GradientDrawable tint = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{ withAlpha(lc, 0x5C), withAlpha(lc, 0x1F) });
+        tint.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
+        if (!circle) tint.setCornerRadius(dp(22));
+        return new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{ base, tint });
     }
     private View byName(String id) {
         int r = getResources().getIdentifier(id, "id", getPackageName());
@@ -505,6 +505,11 @@ public class PlayerActivity extends AppCompatActivity {
         } catch (Exception ignored) {}
     }
 
+    @Override public void finish() {
+        super.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
     private TextView pillButton() {
         TextView b = new TextView(this);
         b.setTextColor(Color.WHITE);
@@ -512,9 +517,8 @@ public class PlayerActivity extends AppCompatActivity {
         b.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         b.setLetterSpacing(0.04f);
         b.setPadding(dp(20), dp(11), dp(20), dp(11));
-        GradientDrawable bg0 = new GradientDrawable();
-        bg0.setColor(0x66000000); bg0.setCornerRadius(dp(22)); bg0.setStroke(dp(1), withAlpha(lc, 0xCC));
-        b.setBackground(bg0);
+        b.setBackground(glass(false));
+        b.setElevation(dp(6));
         b.setVisibility(View.GONE); b.setAlpha(0f);
         return b;
     }

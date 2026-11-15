@@ -44,6 +44,7 @@ public class RCPlayerPlugin extends Plugin {
         Boolean auto = call.getBoolean("autoplay", true);
         intent.putExtra("autoplay", auto == null || auto);
         startActivityForResult(call, intent, "playerClosed");
+        try { getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); } catch (Exception ignored) {}
     }
 
     // The last spot the player wrote down (see PlayerActivity.saveSpot), for when a result never came back
