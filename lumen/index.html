@@ -405,6 +405,14 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 
 /* the art stays put while the page scrolls over it, and dims as text covers it */
 .tart::before{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:var(--tdim,0);pointer-events:none}
+
+/* wordmark: lowercase lumen drawn in light, the l rising as a beam */
+.mark{height:auto!important;text-shadow:none!important;letter-spacing:0!important;text-indent:0!important;margin-bottom:30px!important}
+.mark svg{display:block;width:min(220px,58vw);height:auto;overflow:visible}
+@keyframes lmark{from{opacity:0;filter:blur(8px);transform:translateY(6px)}to{opacity:1}}
+.mark .ray{transform-origin:0 26px}
+body.launch .mark .ray{animation:lray 1.2s .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes lray{from{transform:scaleY(0);opacity:0}}
 </style>
 </head>
 <body>
@@ -412,7 +420,13 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 
 <main id="home">
   <div class="stage">
-    <div class="mark">Lumen</div>
+    <div class="mark" aria-label="Lumen"><svg viewBox="-8 -30 244 96" aria-hidden="true">
+      <defs><linearGradient id="lray" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      <filter id="lglow" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lglow)">
+        <path d="M0 24V60"/><path d="M16 24V44A16 16 0 0 0 48 44V24M48 44V60"/><path d="M64 60V24M64 40A16 16 0 0 1 96 40V60M96 40A16 16 0 0 1 128 40V60"/>
+        <path d="M144 42H180A18 18 0 1 0 174 55"/><path d="M196 60V24M196 40A16 16 0 0 1 228 40V60"/></g>
+      <rect class="ray" x="-1.5" y="-26" width="3" height="52" rx="1.5" fill="url(#lray)" filter="url(#lglow)"/></svg></div>
     <div class="sw">
       <div class="halo"></div>
       <label class="sbar glass">
