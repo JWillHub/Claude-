@@ -476,6 +476,17 @@ html.mono .dk.on{color:#0b0b0d!important}
 html.mono .dk.on .ico{filter:none}
 html.mono .acc.busy{background:#cfcfd4!important}
 .swc[data-n=Mono] i{background:radial-gradient(circle at 36% 30%,#fff,rgba(255,255,255,0) 40%),radial-gradient(circle at 50% 45%,#fff,#d4d4da 75%)!important}
+
+/* liquid glass fills: the accent colour stays, with a soft top sheen, a bright rim and a coloured glow from below */
+.acc,.fld button.sv,.seg button.on,.chip.on,.chip.glass.on,.dkind{
+  background:radial-gradient(120% 75% at 50% -10%,rgba(255,255,255,.34),rgba(255,255,255,.06) 55%,rgba(255,255,255,0) 70%),
+    linear-gradient(180deg,rgba(var(--lc),.5),rgba(var(--lc),.3))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.1),inset 0 -1px 1px rgba(255,255,255,.14),
+    inset 0 -10px 16px rgba(var(--lc),.28),0 6px 16px rgba(0,0,0,.38),0 0 16px rgba(var(--lc),.14)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.7);backdrop-filter:blur(16px) saturate(1.7)}
+html.mono .acc,html.mono .fld button.sv,html.mono .seg button.on,html.mono .chip.on,html.mono .chip.glass.on,html.mono .dkind{
+  background:radial-gradient(120% 75% at 50% -10%,#fff,rgba(255,255,255,.6) 55%,rgba(255,255,255,0) 72%),linear-gradient(180deg,#f4f4f6,#c9c9cf)!important;
+  box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px rgba(255,255,255,.5),inset 0 -1px 1px rgba(255,255,255,.6),inset 0 -10px 16px rgba(150,150,160,.35),0 6px 16px rgba(0,0,0,.4),0 0 14px rgba(255,255,255,.1)!important}
 </style>
 </head>
 <body>
