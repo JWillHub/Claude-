@@ -561,10 +561,10 @@ const store = {
 // appearance: the colour of the light, and the background
 const K_THEME = P + 'theme';
 // accent: [name, on dark backgrounds, on the light background]
-const LIGHTS = [['Mono', '255,255,255', '28,28,34'], ['Cyan', '80,215,255', '0,125,170'], ['Blue', '95,145,255', '30,85,215'], ['Purple', '170,130,255', '105,60,215'],
-  ['Pink', '255,105,195', '195,25,130'], ['Red', '255,85,95', '205,30,45'], ['Orange', '255,140,60', '210,90,10'], ['Gold', '255,205,80', '170,115,0'],
+const LIGHTS = [['Mono', '255,255,255', '28,28,34'], ['Charcoal', '135,138,148', '60,62,70'], ['Cyan', '80,215,255', '0,125,170'], ['Blue', '95,145,255', '30,85,215'], ['Purple', '170,130,255', '105,60,215'],
+  ['Pink', '255,105,195', '195,25,130'], ['Red', '255,85,95', '205,30,45'], ['Gold', '255,205,80', '170,115,0'],
   ['Green', '100,235,140', '20,140,70'], ['Teal', '60,225,200', '0,135,120']];
-const OLD_LIGHT = { White:'Mono', Ice:'Cyan', Mint:'Green', Amber:'Gold', Violet:'Purple', Rose:'Pink' };
+const OLD_LIGHT = { White:'Mono', Ice:'Cyan', Mint:'Green', Amber:'Gold', Violet:'Purple', Rose:'Pink', Orange:'Gold' };
 // Midnight: pure black. Tinted: a deep, faint shade of the accent colour (worked out in applyTheme)
 const BGS = [['Midnight', '#000000', '0,0,0'], ['Tinted', null, null]];
 function applyTheme(){
