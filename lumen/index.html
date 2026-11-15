@@ -155,7 +155,7 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
   color:#000;background:linear-gradient(180deg,rgb(var(--lc)),#d9d9d9);box-shadow:0 0 0 1px rgba(var(--lc),.6) inset,0 0 34px rgba(var(--lc),.22),0 12px 30px rgba(0,0,0,.6)}
 .play svg{width:16px;height:16px;fill:#000}
 .play[disabled]{opacity:.5}
-.psub{text-align:center;margin-top:10px;font-size:11.5px;color:var(--muted);font-weight:300;letter-spacing:.04em;min-height:16px}
+.psub{display:none!important;text-align:center;margin-top:10px;font-size:11.5px;color:var(--muted);font-weight:300;letter-spacing:.04em;min-height:16px}
 .row2{display:flex;gap:10px;margin-top:12px}
 .row2 button{flex:1;height:44px;border-radius:999px;font-size:12.5px;letter-spacing:.04em;color:rgba(var(--lc),.85)}
 .lbl{margin:28px 0 12px;font-size:11px;font-weight:400;letter-spacing:.32em;text-transform:uppercase;color:var(--faint)}
@@ -441,6 +441,9 @@ html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
 /* buttons that do something get the accent colour */
 .acc,.fld button.sv{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.46),rgba(var(--lc),.3))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 0 rgba(0,0,0,.2),0 5px 12px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3)!important;font-weight:400}
 .acc::before{display:none}
+.play.acc{animation:none!important;height:56px;border:0!important;outline:0}
+.play.acc::before,.play.acc::after{display:none!important}
+.play.acc svg{fill:var(--text)}
 .acc.busy{background:rgba(var(--lc),.55)!important}
 
 /* accent swatches: solid, bright colours */
@@ -1105,7 +1108,7 @@ async function openTitle(id, src){
     if(d.cast && d.cast.length) $('#tcast').textContent = 'With ' + d.cast.slice(0, 4).join(', ');
     $('#tdesc').hidden = !d.overview && !(d.cast && d.cast.length);
   }).catch(() => { if(t.poster) art(poster(t.poster, 'w780')); });
-  $('#tact').innerHTML = `<button class="play glass busy press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
+  $('#tact').innerHTML = `<button class="play acc glass busy press" disabled>${PLAY}Loading</button><div class="psub"></div>`;
   let all;
   try{ all = (await Promise.all(t.tors.map(files))).flat(); }
   catch(e){ if(cur && cur.t === t) $('#tact').innerHTML = `<div class="empty">${esc(errMsg(e))}</div>`; return; }
@@ -1123,7 +1126,7 @@ function drawMovie(all){
   if(!cur.ver) cur.ver = withProg || vers.slice().sort((a, b) => b.bytes - a.bytes)[0];
   const f = cur.ver, k = f.tid + '|' + f.path, p = prog[k];
   warm(f);
-  $('#tact').innerHTML = `<button class="play glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'}</button>
+  $('#tact').innerHTML = `<button class="play acc glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'}</button>
     <div class="psub">${p ? left(p) + ' · ' : done[k] ? 'Watched · ' : ''}${[qualOf(f.path), fmtSize(f.bytes)].filter(Boolean).join(' · ')}</div>
     ${p ? '<div class="row2"><button class="glass press" id="over">Start over</button></div>' : ''}`;
   $('#tmore').innerHTML = vers.length > 1 ? `<div class="lbl">Version</div><div class="chips">${vers.map((v, i) => `<button class="chip glass press ${v === f ? 'on' : ''}" data-i="${i}">${esc([qualOf(v.path) || 'Copy ' + (i + 1), fmtSize(v.bytes)].filter(Boolean).join(' · '))}</button>`).join('')}</div>` : '';
@@ -1144,7 +1147,7 @@ function drawShow(eps){
   const target = (last && list.find(x => x.tid + '|' + x.path === last[0])) || list.find(x => !done[x.tid + '|' + x.path]) || list[0];
   if(cur.season == null){ cur.season = target ? target.ep.s : seasons[0]; warm(target); }
   const p = target && prog[target.tid + '|' + target.path];
-  $('#tact').innerHTML = target ? `<button class="play glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'} ${target.ep.s ? 'S' + target.ep.s + ' E' + target.ep.e : ''}</button><div class="psub">${p ? left(p) : ''}</div>` : '';
+  $('#tact').innerHTML = target ? `<button class="play acc glass on press" id="pbtn">${PLAY}${p ? 'Resume' : 'Play'} ${target.ep.s ? 'S' + target.ep.s + ' E' + target.ep.e : ''}</button><div class="psub">${p ? left(p) : ''}</div>` : '';
   if(target) $('#pbtn').onclick = () => playEp(target);
   const sl = s => s === 0 ? 'Extras' : 'Season ' + s;
   $('#tmore').innerHTML = `${seasons.length > 1 ? `<div class="lbl">Seasons</div><div class="chips">${seasons.map(s => `<button class="chip glass press ${s === cur.season ? 'on' : ''}" data-s="${s}">${sl(s)}</button>`).join('')}</div>` : ''}
