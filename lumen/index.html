@@ -303,7 +303,7 @@ body.q .car{opacity:0;pointer-events:none}
 .tlogo{display:block;max-width:76%;max-height:110px;object-fit:contain;filter:drop-shadow(0 4px 18px rgba(0,0,0,.65));opacity:0;transition:opacity .6s}
 .tlogo.tall{max-width:52%;max-height:132px}
 .tlogo.in{opacity:1}
-.tmeta2{margin-top:14px;font-size:10.5px;font-weight:400;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:rgba(var(--lc),.62)}
+.tmeta2{white-space:nowrap;overflow:hidden;display:flex;align-items:center;justify-content:center;max-width:100%;margin-top:14px;font-size:10.5px;font-weight:400;letter-spacing:.16em;line-height:1.9;text-transform:uppercase;color:rgba(var(--lc),.62)}
 .thead #tact{width:100%;display:flex;flex-direction:column;align-items:center}
 .thead .play{width:min(76%,300px);height:54px;margin-top:22px}
 .thead .row2{width:min(76%,300px);justify-content:center}
@@ -441,6 +441,10 @@ html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
 /* buttons that do something get the accent colour */
 .acc,.fld button.sv{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.46),rgba(var(--lc),.3))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 0 rgba(0,0,0,.2),0 5px 12px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.3)!important;font-weight:400}
 .acc::before{display:none}
+.tmeta2 i{font-style:normal;margin:0 .75em;opacity:.7}
+.tmeta2 .rt{display:inline-flex;align-items:center;gap:.5em;letter-spacing:.06em;color:var(--text)}
+.tmeta2 .rt b{background:#f5c518;color:#000;font-weight:800;font-size:9.5px;letter-spacing:0;text-transform:none;padding:1.5px 4px;border-radius:3px;line-height:1.2;font-family:Arial,Helvetica,sans-serif}
+.tmeta2 .rt.tm b{background:linear-gradient(90deg,#90cea1,#01b4e4);color:#0d253f;font-size:8.5px}
 .play.acc{animation:none!important;height:56px;border:0!important;outline:0}
 .play.acc::before,.play.acc::after{display:none!important}
 .play.acc svg{fill:var(--text)}
@@ -666,16 +670,28 @@ function indexAll(){
   busy(); return indexing;
 }
 function busy(){ $('.sw').classList.toggle('busy', !!(syncing || indexing)); }
+// IMDb ratings from the nightly dataset Rolling Credits uses (movies: shards by the id's last 3 digits; shows: one file each)
+const IMDB_DATA = 'https://raw.githubusercontent.com/JWillHub/Claude-/imdb-data/';
+async function imdbRating(tt, tv){
+  const k = P + 'imdb.' + tt, c = store.get(k, null);
+  if(c && Date.now() - c.at < 3 * 864e5) return c.r;
+  try{
+    let r = null;
+    if(tv){ const x = await fetch(`${IMDB_DATA}tv/${tt.slice(-2)}/${tt}.json`); if(x.ok) r = (await x.json()).r || null; }
+    else { const x = await fetch(`${IMDB_DATA}m/${tt.slice(-3)}.json`); if(x.ok){ const m = (await x.json())[tt]; r = m ? m[0] : null; } }
+    store.set(k, { r, at:Date.now() }); return r;
+  }catch(e){ return null; }
+}
 async function details(m){
   const k = P + 'd.' + m.id, c = store.get(k, null);
-  if(c && c.v === 3 && Date.now() - c.at < 7 * 864e5) return c;
+  if(c && c.v === 4 && Date.now() - c.at < 7 * 864e5) return c;
   if(typeof m.id !== 'number' && !m.tv) return null;
-  const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id, { append_to_response:(m.tv ? 'aggregate_credits' : 'credits') + ',images', include_image_language:'en,null' });
+  const d = await tmdb(m.tv ? '/tv/' + m.tid : '/movie/' + m.id, { append_to_response:(m.tv ? 'aggregate_credits' : 'credits') + ',images,external_ids', include_image_language:'en,null' });
   const cr = (m.tv ? d.aggregate_credits : d.credits) || {};
   const logos = ((d.images || {}).logos || []).sort((a, b) => (b.iso_639_1 === 'en') - (a.iso_639_1 === 'en') || b.vote_average - a.vote_average);
   const bestImg = a => (a || []).slice().sort((p, q) => (q.vote_average - p.vote_average) || (q.vote_count - p.vote_count))[0];
   const clean = bestImg(((d.images || {}).posters || []).filter(x => !x.iso_639_1));   // textless key art
-  const out = { v:3, at:Date.now(), art:clean ? clean.file_path : null, logo:logos[0] ? logos[0].file_path : null, logoAr:logos[0] ? logos[0].aspect_ratio : 0, backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
+  const out = { v:4, at:Date.now(), imdb:d.imdb_id || (d.external_ids || {}).imdb_id || null, art:clean ? clean.file_path : null, logo:logos[0] ? logos[0].file_path : null, logoAr:logos[0] ? logos[0].aspect_ratio : 0, backdrop:d.backdrop_path, overview:d.overview || '', runtime:d.runtime || (d.episode_run_time || [])[0] || 0,
     genres:(d.genres || []).map(g => g.name), cast:(cr.cast || []).slice(0, 12).map(c => c.name), vote:d.vote_average || 0, seasons:(d.seasons || []).filter(s => s.season_number > 0).length };
   store.set(k, out);
   idx[m.id] = { g:out.genres, c:out.cast }; saveIdx();
@@ -848,8 +864,10 @@ function dockState(){ coverState(); requestAnimationFrame(placeInd); $$('.dk').f
 $$('.dk').forEach(b => b.setAttribute('aria-label', b.textContent.trim()));
 $$('.dk').forEach(b => b.onclick = () => {
   const s = b.dataset.sheet;
-  if(s === 'home'){ if(layers.length) history.go(-layers.length); else qi.focus(); return; }
-  if(isOpen(s)){ const top = layers[layers.length - 1]; if(top && top.name === s) back(); } else openSheet(s);
+  // tapping the tab you're already on does nothing (no keyboard, no jump home); from a page opened on top of it, it steps back to the tab
+  if(s === 'home'){ if(layers.length) history.go(-layers.length); return; }
+  if(isOpen(s)){ const i = layers.findIndex(l => l.name === s), above = layers.length - 1 - i; if(i >= 0 && above > 0) history.go(-above); }
+  else openSheet(s);
 });
 dockState();
 
@@ -1104,7 +1122,14 @@ async function openTitle(id, src){
       lg.onload = () => { if(!cur || cur.t !== t) return; const n = $('#tname'); n.innerHTML = ''; n.appendChild(lg); requestAnimationFrame(() => lg.classList.add('in')); };
       lg.src = IMG + (d.logo.endsWith('.svg') ? 'original' : 'w500') + d.logo;
     }
-    $('#tmeta').textContent = [t.year, ...d.genres.slice(0, 2), t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : '', d.vote ? '★\u00a0' + d.vote.toFixed(1) : ''].filter(Boolean).join('  ·  ');
+    const mt = $('#tmeta'), parts = [t.year, ...d.genres.slice(0, 2), t.tv ? (d.seasons ? d.seasons + (d.seasons === 1 ? ' season' : ' seasons') : '') : d.runtime ? Math.floor(d.runtime / 60) + 'h ' + d.runtime % 60 + 'm' : ''].filter(Boolean);
+    const drawMeta = r => { let ps = parts.slice();
+      const html = () => ps.map(x => `<span>${esc(String(x))}</span>`).join('<i>·</i>') + (r ? '<i>·</i>' + r : '');
+      mt.innerHTML = html();
+      while(mt.scrollWidth > mt.clientWidth + 1 && ps.length > 2){ ps.splice(ps.length - 2, 1); mt.innerHTML = html(); }   // keep it on one line: drop genres first
+    };
+    drawMeta(d.vote ? `<span class="rt tm"><b>TMDB</b>${d.vote.toFixed(1)}</span>` : '');
+    if(d.imdb) imdbRating(d.imdb, t.tv).then(x => { if(x && cur && cur.t === t) drawMeta(`<span class="rt"><b>IMDb</b>${x.toFixed(1)}</span>`); });
     const ov = $('#tov'); ov.textContent = d.overview; ov.onclick = () => ov.classList.toggle('full');
     if(d.cast && d.cast.length) $('#tcast').textContent = 'With ' + d.cast.slice(0, 4).join(', ');
     $('#tdesc').hidden = !d.overview && !(d.cast && d.cast.length);
@@ -1342,7 +1367,13 @@ let updating = false;
 function fillVersion(){
   const box = $('#appver'); if(!box || updating) return;
   const newer = latestBuild > APP_BUILD;
-  box.innerHTML = newer ? `<button class="play acc glass press" id="updbtn">Update to version ${latestBuild}</button>` : '';
+  // always there: "Update to N" when a newer build is out, otherwise "Check for updates"
+  box.innerHTML = `<button class="play acc glass press" id="updbtn">${newer ? 'Update to version ' + latestBuild : 'Check for updates'}</button>`;
+  if(!newer){ const b = $('#updbtn'); b.onclick = async () => {
+    b.disabled = true; b.classList.add('busy'); b.textContent = 'Checking…';
+    updating = true; await checkForUpdate(); updating = false; if(latestBuild > APP_BUILD) return fillVersion();
+    b.classList.remove('busy'); b.textContent = latestBuild ? 'Up to date' : 'Couldn\'t check'; setTimeout(() => { if(b.isConnected) fillVersion(); }, 1800); };
+    return; }
   const btn = $('#updbtn'); if(!btn) return;
   btn.onclick = async () => {
     const url = REL + 'lumen.apk?v=' + latestBuild;
