@@ -458,6 +458,8 @@ html.light .orb.a{opacity:.35}
 .chip.on::before{display:none}
 .dock{touch-action:none}
 html.light .seg button.on,html.light .chip.on,html.light .dkind,html.light .acc,html.light .fld button.sv{box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.08),0 4px 10px rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.12)!important}
+html.tinted .orb.a{opacity:.8}
+.ov,.tdesc .ov{color:rgba(var(--tr),.75)!important}
 </style>
 </head>
 <body>
@@ -563,11 +565,16 @@ const LIGHTS = [['Mono', '255,255,255', '28,28,34'], ['Cyan', '80,215,255', '0,1
   ['Pink', '255,105,195', '195,25,130'], ['Red', '255,85,95', '205,30,45'], ['Orange', '255,140,60', '210,90,10'], ['Gold', '255,205,80', '170,115,0'],
   ['Green', '100,235,140', '20,140,70'], ['Teal', '60,225,200', '0,135,120']];
 const OLD_LIGHT = { White:'Mono', Ice:'Cyan', Mint:'Green', Amber:'Gold', Violet:'Purple', Rose:'Pink' };
-const BGS = [['Black', '#000000', '0,0,0'], ['Graphite', '#1a1b20', '26,27,32'], ['Midnight', '#060d22', '6,13,34'], ['Light', '#f2f2f5', '242,242,245']];
+// Midnight: pure black. Tinted: a deep, faint shade of the accent colour (worked out in applyTheme)
+const BGS = [['Midnight', '#000000', '0,0,0'], ['Tinted', null, null]];
 function applyTheme(){
   const th = store.get(K_THEME, {});
-  const ln = OLD_LIGHT[th.light] || th.light, B = BGS.find(x => x[0] === th.bg) || BGS[0], light = B[0] === 'Light';
+  const ln = OLD_LIGHT[th.light] || th.light, B0 = BGS.find(x => x[0] === th.bg) || BGS[0], light = false;
   const L = LIGHTS.find(x => x[0] === ln) || LIGHTS[0], h = document.documentElement;
+  let B = B0;
+  if(B0[0] === 'Tinted'){ const c = L[1].split(',').map(Number), k = L[0] === 'Mono' ? .075 : .11, rgb = c.map(v => Math.round(v * k));
+    B = ['Tinted', '#' + rgb.map(v => v.toString(16).padStart(2, '0')).join(''), rgb.join(',')]; }
+  h.classList.toggle('tinted', B0[0] === 'Tinted');
   h.classList.toggle('light', light);
   h.style.setProperty('--lc', light ? L[2] : L[1]);
   h.style.setProperty('--bgc', B[1]); h.style.setProperty('--bgr', B[2]);
@@ -1353,7 +1360,7 @@ function drawSettings(){
   <button class="navrow glass press" data-sub="player"><span><b>${NATIVE ? 'Player' : 'Playback'}</b><small>${NATIVE ? 'Episodes, sound and subtitles' : 'In-browser player and VLC'}</small></span>${CHEV}</button>
   <div class="card glass"><h3>Appearance</h3>
     <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, cd, cl]) => `<button class="swc ${(OLD_LIGHT[store.get(K_THEME, {}).light] || store.get(K_THEME, {}).light || 'Mono') === n ? 'on' : ''}" data-n="${n}" style="--c:${document.documentElement.classList.contains('light') ? cl : cd}"><i></i>${n}</button>`).join('')}</div>
-    <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(store.get(K_THEME, {}).bg || 'Black') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(BGS.some(b => b[0] === store.get(K_THEME, {}).bg) ? store.get(K_THEME, {}).bg : 'Midnight') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
   <div id="sp-conn" hidden>
   <div class="card glass"><h3>Real-Debrid</h3><p>Your API token from <a href="https://real-debrid.com/apitoken" target="_blank" rel="noopener">real-debrid.com/apitoken</a>. It stays on this device.</p>
     <div class="fld"><input id="rdk" type="password" placeholder="Paste token" value="${esc(rk)}" autocomplete="off"><button id="rdshow">Show</button><button class="sv" id="rdsave">Save</button></div>
@@ -1398,7 +1405,7 @@ function drawSettings(){
   }
   $$('.navrow[data-sub]', b).forEach(x => x.onclick = () => openSub(x.dataset.sub));
   if(curSub && $('#sub').classList.contains('open')) showSub(curSub);
-  $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
+  $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); if(document.documentElement.classList.contains('tinted')) return drawSettings(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
   $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); drawSettings(); });
   const show = (i, btn) => { const x = $(i); x.type = x.type === 'password' ? 'text' : 'password'; $(btn).textContent = x.type === 'password' ? 'Show' : 'Hide'; };
   $('#rdshow').onclick = () => show('#rdk', '#rdshow'); $('#tmshow').onclick = () => show('#tmk', '#tmshow');
