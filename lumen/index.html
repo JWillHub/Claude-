@@ -425,7 +425,8 @@ body.launch .dock{animation:lfade .6s 1s ease both}
 /* the current tab: a soft pool of light that glides behind its icon */
 .dkind{position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;pointer-events:none;z-index:0;
   background:linear-gradient(180deg,rgba(var(--lc),.24),rgba(var(--lc),.12));box-shadow:inset 0 1px 0 rgba(var(--lc),.3),0 0 12px rgba(var(--lc),.12);
-  transition:transform .5s var(--ease),width .5s var(--ease),opacity .3s}
+  transition:transform .6s cubic-bezier(.3,1.45,.5,1),width .5s var(--ease),opacity .3s;will-change:transform}
+.dock.dragging .dkind{transition:none}
 .dk{z-index:1}
 
 /* light mode */
@@ -443,12 +444,18 @@ html.light .ci img{box-shadow:0 10px 24px rgba(0,0,0,.18)}
 .acc.busy{background:rgba(var(--lc),.22)!important}
 
 /* accent swatches: solid, bright colours */
-.swc i{background:rgb(var(--c))!important;box-shadow:0 0 12px rgba(var(--c),.45)!important}
-.swc.on i{box-shadow:0 0 0 3px var(--bgc),0 0 0 4.5px rgb(var(--c)),0 0 18px rgba(var(--c),.6)!important}
+.swc i{background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.55),rgba(255,255,255,0) 32%),radial-gradient(circle at 50% 45%,rgba(var(--c),.95),rgba(var(--c),.45) 72%)!important;
+  box-shadow:inset 0 0 0 1px rgba(var(--c),.95),0 0 12px rgba(var(--c),.45)!important}
+.swc.on i{box-shadow:inset 0 0 0 1.5px rgb(var(--c)),0 0 0 3px var(--bgc),0 0 0 4.5px rgb(var(--c)),0 0 20px rgba(var(--c),.6)!important}
 .swc.on{color:var(--text)}
 html.light .orb.a{opacity:.35}
 
 #libbody.quiet .pt{animation:none}
+
+/* every selected tab/segment/chip: the same filled accent bubble as the tab bar */
+.seg button.on,.chip.on,.chip.glass.on{color:var(--text)!important;background:linear-gradient(180deg,rgba(var(--lc),.24),rgba(var(--lc),.12))!important;
+  box-shadow:inset 0 1px 0 rgba(var(--lc),.3),0 0 12px rgba(var(--lc),.12)!important}
+.chip.on::before{display:none}
 </style>
 </head>
 <body>
@@ -798,6 +805,31 @@ function placeInd(){
   const on = $('.dk.on'), ind = $('#dkind'); if(!on){ ind.style.opacity = 0; return; }
   ind.style.opacity = 1; ind.style.width = on.offsetWidth + 'px'; ind.style.transform = `translateX(${on.offsetLeft - 6}px)`;
 }
+// drag the bubble along the bar to switch tabs; it follows the finger, then springs onto the nearest tab
+(() => {
+  const dock = $('.dock'), ind = $('#dkind'); let x0 = null, off0 = 0, dragging = false, swallow = false;
+  dock.addEventListener('pointerdown', e => { const on = $('.dk.on'); if(!on) return; x0 = e.clientX; off0 = on.offsetLeft - 6; dragging = false; });
+  dock.addEventListener('pointermove', e => {
+    if(x0 == null) return;
+    const dx = e.clientX - x0;
+    if(!dragging && Math.abs(dx) < 8) return;
+    if(!dragging){ dragging = true; dock.classList.add('dragging'); try{ dock.setPointerCapture(e.pointerId); }catch(err){} }
+    const tabs = $$('.dk'), max = tabs[tabs.length - 1].offsetLeft - 6;
+    let x = off0 + dx; if(x < 0) x = x / 3; if(x > max) x = max + (x - max) / 3;   // soft edges
+    ind.style.transform = `translateX(${x}px) scale(1.08, .94)`;
+  });
+  const end = e => {
+    if(x0 == null) return; const was = dragging; x0 = null;
+    if(!was) return;
+    dragging = false; dock.classList.remove('dragging');
+    const m = /translateX\(([-\d.]+)px/.exec(ind.style.transform), x = m ? +m[1] + 6 : 0, tabs = $$('.dk');
+    let best = tabs[0]; tabs.forEach(t => { if(Math.abs(t.offsetLeft - x) < Math.abs(best.offsetLeft - x)) best = t; });
+    if(best.classList.contains('on')) placeInd(); else { buzz(8); best.click(); }
+    swallow = true; setTimeout(() => swallow = false, 60);   // ignore the tap the finger lifts on
+  };
+  dock.addEventListener('pointerup', end); dock.addEventListener('pointercancel', end);
+  dock.addEventListener('click', e => { if(swallow){ e.stopPropagation(); e.preventDefault(); } }, true);
+})();
 addEventListener('resize', placeInd);
 function dockState(){ coverState(); requestAnimationFrame(placeInd); $$('.dk').forEach(b => b.classList.toggle('on', isOpen(b.dataset.sheet))); }
 $$('.dk').forEach(b => b.setAttribute('aria-label', b.textContent.trim()));
