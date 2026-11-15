@@ -1358,9 +1358,14 @@ function drawSettings(){
   b.innerHTML = `
   <button class="navrow glass press" data-sub="conn"><span><b>Connections</b><small>${rk ? 'Real-Debrid connected' : 'Real-Debrid not connected'} · ${tk ? 'TMDB connected' : 'TMDB not connected'}</small></span>${CHEV}</button>
   <button class="navrow glass press" data-sub="player"><span><b>${NATIVE ? 'Player' : 'Playback'}</b><small>${NATIVE ? 'Episodes, sound and subtitles' : 'In-browser player and VLC'}</small></span>${CHEV}</button>
-  <div class="card glass"><h3>Appearance</h3>
+  <button class="navrow glass press" data-sub="appear"><span><b>Appearance</b><small>Light colour and background</small></span>${CHEV}</button>
+  <button class="navrow glass press" data-sub="data"><span><b>Your data</b><small>Back up, restore and storage</small></span>${CHEV}</button>
+  ${NATIVE ? `<button class="navrow glass press" data-sub="app"><span><b>App</b><small>Version and updates${latestBuild > APP_BUILD ? ' · update ready' : ''}</small></span>${CHEV}</button>` : ''}
+  <div id="sp-appear" hidden>
+  <div class="card glass">
     <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, cd, cl]) => `<button class="swc ${(OLD_LIGHT[store.get(K_THEME, {}).light] || store.get(K_THEME, {}).light || 'Mono') === n ? 'on' : ''}" data-n="${n}" style="--c:${document.documentElement.classList.contains('light') ? cl : cd}"><i></i>${n}</button>`).join('')}</div>
     <div class="sub">Background</div><div class="seg glass" id="swb">${BGS.map(([n]) => `<button data-n="${n}" class="${(BGS.some(b => b[0] === store.get(K_THEME, {}).bg) ? store.get(K_THEME, {}).bg : 'Midnight') === n ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+  </div>
   <div id="sp-conn" hidden>
   <div class="card glass"><h3>Real-Debrid</h3><p>Your API token from <a href="https://real-debrid.com/apitoken" target="_blank" rel="noopener">real-debrid.com/apitoken</a>. It stays on this device.</p>
     <div class="fld"><input id="rdk" type="password" placeholder="Paste token" value="${esc(rk)}" autocomplete="off"><button id="rdshow">Show</button><button class="sv" id="rdsave">Save</button></div>
@@ -1386,16 +1391,14 @@ function drawSettings(){
     ${mobile ? `<button class="tg ${store.get(K_VLC, false) ? 'on' : ''}" id="tvlc"><span>Always open in VLC<small>Skip the built-in player</small></span><i class="sw2"></i></button>` : ''}
     <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`}
   </div>
-  <div class="card glass"><h3>Library</h3><p>Lumen reads what is already in your Real-Debrid account. New downloads show up after a sync.</p>
-    <button class="wide glass press acc" id="ssync">Sync now</button>
-    <button class="wide glass press" id="rematch" style="margin-top:10px">Re-match all titles</button>
-    ${rk ? '<button class="tg" id="rddisc" style="margin-top:14px"><span>Disconnect Real-Debrid<small>Removes the token and library list from this device</small></span></button>' : ''}</div>
-  <div class="card glass"><h3>Your data</h3><p>Watch progress and settings, in one file. Your tokens are never included.</p>
+  <div id="sp-data" hidden>
+  <div class="card glass"><p>Watch progress and settings, in one file. Your tokens are never included.</p>
     <div class="row2b"><button class="wide glass press" id="bkexp">Back up</button><button class="wide glass press" id="bkimp">Restore</button></div>
     <input type="file" id="bkfile" accept="application/json,.json" hidden>
     <div class="tg" style="margin-top:16px;pointer-events:none"><span>Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span></div>
     <button class="wide glass press acc" id="stclr" style="margin-top:12px">Clear cache</button></div>
-  ${NATIVE ? '<div class="card glass"><h3>App</h3><div id="appver"></div></div>' : ''}
+  </div>
+  ${NATIVE ? '<div id="sp-app" hidden><div class="card glass"><h3>App</h3><div id="appver"></div></div></div>' : ''}
   <div class="ver">LUMEN${APP_BUILD ? ' · BUILD ' + APP_BUILD : ''}</div>`;
   if(NATIVE){
     fillVersion();
@@ -1421,9 +1424,6 @@ function drawSettings(){
   if($('#tvlc')) $('#tvlc').onclick = e => { const on = !store.get(K_VLC, false); store.set(K_VLC, on); e.currentTarget.classList.toggle('on', on); };
   $('#tclear').onclick = () => { if(!confirmTap('#tclear')) return; prog = {}; done = {}; saveProg(); refresh(); toast('Watch progress cleared'); };
   dataCard();
-  if($('#rddisc')) $('#rddisc').onclick = () => { if(!confirmTap('#rddisc')) return; store.set(K_RD, ''); lib = { synced:0, items:{} }; saveLib(); refresh(); drawSettings(); toast('Real-Debrid disconnected'); };
-  $('#ssync').onclick = () => sync().then(() => { toast('Library up to date'); drawSettings(); }).catch(e => toast(errMsg(e)));
-  $('#rematch').onclick = () => { Object.values(lib.items).forEach(it => delete it.m); saveLib(); sync().then(() => { toast('Titles re-matched'); drawSettings(); }).catch(e => toast(errMsg(e))); };
 }
 // Connections and Player open as their own page over Settings (same cards, just one level in)
 let curSub = null;
@@ -1432,7 +1432,7 @@ function showSub(name){
   $('#subbody').innerHTML = ''; n.hidden = false; $('#subbody').appendChild(n);
 }
 function openSub(name){
-  curSub = name; $('#subt').textContent = name === 'conn' ? 'Connections' : NATIVE ? 'Player' : 'Playback';
+  curSub = name; $('#subt').textContent = ({ conn:'Connections', appear:'Appearance', data:'Your data', app:'App', player:NATIVE ? 'Player' : 'Playback' })[name];
   showSub(name); $('#subbody').scrollTop = 0;
   const el = $('#sub'); el.classList.add('open');
   pushLayer('sub', () => { el.classList.remove('open'); curSub = null; if($('#set').classList.contains('open')) setTimeout(drawSettings, 450); });
