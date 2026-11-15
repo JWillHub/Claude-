@@ -1169,7 +1169,15 @@ function resume(k){
   const p = prog[k]; if(!p) return;
   const t = titles().find(x => x.tors.includes(p.tid));
   const path = k.slice(k.indexOf('|') + 1);
-  play({ f:{ tid:p.tid, path, link:p.link }, title:t ? t.title : p.title, id:t ? t.id : p.id, poster:t ? t.poster : p.poster, label:p.label || '' });
+  const o = { f:{ tid:p.tid, path, link:p.link }, title:t ? t.title : p.title, id:t ? t.id : p.id, poster:t ? t.poster : p.poster, label:p.label || '' };
+  const ep = epOf(path);
+  if(!(t && t.tv && ep)) return play(o);
+  // an episode: hand the player the show, season and episode (for Skip intro / recap) and the episodes after it
+  Object.assign(o, { tv:true, tmdbId:t.tid || 0, ep });
+  Promise.all(t.tors.map(files)).then(all => {
+    const list = epList(all.filter(f => epOf(f.path))), i = list.findIndex(x => x.tid + '|' + x.path === k);
+    if(i >= 0) Object.assign(o, { ep:list[i].ep, queue:list.slice(i + 1, i + 41).filter(y => y.ep && y.ep.s) });
+  }).catch(() => {}).then(() => play(o));
 }
 
 /* ================= player ================= */
