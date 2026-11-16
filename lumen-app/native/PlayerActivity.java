@@ -474,15 +474,35 @@ public class PlayerActivity extends AppCompatActivity {
     // ---- Lumen look for the built-in controls: lighter shade, glass circles with a lit outline, a thin bar in the light colour ----
     private static int withAlpha(int c, int a) { return (c & 0x00FFFFFF) | (a << 24); }
     // filled, raised buttons: a solid dark base with the light colour shading it from the top, no outline
+    // liquid glass, like RC's round back button, tinted with the light colour:
+    // a see-through dark body, an accent tint and a white sheen running corner to corner,
+    // a soft highlight across the top and a thin bright rim
+    private GradientDrawable glassShape(boolean circle) {
+        GradientDrawable g = new GradientDrawable();
+        g.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
+        if (!circle) g.setCornerRadius(dp(22));
+        return g;
+    }
     private android.graphics.drawable.Drawable glass(boolean circle) {
-        GradientDrawable base = new GradientDrawable();
-        base.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
-        if (!circle) base.setCornerRadius(dp(22));
-        base.setColor(0xD9141418);
-        GradientDrawable tint = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{ withAlpha(lc, 0x5C), withAlpha(lc, 0x1F) });
-        tint.setShape(circle ? GradientDrawable.OVAL : GradientDrawable.RECTANGLE);
-        if (!circle) tint.setCornerRadius(dp(22));
-        return new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{ base, tint });
+        GradientDrawable body = glassShape(circle);
+        body.setColor(0x8C0B0B0F);
+        GradientDrawable tint = glassShape(circle);
+        tint.setOrientation(GradientDrawable.Orientation.TL_BR);
+        tint.setColors(new int[]{ withAlpha(lc, 0x6B), withAlpha(lc, 0x33), withAlpha(lc, 0x14) });
+        GradientDrawable sheen = glassShape(circle);
+        sheen.setOrientation(GradientDrawable.Orientation.TL_BR);
+        sheen.setColors(new int[]{ 0x38FFFFFF, 0x0FFFFFFF, 0x05FFFFFF });
+        GradientDrawable top = glassShape(circle);
+        top.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
+        top.setColors(new int[]{ 0x40FFFFFF, 0x00FFFFFF, 0x00FFFFFF });
+        GradientDrawable rim = glassShape(circle);
+        rim.setColor(0x00000000);
+        rim.setStroke(Math.max(1, dp(1)), 0x55FFFFFF);
+        android.graphics.drawable.LayerDrawable ld = new android.graphics.drawable.LayerDrawable(
+            new android.graphics.drawable.Drawable[]{ body, tint, sheen, top, rim });
+        int i = Math.max(1, dp(1));
+        ld.setLayerInset(3, i, i, i, i);
+        return ld;
     }
     private View byName(String id) {
         int r = getResources().getIdentifier(id, "id", getPackageName());
@@ -500,7 +520,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
             for (String id : new String[]{ "exo_play_pause", "exo_rew_with_amount", "exo_ffwd_with_amount", "exo_prev", "exo_next" }) {
                 View b = byName(id);
-                if (b != null) b.setBackground(glass(true));
+                if (b != null) { b.setBackground(glass(true)); b.setElevation(dp(4)); }
             }
         } catch (Exception ignored) {}
     }
