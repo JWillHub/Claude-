@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-cPbndjDZBaOENJ+emCLrXu8MqpEfu92wkJJGpjeTxNA=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-szSETL691dbvMDRh2PF6IMbTTrHnXonlgAGJMKp9f5E=' 'sha256-Z+9PKUMgnt+bndrI8QJJzA72g7xEhgKmeVZnaMCLI8M=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-f9RMO5kqTOuFWPov/9BNCoP3/njAlQ1UggccsWY8DmU=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-I83xEQoUOBDZYwXEEjCsqdZZ33G8wQGJz8c/gz91ydM=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-btZs7CbwHUx9/6BPVHoSMOhnNhQcmqaFoDk35myx2QI='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1197,7 +1197,7 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
  if(M[s])set=s;if(m==='dark'||m==='light')mode=m;
  else{var old=localStorage.getItem('bp-look');for(var k in M)for(var x in M[k])if(M[k][x]===old){set=k;mode=x}}}catch(e){}
-function apply(){d.setAttribute('data-look',M[set][mode]);d.setAttribute('data-mode',mode);
+function apply(){d.setAttribute('data-look',M[set][mode]);d.setAttribute('data-mode',mode);try{if(window.BPNative)BPNative.setBars(mode==='light')}catch(_){}
  document.querySelectorAll('[data-set-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.setPick===set)});
  document.querySelectorAll('[data-mode-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.modePick===mode)});
  document.querySelectorAll('[data-modebtn]').forEach(function(b){b.setAttribute('aria-label',mode==='light'?'Switch to dark mode':'Switch to light mode')})}
@@ -1970,6 +1970,8 @@ function markBackup(){try{localStorage.setItem('bp-lastBackup',String(Date.now()
 function backupAge(){let t=0;try{t=+localStorage.getItem('bp-lastBackup')||0}catch(_){}if(!t)return null;return Math.max(0,Math.floor((Date.now()-t)/864e5))}
 const backupWords=()=>{const d=backupAge();return d==null?'No backup saved yet':d===0?'Last backup: today':d===1?'Last backup: yesterday':`Last backup: ${d} days ago`};
 async function saveFile(name,text,type){
+ // inside the Android app: Android's own "Save to" screen
+ if(window.BPNative&&BPNative.saveFile)return new Promise(res=>{window.BPNativeSaved=ok=>{window.BPNativeSaved=null;if(ok)toast('Saved');res(!!ok)};BPNative.saveFile(name,type,text)});
  const blob=new Blob([text],{type});
  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  if(ios&&navigator.canShare){try{const f=new File([blob],name,{type});if(navigator.canShare({files:[f]})){await navigator.share({files:[f]});return true}}catch(e){if(e&&e.name==='AbortError')return false}}
@@ -2090,7 +2092,7 @@ window.BP={
  render();
  if(back&&back.y)requestAnimationFrame(()=>scrollTo(0,back.y));
  if(navigator.storage&&navigator.storage.persist){navigator.storage.persisted().then(p=>p||navigator.storage.persist()).then(p=>{persisted=p;if(ui.tab==='settings')render()}).catch(()=>{})}
- if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+ if(!window.BPNative&&'serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
 <script>
@@ -2748,6 +2750,7 @@ window.BP={
     return L.map(icsFold).join('\r\n') + '\r\n';
   }
   function icsDownload(text, name){
+    if (window.BPNative && BPNative.openFile) { try { if (BPNative.openFile(name.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').slice(0, 40) + '.ics', 'text/calendar', text)) return; } catch (_) {} }
     const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -2933,5 +2936,17 @@ document.addEventListener('keydown',function(e){
 },true);
 })();</script>
 
+<script>(function(){
+/* Android app: the back swipe closes the open pop-up first (answers true when it closed something) */
+window.BPBack=function(){
+ var q=function(s){return document.querySelector(s)};
+ var dw=q('.dw-ov.open');if(dw){dw.classList.remove('open');return true}
+ var lk=q('#lookOv.open');if(lk){lk.classList.remove('open');return true}
+ var sc=document.querySelectorAll('.scrim');if(sc.length){sc[sc.length-1].remove();return true}
+ var ov=q('#pl .overlay.open');if(ov){var b=ov.querySelector('#fCancel,#tCancel,#askNo,.cancel');if(b)b.click();else ov.classList.remove('open');return true}
+ var bx=q('#bxOv.open');if(bx){bx.dispatchEvent(new MouseEvent('click',{bubbles:true}));return true}
+ var sw=q('.sw.open');if(sw){document.body.click();return true}
+ return false};
+})();</script>
 </body>
 </html>

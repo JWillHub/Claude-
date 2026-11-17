@@ -1,0 +1,6 @@
+{
+  "appId": "io.github.jwillhub.bankingplus",
+  "appName": "Banking+",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0A0D13" }
+}
