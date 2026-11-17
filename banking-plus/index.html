@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-f9RMO5kqTOuFWPov/9BNCoP3/njAlQ1UggccsWY8DmU=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Xh4rAI2u7xVyiYRX31B6O19Dmtreld94EeducXp9RQo=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DA4KYdmrLmSF+F+8BhCX2PmqM3j7sDmBiEZyx/4dj4M=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-GXalgcwl93yDNDRmifaiypQveRb4EaqVbZw+bUqHN9I=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1268,22 +1268,44 @@ button.st-row:active,.st-row.tap:active{background:var(--input)}
 .st-list .sw.drow:not(.dragging){background:transparent}
 #gsort>.st-sec.drow.dragging{background:transparent;border-radius:16px}
 :root[data-look="glass-dark"] .st-seg button.on{background:#F2F2F7;color:#0B0B12}
+/* ===== logo mark ===== */
+.bpm{display:block;width:100%;height:100%}
+#bp .brand{display:inline-flex;align-items:center}
+#bp .brand .bpm{flex:none;width:28px;height:28px;margin-right:10px;border-radius:8px;box-shadow:0 3px 10px rgba(11,46,110,.28),inset 0 0 0 1px rgba(255,255,255,.18)}
+#pl .hdr-left{display:flex;align-items:center;gap:12px;min-width:0}
+#pl .bp-mark{flex:none;width:42px;height:42px;border-radius:12px;overflow:hidden;box-shadow:0 6px 16px rgba(11,46,110,.3)}
+body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:none}
+.st-navydot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#2C5BA8,#0A1D45);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+.st-seg button{padding:8px 10px}
+/* ===== Navy: the dark look on deep navy instead of black ===== */
+:root[data-tint="navy"][data-look="glass-dark"]{--bg:#081833;background:#081833;--tacc:#8EC2FF}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] body::before{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.30) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.50) 0%,transparent 65%),#081833!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] .glowbg{opacity:.55}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] .glowbg .g1{background:radial-gradient(closest-side,rgba(64,140,255,.30),rgba(64,140,255,.09) 55%,transparent)!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] .glowbg .g2{background:radial-gradient(closest-side,rgba(40,170,210,.20),rgba(40,170,210,.06) 55%,transparent)!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] .glowbg .g3{background:radial-gradient(closest-side,rgba(90,110,240,.22),transparent)!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] .top{background:rgba(6,20,48,.62)!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] :is(#pl .bx-sheet,#pl .vx-sheet,.dw-sheet){background:#0C2148!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] #pl .vx-dhead{background:linear-gradient(180deg,#1A346A,#0C2148)!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] #pl .vx-dhead::after{background:#0E2550!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] :is(.btn,.tab.on,.tabs.scrub .tab.hot,.st-seg button.on,#pl .save,#pl .bx-pay,#pl .day.sel){color:#0A1F44!important}
+:root[data-tint="navy"][data-glass][data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg){border-color:rgba(160,200,255,.14)!important}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
- if(M[s])set=s;if(m==='dark'||m==='light')mode=m;
+ if(M[s])set=s;if(m==='dark'||m==='light'||m==='navy')mode=m;
  else{var old=localStorage.getItem('bp-look');for(var k in M)for(var x in M[k])if(M[k][x]===old){set=k;mode=x}}}catch(e){}
-function apply(){d.setAttribute('data-look',M[set][mode]);d.setAttribute('data-mode',mode);try{if(window.BPNative)BPNative.setBars(mode==='light')}catch(_){}
+function apply(){d.setAttribute('data-look',M[set][mode==='navy'?'dark':mode]);d.setAttribute('data-mode',mode==='light'?'light':'dark');if(mode==='navy')d.setAttribute('data-tint','navy');else d.removeAttribute('data-tint');try{if(window.BPNative)BPNative.setBars(mode==='light')}catch(_){}
  document.querySelectorAll('[data-set-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.setPick===set)});
  document.querySelectorAll('[data-mode-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.modePick===mode)});
  document.querySelectorAll('[data-modebtn]').forEach(function(b){b.setAttribute('aria-label',mode==='light'?'Switch to dark mode':'Switch to light mode')})}
-function store(){try{localStorage.setItem('bp-set',set);localStorage.setItem('bp-mode2',mode)}catch(_){}}
+function store(){try{localStorage.setItem('bp-set',set);localStorage.setItem('bp-mode2',mode);if(mode!=='light')localStorage.setItem('bp-darkKind',mode)}catch(_){}}
 apply();
 function wire(){var top=document.querySelector('#bp .top');if(top&&!top.querySelector('[data-modebtn]'))top.insertAdjacentHTML('beforeend','<button class="themebtn modebtn" type="button" data-modebtn aria-label="Switch to dark mode"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>'+'');
  var ov=document.getElementById('lookOv');apply();
  document.addEventListener('click',function(e){
   if(e.target.closest('[data-lookbtn]')){e.stopPropagation();ov.classList.add('open');return}
-  if(e.target.closest('[data-modebtn]')){e.stopPropagation();mode=mode==='light'?'dark':'light';apply();store();return}
+  if(e.target.closest('[data-modebtn]')){e.stopPropagation();if(mode==='light'){var last='dark';try{last=localStorage.getItem('bp-darkKind')||'dark'}catch(_){}mode=last}else mode='light';apply();store();return}
   var b=e.target.closest('[data-set-pick]');if(b){set=b.dataset.setPick;apply();store();return}
   var m=e.target.closest('[data-mode-pick]');if(m){mode=m.dataset.modePick;apply();store();return}
   if(e.target.id==='lookClose'||e.target===ov)ov.classList.remove('open');
@@ -1295,6 +1317,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="pwrap">
   <header>
     <div class="hdr-left">
+      <span class="bp-mark"><svg class="bpm" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="bpmB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A92F0"/><stop offset="1" stop-color="#0B2E6E"/></linearGradient></defs><rect width="512" height="512" rx="118" fill="url(#bpmB)"/><rect x="128" y="132" width="268" height="176" rx="30" fill="#fff" opacity=".42" transform="rotate(-10 262 220)"/><rect x="104" y="196" width="304" height="196" rx="34" fill="#fff"/><rect x="104" y="246" width="304" height="34" fill="#1C5FC4" opacity=".14"/><path d="M336 300v56M308 328h56" stroke="#1C5FC4" stroke-width="22" stroke-linecap="round"/><rect x="140" y="318" width="96" height="20" rx="10" fill="#1C5FC4" opacity=".35"/></svg></span>
       <h1 id="homeTitle">Planner</h1>
     </div>
     <div class="hdr-right"><button class="themebtn modebtn" type="button" data-modebtn aria-label="Switch to dark mode"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button></div>
@@ -1428,7 +1451,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="ptoast" id="plToast" hidden></div>
 </div>
 <div id="bp" hidden>
-<header class="top"><h1><button class="brand" data-act="goHome" aria-label="Banking+, go to the home page">Banking<b>+</b></button></h1></header>
+<header class="top"><h1><button class="brand" data-act="goHome" aria-label="Banking+, go to the home page"><svg class="bpm" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="bpmA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A92F0"/><stop offset="1" stop-color="#0B2E6E"/></linearGradient></defs><rect width="512" height="512" rx="118" fill="url(#bpmA)"/><rect x="128" y="132" width="268" height="176" rx="30" fill="#fff" opacity=".42" transform="rotate(-10 262 220)"/><rect x="104" y="196" width="304" height="196" rx="34" fill="#fff"/><rect x="104" y="246" width="304" height="34" fill="#1C5FC4" opacity=".14"/><path d="M336 300v56M308 328h56" stroke="#1C5FC4" stroke-width="22" stroke-linecap="round"/><rect x="140" y="318" width="96" height="20" rx="10" fill="#1C5FC4" opacity=".35"/></svg>Banking<b>+</b></button></h1></header>
 <nav class="tabs" id="tabs">
  <button class="tab" data-tab="budget"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 3.5h10M16 15h2"/></svg><span>Budget</span></button>
  <button class="tab" data-tab="tx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>Transactions</span></button>
@@ -1990,7 +2013,7 @@ function vSettings(){
  }
  /* ----- the hub ----- */
  const spend=state.groups.filter(g=>!g.income).length,nc=state.cats.length,names=state.accounts.map(a=>a.name).join(', ')||'None yet';
- const mode=document.documentElement.getAttribute('data-mode')==='dark'?'dark':'light';
+ const mode=document.documentElement.getAttribute('data-tint')==='navy'?'navy':document.documentElement.getAttribute('data-mode')==='dark'?'dark':'light';
  return `<div class="st-page${anim}"><h2 class="st-title">Settings</h2>
  ${stBackupCard(true)}
  <div class="st-label">Budget</div>
@@ -2000,7 +2023,7 @@ function vSettings(){
  </div>
  <div class="st-label">Appearance</div>
  <div class="st-card st-list"><div class="st-row" style="cursor:default">${stIco('look','#5B6BD6')}<span class="st-tx"><b>Theme</b></span>
-  <span class="st-seg" role="group" aria-label="Theme"><button type="button" data-mode-pick="light" class="${mode==='light'?'on':''}">${SI.sun}Light</button><button type="button" data-mode-pick="dark" class="${mode==='dark'?'on':''}">${SI.moon}Dark</button></span></div></div>
+  <span class="st-seg" role="group" aria-label="Theme"><button type="button" data-mode-pick="light" class="${mode==='light'?'on':''}">${SI.sun}Light</button><button type="button" data-mode-pick="dark" class="${mode==='dark'?'on':''}">${SI.moon}Dark</button><button type="button" data-mode-pick="navy" class="${mode==='navy'?'on':''}"><i class="st-navydot"></i>Navy</button></span></div></div>
  <div class="st-label">Your data</div>
  <div class="st-card st-list">${stRow('data','#1FA36A','Backup & data','Restore, export, erase','data-act="stGo" data-to="data"')}</div>
  <p class="st-foot">${SI.lock}Banking+ keeps everything on this device.<br>Nothing is sent anywhere.</p></div>`;
