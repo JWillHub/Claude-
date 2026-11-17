@@ -356,6 +356,9 @@ public class PlayerActivity extends AppCompatActivity {
                 return true;
             }
 
+            // press and hold anywhere on the video: what the player knows about skips and the next episode
+            @Override public void onLongPress(@NonNull MotionEvent e) { if (swipeMode == 0) { view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS); statusReadout(); } }
+
             @Override public boolean onScroll(MotionEvent start, @NonNull MotionEvent now, float dx, float dy) {
                 if (start == null) return false;
                 float w = view.getWidth(), h = view.getHeight();

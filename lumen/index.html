@@ -1285,7 +1285,7 @@ function resume(k){
   // an episode: hand the player the show, season and episode (for Skip intro / recap) and the episodes after it
   Object.assign(o, { tv:true, tmdbId:t.tid || 0, ep });
   Promise.all(t.tors.map(files)).then(all => {
-    const list = epList(all.filter(f => epOf(f.path))), i = list.findIndex(x => x.tid + '|' + x.path === k);
+    const list = epList(all.flat().filter(f => epOf(f.path))), i = list.findIndex(x => x.tid + '|' + x.path === k);
     if(i >= 0) Object.assign(o, { ep:list[i].ep, queue:list.slice(i + 1, i + 41).filter(y => y.ep && y.ep.s) });
   }).catch(() => {}).then(() => play(o));
 }
