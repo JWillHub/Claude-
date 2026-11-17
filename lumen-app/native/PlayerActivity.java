@@ -451,7 +451,7 @@ public class PlayerActivity extends AppCompatActivity {
         hud.animate().cancel();
         if (hud.getVisibility() != View.VISIBLE) { hud.setVisibility(View.VISIBLE); hud.setAlpha(0f); }
         hud.animate().alpha(1f).setDuration(120).start();
-        hud.postDelayed(hideHud, 800);
+        hud.postDelayed(hideHud, text.indexOf('\n') >= 0 ? 6000 : 800);   // the status readout stays up long enough to read
     }
 
     private static String str(String s) { return s == null ? "" : s; }
