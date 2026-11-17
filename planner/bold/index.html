@@ -282,7 +282,7 @@ body[data-view=todo] h1{max-width:none}
 <script>
 (function(){
   const $ = id => document.getElementById(id);
-  const BKEY = 'billcal.v1', TKEY = 'todo.v1';
+  const BKEY = 'billcal.old-bold.v1', TKEY = 'todo.old-bold.v1'; // old design copy: kept apart from the live Banking+ data
   let state = { bills: [], paid: {} }, tasks = [];
   try { const s = localStorage.getItem(BKEY); if (s) { const p = JSON.parse(s); if (p && Array.isArray(p.bills)) state = { bills: p.bills, paid: p.paid || {} }; } } catch (e) {}
   try { const s = localStorage.getItem(TKEY); if (s) { const p = JSON.parse(s); if (Array.isArray(p)) tasks = p; } } catch (e) {}
