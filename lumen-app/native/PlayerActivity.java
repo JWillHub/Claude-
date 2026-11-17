@@ -113,6 +113,7 @@ public class PlayerActivity extends AppCompatActivity {
     private ClipDrawable nextFill;
     private int countdown = 0;
     private boolean counting = false;
+    private android.animation.ValueAnimator fillAnim;   // the countdown fill glides across instead of stepping each second
     private long lastSkipAt = 0; private int runDir = 0, runTotal = 0;
     private float downX, downY; private boolean runTap = false;
     private DynamicsProcessing dyn;
@@ -566,6 +567,16 @@ public class PlayerActivity extends AppCompatActivity {
         else v.animate().alpha(0f).setDuration(180).withEndAction(() -> v.setVisibility(View.GONE)).start();
     }
 
+    private void startFill() {
+        stopFill();
+        fillAnim = android.animation.ValueAnimator.ofInt(0, 10000);
+        fillAnim.setDuration(10_000);
+        fillAnim.setInterpolator(new android.view.animation.LinearInterpolator());
+        fillAnim.addUpdateListener(a -> nextFill.setLevel((int) a.getAnimatedValue()));
+        fillAnim.start();
+    }
+    private void stopFill() { if (fillAnim != null) { fillAnim.cancel(); fillAnim = null; } }
+
     // ---- Every half second: show "Skip intro" during an intro, start the next-episode countdown near the end ----
     private final Runnable tick = new Runnable() {
         @Override public void run() {
@@ -609,7 +620,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void showNext() {
         nextShown = true;
         nextFill.setLevel(0);
-        if (autoplay && !nextCancelled) { counting = true; countdown = 10; nextBtn.setText("Next episode  " + countdown); ui.postDelayed(countTick, 1000); }
+        if (autoplay && !nextCancelled) { counting = true; countdown = 10; nextBtn.setText("Next episode  " + countdown); ui.postDelayed(countTick, 1000); startFill(); }
         else nextBtn.setText("Next episode");
         fade(nextBtn, true);
     }
@@ -618,7 +629,6 @@ public class PlayerActivity extends AppCompatActivity {
         @Override public void run() {
             if (!counting) return;
             countdown--;
-            nextFill.setLevel((10 - countdown) * 1000);
             if (countdown <= 0) { goNext(); return; }
             nextBtn.setText("Next episode  " + countdown);
             ui.postDelayed(this, 1000);
@@ -626,7 +636,7 @@ public class PlayerActivity extends AppCompatActivity {
     };
 
     private void cancelNext() {
-        counting = false; nextCancelled = true;
+        counting = false; nextCancelled = true; stopFill();
         ui.removeCallbacks(countTick);
         nextFill.setLevel(0);
         nextBtn.setText("Next episode");
@@ -648,7 +658,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void goNext() {
         if (loadingNext || !hasNext() || exo == null) return;
-        counting = false; ui.removeCallbacks(countTick);
+        counting = false; ui.removeCallbacks(countTick); stopFill();
         try {
             JSONObject p = new JSONObject();
             p.put("key", curKey); p.put("positionMs", exo.getCurrentPosition());
