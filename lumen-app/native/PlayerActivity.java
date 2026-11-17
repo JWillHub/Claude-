@@ -176,13 +176,7 @@ public class PlayerActivity extends AppCompatActivity {
         nameView = name;
         name.setText(title);
         // hold the title: what the player knows about skips and the next episode (to check things are working)
-        name.setOnLongClickListener(v -> {
-            int left = queue == null ? 0 : Math.max(0, queue.length() - qIndex - 1);
-            show("Intro data: " + segInfo + "\nCredits: " + (creditsMs > 0 ? (creditsMs / 60000) + "m" : "not known (next shows at 95%)")
-                + "\nUp next: " + (left > 0 ? left + " episode" + (left == 1 ? "" : "s") : "none") + (rdToken.isEmpty() ? " (no Real-Debrid key)" : "")
-                + "\nAuto-skip: " + (autoSkip ? "on" : "off"), -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-            return true;
-        });
+        name.setOnLongClickListener(v -> { statusReadout(); return true; });
         name.setTextColor(Color.WHITE);
         name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         name.setTypeface(android.graphics.Typeface.create("sans-serif-light", android.graphics.Typeface.NORMAL));
@@ -723,43 +717,75 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     // TheIntroDB: community timestamps for intros, recaps and credits (episodes only)
+    private void statusReadout() {
+        int left = queue == null ? 0 : Math.max(0, queue.length() - qIndex - 1);
+        show("Intro data: " + segInfo + "\nCredits: " + (creditsMs > 0 ? (creditsMs / 60000) + "m" : "not known (next shows at 95%)")
+            + "\nUp next: " + (left > 0 ? left + " episode" + (left == 1 ? "" : "s") : "none") + (rdToken.isEmpty() ? " (no Real-Debrid key)" : "")
+            + "\nShow " + tmdbId + " · S" + curS + " E" + curE + " · auto-skip " + (autoSkip ? "on" : "off"), -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+    }
+    private int segTries = 0;
     private void fetchSegments() {
         segInfo = "no show id";
         if (tmdbId <= 0 || curS <= 0 || curE <= 0) return;
+        // TheIntroDB matches by the video's length (it keeps a set of times per release), so wait until the length is known
+        long durNow = exo == null ? C.TIME_UNSET : exo.getDuration();
+        if ((durNow == C.TIME_UNSET || durNow <= 0) && segTries++ < 20) { segInfo = "waiting for the video length"; final String k0 = curKey; ui.postDelayed(() -> { if (k0.equals(curKey)) fetchSegments(); }, 500); return; }
+        segTries = 0;
         segInfo = "looking up";
         final String key = curKey; final int t = tmdbId, s0 = curS, e0 = curE;
+        final long dur = durNow == C.TIME_UNSET ? 0 : Math.max(0, durNow);
         bg.execute(() -> {
-            // v3 is TheIntroDB's current API; v4 is tried too. A version that answers but has nothing usable doesn't stop the search.
             List<long[]> found = new ArrayList<>(); long credits = -1; String note = "no data for this episode";
+            outer:
             for (String v : new String[]{ "v3", "v4" }) {
-                try {
-                    HttpURLConnection c = (HttpURLConnection) new URL("https://api.theintrodb.org/" + v + "/media?tmdb_id=" + t + "&season=" + s0 + "&episode=" + e0).openConnection();
-                    c.setConnectTimeout(8000); c.setReadTimeout(8000);
-                    c.setRequestProperty("Accept", "application/json");
-                    c.setRequestProperty("User-Agent", "Lumen/1.0 (Android)");
-                    int code = c.getResponseCode();
-                    if (code != 200) { note = v + " answered " + code; continue; }
-                    JSONObject got = new JSONObject(read(c));
-                    List<long[]> f = new ArrayList<>(); long cr0 = -1;
-                    String[] kinds = { "intro", "recap" };
-                    for (int k = 0; k < kinds.length; k++) {
-                        JSONArray arr = got.optJSONArray(kinds[k]); if (arr == null) continue;
-                        for (int i = 0; i < arr.length(); i++) {
-                            JSONObject o = arr.optJSONObject(i); if (o == null) continue;
-                            long st = msOf(o, "start"), en = msOf(o, "end");
-                            if (st < 0) st = 0;
-                            if (en > st + 3000) f.add(new long[]{ st, en, k });
+                for (int withDur = dur > 0 ? 1 : 0; withDur >= 0; withDur--) {
+                    try {
+                        String u = "https://api.theintrodb.org/" + v + "/media?tmdb_id=" + t + "&season=" + s0 + "&episode=" + e0 + (withDur == 1 ? "&duration_ms=" + dur : "");
+                        HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
+                        c.setConnectTimeout(8000); c.setReadTimeout(8000);
+                        c.setRequestProperty("Accept", "application/json");
+                        c.setRequestProperty("User-Agent", "Lumen/1.0 (Android)");
+                        int code = c.getResponseCode();
+                        if (code != 200) { note = v + " answered " + code; continue; }
+                        JSONObject got = pickVersion(new JSONObject(read(c)), dur);
+                        List<long[]> f = new ArrayList<>(); long cr0 = -1;
+                        String[] kinds = { "intro", "recap" };
+                        for (int k = 0; k < kinds.length; k++) {
+                            JSONArray arr = got.optJSONArray(kinds[k]); if (arr == null) continue;
+                            for (int i = 0; i < arr.length(); i++) {
+                                JSONObject o = arr.optJSONObject(i); if (o == null) continue;
+                                long st = msOf(o, "start"), en = msOf(o, "end");
+                                if (st < 0) st = 0;
+                                if (en < 0 && k == 1 && dur > 0) continue;
+                                if (en > st + 3000) f.add(new long[]{ st, en, k });
+                            }
                         }
-                    }
-                    JSONArray cr = got.optJSONArray("credits");
-                    if (cr != null && cr.length() > 0) { JSONObject o = cr.optJSONObject(0); if (o != null) cr0 = msOf(o, "start"); }
-                    if (!f.isEmpty() || cr0 > 0) { found = f; credits = cr0; note = v + ": " + f.size() + " skip" + (f.size() == 1 ? "" : "s") + (cr0 > 0 ? " + credits" : ""); break; }
-                    note = v + ": nothing for this episode";
-                } catch (Exception ex) { note = v + " failed (" + ex.getClass().getSimpleName() + ")"; }
+                        JSONArray cr = got.optJSONArray("credits");
+                        if (cr != null && cr.length() > 0) { JSONObject o = cr.optJSONObject(0); if (o != null) cr0 = msOf(o, "start"); }
+                        if (!f.isEmpty() || cr0 > 0) { found = f; credits = cr0; note = v + ": " + f.size() + " skip" + (f.size() == 1 ? "" : "s") + (cr0 > 0 ? " + credits" : ""); break outer; }
+                        note = v + ": nothing for this episode (" + (got.has("kind") ? got.optString("kind") : "no segments") + ")";
+                    } catch (Exception ex) { note = v + " failed (" + ex.getClass().getSimpleName() + ")"; }
+                }
             }
             final List<long[]> fz = found; final long cf = credits; final String nz = note;
             ui.post(() -> { if (!key.equals(curKey)) return; segs.clear(); segs.addAll(fz); creditsMs = cf; segInfo = nz; });
         });
+    }
+    // TheIntroDB can answer with several release versions instead of one set of times: take the one closest to this video's length
+    private static JSONObject pickVersion(JSONObject j, long dur) {
+        for (String k : new String[]{ "versions", "data", "media" }) {
+            JSONArray vs = j.optJSONArray(k);
+            if (vs == null || vs.length() == 0) continue;
+            JSONObject best = null; long bestGap = Long.MAX_VALUE;
+            for (int i = 0; i < vs.length(); i++) {
+                JSONObject v = vs.optJSONObject(i); if (v == null) continue;
+                long d = v.optLong("group_duration_ms", v.optLong("duration_ms", v.optLong("video_duration_ms", 0)));
+                long gap = dur > 0 && d > 0 ? Math.abs(d - dur) : Long.MAX_VALUE - 1;
+                if (best == null || gap < bestGap) { best = v; bestGap = gap; }
+            }
+            if (best != null) return best.has("intro") || best.has("credits") || best.has("recap") ? best : pickVersion(best, dur);
+        }
+        return j;
     }
     // a time from TheIntroDB in milliseconds: start_ms / end_ms, or start / end in seconds; -1 when missing
     private static long msOf(JSONObject o, String k) {
@@ -801,6 +827,7 @@ public class PlayerActivity extends AppCompatActivity {
         moonBtn.setImageDrawable(moon);
         moonBtn.setContentDescription("Midnight mode");
         moonBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); toggleMidnight(); });
+        moonBtn.setOnLongClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS); statusReadout(); return true; });
         try {
             View cc = view.findViewById(androidx.media3.ui.R.id.exo_subtitle);
             ViewGroup parent = (ViewGroup) cc.getParent();
