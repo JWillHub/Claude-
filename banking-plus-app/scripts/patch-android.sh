@@ -45,7 +45,7 @@ prov = ('        <provider android:name="androidx.core.content.FileProvider"\n'
         '        </provider>\n')
 assert '</application>' in s and '<application' in s
 s = s.replace('</application>', prov + '    </application>', 1)
-s = s.replace('<application', '<uses-permission android:name="android.permission.VIBRATE" />\n    <application', 1)
+s = s.replace("<application", "<uses-permission android:name=\"android.permission.VIBRATE\" />\n    <uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />\n    <application", 1)
 s = s.replace('<application', '<application android:allowBackup="false"', 1) if 'allowBackup' not in s else s
 open(p, 'w').write(s)
 PY

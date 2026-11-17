@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DA4KYdmrLmSF+F+8BhCX2PmqM3j7sDmBiEZyx/4dj4M=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-GXalgcwl93yDNDRmifaiypQveRb4EaqVbZw+bUqHN9I=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DA4KYdmrLmSF+F+8BhCX2PmqM3j7sDmBiEZyx/4dj4M=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Yn7uXCzr+CRbW6vKG8DjryLiR5GroSujH4FepnjdySg=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1290,6 +1290,17 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 :root[data-tint="navy"][data-glass][data-look="glass-dark"] #pl .vx-dhead::after{background:#0E2550!important}
 :root[data-tint="navy"][data-glass][data-look="glass-dark"] :is(.btn,.tab.on,.tabs.scrub .tab.hot,.st-seg button.on,#pl .save,#pl .bx-pay,#pl .day.sel){color:#0A1F44!important}
 :root[data-tint="navy"][data-glass][data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg){border-color:rgba(160,200,255,.14)!important}
+/* app update row and the dot on the Settings tab */
+.st-act{flex:none;font-size:13.5px;font-weight:700;padding:7px 14px;border-radius:999px;background:var(--input);border:1px solid var(--border);color:var(--accent-text)}
+.st-act.hot{background:#1FA36A;border-color:#1FA36A;color:#fff}
+.tab[data-tab="settings"].upd{position:relative}
+.tab[data-tab="settings"].upd::after{content:"";position:absolute;top:7px;right:calc(50% - 18px);width:9px;height:9px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px var(--bg);z-index:2}
+/* main budget card: green glass while there's money left, red glass when over (all glass themes) */
+:root[data-glass]:is([data-look="glass"],[data-look="glass-dark"]) .summary:not(.neutral){color:var(--text)!important}
+:root[data-glass][data-look="glass"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(36,190,105,.62),rgba(36,190,105,.32))!important;border-color:rgba(25,150,90,.45)!important}
+:root[data-glass][data-look="glass"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(240,60,80,.62),rgba(240,60,80,.34))!important;border-color:rgba(210,50,75,.5)!important}
+:root[data-glass][data-look="glass-dark"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(45,200,120,.34),rgba(45,200,120,.08))!important;border-color:rgba(70,220,140,.35)!important}
+:root[data-glass][data-look="glass-dark"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(255,70,85,.44),rgba(255,70,85,.12))!important;border-color:rgba(255,100,125,.4)!important}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -1961,6 +1972,23 @@ const SI={
  moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
 };
+// App updates (Android app only): the app asks GitHub for the newest build and installs it, like the other apps
+window.BPUpdate={latest:0,busy:'',pct:-1,fail:false,
+ cur(){try{return window.BPNative&&BPNative.build?BPNative.build():0}catch(_){return 0}},
+ newer(){return this.latest>this.cur()},
+ show(){const t=document.querySelector('.tab[data-tab="settings"]');if(t)t.classList.toggle('upd',this.newer());if(ui.tab==='settings'&&!ui.sub&&state)render()},
+ checked(n){const asked=this.busy==='checking';this.busy='';if(n>0){this.latest=n;this.fail=false}else this.fail=true;this.show();if(asked&&!this.newer())toast(this.fail?'Couldn’t reach GitHub. Try again later.':'Banking+ is up to date')},
+ progress(p){this.pct=p;const el=document.querySelector('[data-act="appUpdate"] .st-tx b');if(el)el.textContent=p>=0?`Downloading… ${p}%`:'Downloading…'},
+ needsPermission(){this.busy='';this.show();toast('Turn on “Allow from this source”, come back, then tap Update again')},
+ started(){this.busy='';this.show()},
+ failed(m){this.busy='';this.show();toast('Update failed: '+m)}};
+function stUpdRow(){
+ const U=BPUpdate,cur=U.cur(),nw=U.newer(),dl=U.busy==='downloading';
+ const title=dl?(U.pct>=0?`Downloading… ${U.pct}%`:'Downloading…'):nw?`Update to version ${U.latest}`:'App updates';
+ const sub=U.busy==='checking'?'Checking…':nw?`You have version ${cur}`:U.fail?`Version ${cur} · couldn’t check`:U.latest?`Version ${cur} · up to date`:`Version ${cur}`;
+ const btn=`<span class="st-act${nw?' hot':''}">${U.busy?'…':nw?'Update':'Check'}</span>`;
+ return stRow('save',nw?'#1FA36A':'#5B6BD6',title,sub,'data-act="appUpdate"',btn);
+}
 const stIco=(k,c)=>`<span class="st-ico" style="--ic:${c}" aria-hidden="true">${SI[k]}</span>`;
 const stChev=()=>`<span class="st-chev" aria-hidden="true">${ICON.r}</span>`;
 const stRow=(ico,color,title,sub,attrs,tail=stChev(),cls='')=>`<button type="button" class="st-row ${cls}" ${attrs}>${stIco(ico,color)}<span class="st-tx"><b>${title}</b>${sub?`<small>${sub}</small>`:''}</span>${tail}</button>`;
@@ -1972,7 +2000,7 @@ function stBackupCard(withButton){
  const s=d==null?'Save one so a lost or reset phone does not take your budget with it.':c==='green'?'Your budget, bills and to-dos are safe in your last backup.':'Save a fresh backup to keep it current.';
  const where=window.BPNative?'Stored in the app on this phone':persisted===true?'Protected from automatic clearing':persisted===false?'The browser could clear this if storage runs low':'Stored on this device';
  return `<section class="st-card st-hero st-${c}"><div class="st-hero-top"><span class="st-badge" aria-hidden="true">${c==='green'?SI.data:SI.warn}</span><div><div class="st-hero-t">${t}</div><div class="st-hero-s">${s}</div></div></div>
- <div class="st-chips"><span class="st-chip" style="--cc:${persisted===false&&!window.BPNative?'var(--amber)':'var(--green)'}"><i></i>${where}</span><span class="st-chip"><i style="background:var(--accent)"></i>Nothing leaves this device</span></div>
+ <div class="st-chips"><span class="st-chip" style="--cc:${persisted===false&&!window.BPNative?'var(--amber)':'var(--green)'}"><i></i>${where}</span><span class="st-chip"><i style="background:var(--accent)"></i>Your data never leaves this device</span></div>
  ${withButton?`<button class="btn" data-act="backup">${SI.save.replace('<svg','<svg width="18" height="18" style="margin-right:6px"')}Save backup</button>`:''}</section>`;
 }
 function vSettings(){
@@ -2026,7 +2054,8 @@ function vSettings(){
   <span class="st-seg" role="group" aria-label="Theme"><button type="button" data-mode-pick="light" class="${mode==='light'?'on':''}">${SI.sun}Light</button><button type="button" data-mode-pick="dark" class="${mode==='dark'?'on':''}">${SI.moon}Dark</button><button type="button" data-mode-pick="navy" class="${mode==='navy'?'on':''}"><i class="st-navydot"></i>Navy</button></span></div></div>
  <div class="st-label">Your data</div>
  <div class="st-card st-list">${stRow('data','#1FA36A','Backup & data','Restore, export, erase','data-act="stGo" data-to="data"')}</div>
- <p class="st-foot">${SI.lock}Banking+ keeps everything on this device.<br>Nothing is sent anywhere.</p></div>`;
+ ${window.BPNative&&BPNative.checkUpdate?`<div class="st-label">App</div><div class="st-card st-list">${stUpdRow()}</div>`:''}
+ <p class="st-foot">${SI.lock}Banking+ keeps everything on this device.<br>Your data is never sent anywhere.</p></div>`;
 }
 function acctSheet(a){
  const isNew=!a;a=a||{name:'',type:'bank',match:'',startBal:0,startDate:''};
@@ -2197,6 +2226,7 @@ const act={
  editCat(b){catSheet(cat(b.dataset.id))},addCat(b){catSheet(null,b.dataset.id)},
  toggleCard(b){toggleCard(b.closest('.fold'))},
  stGo(b){ui.sub=b.dataset.to;ui.stAnim=true;render();scrollTo(0,0)},
+ appUpdate(){const U=BPUpdate;if(U.busy||!window.BPNative)return;if(U.newer()){U.busy='downloading';U.pct=-1;render();BPNative.installUpdate()}else{U.busy='checking';render();BPNative.checkUpdate()}},
  stBack(){ui.sub=null;ui.stAnim=true;render();scrollTo(0,0)},
  editGroup(b){groupSheet(grp(b.dataset.id))},addGroup(){groupSheet(null)},
  async backup(){if(await saveFile(`banking-plus-backup-${today()}.json`,backupText(),'application/json')!==false)markBackup()},
@@ -2258,6 +2288,7 @@ window.BP={
 };
 
 /* ---------- start ---------- */
+if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdate()}catch(_){}},3000);
 (async()=>{
  try{await DB.open();state=await DB.get('state')}catch(e){toast('Storage unavailable: '+e.message)}
  if(!state){state=defaults();save(true)}else fixState(state);
