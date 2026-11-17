@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-f9RMO5kqTOuFWPov/9BNCoP3/njAlQ1UggccsWY8DmU=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-vLtxyk7+GbPbUU1aSPSbQvaPNx1KDEN9N1bnlJM9Ssc=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-btZs7CbwHUx9/6BPVHoSMOhnNhQcmqaFoDk35myx2QI='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-f9RMO5kqTOuFWPov/9BNCoP3/njAlQ1UggccsWY8DmU=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Xh4rAI2u7xVyiYRX31B6O19Dmtreld94EeducXp9RQo=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1097,12 +1097,13 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 /* ===== Liquid glass material (only with the Liquid switch on) ===== */
 :root[data-glass="liquid"]:is([data-look="glass"],[data-look="glass-dark"]){--lg-fill:rgba(255,255,255,.30);--lg-fill2:rgba(255,255,255,.10);--lg-rim:rgba(255,255,255,.95);--lg-rim2:rgba(255,255,255,.35);--lg-edge:rgba(255,255,255,.55);--lg-shadow:0 12px 34px rgba(20,60,120,.18),0 2px 6px rgba(20,60,120,.08)}
 :root[data-glass="liquid"][data-look="glass-dark"]{--lg-fill:rgba(255,255,255,.075);--lg-fill2:rgba(255,255,255,.015);--lg-rim:rgba(255,255,255,.42);--lg-rim2:rgba(255,255,255,.10);--lg-edge:rgba(255,255,255,.16);--lg-shadow:0 14px 40px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.3)}
-:root[data-glass="liquid"]:is([data-look="glass"],[data-look="glass-dark"]) :is(.grp,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg,#pl .fab){
+:root[data-glass="liquid"]:is([data-look="glass"],[data-look="glass-dark"]) :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg,#pl .fab){
  background:radial-gradient(120% 60% at 20% 0%,rgba(255,255,255,.22),transparent 60%),linear-gradient(160deg,var(--lg-fill),var(--lg-fill2))!important;
  -webkit-backdrop-filter:blur(22px) saturate(190%) brightness(1.06);backdrop-filter:blur(22px) saturate(190%) brightness(1.06);
  border:1px solid var(--lg-edge)!important;
  box-shadow:inset 1.5px 1.5px 0 -.5px var(--lg-rim),inset -1px -1px 0 -.5px var(--lg-rim2),inset 0 0 18px rgba(255,255,255,.12),var(--lg-shadow)!important}
 :root[data-glass="liquid"]:is([data-look="glass"],[data-look="glass-dark"]) :is(.grp,#pl .tile,#pl .pcard,.summary,#pl .bx-q){border-radius:14px!important}
+:root[data-glass="liquid"]:is([data-look="glass"],[data-look="glass-dark"]) .st-card{border-radius:16px!important}
 :root[data-glass="liquid"][data-look="glass"] .summary{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.55),transparent 60%),linear-gradient(160deg,rgba(255,255,255,.45),rgba(255,255,255,.15))!important}
 :root[data-glass="liquid"][data-look="glass"] #pl .fab{background:radial-gradient(120% 80% at 30% 0%,rgba(255,255,255,.35),transparent 60%),linear-gradient(160deg,rgba(22,79,150,.88),rgba(22,79,150,.72))!important;color:#fff}
 :root[data-glass="liquid"][data-look="glass-dark"] #pl .fab{color:var(--text)}
@@ -1111,7 +1112,7 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 :root[data-glass="liquid"]:is([data-look="glass"],[data-look="glass-dark"]) .tabpill{box-shadow:inset 1px 1px 0 rgba(255,255,255,.5),0 4px 14px rgba(0,0,0,.18)}
 :root[data-glass="liquid"][data-look="glass-dark"]{--lg-fill:rgba(255,255,255,.16);--lg-fill2:rgba(255,255,255,.05);--lg-rim:rgba(255,255,255,.6);--lg-rim2:rgba(255,255,255,.16);--lg-edge:rgba(255,255,255,.24);
  --lg-shadow:0 12px 34px rgba(10,0,40,.35),0 2px 6px rgba(10,0,40,.2)}
-:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .fab){-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
+:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .fab){-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%)}
 :root[data-glass="liquid"][data-look="glass-dark"] .summary{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.3),transparent 60%),linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.06))!important}
 /* ===== Glass Dark: black ===== */
 :root[data-look="glass-dark"]{--bg:#000;background:#000}
@@ -1119,7 +1120,7 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 :root[data-look="glass-dark"] .glowbg .g1{background:radial-gradient(closest-side,rgba(236,92,168,.20),rgba(236,92,168,.07) 55%,transparent)}
 :root[data-look="glass-dark"] .glowbg .g2{background:radial-gradient(closest-side,rgba(150,110,255,.17),rgba(150,110,255,.05) 55%,transparent)}
 :root[data-look="glass-dark"] .glowbg .g3{background:radial-gradient(closest-side,rgba(90,140,255,.14),transparent)}
-:root[data-look="glass-dark"] :is(.grp,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,.tabs,#pl .themebtn,#bp .themebtn,#pl .fab){-webkit-backdrop-filter:blur(24px) saturate(120%);backdrop-filter:blur(24px) saturate(120%)}
+:root[data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,.tabs,#pl .themebtn,#bp .themebtn,#pl .fab){-webkit-backdrop-filter:blur(24px) saturate(120%);backdrop-filter:blur(24px) saturate(120%)}
 :root[data-look="glass-dark"] .grp,:root[data-look="glass-dark"] #pl .tile,:root[data-look="glass-dark"] #pl .pcard,:root[data-look="glass-dark"] .sheet,:root[data-look="glass-dark"] #pl .psheet,:root[data-look="glass-dark"] #plx .psheet{box-shadow:0 10px 30px rgba(0,0,0,.6)}
 :root[data-look="glass-dark"] .top{background:rgba(0,0,0,.55)}
 :root[data-look="glass-dark"] #pl .bx-sheet,:root[data-look="glass-dark"] #pl .vx-sheet{background:#121214}
@@ -1142,13 +1143,13 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 :root[data-look="glass-dark"] .summary{background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03))}
 :root[data-look="glass-dark"] .tabs{background:rgba(255,255,255,.06)}
 :root[data-look="glass-dark"] #pl .bill,:root[data-look="glass-dark"] #pl .sum div,:root[data-look="glass-dark"] #pl .day,:root[data-look="glass-dark"] #pl .bx-date,:root[data-look="glass-dark"] #pl .bx-sd{background:rgba(255,255,255,.05)}
-:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg,#pl .fab){
+:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg,#pl .fab){
  background:radial-gradient(120% 60% at 20% 0%,rgba(255,255,255,.05),transparent 60%),linear-gradient(160deg,var(--lg-fill),var(--lg-fill2))!important}
 :root[data-glass="liquid"][data-look="glass-dark"] .summary{background:radial-gradient(120% 60% at 20% 0%,rgba(255,255,255,.06),transparent 60%),linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.025))!important}
 :root[data-look="glass-dark"] #v-bills{--vx-surface:rgba(255,255,255,.05);--vx-line:rgba(255,255,255,.09)}
 :root[data-look="glass-dark"] #pl .themebtn,:root[data-look="glass-dark"] #bp .themebtn{background:rgba(255,255,255,.06)}
 /* Liquid + Vivid in black: same dark smoke as Frosted, with only a hairline edge */
-:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg){
+:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg){
  background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.08)!important;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 30px rgba(0,0,0,.6)!important;-webkit-backdrop-filter:blur(24px) saturate(110%);backdrop-filter:blur(24px) saturate(110%)}
 :root[data-glass="liquid"][data-look="glass-dark"] .summary{background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03))!important}
@@ -1156,7 +1157,7 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 :root[data-glass="liquid"][data-look="glass-dark"] #pl .fab{background:#fff!important;color:#000!important;border:0!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important}
 :root[data-look="glass-dark"] #pl .vx-tile:not(.on){filter:saturate(.85)}
 /* Liquid + Vivid in black: dark liquid glass. Nearly black body, light only on the edges */
-:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg){
+:root[data-glass="liquid"][data-look="glass-dark"] :is(.grp,.st-card,.summary,.sheet,#pl .tile,#pl .pcard,#pl .psheet,#plx .psheet,#pl .bx-q,.tabs,#pl .themebtn,#bp .themebtn,#pl .bx-nav,#pl .bx-seg){
  background:linear-gradient(180deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,.02) 38%,rgba(255,255,255,.012) 100%)!important;
  border:1px solid rgba(255,255,255,.06)!important;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 1px 0 0 rgba(255,255,255,.05),inset -1px 0 0 rgba(255,255,255,.03),inset 0 -1px 0 rgba(0,0,0,.7),inset 0 -24px 32px -24px rgba(0,0,0,.65),0 14px 34px rgba(0,0,0,.7)!important;
@@ -1194,6 +1195,79 @@ body[data-view=bills] #pl header,body[data-view=todo] #pl header{margin-bottom:1
 #plx .modeseg.first{margin-top:4px}
 :root:not([data-look="glass"]):not([data-look="glass-dark"]) #pl h1 i{font-style:inherit;font-weight:inherit;color:inherit}
 
+/* ===================== Settings (hub + pages) ===================== */
+.st-page.st-anim{animation:stIn .22s ease}
+@keyframes stIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.st-page.st-anim{animation:none}}
+.st-title{font-size:31px;font-weight:800;letter-spacing:-.7px;line-height:1.1;margin:8px 4px 18px}
+.st-head{margin:0 0 18px}
+.st-head .st-title{margin:2px 4px 4px}
+.st-back{display:inline-flex;align-items:center;gap:1px;background:none;border:0;color:var(--accent-text);font:inherit;font-weight:600;font-size:15px;padding:6px 8px 6px 0;margin:0 0 0 -2px;cursor:pointer}
+.st-back svg{width:21px;height:21px}
+.st-sub{color:var(--muted);margin:0 4px;font-size:14px;line-height:1.45}
+.st-label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:24px 8px 8px}
+.st-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative}
+.st-list>*+*,.st-list .sortable>*+*,.st-list>.sortable:not(:empty)+*{border-top:1px solid var(--border)}
+.st-row{display:flex;align-items:center;gap:13px;width:100%;min-height:62px;padding:12px 14px;background:none;border:0;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+button.st-row:active,.st-row.tap:active{background:var(--input)}
+.st-ico{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--ic);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 2px 6px rgba(0,0,0,.12)}
+.st-ico svg{width:20px;height:20px}
+.st-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.st-tx b{font-weight:600;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-tx small{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-chev{flex:none;display:flex;color:var(--muted);opacity:.8}
+.st-chev svg{width:18px;height:18px}
+.st-pill{flex:none;font-size:12.5px;font-weight:700;color:var(--muted);background:var(--input);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.st-seg{flex:none;display:flex;gap:3px;padding:3px;background:var(--input);border:1px solid var(--border);border-radius:12px}
+.st-seg button{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:13.5px;padding:8px 12px;border-radius:9px;cursor:pointer}
+.st-seg button svg{width:16px;height:16px}
+.st-seg button.on{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+/* backup status card */
+.st-hero{padding:18px 16px 16px}
+.st-hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 100% at 0% 0%,color-mix(in srgb,var(--hc) 24%,transparent),transparent 62%)}
+.st-hero>*{position:relative}
+.st-hero-top{display:flex;align-items:center;gap:14px}
+.st-badge{flex:none;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:var(--hc);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 6px 16px color-mix(in srgb,var(--hc) 35%,transparent)}
+.st-badge svg{width:27px;height:27px}
+.st-hero-t{font-size:19px;font-weight:750;letter-spacing:-.2px}
+.st-hero-s{font-size:13.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.st-chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.st-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border-radius:999px;background:var(--input);border:1px solid var(--border)}
+.st-chip i{width:7px;height:7px;border-radius:50%;background:var(--cc,var(--green))}
+.st-hero .btn,.st-btns .btn{width:100%;min-height:46px;font-size:15px}
+.st-green{--hc:#1FA36A}.st-amber{--hc:#D08C12}.st-red{--hc:#D6405A}
+.st-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.st-pad{padding:16px}
+.st-note{font-size:13px;color:var(--muted);line-height:1.45;margin:12px 0 0}
+.st-danger .st-tx b{color:var(--red)}
+.st-tip{font-size:13px;color:var(--muted);line-height:1.45;margin:0 8px 18px}
+.st-foot{text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:26px 12px 6px}
+.st-foot svg{width:14px;height:14px;vertical-align:-2px;margin-right:4px}
+/* add buttons */
+.st-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;margin:12px 0 0;border:1.5px dashed var(--border);border-radius:16px;background:transparent;color:var(--accent-text);font:inherit;font-weight:700;cursor:pointer}
+.st-add svg,.st-addrow svg{width:18px;height:18px}
+.st-addrow{display:flex;align-items:center;gap:10px;width:100%;padding:14px;border:0;background:none;color:var(--accent-text);font:inherit;font-weight:600;cursor:pointer;text-align:left}
+/* category groups */
+.st-sec{margin:0 0 22px;border-radius:16px}
+.st-sec-h{display:flex;align-items:center;gap:8px;margin:0 6px 8px;min-height:30px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
+.st-sec-n{flex:0 1 auto;min-width:0;font-size:12.5px;font-weight:750;letter-spacing:1px;text-transform:uppercase;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-sec-h .st-pill{font-size:11.5px;padding:1px 8px}
+.st-sec-h .sp{flex:1}
+.st-mini{flex:none;border:0;background:none;color:var(--accent-text);font:inherit;font-weight:600;font-size:13.5px;padding:4px 2px;cursor:pointer}
+.st-inc{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--green);border:1px solid currentColor;border-radius:6px;padding:0 5px}
+.drow.pressing>.st-sec-h{opacity:.55;transition:opacity .45s}
+#gsort>.st-sec.dragging{box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.st-cat{min-height:54px;cursor:default}
+.st-cat .st-tx{cursor:pointer}
+.st-cat .tag{font-size:11.5px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+.st-dot{flex:none;width:10px;height:10px;border-radius:50%;background:var(--dc,var(--accent));margin:0 2px 0 4px}
+.st-empty{padding:14px;color:var(--muted);font-size:13.5px}
+/* accounts */
+.st-acct .st-ico{width:42px;height:42px;border-radius:13px}
+.st-sec.drow{background:transparent}
+.st-list .sw.drow:not(.dragging){background:transparent}
+#gsort>.st-sec.drow.dragging{background:transparent;border-radius:16px}
+:root[data-look="glass-dark"] .st-seg button.on{background:#F2F2F7;color:#0B0B12}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -1846,20 +1920,90 @@ function vCharts(){
 
 /* ---------- Settings ---------- */
 let persisted=null;
+/* ---------- Settings: a hub page that leads to Accounts, Categories and Backup & data ---------- */
+const SI={
+ acct:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg>',
+ cats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
+ look:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
+ data:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+ warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M12 8v4M12 15.5v.5"/></svg>',
+ save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>',
+ open:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V8M7 13l5-5 5 5"/><path d="M5 5h14"/></svg>',
+ copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+ csv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 13h7M8.5 17h7"/></svg>',
+ erase:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
+ card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>',
+ plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+ sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>',
+ moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+};
+const stIco=(k,c)=>`<span class="st-ico" style="--ic:${c}" aria-hidden="true">${SI[k]}</span>`;
+const stChev=()=>`<span class="st-chev" aria-hidden="true">${ICON.r}</span>`;
+const stRow=(ico,color,title,sub,attrs,tail=stChev(),cls='')=>`<button type="button" class="st-row ${cls}" ${attrs}>${stIco(ico,color)}<span class="st-tx"><b>${title}</b>${sub?`<small>${sub}</small>`:''}</span>${tail}</button>`;
+const stHead=(title,sub)=>`<div class="st-head"><button type="button" class="st-back" data-act="stBack">${ICON.l}<span>Settings</span></button><h2 class="st-title">${title}</h2>${sub?`<p class="st-sub">${sub}</p>`:''}</div>`;
+// colour-coded backup status: green within a week, amber within a month, red after that or never
+function stBackupCard(withButton){
+ const d=backupAge(),t=d==null?'No backup yet':d===0?'Backed up today':d===1?'Backed up yesterday':`Backed up ${d} days ago`;
+ const c=d==null||d>30?'red':d>7?'amber':'green';
+ const s=d==null?'Save one so a lost or reset phone does not take your budget with it.':c==='green'?'Your budget, bills and to-dos are safe in your last backup.':'Save a fresh backup to keep it current.';
+ const where=window.BPNative?'Stored in the app on this phone':persisted===true?'Protected from automatic clearing':persisted===false?'The browser could clear this if storage runs low':'Stored on this device';
+ return `<section class="st-card st-hero st-${c}"><div class="st-hero-top"><span class="st-badge" aria-hidden="true">${c==='green'?SI.data:SI.warn}</span><div><div class="st-hero-t">${t}</div><div class="st-hero-s">${s}</div></div></div>
+ <div class="st-chips"><span class="st-chip" style="--cc:${persisted===false&&!window.BPNative?'var(--amber)':'var(--green)'}"><i></i>${where}</span><span class="st-chip"><i style="background:var(--accent)"></i>Nothing leaves this device</span></div>
+ ${withButton?`<button class="btn" data-act="backup">${SI.save.replace('<svg','<svg width="18" height="18" style="margin-right:6px"')}Save backup</button>`:''}</section>`;
+}
 function vSettings(){
- let h=fold('accounts','Accounts',state.accounts.length,state.accounts.map(a=>swRow('acct',a.id,`<div class="row linkrow" data-act="editAcct" data-id="${a.id}"><span style="min-width:0"><span class="tx-d" style="display:block">${esc(a.name)}</span><span class="tx-s" style="display:block">${a.type==='credit'?'Credit card':'Bank account'} · ${state.txns.filter(t=>t.acct===a.id).length} transactions</span></span><span class="chev">${ICON.r.replace('<svg','<svg width="18" height="18"')}</span></div>`)).join('')+`<div class="row"><button class="btn sec sm" data-act="addAcct">Add account</button></div>`);
- let cats='';
- for(const g of state.groups){
-  const cs=state.cats.filter(c=>c.gid===g.id);
-  let inner=`<div class="sortable" data-gid="${g.id}">`+cs.map(c=>swRow('cat',c.id,`<div class="row kv"><span class="cname linkrow" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" style="flex:1">${esc(c.name)}${c.cardId?' <span class="tag blue">card payment</span>':''}</span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('')+`</div>`;
-  inner+=`<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sec sm" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${g.income?'Add income':'Add category'}</button><button class="btn sec sm" data-act="editGroup" data-id="${g.id}">Rename group</button></div>`;
-  cats+=fold('g'+g.id,esc(g.name)+(g.income&&!/income/i.test(g.name)?' · income':''),cs.length,inner,` data-drag="grp" data-id="${g.id}"`,'drow');
+ const anim=ui.stAnim?' st-anim':'';ui.stAnim=false;
+ const sub=ui.sub;
+ /* ----- Accounts ----- */
+ if(sub==='accounts'){
+  const rows=state.accounts.map(a=>{const n=state.txns.filter(t=>t.acct===a.id).length,cr=a.type==='credit';
+   return swRow('acct',a.id,`<div class="st-row st-acct tap" data-act="editAcct" data-id="${a.id}" role="button" tabindex="0">${stIco(cr?'card':'acct',cr?'#7C5CE0':'#2F7FD8')}<span class="st-tx"><b>${esc(a.name)}</b><small>${cr?'Credit card':'Bank account'} · ${n} transaction${n===1?'':'s'}</small></span>${stChev()}</div>`)}).join('');
+  return `<div class="st-page${anim}">${stHead('Accounts','Where your money lives. Tap one to edit it, swipe left to delete.')}
+  ${rows?`<div class="st-card st-list">${rows}</div>`:`<div class="st-card st-empty">No accounts yet.</div>`}
+  <button class="st-add" data-act="addAcct">${SI.plus}Add account</button></div>`;
  }
- h+=`<p class="note" style="margin:0 2px 10px">Tap a card to open it. Inside, tap to edit, swipe left to delete, hold ≡ to move. Hold a card's header to move the whole card.</p><div id="gsort">`+cats+`</div><div class="btnrow"><button class="btn sec" data-act="addGroup">Add category group</button></div>`;
- h+=fold('backup','Backup and export','',`<div class="row"><div class="btnrow" style="margin:0"><button class="btn" data-act="backup">Save backup</button><button class="btn sec" data-act="restore">Restore backup</button></div><p class="hint" style="margin:10px 0 0">The backup is one JSON file with everything: budget, bills, paid stamps and to-dos. Save it, move it to the other device, then Restore there.</p><p class="hint" style="margin:8px 0 0;font-weight:600">${backupWords()}</p></div>
- <div class="row"><div class="btnrow" style="margin:0"><button class="btn sec" data-act="exportCsv">Export transactions (CSV)</button><button class="btn sec" data-act="copyBackup">Copy backup text</button></div></div>
- <div class="row"><button class="btn danger sm" data-act="eraseAll">Erase all data on this device</button></div>`);
- return h;
+ /* ----- Categories ----- */
+ if(sub==='cats'){
+  const COL=['#2F7FD8','#7C5CE0','#1FA36A','#D08C12','#D6405A','#1A9BB0','#C2549B','#5B6BD6'];
+  let h='';
+  state.groups.forEach((g,gi)=>{
+   const cs=state.cats.filter(c=>c.gid===g.id),col=g.income?'var(--green)':COL[gi%COL.length];
+   const list=cs.map(c=>swRow('cat',c.id,`<div class="st-row st-cat"><span class="st-dot" style="--dc:${col}"></span><span class="st-tx" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" role="button" tabindex="0"><b>${esc(c.name)}${c.cardId?'<span class="tag blue">card payment</span>':''}</b></span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('');
+   h+=`<section class="st-sec drow" data-drag="grp" data-id="${g.id}"><div class="st-sec-h" data-handle="1"><span class="st-sec-n">${esc(g.name)}</span>${g.income&&!/income/i.test(g.name)?'<span class="st-inc">Income</span>':''}<span class="st-pill">${cs.length}</span><span class="sp"></span><button class="st-mini" data-act="editGroup" data-id="${g.id}">Edit</button></div>
+   <div class="st-card st-list"><div class="sortable" data-gid="${g.id}">${list}</div><button class="st-addrow" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${SI.plus}${g.income?'Add income':'Add category'}</button></div></section>`;
+  });
+  return `<div class="st-page${anim}">${stHead('Categories','Tap a category to edit it and swipe left to delete. Hold ≡ to move a category, or hold a group’s name to move the whole group.')}
+  <div id="gsort">${h}</div><button class="st-add" data-act="addGroup">${SI.plus}New group</button></div>`;
+ }
+ /* ----- Backup & data ----- */
+ if(sub==='data'){
+  return `<div class="st-page${anim}">${stHead('Backup & data','')}
+  ${stBackupCard(false)}
+  <div class="st-label">Backup</div>
+  <div class="st-card st-pad"><div class="st-btns"><button class="btn" data-act="backup">Save backup</button><button class="btn sec" data-act="restore">Restore</button></div>
+  <p class="st-note">One file holds everything: budget, transactions, bills, paid stamps and to-dos. To move to another phone, save it here and restore it there.</p></div>
+  <div class="st-label">Copy and export</div>
+  <div class="st-card st-list">${stRow('copy','#1A9BB0','Copy backup text','Paste it into Restore on another device','data-act="copyBackup"','')}${stRow('csv','#D08C12','Export transactions','CSV file for a spreadsheet','data-act="exportCsv"','')}</div>
+  <div class="st-label">Danger zone</div>
+  <div class="st-card st-list">${stRow('erase','#D6405A','Erase all data','Budget, bills and to-dos on this device','data-act="eraseAll"','','st-danger')}</div></div>`;
+ }
+ /* ----- the hub ----- */
+ const spend=state.groups.filter(g=>!g.income).length,nc=state.cats.length,names=state.accounts.map(a=>a.name).join(', ')||'None yet';
+ const mode=document.documentElement.getAttribute('data-mode')==='dark'?'dark':'light';
+ return `<div class="st-page${anim}"><h2 class="st-title">Settings</h2>
+ ${stBackupCard(true)}
+ <div class="st-label">Budget</div>
+ <div class="st-card st-list">
+  ${stRow('acct','#2F7FD8','Accounts',esc(names),'data-act="stGo" data-to="accounts"',`<span class="st-pill">${state.accounts.length}</span>${stChev()}`)}
+  ${stRow('cats','#7C5CE0','Categories',`${spend} group${spend===1?'':'s'} · ${nc} categor${nc===1?'y':'ies'}`,'data-act="stGo" data-to="cats"',`<span class="st-pill">${nc}</span>${stChev()}`)}
+ </div>
+ <div class="st-label">Appearance</div>
+ <div class="st-card st-list"><div class="st-row" style="cursor:default">${stIco('look','#5B6BD6')}<span class="st-tx"><b>Theme</b></span>
+  <span class="st-seg" role="group" aria-label="Theme"><button type="button" data-mode-pick="light" class="${mode==='light'?'on':''}">${SI.sun}Light</button><button type="button" data-mode-pick="dark" class="${mode==='dark'?'on':''}">${SI.moon}Dark</button></span></div></div>
+ <div class="st-label">Your data</div>
+ <div class="st-card st-list">${stRow('data','#1FA36A','Backup & data','Restore, export, erase','data-act="stGo" data-to="data"')}</div>
+ <p class="st-foot">${SI.lock}Banking+ keeps everything on this device.<br>Nothing is sent anywhere.</p></div>`;
 }
 function acctSheet(a){
  const isNew=!a;a=a||{name:'',type:'bank',match:'',startBal:0,startDate:''};
@@ -1906,7 +2050,7 @@ const sibRow=(r,dir)=>{const x=dir>0?r.nextElementSibling:r.previousElementSibli
 const reduceMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 function glide(el,from){if(reduceMotion()||!from)return;el.style.transition='none';el.style.transform=`translateY(${from}px)`;el.offsetHeight;el.style.transition='transform .2s ease';el.style.transform=''}
 // handles: the ≡ on category rows, and the whole header strip of a group card
-document.addEventListener('pointerdown',e=>{const h=e.target.closest('.grip,[data-handle]');if(!h||(e.pointerType==='mouse'&&e.button))return;if(h.classList.contains('grip'))e.preventDefault();
+document.addEventListener('pointerdown',e=>{const h=e.target.closest('.grip,[data-handle]');if(!h||(e.pointerType==='mouse'&&e.button)||(!e.target.closest('.grip')&&e.target.closest('[data-handle] button')))return;if(h.classList.contains('grip'))e.preventDefault();
  const row=h.closest('.drow');try{h.setPointerCapture(e.pointerId)}catch(_){}
  // hold firmly for a moment before the row lifts and can move
  drag={row,list:row.parentElement,y:e.clientY,x:e.clientX,id:e.pointerId,moved:false,live:false};row.classList.add('pressing');
@@ -2029,6 +2173,8 @@ const act={
  editAcct(b){acctSheet(acct(b.dataset.id))},addAcct(){acctSheet(null)},
  editCat(b){catSheet(cat(b.dataset.id))},addCat(b){catSheet(null,b.dataset.id)},
  toggleCard(b){toggleCard(b.closest('.fold'))},
+ stGo(b){ui.sub=b.dataset.to;ui.stAnim=true;render();scrollTo(0,0)},
+ stBack(){ui.sub=null;ui.stAnim=true;render();scrollTo(0,0)},
  editGroup(b){groupSheet(grp(b.dataset.id))},addGroup(){groupSheet(null)},
  async backup(){if(await saveFile(`banking-plus-backup-${today()}.json`,backupText(),'application/json')!==false)markBackup()},
  copyBackup(){navigator.clipboard.writeText(backupText()).then(()=>{markBackup();toast('Backup copied. Paste it into Restore on the other device.')},()=>toast('Copy not allowed here; use Save backup'))},
@@ -2038,7 +2184,7 @@ const act={
  eraseAll(){ask('Erase all Banking+ data on this device, including bills and to-dos? This cannot be undone. Save a backup first if you need one.','Erase everything',()=>{state=defaults();save(true);if(window.BPPlanner)BPPlanner.set({bills:[],paid:{},tasks:[]});render();toast('Erased')})},
 };
 document.addEventListener('click',e=>{
- const tab=e.target.closest('.tab');if(tab){ui.tab=tab.dataset.tab;ui.editT=false;if(tab.dataset.tab!=='tx'){ui.sub=null}render();scrollTo(0,0);return}
+ const tab=e.target.closest('.tab');if(tab){ui.tab=tab.dataset.tab;ui.editT=false;if(tab.dataset.tab!=='tx'){ui.sub=tab.dataset.tab==='settings'&&ui.pendSub||null}ui.pendSub=null;render();scrollTo(0,0);return}
  if(e.target.closest('select,input,textarea,label.btn'))return;
  if(swNoClick||dragNoClick)return;
  if($('.sw.open')&&!e.target.closest('.sw-del')){closeSw();return}
@@ -2069,7 +2215,7 @@ document.addEventListener('focusin',e=>{const el=e.target;if(el.dataset&&el.data
 document.addEventListener('click',e=>{const el=e.target;if(el.dataset&&el.dataset.money)caretEnd(el)},true);
 document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.money){const el=e.target,v=centsFmt(el.value);if(el.value!==v)el.value=v;caretEnd(el);if(el.matches('.row.cat .bud'))fitOne(el)}});
 document.addEventListener('input',e=>{if(e.target.id==='txq'){ui.f.q=e.target.value;$('#txlist').innerHTML=txList()}else if(e.target.id==='impText'&&ui.imp)ui.imp.text=e.target.value});
-document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.fold>.grp-h')){e.preventDefault();toggleCard(e.target.closest('.fold'));return}if(e.key==='Enter'&&e.target.matches('.bud,.kv input'))e.target.blur();if(e.key==='Escape'){const s=$('.scrim');if(s)s.remove()}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.fold>.grp-h')){e.preventDefault();toggleCard(e.target.closest('.fold'));return}if((e.key==='Enter'||e.key===' ')&&e.target.matches('[role=button][data-act]')){e.preventDefault();e.target.click();return}if(e.key==='Enter'&&e.target.matches('.bud,.kv input'))e.target.blur();if(e.key==='Escape'){const s=$('.scrim');if(s)s.remove()}});
 
 /* ---------- what the home page, bills and to-dos can ask the budget ---------- */
 window.BP={
@@ -2083,7 +2229,9 @@ window.BP={
   state.txns.push({id:uid(),c:Date.now(),manual:true,bill:key,acct:a.id,date:today(),desc:o.name,amt:-r2(Math.abs(o.amount)),cat:isBank(a.id)?c.id:'',note:'Bill'});save();render();return c.name},
  unlogBill(key){if(!state)return;const n=state.txns.length;state.txns=state.txns.filter(t=>t.bill!==key);if(state.txns.length!==n){save();render()}},
  backupWords,backupAge,
- openBackup(){ui.tab='settings';ui.sub=null;ui.editT=false;openCards.add('backup');render()}
+ openBackup(){ui.tab='settings';ui.sub='data';ui.pendSub='data';ui.editT=false;render();scrollTo(0,0)},
+ // Android back swipe on a Settings page goes back to the Settings hub
+ settingsBack(){const bp=document.getElementById('bp');if(bp&&!bp.hidden&&ui.tab==='settings'&&ui.sub){ui.sub=null;ui.stAnim=true;render();scrollTo(0,0);return true}return false}
 };
 
 /* ---------- start ---------- */
@@ -2950,6 +3098,7 @@ window.BPBack=function(){
  var ov=q('#pl .overlay.open');if(ov){var b=ov.querySelector('#fCancel,#tCancel,#askNo,.cancel');if(b)b.click();else ov.classList.remove('open');return true}
  var bx=q('#bxOv.open');if(bx){bx.dispatchEvent(new MouseEvent('click',{bubbles:true}));return true}
  var sw=q('.sw.open');if(sw){document.body.click();return true}
+ if(window.BP&&BP.settingsBack&&BP.settingsBack())return true;
  return false};
 })();</script>
 </body>
