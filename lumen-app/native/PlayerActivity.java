@@ -107,6 +107,7 @@ public class PlayerActivity extends AppCompatActivity {
     private final JSONArray played = new JSONArray();
     private String preUrl = null; private int preFor = -2; private boolean prefetching = false;
     private long creditsMs = -1, skipTarget = 0;
+    private String segInfo = "";
     private final List<long[]> segs = new ArrayList<>();      // {start, end, kind 0 intro / 1 recap}
     private TextView skipBtn, nextBtn;
     private ClipDrawable nextFill;
@@ -174,6 +175,14 @@ public class PlayerActivity extends AppCompatActivity {
         TextView name = new TextView(this);
         nameView = name;
         name.setText(title);
+        // hold the title: what the player knows about skips and the next episode (to check things are working)
+        name.setOnLongClickListener(v -> {
+            int left = queue == null ? 0 : Math.max(0, queue.length() - qIndex - 1);
+            show("Intro data: " + segInfo + "\nCredits: " + (creditsMs > 0 ? (creditsMs / 60000) + "m" : "not known (next shows at 95%)")
+                + "\nUp next: " + (left > 0 ? left + " episode" + (left == 1 ? "" : "s") : "none") + (rdToken.isEmpty() ? " (no Real-Debrid key)" : "")
+                + "\nAuto-skip: " + (autoSkip ? "on" : "off"), -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            return true;
+        });
         name.setTextColor(Color.WHITE);
         name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         name.setTypeface(android.graphics.Typeface.create("sans-serif-light", android.graphics.Typeface.NORMAL));
@@ -715,38 +724,48 @@ public class PlayerActivity extends AppCompatActivity {
 
     // TheIntroDB: community timestamps for intros, recaps and credits (episodes only)
     private void fetchSegments() {
+        segInfo = "no show id";
         if (tmdbId <= 0 || curS <= 0 || curE <= 0) return;
+        segInfo = "looking up";
         final String key = curKey; final int t = tmdbId, s0 = curS, e0 = curE;
         bg.execute(() -> {
-            JSONObject j = null;
-            for (String v : new String[]{ "v4", "v3" }) {
+            // v3 is TheIntroDB's current API; v4 is tried too. A version that answers but has nothing usable doesn't stop the search.
+            List<long[]> found = new ArrayList<>(); long credits = -1; String note = "no data for this episode";
+            for (String v : new String[]{ "v3", "v4" }) {
                 try {
                     HttpURLConnection c = (HttpURLConnection) new URL("https://api.theintrodb.org/" + v + "/media?tmdb_id=" + t + "&season=" + s0 + "&episode=" + e0).openConnection();
                     c.setConnectTimeout(8000); c.setReadTimeout(8000);
                     c.setRequestProperty("Accept", "application/json");
+                    c.setRequestProperty("User-Agent", "Lumen/1.0 (Android)");
                     int code = c.getResponseCode();
-                    if (code == 404) break;
-                    if (code == 200) { j = new JSONObject(read(c)); break; }
-                } catch (Exception ignored) {}
+                    if (code != 200) { note = v + " answered " + code; continue; }
+                    JSONObject got = new JSONObject(read(c));
+                    List<long[]> f = new ArrayList<>(); long cr0 = -1;
+                    String[] kinds = { "intro", "recap" };
+                    for (int k = 0; k < kinds.length; k++) {
+                        JSONArray arr = got.optJSONArray(kinds[k]); if (arr == null) continue;
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject o = arr.optJSONObject(i); if (o == null) continue;
+                            long st = msOf(o, "start"), en = msOf(o, "end");
+                            if (st < 0) st = 0;
+                            if (en > st + 3000) f.add(new long[]{ st, en, k });
+                        }
+                    }
+                    JSONArray cr = got.optJSONArray("credits");
+                    if (cr != null && cr.length() > 0) { JSONObject o = cr.optJSONObject(0); if (o != null) cr0 = msOf(o, "start"); }
+                    if (!f.isEmpty() || cr0 > 0) { found = f; credits = cr0; note = v + ": " + f.size() + " skip" + (f.size() == 1 ? "" : "s") + (cr0 > 0 ? " + credits" : ""); break; }
+                    note = v + ": nothing for this episode";
+                } catch (Exception ex) { note = v + " failed (" + ex.getClass().getSimpleName() + ")"; }
             }
-            final JSONObject got = j;
-            if (got == null) return;
-            final List<long[]> found = new ArrayList<>();
-            long credits = -1;
-            String[] kinds = { "intro", "recap" };
-            for (int k = 0; k < kinds.length; k++) {
-                JSONArray arr = got.optJSONArray(kinds[k]); if (arr == null) continue;
-                for (int i = 0; i < arr.length(); i++) {
-                    JSONObject o = arr.optJSONObject(i); if (o == null || o.isNull("end_ms")) continue;
-                    long st = o.isNull("start_ms") ? 0 : o.optLong("start_ms", 0), en = o.optLong("end_ms", 0);
-                    if (en > st + 3000) found.add(new long[]{ st, en, k });
-                }
-            }
-            JSONArray cr = got.optJSONArray("credits");
-            if (cr != null && cr.length() > 0) { JSONObject o = cr.optJSONObject(0); if (o != null && !o.isNull("start_ms")) credits = o.optLong("start_ms", -1); }
-            final long cf = credits;
-            ui.post(() -> { if (!key.equals(curKey)) return; segs.clear(); segs.addAll(found); creditsMs = cf; });
+            final List<long[]> fz = found; final long cf = credits; final String nz = note;
+            ui.post(() -> { if (!key.equals(curKey)) return; segs.clear(); segs.addAll(fz); creditsMs = cf; segInfo = nz; });
         });
+    }
+    // a time from TheIntroDB in milliseconds: start_ms / end_ms, or start / end in seconds; -1 when missing
+    private static long msOf(JSONObject o, String k) {
+        if (o.has(k + "_ms") && !o.isNull(k + "_ms")) return o.optLong(k + "_ms", -1);
+        if (o.has(k) && !o.isNull(k)) return Math.round(o.optDouble(k, -1) * 1000);
+        return -1;
     }
 
     // ---- Midnight mode: evens out loud and quiet parts (compressor + a ceiling on sudden peaks) ----
