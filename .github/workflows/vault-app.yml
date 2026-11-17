@@ -1,0 +1,66 @@
+# Builds the Vault Android password manager (vault-app/) and publishes the APK as the "vault-latest" release.
+name: Vault app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, ccr-04ecef7a-wntx7l]
+    paths: ['vault-app/**', '.github/workflows/vault-app.yml']
+permissions:
+  contents: write
+concurrency: vault-app
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: vault-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Unlock the private signing key (SIGNING_PASSPHRASE secret)
+        env:
+          PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: |
+          # A password manager is never signed with the old public key: anyone could then build an update for it.
+          if [ -z "$PASSPHRASE" ]; then
+            echo "::error::SIGNING_PASSPHRASE secret is not set, so the app cannot be signed with the private key"
+            exit 1
+          fi
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in ../lumen-app/signing.keystore.enc -out "$RUNNER_TEMP/vault.keystore" -pass env:PASSPHRASE
+          echo "KS_PASS=$PASSPHRASE" >> "$GITHUB_ENV"
+          echo "VAULT_KEYSTORE=$RUNNER_TEMP/vault.keystore" >> "$GITHUB_ENV"
+      - name: Test and build the APK
+        run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
+      - name: Check the APK is signed with the app's own key, cannot use the network and is not debuggable
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk vault.apk
+          tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          want=$(keytool -list -v -keystore "$VAULT_KEYSTORE" -storepass "$KS_PASS" | grep -m1 'SHA256:' | awk '{print $2}' | tr -d ':' | tr 'A-F' 'a-f')
+          got=$("$tools/apksigner" verify --print-certs vault.apk | grep -m1 'SHA-256' | awk '{print $NF}')
+          echo "want $want"; echo "got  $got"
+          test -n "$want" && test "$want" = "$got"
+          "$tools/aapt2" dump badging vault.apk > badging.txt
+          grep -E "^package|uses-permission|debuggable|sdkVersion|targetSdkVersion" badging.txt || true
+          ! grep -q "uses-permission" badging.txt
+          ! grep -q "application-debuggable" badging.txt
+          echo "{\"build\": ${GITHUB_RUN_NUMBER}}" > version.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vault.apk
+          path: vault-app/vault.apk
+      - name: Publish as the vault-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: vault-latest
+          target_commitish: ${{ github.sha }}
+          name: Vault for Android (latest build)
+          body: "Latest build from ${{ github.sha }}. Download vault.apk on your phone and open it to install or update."
+          prerelease: false
+          make_latest: false
+          files: |
+            vault-app/vault.apk
+            vault-app/version.json
