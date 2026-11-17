@@ -491,13 +491,13 @@ public class PlayerActivity extends AppCompatActivity {
     }
     private android.graphics.drawable.Drawable glass(boolean circle) {
         GradientDrawable body = glassShape(circle);
-        body.setColor(0x8C0B0B0F);
+        body.setColor(0x400B0B0F);
         GradientDrawable tint = glassShape(circle);
         tint.setOrientation(GradientDrawable.Orientation.TL_BR);
-        tint.setColors(new int[]{ withAlpha(lc, 0x6B), withAlpha(lc, 0x33), withAlpha(lc, 0x14) });
+        tint.setColors(new int[]{ withAlpha(lc, 0x4A), withAlpha(lc, 0x1F), withAlpha(lc, 0x0A) });
         GradientDrawable sheen = glassShape(circle);
         sheen.setOrientation(GradientDrawable.Orientation.TL_BR);
-        sheen.setColors(new int[]{ 0x38FFFFFF, 0x0FFFFFFF, 0x05FFFFFF });
+        sheen.setColors(new int[]{ 0x2EFFFFFF, 0x0AFFFFFF, 0x00FFFFFF });
         GradientDrawable top = glassShape(circle);
         top.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
         top.setColors(new int[]{ 0x40FFFFFF, 0x00FFFFFF, 0x00FFFFFF });
@@ -528,7 +528,7 @@ public class PlayerActivity extends AppCompatActivity {
                 View b = byName(id);
                 if (b == null) continue;
                 // the player's own styles tint some of these (rewind/forward came out lighter): clear that so all five match
-                b.setBackgroundTintList(null); b.setForeground(null);
+                b.setBackgroundTintList(null);   // (the rewind/forward arrows are the foreground: leave that alone)
                 b.setBackground(glass(true)); b.setElevation(dp(4));
                 if (b instanceof android.widget.ImageView) ((android.widget.ImageView) b).setImageTintList(android.content.res.ColorStateList.valueOf(Color.WHITE));
             }
