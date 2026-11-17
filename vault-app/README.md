@@ -23,5 +23,8 @@ service.
 `vault-latest` release:
 https://github.com/JWillHub/Claude-/releases/download/vault-latest/vault.apk
 
-Every build is signed with the same private key (the repository's `SIGNING_PASSPHRASE` secret unlocks
-it), so a new version installs over the old one and keeps the vault.
+Signing: with the repository's `SIGNING_PASSPHRASE` secret set, builds are signed with the private key
+in `lumen-app/signing.keystore.enc`. Without it they are signed with the public key in
+`lumen-app/debug.keystore`, which anyone can use to sign an APK that Android would accept as an update
+to this app. Android only installs an update signed with the same key as the installed app, so moving
+from one key to the other means: save a backup, uninstall, install the new build, bring the backup in.

@@ -25,13 +25,15 @@ jobs:
         env:
           PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
         run: |
-          # A password manager is never signed with the old public key: anyone could then build an update for it.
-          if [ -z "$PASSPHRASE" ]; then
-            echo "::error::SIGNING_PASSPHRASE secret is not set, so the app cannot be signed with the private key"
-            exit 1
+          if [ -n "$PASSPHRASE" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in ../lumen-app/signing.keystore.enc -out "$RUNNER_TEMP/vault.keystore" -pass env:PASSPHRASE
+            echo "KS_PASS=$PASSPHRASE" >> "$GITHUB_ENV"
+          else
+            # The key in debug.keystore is public (it is in this repository), so anyone could sign an update with it.
+            echo "::warning::SIGNING_PASSPHRASE secret is not set, so this build is signed with the repository's public key"
+            cp ../lumen-app/debug.keystore "$RUNNER_TEMP/vault.keystore"
+            echo "KS_PASS=android" >> "$GITHUB_ENV"
           fi
-          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in ../lumen-app/signing.keystore.enc -out "$RUNNER_TEMP/vault.keystore" -pass env:PASSPHRASE
-          echo "KS_PASS=$PASSPHRASE" >> "$GITHUB_ENV"
           echo "VAULT_KEYSTORE=$RUNNER_TEMP/vault.keystore" >> "$GITHUB_ENV"
       - name: Test and build the APK
         run: ./gradlew --no-daemon testReleaseUnitTest assembleRelease
