@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-f9RMO5kqTOuFWPov/9BNCoP3/njAlQ1UggccsWY8DmU=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-I83xEQoUOBDZYwXEEjCsqdZZ33G8wQGJz8c/gz91ydM=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-btZs7CbwHUx9/6BPVHoSMOhnNhQcmqaFoDk35myx2QI='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-f9RMO5kqTOuFWPov/9BNCoP3/njAlQ1UggccsWY8DmU=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-vLtxyk7+GbPbUU1aSPSbQvaPNx1KDEN9N1bnlJM9Ssc=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-btZs7CbwHUx9/6BPVHoSMOhnNhQcmqaFoDk35myx2QI='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -176,7 +176,9 @@ input[type=date]{min-height:44px}
 .grip{flex:none;width:44px;height:40px;margin:-8px -10px -8px 0;display:flex;align-items:center;justify-content:center;color:var(--muted);opacity:.45;touch-action:none;cursor:grab;border-radius:10px}
 .grip:focus-visible{outline:2px solid var(--accent)}
 .sortable>.drow:first-child>.sw-fg>.row{border-top:0}
-.sw{position:relative;overflow:hidden;background:var(--red)}
+.sw{position:relative;overflow:hidden}
+.sw-del{visibility:hidden}
+.sw.open .sw-del,.sw.swiping .sw-del{visibility:visible}
 .sw-del{position:absolute;top:0;right:0;bottom:0;width:88px;border:0;background:var(--red);color:var(--dark);font-weight:700;font-size:15px;cursor:pointer}
 .sw-fg{position:relative;background:var(--card);transition:transform .22s ease;touch-action:pan-y;z-index:1}
 .sw:not(:first-child)>.sw-fg>.row,.grp-c>.sw+.row{border-top:1px solid var(--border)}
@@ -1939,13 +1941,15 @@ function swDel(b){
 }
 const swRow=(kind,id,inner,cls='',attrs='')=>`<div class="sw ${cls}" ${attrs}><button class="sw-del" data-act="swDel" data-kind="${kind}" data-id="${id}" tabindex="-1">Delete</button><div class="sw-fg">${inner}</div></div>`;
 let sw=null,swNoClick=false;
-function closeSw(except){$$('.sw.open').forEach(x=>{if(x!==except){x.classList.remove('open');$('.sw-fg',x).style.transform=''}})}
+// keeps the Delete button visible while a row slides shut, then hides it again
+function swHide(w){w.classList.add('swiping');clearTimeout(w._swT);w._swT=setTimeout(()=>{if(!w.classList.contains('open'))w.classList.remove('swiping')},260)}
+function closeSw(except){$$('.sw.open').forEach(x=>{if(x!==except){x.classList.remove('open');$('.sw-fg',x).style.transform='';swHide(x)}})}
 document.addEventListener('pointerdown',e=>{const fg=e.target.closest('.sw-fg');if(!fg||e.target.closest('.grip')||(e.pointerType==='mouse'&&e.button))return;
  const w=fg.parentElement;sw={w,fg,x:e.clientX,y:e.clientY,base:w.classList.contains('open')?-88:0,pos:0,mode:null,id:e.pointerId}});
 document.addEventListener('pointermove',e=>{if(!sw||e.pointerId!==sw.id)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;
- if(!sw.mode){if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.2){sw.mode='h';closeSw(sw.w);sw.fg.style.transition='none';try{sw.fg.setPointerCapture(e.pointerId)}catch(_){}}else if(Math.abs(dy)>8){sw=null;return}else return}
+ if(!sw.mode){if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.2){sw.mode='h';closeSw(sw.w);clearTimeout(sw.w._swT);sw.w.classList.add('swiping');sw.fg.style.transition='none';try{sw.fg.setPointerCapture(e.pointerId)}catch(_){}}else if(Math.abs(dy)>8){sw=null;return}else return}
  e.preventDefault();sw.pos=Math.max(-110,Math.min(0,sw.base+dx));sw.fg.style.transform=`translateX(${sw.pos}px)`},{passive:false});
-function swEnd(){if(!sw)return;if(sw.mode==='h'){sw.fg.style.transition='';const open=sw.pos<-44;sw.w.classList.toggle('open',open);sw.fg.style.transform=open?'translateX(-88px)':'';swNoClick=true;setTimeout(()=>swNoClick=false,80)}sw=null}
+function swEnd(){if(!sw)return;if(sw.mode==='h'){sw.fg.style.transition='';const open=sw.pos<-44;sw.w.classList.toggle('open',open);sw.fg.style.transform=open?'translateX(-88px)':'';if(open)sw.w.classList.remove('swiping');else swHide(sw.w);swNoClick=true;setTimeout(()=>swNoClick=false,80)}sw=null}
 document.addEventListener('pointerup',swEnd);document.addEventListener('pointercancel',swEnd);
 
 /* swipe the top card left/right to change month */
