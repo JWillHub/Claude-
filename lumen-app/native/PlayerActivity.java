@@ -322,6 +322,7 @@ public class PlayerActivity extends AppCompatActivity {
         updatePip();
         applyMidnight();
         addMoonButton();
+        addExitButton();
         styleControls();
         fetchSegments();
         ui.postDelayed(tick, 500);
@@ -793,6 +794,51 @@ public class PlayerActivity extends AppCompatActivity {
             moonBtn.setPadding(dp(10), dp(10), dp(10), dp(10));
             bar.addView(moonBtn, new LinearLayout.LayoutParams(dp(44), dp(44)));
         }
+    }
+
+    // "exit full screen" button at the far right of the bottom bar: back to the series page (easier to reach than the top-left back)
+    private void addExitButton() {
+        ImageButton ex = new ImageButton(this);
+        ex.setImageDrawable(new ExitDrawable());
+        ex.setContentDescription("Back to the series");
+        ex.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); close(false); });
+        try {
+            View cc = view.findViewById(androidx.media3.ui.R.id.exo_subtitle);
+            ViewGroup parent = (ViewGroup) cc.getParent();
+            ex.setBackground(cc.getBackground() != null && cc.getBackground().getConstantState() != null ? cc.getBackground().getConstantState().newDrawable().mutate() : null);
+            ex.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+            ex.setPadding(cc.getPaddingLeft(), cc.getPaddingTop(), cc.getPaddingRight(), cc.getPaddingBottom());
+            View st = view.findViewById(androidx.media3.ui.R.id.exo_settings);
+            int at = st != null && st.getParent() == parent ? parent.indexOfChild(st) + 1 : parent.getChildCount();
+            parent.addView(ex, at, new ViewGroup.LayoutParams(cc.getLayoutParams()));
+        } catch (Exception e) {
+            ex.setBackground(null);
+            ex.setPadding(dp(10), dp(10), dp(10), dp(10));
+            bar.addView(ex, new LinearLayout.LayoutParams(dp(44), dp(44)));
+        }
+    }
+
+    // four corners pointing inward (the usual "exit full screen" icon)
+    private static class ExitDrawable extends Drawable {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        @Override public void draw(@NonNull Canvas c) {
+            Rect b = getBounds();
+            float size = Math.min(b.width(), b.height()), cx = b.exactCenterX(), cy = b.exactCenterY();
+            float o = size * 0.3f, g = size * 0.1f, a = size * 0.15f;   // outer reach, gap from centre, arm length
+            paint.setColor(Color.WHITE); paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(size * 0.075f); paint.setStrokeCap(Paint.Cap.ROUND); paint.setStrokeJoin(Paint.Join.ROUND);
+            for (int sx = -1; sx <= 1; sx += 2) for (int sy = -1; sy <= 1; sy += 2) {
+                float x = cx + sx * g, y = cy + sy * g;   // inner corner of each bracket
+                Path p = new Path();
+                p.moveTo(cx + sx * o, y); p.lineTo(x, y); p.lineTo(x, cy + sy * o);
+                c.drawPath(p, paint);
+            }
+        }
+        @Override public void setAlpha(int al) { paint.setAlpha(al); }
+        @Override public void setColorFilter(ColorFilter f) { paint.setColorFilter(f); }
+        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
+        @Override public int getIntrinsicWidth() { return 96; }
+        @Override public int getIntrinsicHeight() { return 96; }
     }
 
     private static class MoonDrawable extends Drawable {
