@@ -173,6 +173,26 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 .ep .et{flex:1;min-width:0}
 .ep .et b{display:block;font-weight:400;font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ep .et span{display:block;font-size:11.5px;color:var(--muted);font-weight:300;margin-top:3px}
+.ep .et span:empty{display:none}
+.ep .et .er{font-style:normal;display:inline-flex;align-items:center;gap:5px;margin-left:10px;color:var(--text);font-weight:400}
+.ep .et .er b{display:inline;background:#f5c518;color:#000;font:800 8.5px/1.25 Arial,Helvetica,sans-serif;padding:1px 3.5px;border-radius:3px}
+.ep .et .er.solo{margin-left:0}
+.ep{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+#epx{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
+#epx.open{opacity:1;pointer-events:auto}
+#epx .epc{width:100%;max-width:440px;max-height:82dvh;overflow:auto;border-radius:26px;background:rgba(var(--bgr),.82);transform:scale(.94);transition:transform .45s cubic-bezier(.3,1.35,.5,1)}
+#epx.open .epc{transform:none}
+#epx .epc img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+#epx .epcb{padding:16px 20px 20px}
+#epx small{font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+#epx h4{margin:4px 0 6px;font-weight:400;font-size:19px}
+#epx .epm{font-size:12px;color:var(--muted);display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px}
+#epx .epm .er{margin-left:0!important}
+#epx .er{font-style:normal;display:inline-flex;align-items:center;gap:5px;margin-left:10px;color:var(--text)}
+#epx .epm .er:only-child{margin-left:0}
+#epx .er b{background:#f5c518;color:#000;font:800 8.5px/1.25 Arial,Helvetica,sans-serif;padding:1px 3.5px;border-radius:3px}
+#epx p{font-size:14px;line-height:1.6;font-weight:300;color:rgba(var(--tr),.82);margin:12px 0 16px}
+#epx .play{width:100%}
 .ep .ck{width:20px;height:20px;color:rgba(var(--lc),.85);flex:none}
 
 /* ---------- settings ---------- */
@@ -559,6 +579,7 @@ html.mono .acc,html.mono .fld button.sv,html.mono .seg button.on,html.mono .chip
 </div>
 
 <div class="toast glass" id="toast"></div>
+<div id="epx"></div>
 
 <script>
 'use strict';
@@ -697,9 +718,22 @@ async function imdbRating(tt, tv){
   if(c && Date.now() - c.at < 3 * 864e5) return c.r;
   try{
     let r = null;
-    if(tv){ const x = await fetch(`${IMDB_DATA}tv/${tt.slice(-2)}/${tt}.json`); if(x.ok) r = (await x.json()).r || null; }
+    if(tv){ const sh = await imdbShow(tt); r = sh ? sh.r : null; }
     else { const x = await fetch(`${IMDB_DATA}m/${tt.slice(-3)}.json`); if(x.ok){ const m = (await x.json())[tt]; r = m ? m[0] : null; } }
     store.set(k, { r, at:Date.now() }); return r;
+  }catch(e){ return null; }
+}
+// a show's IMDb file: overall rating plus every episode's ({ r, s:{ season:{ episode:rating } } })
+const showMem = {};
+async function imdbShow(tt){
+  if(showMem[tt]) return showMem[tt];
+  const k = P + 'imdbs.' + tt, c = store.get(k, null);
+  if(c && Date.now() - c.at < 3 * 864e5) return showMem[tt] = c;
+  try{
+    const x = await fetch(`${IMDB_DATA}tv/${tt.slice(-2)}/${tt}.json`); if(!x.ok) return null;
+    const j = await x.json(), out = { r:j.r || null, s:{}, at:Date.now() };
+    for(const [sn, eps] of Object.entries(j.s || {})){ out.s[sn] = {}; for(const e of eps) if(e[1]) out.s[sn][e[0]] = e[1]; }
+    store.set(k, out); return showMem[tt] = out;
   }catch(e){ return null; }
 }
 async function details(m){
@@ -719,10 +753,10 @@ async function details(m){
 }
 async function seasonEps(tid, n){
   const k = P + 'd.s' + tid + '.' + n, c = store.get(k, null);
-  if(c && Date.now() - c.at < 3 * 864e5) return c.eps;
+  if(c && c.v === 2 && Date.now() - c.at < 3 * 864e5) return c.eps;
   const d = await tmdb(`/tv/${tid}/season/${n}`);
-  const eps = {}; (d.episodes || []).forEach(e => { eps[e.episode_number] = { name:e.name, still:e.still_path, rt:e.runtime }; });
-  store.set(k, { at:Date.now(), eps }); return eps;
+  const eps = {}; (d.episodes || []).forEach(e => { eps[e.episode_number] = { name:e.name, still:e.still_path, rt:e.runtime, ov:e.overview || '', air:e.air_date || '' }; });
+  store.set(k, { v:2, at:Date.now(), eps }); return eps;
 }
 
 /* ================= Real-Debrid ================= */
@@ -1200,14 +1234,41 @@ function drawShow(eps){
     <div class="lbl">${seasons.length > 1 ? 'Episodes' : sl(seasons[0])}</div><div class="eps" id="eps"></div>`;
   $$('#tmore .chip').forEach(c => c.onclick = () => { cur.season = +c.dataset.s; drawShow(eps); });
   const inS = list.filter(x => x.ep.s === cur.season);
-  const draw = meta => {
+  let ir = {}, lastMeta = {};
+  const draw = meta => { lastMeta = meta;
     $('#eps').innerHTML = inS.map(x => { const k = x.tid + '|' + x.path, pr = prog[k], m = meta[x.ep.e] || {};
       return `<button class="ep glass press" data-k="${esc(k)}"><div class="th">${m.still ? `<img src="${IMG}w300${m.still}" alt="" loading="lazy" decoding="async">` : ''}${pr ? `<div class="pb"><i style="width:${(pr.t / pr.d * 100).toFixed(1)}%"></i></div>` : ''}</div>
-        <div class="et"><b>${x.ep.e}. ${esc(m.name || 'Episode ' + x.ep.e)}</b><span>${[pr ? left(pr) : m.rt ? m.rt + 'm' : '', qualOf(x.path)].filter(Boolean).join(' · ')}</span></div>${done[k] ? CHECK : ''}</button>`; }).join('');
-    $$('#eps .ep').forEach(b => b.onclick = () => playEp(inS.find(x => x.tid + '|' + x.path === b.dataset.k)));
+        <div class="et"><b>${x.ep.e}. ${esc(m.name || 'Episode ' + x.ep.e)}</b><span>${pr ? left(pr) : m.rt ? m.rt + 'm' : ''}${ir[x.ep.e] ? `<em class="er${pr || m.rt ? '' : ' solo'}"><b>IMDb</b>${ir[x.ep.e].toFixed(1)}</em>` : ''}</span></div>${done[k] ? CHECK : ''}</button>`; }).join('');
+    $$('#eps .ep').forEach(b => {
+      const x = inS.find(y => y.tid + '|' + y.path === b.dataset.k);
+      b.onclick = () => { if(b._held){ b._held = false; return; } playEp(x); };
+      // hold an episode to read its full description
+      let tm = 0, sx = 0, sy = 0;
+      b.onpointerdown = e => { sx = e.clientX; sy = e.clientY; clearTimeout(tm); tm = setTimeout(() => { b._held = true; buzz(12); epInfo(x, meta[x.ep.e] || {}, ir[x.ep.e]); }, 420); };
+      b.onpointermove = e => { if(Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 10) clearTimeout(tm); };
+      b.onpointerup = b.onpointercancel = b.onpointerleave = () => clearTimeout(tm);
+      b.oncontextmenu = e => e.preventDefault();
+    });
   };
   draw({});
+  // each episode's IMDb rating, from the same nightly data as the show's badge
+  if(t.tv && t.tid && cur.season > 0){ const s = cur.season; details(t).then(d => d && d.imdb ? imdbShow(d.imdb) : null).then(sh => { if(sh && sh.s[s] && cur && cur.t === t && cur.season === s){ ir = sh.s[s]; draw(lastMeta); } }).catch(() => {}); }
   if(t.tv && t.tid && cur.season > 0){ const s = cur.season; seasonEps(t.tid, s).then(m => { if(cur && cur.t === t && cur.season === s) draw(m); }).catch(() => {}); }
+}
+// the full description of one episode, in a glass card over the page; tap anywhere or go back to close
+function epInfo(x, m, r){
+  const el = $('#epx'), pr = prog[x.tid + '|' + x.path];
+  const when = m.air ? new Date(m.air + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) : '';
+  el.innerHTML = `<div class="epc glass">${m.still ? `<img src="${IMG}w780${m.still}" alt="">` : ''}<div class="epcb">
+    <small>${x.ep.s ? 'S' + x.ep.s + ' E' + x.ep.e : 'Episode ' + x.ep.e}</small><h4>${esc(m.name || 'Episode ' + x.ep.e)}</h4>
+    <div class="epm">${[when, m.rt ? m.rt + 'm' : '', pr ? left(pr) : ''].filter(Boolean).map(esc).join(' · ')}${r ? `<em class="er"><b>IMDb</b>${r.toFixed(1)}</em>` : ''}</div>
+    <p>${esc(m.ov || 'No description yet.')}</p>
+    <button class="play acc glass press" id="epxp">${PLAY}${pr ? 'Resume' : 'Play'}</button></div></div>`;
+  el.classList.add('open');
+  const close = () => el.classList.remove('open');
+  pushLayer('epx', close);
+  el.onclick = e => { if(!e.target.closest('.epc')) back(); };
+  $('#epxp').onclick = () => { back(); setTimeout(() => playEp(x), 250); };
 }
 function playEp(x){
   const t = cur.t, i = cur.list.indexOf(x), nx = cur.list[i + 1];
