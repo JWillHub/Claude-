@@ -71,4 +71,6 @@ for d in "$RES"/mipmap-*; do
 done
 # Adaptive icon (Android 8+): glass background + logo, plus a one-color layer so "Themed icons" (Android 13+) can tint it
 cp -r native/res/mipmap-* "$RES"/
+# plain play/pause icons for the player (replace media3's filled-circle ones)
+mkdir -p "$RES"/drawable && cp native/res/drawable/*.xml "$RES"/drawable/
 echo "patched"

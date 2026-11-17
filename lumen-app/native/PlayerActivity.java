@@ -310,7 +310,12 @@ public class PlayerActivity extends AppCompatActivity {
             public void onAudioSessionIdChanged(int id) { applyMidnight(); }
         });
         current = exo;
-        view.setPlayer(exo);
+        // the player's own Next button plays the next episode in the queue (otherwise it stays greyed out)
+        view.setPlayer(new androidx.media3.common.ForwardingPlayer(exo) {
+            @Override public boolean isCommandAvailable(int c) { return (c == Player.COMMAND_SEEK_TO_NEXT && hasNext()) || super.isCommandAvailable(c); }
+            @Override public Player.Commands getAvailableCommands() { Player.Commands cm = super.getAvailableCommands(); return hasNext() ? cm.buildUpon().add(Player.COMMAND_SEEK_TO_NEXT).build() : cm; }
+            @Override public void seekToNext() { if (hasNext()) goNext(); else super.seekToNext(); }
+        });
         exo.prepare();
         exo.setPlayWhenReady(true);
 
@@ -520,7 +525,11 @@ public class PlayerActivity extends AppCompatActivity {
             }
             for (String id : new String[]{ "exo_play_pause", "exo_rew_with_amount", "exo_ffwd_with_amount", "exo_prev", "exo_next" }) {
                 View b = byName(id);
-                if (b != null) { b.setBackground(glass(true)); b.setElevation(dp(4)); }
+                if (b == null) continue;
+                // the player's own styles tint some of these (rewind/forward came out lighter): clear that so all five match
+                b.setBackgroundTintList(null); b.setForeground(null);
+                b.setBackground(glass(true)); b.setElevation(dp(4));
+                if (b instanceof android.widget.ImageView) ((android.widget.ImageView) b).setImageTintList(android.content.res.ColorStateList.valueOf(Color.WHITE));
             }
         } catch (Exception ignored) {}
     }
