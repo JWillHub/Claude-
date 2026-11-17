@@ -1297,10 +1297,13 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 .tab[data-tab="settings"].upd::after{content:"";position:absolute;top:7px;right:calc(50% - 18px);width:9px;height:9px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px var(--bg);z-index:2}
 /* main budget card: green glass while there's money left, red glass when over (all glass themes) */
 :root[data-glass]:is([data-look="glass"],[data-look="glass-dark"]) .summary:not(.neutral){color:var(--text)!important}
-:root[data-glass][data-look="glass"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(36,190,105,.62),rgba(36,190,105,.32))!important;border-color:rgba(25,150,90,.45)!important}
-:root[data-glass][data-look="glass"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(240,60,80,.62),rgba(240,60,80,.34))!important;border-color:rgba(210,50,75,.5)!important}
-:root[data-glass][data-look="glass-dark"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(45,200,120,.34),rgba(45,200,120,.08))!important;border-color:rgba(70,220,140,.35)!important}
-:root[data-glass][data-look="glass-dark"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(255,70,85,.44),rgba(255,70,85,.12))!important;border-color:rgba(255,100,125,.4)!important}
+:root[data-glass][data-look="glass"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(36,190,105,.62),rgba(36,190,105,.32))!important;border-color:transparent!important}
+:root[data-glass][data-look="glass"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(240,60,80,.62),rgba(240,60,80,.34))!important;border-color:transparent!important}
+:root[data-glass][data-look="glass-dark"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(45,200,120,.34),rgba(45,200,120,.08))!important;border-color:transparent!important}
+:root[data-glass][data-look="glass-dark"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(255,70,85,.44),rgba(255,70,85,.12))!important;border-color:transparent!important}
+/* main card: no white rim or edge line, just a soft shadow */
+:root[data-glass][data-look="glass"] #bp .summary{box-shadow:0 12px 30px rgba(20,60,120,.16)!important;border-color:transparent!important}
+:root[data-glass][data-look="glass-dark"] #bp .summary{box-shadow:0 14px 34px rgba(0,0,0,.55)!important;border-color:transparent!important}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
