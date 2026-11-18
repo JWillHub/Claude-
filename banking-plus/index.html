@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-yeHdkcyzdNC57LmcK2Cj5eXQkALcHhL/OdT5vIL0UXU=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-yeHdkcyzdNC57LmcK2Cj5eXQkALcHhL/OdT5vIL0UXU=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1339,6 +1339,9 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 .st-radio{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--muted);display:grid;place-items:center;transition:box-shadow .18s}
 .st-theme.on .st-radio{box-shadow:inset 0 0 0 6px var(--accent)}
 .st-theme:focus-visible{outline:none}.st-theme:focus-visible .st-prev{box-shadow:0 0 0 3px var(--accent)}
+/* tab bar: each tab as wide as its label, and the bubble animates in script (spring) instead of CSS */
+:root:is([data-look="glass"],[data-look="glass-dark"]) .tabs .tab{flex:1 1 auto;padding-left:8px;padding-right:8px}
+:root:is([data-look="glass"],[data-look="glass-dark"]) .tabpill,:root:is([data-look="glass"],[data-look="glass-dark"]) .tabs.scrub .tabpill{transition:none!important;transform-origin:50% 50%;will-change:transform,width}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -3054,10 +3057,28 @@ var d=document.documentElement,bar=document.getElementById('tabs');if(!bar)retur
 var pill=document.createElement('i');pill.className='tabpill';pill.setAttribute('aria-hidden','true');bar.insertBefore(pill,bar.firstChild);
 function on(){return /^glass/.test(d.getAttribute('data-look')||'')}
 function tabs(){return [].slice.call(bar.querySelectorAll('.tab'))}
-function put(b,x){if(!b)return;var w=b.offsetWidth,h=b.offsetHeight,l=b.offsetLeft,t=b.offsetTop;
- if(x!=null){var r=bar.getBoundingClientRect(),first=tabs()[0],last=tabs().slice(-1)[0];
-  l=Math.max(first.offsetLeft,Math.min(last.offsetLeft+last.offsetWidth-w,x-r.left-w/2))}
- pill.style.width=w+'px';pill.style.height=h+'px';pill.style.transform='translate('+l+'px,'+t+'px)'}
+/* the bubble moves on a spring: it glides, overshoots a touch and settles, and stretches a little when it moves fast */
+var S={x:0,w:0,y:0,h:0,vx:0,vw:0,tx:0,tw:0,ty:0,th:0,run:false,init:false,t:0};
+var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function paint(){var st=Math.min(.16,Math.abs(S.vx)/4200);
+ pill.style.width=S.w+'px';pill.style.height=S.h+'px';
+ pill.style.transform='translate('+S.x+'px,'+S.y+'px) scale('+(1+st)+','+(1-st*.45)+')'}
+function tick(now){var dt=Math.min(.032,(now-S.t)/1000);S.t=now;
+ var k=drag?420:190,c=drag?38:17;
+ S.vx+=(k*(S.tx-S.x)-c*S.vx)*dt;S.x+=S.vx*dt;
+ S.vw+=(k*1.3*(S.tw-S.w)-c*1.1*S.vw)*dt;S.w+=S.vw*dt;
+ S.y=S.ty;S.h=S.th;
+ if(Math.abs(S.tx-S.x)<.25&&Math.abs(S.vx)<4&&Math.abs(S.tw-S.w)<.25&&Math.abs(S.vw)<4){S.x=S.tx;S.w=S.tw;S.vx=S.vw=0;paint();S.run=false;return}
+ paint();requestAnimationFrame(tick)}
+function aim(x,w,y,h){S.tx=x;S.tw=w;S.ty=y;S.th=h;
+ if(!S.init||still||!pill.offsetParent){S.x=x;S.w=w;S.y=y;S.h=h;S.vx=S.vw=0;S.init=!!pill.offsetParent;paint();return}
+ if(!S.run){S.run=true;S.t=performance.now();requestAnimationFrame(tick)}}
+/* wide enough for the label (Transactions is longer than its share of the bar) */
+function need(b){var r=document.createRange();r.selectNodeContents(b);var cw=r.getBoundingClientRect().width;return Math.max(b.offsetWidth,Math.ceil(cw)+22)}
+function put(b,x){if(!b)return;var tw=b.offsetWidth,w=need(b),h=b.offsetHeight,l=b.offsetLeft+(tw-w)/2,t=b.offsetTop;
+ if(x!=null){var r=bar.getBoundingClientRect();l=x-r.left-w/2}
+ var first=tabs()[0],last=tabs().slice(-1)[0],lo=first.offsetLeft,hi=last.offsetLeft+last.offsetWidth-w;
+ l=Math.max(lo,Math.min(hi,l));aim(l,w,t,h)}
 function cur(){return bar.querySelector('.tab.on')}
 function sync(){if(!drag)put(cur())}
 new MutationObserver(sync).observe(bar,{subtree:true,attributes:true,attributeFilter:['class']});
