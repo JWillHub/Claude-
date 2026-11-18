@@ -404,6 +404,10 @@ label.f{display:block;color:#fff;font-size:13px;margin:14px 0 6px}
 .rt .small{font-weight:500}
 .imdbm .small{font-weight:500}
 .prov{margin-top:6px;margin-bottom:6px}
+.freerow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.freesrc{font-size:12px;color:#fff;text-decoration:none}
+.freeplayer{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}
+.freeplayer video{width:100%;height:100%;object-fit:contain;background:#000}
+.freex{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:2;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff;font-size:18px}
 .prov .lbl{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#fff;margin:10px 0 7px}
 .plogos{display:flex;gap:8px;flex-wrap:wrap}
 .plogos img{width:42px;height:42px;border-radius:11px;box-shadow:0 4px 10px rgba(0,0,0,.4)}
@@ -1035,6 +1039,10 @@ html.light .wz{color:var(--text)!important}
 html.light .wz.on{color:var(--text)!important}
 html.light .qs span{color:var(--text)!important}
 html.light .mact button.on{color:var(--text)!important}
+html.light .freesrc{color:var(--text)!important}
+html.light .freeplayer{background-color:#fff!important}
+html.light .freeplayer video{background-color:#fff!important}
+html.light .freex{color:var(--text)!important;border-color:rgba(0,0,0,0.30)!important}
 html.light .prov .lbl{color:var(--text)!important}
 html.light .revbtn b{color:var(--text)!important}
 html.light .rev .big{color:var(--text)!important}
@@ -1796,6 +1804,8 @@ const ROWS = [
   { title:'Popular right now', page:'Popular', path:'/movie/popular' },
   { title:'In theaters', path:'/movie/now_playing' },
   { title:'Coming soon', path:'/movie/upcoming' },
+  { title:'Free to watch', page:'Free films', sub:'Public domain classics · Internet Archive', freeList:'films' },
+  { title:'Classic cartoons', page:'Classic cartoons', sub:'Free · Internet Archive and Blender', freeList:'cartoons' },
   ...GENRES.map(([id, name]) => ({ title:name, genre:true, path:'/discover/movie', params:{ with_genres:id, sort_by:'popularity.desc', 'vote_count.gte':150 } }))
 ];
 let rowObs;
@@ -1941,6 +1951,7 @@ async function pageOf(def, page){
     return { page, total:Math.max(...def.mix.map(d => d._total || 0), page), results };
   }
   if(def.imdbTop){ const d = await imdbTopPage(def.imdbTop, page).catch(() => null); if(d) return d; }
+  if(def.freeList) return (await freePage(def.freeList, page).catch(() => null)) || { page, total:0, results:[] };
   return listPage(def.path, def.params || {}, page, def.tv);   // falls back to TMDB's ranking if the IMDb list isn't there
 }
 async function imdbTopPage(kind, page){
@@ -1954,6 +1965,70 @@ async function imdbTopPage(kind, page){
   }).then(m => m && { ...m, rank:(page - 1) * per + i + 1 }).catch(() => null)));
   const results = found.filter(m => m && keep(m)); remember(results);
   return { page, total:Math.ceil(list.length / per), count:list.length, results };
+}
+
+/* ---------- Free films: public-domain features and classic cartoons (Internet Archive), Blender's open films ----------
+   A weekly GitHub job matches them to IMDb and publishes the list; Play streams the Archive's MP4 directly. */
+const FREE_DATA = 'https://raw.githubusercontent.com/JWillHub/Claude-/free-data/free/';
+const K_FREEPROG = 'rclib.freeprog';
+let freeMapP = null;
+function freeMap(){
+  if(!freeMapP) freeMapP = fetch(FREE_DATA + 'map.json').then(r => r.ok ? r.json() : {}).catch(() => { freeMapP = null; return {}; });
+  return freeMapP;
+}
+async function freePage(kind, page){
+  const list = await cached('free:' + kind, 24, () => fetch(`${FREE_DATA}${kind}.json`).then(r => r.ok ? r.json() : null));
+  if(!list || !list.length) return null;
+  const per = 20, part = list.slice((page - 1) * per, page * per);
+  const found = await Promise.all(part.map(tt => cached('find:' + tt, 24*30, async () => {
+    const d = await tmdb('/find/' + tt, { external_source:'imdb_id' });
+    const hit = (d.movie_results || [])[0];
+    return hit ? slim(hit) : null;
+  }).catch(() => null)));
+  const results = found.filter(m => m && m.poster); remember(results);
+  return { page, total:Math.ceil(list.length / per), count:list.length, results };
+}
+// On a film's card: "Free to watch" with a Play button, when the film is in the free list
+async function freeStrip(b, d, el){
+  if(!d.imdb) return;
+  const hit = (await freeMap())[d.imdb];
+  if(!hit || !el.isConnected) return;
+  const [url, ident] = hit, prog = store.get(K_FREEPROG, {})[d.imdb];
+  const box = document.createElement('div');
+  box.className = 'prov fadein freew';
+  box.innerHTML = `<div class="lbl">Free to watch</div><div class="freerow"><button class="pill" id="mfree">▶ ${prog && prog.t > 30 ? 'Resume ' + freeClock(prog.t) : 'Play free'}</button>
+    <a class="freesrc" href="https://archive.org/details/${encodeURIComponent(ident)}" target="_blank" rel="noopener">Public domain · Internet Archive</a></div>`;
+  $('#mwatch', b).prepend(box);
+  $('#mfree', box).onclick = () => freePlay(d.imdb, url, d.title);
+}
+const freeClock = t => { t = Math.floor(t); const h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0'); };
+function freeSave(tt, t, d){
+  const all = store.get(K_FREEPROG, {});
+  if(d > 0 && t / d < 0.93 && t > 30) all[tt] = { t, d, at:Date.now() }; else delete all[tt];
+  store.set(K_FREEPROG, all);
+}
+async function freePlay(tt, url, title){
+  const start = (store.get(K_FREEPROG, {})[tt] || {}).t || 0;
+  // Android app: the full-screen player
+  const C = window.Capacitor;
+  if(C && C.isNativePlatform && C.isNativePlatform() && typeof playerPlay === 'function'){
+    try{
+      const r = await playerPlay({ url, title, startMs:Math.floor(start * 1000) });
+      if(r && !r.error) freeSave(tt, (r.positionMs || 0) / 1000, (r.durationMs || 0) / 1000);
+      else if(r && r.error) toast('The Archive copy would not play (' + r.error + ').');
+    }catch(e){ toast('Could not open the player.'); }
+    return;
+  }
+  // Web: a simple full-screen video
+  const o = document.createElement('div');
+  o.className = 'freeplayer';
+  o.innerHTML = `<button class="freex" aria-label="Close">✕</button><video controls autoplay playsinline preload="auto"></video>`;
+  document.body.appendChild(o);
+  const v = $('video', o); v.src = url;
+  v.addEventListener('loadedmetadata', () => { if(start > 30 && start < v.duration - 30) v.currentTime = start; }, { once:true });
+  const close = () => { freeSave(tt, v.currentTime || 0, v.duration || 0); v.pause(); v.removeAttribute('src'); v.load(); o.remove(); };
+  $('.freex', o).onclick = close;
+  v.addEventListener('ended', close);
 }
 
 /* generic infinite grid inside a sheet or page */
@@ -2734,6 +2809,7 @@ async function openMovie(id){
     if(d.castL && d.castL.length) $('#mcast', b).innerHTML = `<div class="castsec fadein"><div class="lbl">Cast</div><div class="ppl nodrag">${d.castL.map(p => personHTML(p, p.role)).join('')}</div></div>`;
     trailerKey = d.trailer; acts(trailerKey);
     $('#mwatch', b).innerHTML = provHTML(d.prov); bindProv(b, d.prov);
+    freeStrip(b, d, s.el);
     if(d.imdb){
       const box = $('#mimdb', b); box.className = 'scores';
       imdbMovie(d.imdb).then(x => { if(x && s.el.isConnected) box.insertAdjacentHTML('afterbegin', `<span class="imdbm"><span class="ib2">IMDb</span>${x[0].toFixed(1)}<span class="small">${fmtV(x[1])} votes</span></span>`); });
