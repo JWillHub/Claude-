@@ -42,6 +42,8 @@ def scrape(q):
         if not cursor: break
     return items
 
+# Disc and web rips: often a modern restoration with a new (copyrighted) score, and usually x265 that browsers can't play
+RIP = re.compile(r'bd-?rip|blu-?ray|br-?rip|web-?dl|webrip|remux|x\.?265|hevc|yify|yts|dts|\[[a-z]+\]', re.I)
 SKIP_WORDS = re.compile(r'censored|propaganda|racis|stereotyp|blackface|trailer|preview|teaser|colorized|colourized|clip|excerpt', re.I)
 
 def as_text(v):
@@ -71,7 +73,7 @@ def variants(title):
     t = re.sub(r'(?i)\b(hd|1080p|720p|full movie|feature film|public domain)\b', '', t)
     out = [t]
     for sep in (' - ', ' | ', ' -- ', ': ', ' / '):
-        if sep in t: out += [t.split(sep)[0], t.split(sep)[-1]]
+        if sep in t: out += [t.split(sep)[-1], t.split(sep)[0]]   # 'Superman - The Mechanical Monsters': the episode name first
     seen, res = set(), []
     for v in out:
         n = norm(v)
@@ -121,7 +123,7 @@ PREF = ['h.264 HD', 'h.264', 'h.264 IA', 'MPEG4', '512Kb MPEG4']
 def best_file(ident):
     d = get_json('https://archive.org/metadata/' + urllib.parse.quote(ident))
     if not d or d.get('is_dark') or not d.get('files'): return None
-    files = [f for f in d['files'] if f.get('name', '').lower().endswith('.mp4') and not SKIP_WORDS.search(f.get('name', ''))]
+    files = [f for f in d['files'] if f.get('name', '').lower().endswith('.mp4') and not SKIP_WORDS.search(f.get('name', '')) and not RIP.search(f.get('name', ''))]
     if not files: return None
     def rank(f):
         fmt = f.get('format', '')
@@ -180,6 +182,7 @@ def main():
         hit = 0
         for it in items:
             if SKIP_WORDS.search(as_text(it.get('title'))) or SKIP_WORDS.search(as_text(it.get('subject'))): continue
+            if RIP.search(it['identifier']) or RIP.search(as_text(it.get('title'))): continue
             m = match(it, idx, kind)
             if not m or not is_free(m, as_text(it.get('title'))): continue
             hit += 1
