@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-5W6BWgvXdr97OR9v0+1c0YyCFobc2o9yOQh9cGURvrw=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-9YTjkAR111xmAbrv3wP4IWhjS1OIM2qPiTymZwm1nAo=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1342,6 +1342,32 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 /* tab bar: each tab as wide as its label, and the bubble animates in script (spring) instead of CSS */
 :root:is([data-look="glass"],[data-look="glass-dark"]) .tabs .tab{flex:1 1 auto;padding-left:8px;padding-right:8px}
 :root:is([data-look="glass"],[data-look="glass-dark"]) .tabpill,:root:is([data-look="glass"],[data-look="glass-dark"]) .tabs.scrub .tabpill{transition:none!important;transform-origin:50% 50%;will-change:transform,width}
+/* ===== Categories: group tiles ===== */
+.cg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.cg-tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:140px;padding:14px;text-align:left;font:inherit;color:var(--text);cursor:pointer;overflow:hidden}
+.cg-tile::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(110% 80% at 100% 0%,color-mix(in srgb,var(--gc) 30%,transparent),transparent 65%)}
+.cg-tile>*{position:relative}
+.cg-tile:active{transform:scale(.98)}
+.cg-tile.inc{grid-column:1/-1;min-height:0;flex-direction:row;align-items:center;gap:13px;padding:14px}
+.cg-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cg-tile.inc .cg-n{font-size:20px}
+.cg-top{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:4px}
+.cg-ico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--gc);color:#fff;font-weight:800;font-size:17px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 4px 12px color-mix(in srgb,var(--gc) 35%,transparent)}
+.cg-ico.big{width:54px;height:54px;border-radius:16px;font-size:24px}
+.cg-n{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--gc);font-variant-numeric:tabular-nums}
+:root[data-mode="dark"] .cg-n{color:color-mix(in srgb,var(--gc) 55%,#fff)}
+.cg-name{font-size:16px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.cg-names{font-size:12.5px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cg-new{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:140px;border:1.5px dashed var(--border);border-radius:16px;background:transparent;color:var(--accent-text);font:inherit;font-weight:700;cursor:pointer}
+.cg-new svg{width:22px;height:22px}
+.st-add>svg{width:18px;height:18px}
+.cg-hero{display:flex;align-items:center;gap:14px;margin:4px 4px 0}
+.cg-hero-t{flex:1;min-width:0}
+.cg-hero-t h2{margin:0;font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cg-hero-t span{font-size:13.5px;color:var(--muted)}
+.cg-arr{cursor:default}
+.cg-arr .grip{margin-left:auto}
+#gsort>.cg-arr.dragging{background:var(--card)}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -2062,18 +2088,36 @@ function vSettings(){
   ${rows?`<div class="st-card st-list">${rows}</div>`:`<div class="st-card st-empty">No accounts yet.</div>`}
   <button class="st-add" data-act="addAcct">${SI.plus}Add account</button></div>`;
  }
- /* ----- Categories ----- */
+ /* ----- Categories: a grid of group tiles; each opens its own page ----- */
+ const COL=['#2F7FD8','#7C5CE0','#E08A1E','#1A9BB0','#D6405A','#C2549B','#5B6BD6','#3F9C5A'];
+ const gCol=g=>g.income?'#1FA36A':COL[Math.max(0,state.groups.filter(x=>!x.income).indexOf(g))%COL.length];
+ const gIni=g=>esc((g.name.trim()[0]||'?').toUpperCase());
+ const gCats=g=>state.cats.filter(c=>c.gid===g.id);
+ if(sub&&sub.startsWith('cat:')){
+  const g=grp(sub.slice(4));
+  if(!g){ui.sub='cats';return vSettings()}
+  const cs=gCats(g),col=gCol(g);
+  const list=cs.map(c=>swRow('cat',c.id,`<div class="st-row st-cat"><span class="st-dot" style="--dc:${col}"></span><span class="st-tx" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" role="button" tabindex="0"><b>${esc(c.name)}${c.cardId?'<span class="tag blue">card payment</span>':''}</b>${g.income&&c.amt?`<small>${m(c.amt)} · ${FREQ[c.freq]||''}</small>`:''}</span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('');
+  return `<div class="st-page${anim}"><div class="st-head"><button type="button" class="st-back" data-act="stGo" data-to="cats">${ICON.l}<span>Categories</span></button></div>
+  <div class="cg-hero" style="--gc:${col}"><span class="cg-ico big">${gIni(g)}</span><div class="cg-hero-t"><h2>${esc(g.name)}</h2><span>${cs.length} ${g.income?(cs.length===1?'income source':'income sources'):(cs.length===1?'category':'categories')}</span></div><button class="btn sec sm" data-act="editGroup" data-id="${g.id}">Edit group</button></div>
+  <div class="st-card st-list" style="margin-top:18px"><div class="sortable" data-gid="${g.id}">${list}</div><button class="st-addrow" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${SI.plus}${g.income?'Add income':'Add category'}</button></div>
+  <p class="st-tip" style="margin-top:12px">Tap one to edit it. Swipe left to delete. Hold ≡ and drag to change the order.</p></div>`;
+ }
  if(sub==='cats'){
-  const COL=['#2F7FD8','#7C5CE0','#1FA36A','#D08C12','#D6405A','#1A9BB0','#C2549B','#5B6BD6'];
-  let h='';
-  state.groups.forEach((g,gi)=>{
-   const cs=state.cats.filter(c=>c.gid===g.id),col=g.income?'var(--green)':COL[gi%COL.length];
-   const list=cs.map(c=>swRow('cat',c.id,`<div class="st-row st-cat"><span class="st-dot" style="--dc:${col}"></span><span class="st-tx" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" role="button" tabindex="0"><b>${esc(c.name)}${c.cardId?'<span class="tag blue">card payment</span>':''}</b></span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('');
-   h+=`<section class="st-sec drow" data-drag="grp" data-id="${g.id}"><div class="st-sec-h" data-handle="1"><span class="st-sec-n">${esc(g.name)}</span>${g.income&&!/income/i.test(g.name)?'<span class="st-inc">Income</span>':''}<span class="st-pill">${cs.length}</span><span class="sp"></span><button class="st-mini" data-act="editGroup" data-id="${g.id}">Edit</button></div>
-   <div class="st-card st-list"><div class="sortable" data-gid="${g.id}">${list}</div><button class="st-addrow" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${SI.plus}${g.income?'Add income':'Add category'}</button></div></section>`;
-  });
-  return `<div class="st-page${anim}">${stHead('Categories','Tap a category to edit it and swipe left to delete. Hold ≡ to move a category, or hold a group’s name to move the whole group.')}
-  <div id="gsort">${h}</div><button class="st-add" data-act="addGroup">${SI.plus}New group</button></div>`;
+  const inc=state.groups.filter(g=>g.income),sp=state.groups.filter(g=>!g.income);
+  if(ui.catArrange){
+   const rows=state.groups.map(g=>`<div class="st-row cg-arr drow" data-drag="grp" data-id="${g.id}"><span class="cg-ico" style="--gc:${gCol(g)}">${gIni(g)}</span><span class="st-tx"><b>${esc(g.name)}</b><small>${gCats(g).length} ${g.income?'income':'categories'}</small></span><span class="grip" aria-label="Drag to move ${esc(g.name)}" role="button" tabindex="0">${GRIP}</span></div>`).join('');
+   return `<div class="st-page${anim}"><div class="st-head"><button type="button" class="st-back" data-act="catArrange">${ICON.l}<span>Categories</span></button><h2 class="st-title">Reorder groups</h2><p class="st-sub">Hold \u2261 and drag a group up or down. The Budget tab follows this order.</p></div>
+   <div class="st-card st-list" id="gsort">${rows}</div><button class="btn" style="width:100%;margin-top:16px" data-act="catArrange">Done</button></div>`;
+  }
+  const tile=g=>{const cs=gCats(g),names=cs.slice(0,4).map(c=>esc(c.name)).join(', ')+(cs.length>4?', …':'');
+   if(g.income)return `<button type="button" class="st-card cg-tile inc" style="--gc:${gCol(g)}" data-act="stGo" data-to="cat:${g.id}"><span class="cg-ico">${gIni(g)}</span><span class="cg-mid"><span class="cg-name">${esc(g.name)}</span><span class="cg-names">${names||'No income yet'}</span></span><span class="cg-n">${cs.length}</span><span class="st-chev" aria-hidden="true">${ICON.r}</span></button>`;
+   return `<button type="button" class="st-card cg-tile" style="--gc:${gCol(g)}" data-act="stGo" data-to="cat:${g.id}"><span class="cg-top"><span class="cg-ico">${gIni(g)}</span><span class="cg-n">${cs.length}</span></span><span class="cg-name">${esc(g.name)}</span><span class="cg-names">${names||'No categories yet'}</span></button>`};
+  const nc=state.cats.filter(c=>{const g=grp(c.gid);return g&&!g.income}).length;
+  return `<div class="st-page${anim}">${stHead('Categories',`${sp.length} group${sp.length===1?'':'s'} · ${nc} spending categor${nc===1?'y':'ies'}. Tap a group to open it.`)}
+  ${inc.length?`<div class="cg-grid">${inc.map(tile).join('')}</div><div class="st-label">Spending</div>`:''}
+  <div class="cg-grid">${sp.map(tile).join('')}<button type="button" class="cg-new" data-act="addGroup">${SI.plus}<span>New group</span></button></div>
+  ${state.groups.length>1?`<button class="st-add" data-act="catArrange">${GRIP}Reorder groups</button>`:''}</div>`;
  }
  /* ----- Backup & data ----- */
  if(sub==='data'){
@@ -2282,10 +2326,11 @@ const act={
  editAcct(b){acctSheet(acct(b.dataset.id))},addAcct(){acctSheet(null)},
  editCat(b){catSheet(cat(b.dataset.id))},addCat(b){catSheet(null,b.dataset.id)},
  toggleCard(b){toggleCard(b.closest('.fold'))},
- stGo(b){ui.sub=b.dataset.to;ui.stAnim=true;render();scrollTo(0,0)},
+ stGo(b){ui.sub=b.dataset.to;ui.catArrange=false;ui.stAnim=true;render();scrollTo(0,0)},
+ catArrange(){ui.catArrange=!ui.catArrange;ui.stAnim=true;render();scrollTo(0,0)},
  appUpdate(){const U=BPUpdate;if(U.busy||!window.BPNative)return;if(U.newer()){U.begin();render();BPNative.installUpdate()}else{U.busy='checking';render();BPNative.checkUpdate()}},
  appUpdateBrowser(){if(window.BPNative&&BPNative.openUrl)BPNative.openUrl(BPUpdate.url)},
- stBack(){ui.sub=null;ui.stAnim=true;render();scrollTo(0,0)},
+ stBack(){if(ui.catArrange&&ui.sub==='cats'){ui.catArrange=false}else ui.sub=null;ui.stAnim=true;render();scrollTo(0,0)},
  editGroup(b){groupSheet(grp(b.dataset.id))},addGroup(){groupSheet(null)},
  async backup(){if(await saveFile(`banking-plus-backup-${today()}.json`,backupText(),'application/json')!==false)markBackup()},
  copyBackup(){navigator.clipboard.writeText(backupText()).then(()=>{markBackup();toast('Backup copied. Paste it into Restore on the other device.')},()=>toast('Copy not allowed here; use Save backup'))},
@@ -2342,7 +2387,7 @@ window.BP={
  backupWords,backupAge,
  openBackup(){ui.tab='settings';ui.sub='data';ui.pendSub='data';ui.editT=false;render();scrollTo(0,0)},
  // Android back swipe on a Settings page goes back to the Settings hub
- settingsBack(){const bp=document.getElementById('bp');if(bp&&!bp.hidden&&ui.tab==='settings'&&ui.sub){ui.sub=null;ui.stAnim=true;render();scrollTo(0,0);return true}return false}
+ settingsBack(){const bp=document.getElementById('bp');if(bp&&!bp.hidden&&ui.tab==='settings'&&ui.sub){if(ui.catArrange)ui.catArrange=false;else ui.sub=/^cat:/.test(ui.sub)?'cats':null;ui.stAnim=true;render();scrollTo(0,0);return true}return false}
 };
 
 /* ---------- start ---------- */
