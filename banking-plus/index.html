@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-9YTjkAR111xmAbrv3wP4IWhjS1OIM2qPiTymZwm1nAo=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-c6YtZohwhiLDYaaN2pRlKV49Fs0qFjCdN4PNIHquP1U=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1368,6 +1368,25 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 .cg-arr{cursor:default}
 .cg-arr .grip{margin-left:auto}
 #gsort>.cg-arr.dragging{background:var(--card)}
+/* group icons, tiles without the list of names, and the group editor's suggestions and icon picker */
+.cg-ico svg{width:21px;height:21px}
+.cg-ico.big svg{width:29px;height:29px}
+.cg-tile{min-height:112px;justify-content:space-between}
+.cg-tile .cg-top{margin-bottom:10px}
+.gs-label{font-size:12.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin:2px 0 8px}
+.gs-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;max-height:132px;overflow:auto}
+.gs-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px 7px 9px;border-radius:999px;background:var(--input);border:1px solid var(--border);color:var(--text);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+.gs-chip svg{width:16px;height:16px}
+.gs-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-mode="dark"] .gs-chip.on{color:#0B1B33}
+.gi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.gi-opt{position:relative;display:block;cursor:pointer}
+.gi-opt input{position:absolute;opacity:0;pointer-events:none}
+.gi-opt span{display:grid;place-items:center;aspect-ratio:1;border-radius:12px;background:var(--input);border:1px solid var(--border);color:var(--text)}
+.gi-opt span svg{width:21px;height:21px}
+.gi-opt input:checked+span{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-mode="dark"] .gi-opt input:checked+span{color:#0B1B33}
+.gi-opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -2099,22 +2118,21 @@ function vSettings(){
   const cs=gCats(g),col=gCol(g);
   const list=cs.map(c=>swRow('cat',c.id,`<div class="st-row st-cat"><span class="st-dot" style="--dc:${col}"></span><span class="st-tx" data-act="${g.income?'editIncome':'editCat'}" data-id="${c.id}" role="button" tabindex="0"><b>${esc(c.name)}${c.cardId?'<span class="tag blue">card payment</span>':''}</b>${g.income&&c.amt?`<small>${m(c.amt)} · ${FREQ[c.freq]||''}</small>`:''}</span><span class="grip" aria-label="Drag to reorder ${esc(c.name)}" role="button" tabindex="0">${GRIP}</span></div>`,'drow',`data-drag="cat" data-id="${c.id}"`)).join('');
   return `<div class="st-page${anim}"><div class="st-head"><button type="button" class="st-back" data-act="stGo" data-to="cats">${ICON.l}<span>Categories</span></button></div>
-  <div class="cg-hero" style="--gc:${col}"><span class="cg-ico big">${gIni(g)}</span><div class="cg-hero-t"><h2>${esc(g.name)}</h2><span>${cs.length} ${g.income?(cs.length===1?'income source':'income sources'):(cs.length===1?'category':'categories')}</span></div><button class="btn sec sm" data-act="editGroup" data-id="${g.id}">Edit group</button></div>
+  <div class="cg-hero" style="--gc:${col}"><span class="cg-ico big">${giSvg(g.icon&&GI[g.icon]?g.icon:giGuess(g.name,g.income))}</span><div class="cg-hero-t"><h2>${esc(g.name)}</h2><span>${cs.length} ${g.income?(cs.length===1?'income source':'income sources'):(cs.length===1?'category':'categories')}</span></div><button class="btn sec sm" data-act="editGroup" data-id="${g.id}">Edit group</button></div>
   <div class="st-card st-list" style="margin-top:18px"><div class="sortable" data-gid="${g.id}">${list}</div><button class="st-addrow" data-act="${g.income?'addIncome':'addCat'}" data-id="${g.id}">${SI.plus}${g.income?'Add income':'Add category'}</button></div>
   <p class="st-tip" style="margin-top:12px">Tap one to edit it. Swipe left to delete. Hold ≡ and drag to change the order.</p></div>`;
  }
  if(sub==='cats'){
   const inc=state.groups.filter(g=>g.income),sp=state.groups.filter(g=>!g.income);
   if(ui.catArrange){
-   const rows=state.groups.map(g=>`<div class="st-row cg-arr drow" data-drag="grp" data-id="${g.id}"><span class="cg-ico" style="--gc:${gCol(g)}">${gIni(g)}</span><span class="st-tx"><b>${esc(g.name)}</b><small>${gCats(g).length} ${g.income?'income':'categories'}</small></span><span class="grip" aria-label="Drag to move ${esc(g.name)}" role="button" tabindex="0">${GRIP}</span></div>`).join('');
+   const rows=state.groups.map(g=>`<div class="st-row cg-arr drow" data-drag="grp" data-id="${g.id}"><span class="cg-ico" style="--gc:${gCol(g)}">${giSvg(g.icon&&GI[g.icon]?g.icon:giGuess(g.name,g.income))}</span><span class="st-tx"><b>${esc(g.name)}</b><small>${gCats(g).length} ${g.income?'income':'categories'}</small></span><span class="grip" aria-label="Drag to move ${esc(g.name)}" role="button" tabindex="0">${GRIP}</span></div>`).join('');
    return `<div class="st-page${anim}"><div class="st-head"><button type="button" class="st-back" data-act="catArrange">${ICON.l}<span>Categories</span></button><h2 class="st-title">Reorder groups</h2><p class="st-sub">Hold \u2261 and drag a group up or down. The Budget tab follows this order.</p></div>
    <div class="st-card st-list" id="gsort">${rows}</div><button class="btn" style="width:100%;margin-top:16px" data-act="catArrange">Done</button></div>`;
   }
-  const tile=g=>{const cs=gCats(g),names=cs.slice(0,4).map(c=>esc(c.name)).join(', ')+(cs.length>4?', …':'');
-   if(g.income)return `<button type="button" class="st-card cg-tile inc" style="--gc:${gCol(g)}" data-act="stGo" data-to="cat:${g.id}"><span class="cg-ico">${gIni(g)}</span><span class="cg-mid"><span class="cg-name">${esc(g.name)}</span><span class="cg-names">${names||'No income yet'}</span></span><span class="cg-n">${cs.length}</span><span class="st-chev" aria-hidden="true">${ICON.r}</span></button>`;
-   return `<button type="button" class="st-card cg-tile" style="--gc:${gCol(g)}" data-act="stGo" data-to="cat:${g.id}"><span class="cg-top"><span class="cg-ico">${gIni(g)}</span><span class="cg-n">${cs.length}</span></span><span class="cg-name">${esc(g.name)}</span><span class="cg-names">${names||'No categories yet'}</span></button>`};
-  const nc=state.cats.filter(c=>{const g=grp(c.gid);return g&&!g.income}).length;
-  return `<div class="st-page${anim}">${stHead('Categories',`${sp.length} group${sp.length===1?'':'s'} · ${nc} spending categor${nc===1?'y':'ies'}. Tap a group to open it.`)}
+  const tile=g=>{const cs=gCats(g);
+   if(g.income)return `<button type="button" class="st-card cg-tile inc" style="--gc:${gCol(g)}" data-act="stGo" data-to="cat:${g.id}"><span class="cg-ico">${giSvg(g.icon&&GI[g.icon]?g.icon:giGuess(g.name,true))}</span><span class="cg-mid"><span class="cg-name">${esc(g.name)}</span></span><span class="cg-n">${cs.length}</span><span class="st-chev" aria-hidden="true">${ICON.r}</span></button>`;
+   return `<button type="button" class="st-card cg-tile" style="--gc:${gCol(g)}" data-act="stGo" data-to="cat:${g.id}" aria-label="${esc(g.name)}, ${cs.length}"><span class="cg-top"><span class="cg-ico">${giSvg(g.icon&&GI[g.icon]?g.icon:giGuess(g.name,false))}</span><span class="cg-n">${cs.length}</span></span><span class="cg-name">${esc(g.name)}</span></button>`};
+  return `<div class="st-page${anim}">${stHead('Categories','')}
   ${inc.length?`<div class="cg-grid">${inc.map(tile).join('')}</div><div class="st-label">Spending</div>`:''}
   <div class="cg-grid">${sp.map(tile).join('')}<button type="button" class="cg-new" data-act="addGroup">${SI.plus}<span>New group</span></button></div>
   ${state.groups.length>1?`<button class="st-add" data-act="catArrange">${GRIP}Reorder groups</button>`:''}</div>`;
@@ -2177,14 +2195,53 @@ function catSheet(c,gid){
  {del:isNew?null:'Delete',onDel:()=>{const n=state.txns.filter(t=>t.cat===c.id).length;
   dropCats(new Set([c.id]));state.cats=state.cats.filter(x=>x!==c);for(const o of [state.paid,state.targets])for(const k in o)delete o[k][c.id];save();render()}});
 }
+/* simple icons for category groups; a group without a chosen icon gets one guessed from its name */
+const GI={
+ home:'<path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/>',
+ food:'<path d="M7 3v7M5 3v5a2 2 0 0 0 4 0V3M7 10v11"/><path d="M17 21V3c-2.2 1.4-3 3.6-3 7v4h3"/>',
+ cart:'<circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/><path d="M3 4h2.2l2.3 11h10.8l2-8H6.3"/>',
+ car:'<path d="M4.5 14.5l1.6-4.8A2 2 0 0 1 8 8.3h8a2 2 0 0 1 1.9 1.4l1.6 4.8"/><rect x="3" y="14.5" width="18" height="4.5" rx="1.5"/><path d="M6.5 19v1.5M17.5 19v1.5"/>',
+ play:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.3v5.4l4.6-2.7z"/>',
+ card:'<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/>',
+ wallet:'<path d="M4 7.5h15a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M4 7.5L15.5 4v3.5"/><circle cx="16.3" cy="13.8" r="1.2"/>',
+ people:'<circle cx="9" cy="8" r="3"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.4"/><path d="M15.6 14.6A4.5 4.5 0 0 1 21 19"/>',
+ heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+ coins:'<ellipse cx="12" cy="6.5" rx="7" ry="3"/><path d="M5 6.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/><path d="M5 11.5v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5"/>',
+ bolt:'<path d="M13 3L5.5 13.5H11L10 21l7.5-10.5H12z"/>',
+ phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+ bag:'<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
+ gift:'<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12"/><path d="M12 8C10.5 5 7 4.6 7 6.8 7 8 9 8 12 8s5 0 5-1.2C17 4.6 13.5 5 12 8z"/>',
+ plane:'<path d="M3 12.5l18-7-5.2 14-3.3-5.2z"/><path d="M12.5 14.3L21 5.5"/>',
+ book:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19"/>',
+ shield:'<path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/>',
+ paw:'<circle cx="6.5" cy="10.5" r="1.7"/><circle cx="10" cy="6.8" r="1.7"/><circle cx="14" cy="6.8" r="1.7"/><circle cx="17.5" cy="10.5" r="1.7"/><path d="M8.5 17.2c0-2.6 1.7-4.7 3.5-4.7s3.5 2.1 3.5 4.7c0 1.5-1.1 2.3-2.4 2.3h-2.2c-1.3 0-2.4-.8-2.4-2.3z"/>',
+ ticket:'<path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V14a2 2 0 0 0 0-4z"/><path d="M14.5 6v2M14.5 11v2M14.5 16v2"/>',
+ smile:'<circle cx="12" cy="12" r="8.5"/><path d="M9 10h.01M15 10h.01"/><path d="M8.7 14.3a4.5 4.5 0 0 0 6.6 0"/>',
+ tools:'<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 0 0 5.3-5.3l-2.4 2.4-2.4-.6-.6-2.4z"/>',
+ tag:'<path d="M3.5 12.5V4h8.5l9 9-8.5 8.5z"/><circle cx="8" cy="8.5" r="1.4"/>'
+};
+const GI_GUESS=[[/income|pay|salary|wage|job|disab|benefit/i,'wallet'],[/hous|home|rent|mortgage/i,'home'],[/grocer/i,'cart'],[/food|dining|eat|restaurant|meal/i,'food'],[/car|auto|transport|gas|fuel|vehicle|commute/i,'car'],[/sub|stream|netflix|music|tv/i,'play'],[/debt|loan|credit|card/i,'card'],[/famil|personal|people/i,'people'],[/health|medic|doctor|pharm|dental/i,'heart'],[/sav|invest|emergency|fund/i,'coins'],[/util|electric|power|water/i,'bolt'],[/phone|internet|wifi|cell/i,'phone'],[/shop|cloth/i,'bag'],[/gift|holiday|christmas|birthday/i,'gift'],[/travel|vacation|trip|flight/i,'plane'],[/educat|school|tuition|book|class/i,'book'],[/insur/i,'shield'],[/pet|dog|cat|vet/i,'paw'],[/fun|entertain|hobby|movie|game|ticket/i,'ticket'],[/kid|child|baby|daycare/i,'smile'],[/repair|maint|tool/i,'tools']];
+const giGuess=(name,inc)=>{for(const [r,k] of GI_GUESS)if(r.test(name||''))return k;return inc?'wallet':'tag'};
+const gIcon=g=>GI[g&&g.icon&&GI[g.icon]?g.icon:giGuess(g&&g.name,g&&g.income)];
+const giSvg=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GI[k]||GI.tag}</svg>`;
+const GROUP_IDEAS=[['Housing','home'],['Food','food'],['Transportation','car'],['Utilities','bolt'],['Phone & Internet','phone'],['Subscriptions','play'],['Debt','card'],['Savings','coins'],['Health','heart'],['Insurance','shield'],['Kids','smile'],['Pets','paw'],['Personal','people'],['Shopping','bag'],['Entertainment','ticket'],['Gifts','gift'],['Travel','plane'],['Education','book'],['Home repairs','tools']];
 function groupSheet(g){
  const isNew=!g;g=g||{name:'',income:false};
- sheet(isNew?'Add category group':'Edit group',`<label class="field"><span>Name</span><input name="name" required value="${esc(g.name)}" autocomplete="off"></label>
+ const cur=g.icon&&GI[g.icon]?g.icon:giGuess(g.name,g.income),have=new Set(state.groups.map(x=>x.name.trim().toLowerCase()));
+ const ideas=isNew?GROUP_IDEAS.filter(([n])=>!have.has(n.toLowerCase())):[];
+ sheet(isNew?'New group':'Edit group',`${ideas.length?`<div class="gs-label">Popular groups</div><div class="gs-chips">${ideas.map(([n,k])=>`<button type="button" class="gs-chip" data-gn="${esc(n)}" data-gi="${k}">${giSvg(k)}${esc(n)}</button>`).join('')}</div>`:''}
+ <label class="field"><span>Name</span><input name="name" required value="${esc(g.name)}" autocomplete="off" placeholder="Savings"></label>
+ <div class="gs-label">Icon</div><div class="gi-grid" role="radiogroup" aria-label="Icon">${Object.keys(GI).map(k=>`<label class="gi-opt"><input type="radio" name="icon" value="${k}"${k===cur?' checked':''} aria-label="${k}"><span>${giSvg(k)}</span></label>`).join('')}</div>
  <label class="field"><span>Kind</span><select name="kind"><option value="exp"${g.income?'':' selected'}>Spending</option><option value="inc"${g.income?' selected':''}>Income</option></select></label>
 `,
- fd=>{const n=fd.name.trim();if(!n)return false;if(isNew){g={id:uid()};state.groups.push(g)}g.name=n;g.income=fd.kind==='inc';save();render()},
+ fd=>{const n=fd.name.trim();if(!n){toast('Give the group a name');return false}if(isNew){g={id:uid()};state.groups.push(g)}g.name=n;g.income=fd.kind==='inc';g.icon=fd.icon||giGuess(n,g.income);save();render()},
  {del:isNew?null:'Delete',onDel:()=>{const cs=state.cats.filter(c=>c.gid===g.id);
-  const ids=new Set(cs.map(c=>c.id));dropCats(ids);state.cats=state.cats.filter(c=>!ids.has(c.id));state.groups=state.groups.filter(x=>x!==g);save();render()}});
+  const ids=new Set(cs.map(c=>c.id));dropCats(ids);state.cats=state.cats.filter(c=>!ids.has(c.id));state.groups=state.groups.filter(x=>x!==g);save();render()},
+  onOpen:el=>{let picked=!isNew;const nm=$('[name=name]',el),pick=k=>{const r=$(`[name=icon][value="${k}"]`,el);if(r)r.checked=true};
+   // tapping a suggestion fills the name and icon; typing a name picks a matching icon until one is chosen by hand
+   el.addEventListener('click',e=>{const c=e.target.closest('.gs-chip');if(!c)return;nm.value=c.dataset.gn;pick(c.dataset.gi);picked=false;$$('.gs-chip',el).forEach(x=>x.classList.toggle('on',x===c))});
+   nm.addEventListener('input',()=>{if(!picked)pick(giGuess(nm.value,$('[name=kind]',el).value==='inc'));$$('.gs-chip.on',el).forEach(x=>x.classList.remove('on'))});
+   el.addEventListener('change',e=>{if(e.target.name==='icon')picked=true})}});
 }
 /* drag to reorder categories with the grip handle */
 const GRIP='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 8h14M5 12h14M5 16h14"/></svg>';
