@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xmAwIBmqfmGSW3tSDxQ4AR4WIE8BwdKOD022blxynxk=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-ZPPIJ00an5An00CelxGFsDMhlWxXFWY3c69Gcb6R8xU=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xmAwIBmqfmGSW3tSDxQ4AR4WIE8BwdKOD022blxynxk=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-yNowNHMLWKHGh7TKgC+GuyBilwKTruZ4mqk9ZD9qk7Y=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1297,10 +1297,10 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 .tab[data-tab="settings"].upd::after{content:"";position:absolute;top:7px;right:calc(50% - 18px);width:9px;height:9px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 2px var(--bg);z-index:2}
 /* main budget card: green glass while there's money left, red glass when over (all glass themes) */
 :root[data-glass]:is([data-look="glass"],[data-look="glass-dark"]) .summary:not(.neutral){color:var(--text)!important}
-:root[data-glass][data-look="glass"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(36,190,105,.62),rgba(36,190,105,.32))!important;border-color:transparent!important}
-:root[data-glass][data-look="glass"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.45),transparent 60%),linear-gradient(150deg,rgba(240,60,80,.62),rgba(240,60,80,.34))!important;border-color:transparent!important}
-:root[data-glass][data-look="glass-dark"] #bp .summary:not(.neutral):not(.neg){background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(45,200,120,.34),rgba(45,200,120,.08))!important;border-color:transparent!important}
-:root[data-glass][data-look="glass-dark"] #bp .summary.neg{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.10),transparent 60%),linear-gradient(150deg,rgba(255,70,85,.44),rgba(255,70,85,.12))!important;border-color:transparent!important}
+
+
+
+
 /* main card: no white rim or edge line, just a soft shadow */
 :root[data-glass][data-look="glass"] #bp .summary{box-shadow:0 12px 30px rgba(20,60,120,.16)!important;border-color:transparent!important}
 :root[data-glass][data-look="glass-dark"] #bp .summary{box-shadow:0 14px 34px rgba(0,0,0,.55)!important;border-color:transparent!important}
@@ -1308,6 +1308,13 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 #bp .top{position:absolute!important;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:0!important;box-shadow:none!important}
 #bp .top::before,#bp .top::after{display:none!important}
 [data-modebtn]{display:none!important}
+/* main card: one brighter tint colour (--tc) that blends between months while swiping */
+:root[data-glass][data-look="glass"] #bp .summary{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.42),transparent 60%),linear-gradient(150deg,rgb(var(--tc) / .82),rgb(var(--tc) / .56))!important}
+:root[data-glass][data-look="glass-dark"] #bp .summary{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.12),transparent 60%),linear-gradient(150deg,rgb(var(--tc) / .62),rgb(var(--tc) / .26))!important}
+#bp .summary{--tc:22 201 110}
+.s-win{overflow:hidden;margin:0 -16px}
+.s-track{display:flex;width:300%;margin-left:-100%;will-change:transform}
+.s-pane{flex:none;width:33.3333%;box-sizing:border-box;padding:0 16px}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -1721,12 +1728,18 @@ const pillCls=v=>v>0.004?'pos':v<-0.004?'neg':'zero';
 const budStr=v=>v?(+v).toFixed(2):'';
 
 /* ---------- Budget ---------- */
+/* the main card's contents for one month; the card shows three side by side so a swipe can slide to the next */
+const TINT={ok:[22,201,110],bad:[245,64,92]};
+const monthNeg=ym=>{const T=monthTotals(ym);return r2(T.inc-T.out)<0};
+function sumPane(ym){const T=monthTotals(ym),left=r2(T.inc-T.out);
+ return `<div class="s-pane" aria-hidden="${ym===ui.month?'false':'true'}"><div class="s-month">${monthLabel(ym)}</div><div class="s-lbl">${left<0?'Over by':'Left this month'}</div><div class="s-big">${m(Math.abs(left))}</div>
+ <div class="s-grid s3"><div><span>Income</span><b>${m(T.inc)}</b></div><div><span>Assigned</span><b>${m(T.out)}</b></div><div><span>Targets</span><b>${m(T.outT)}</b></div></div>
+ <div class="s-foot"><span>${T.inc-T.outT<0?'Short after targets':'Extra money'}</span><span>${m(Math.abs(T.inc-T.outT))}</span></div></div>`}
 function vBudget(){
  const ym=ui.month,T=monthTotals(ym),st=T.st,left=r2(T.inc-T.out);
  let h='';
- h+=`<div class="mclip"><div class="summary mswipe ${left<0?'neg':''}"><div class="s-month">${monthLabel(ym)}</div><div class="s-lbl">${left<0?'Over by':'Left this month'}</div><div class="s-big">${m(Math.abs(left))}</div>
- <div class="s-grid s3"><div><span>Income</span><b>${m(T.inc)}</b></div><div><span>Assigned</span><b>${m(T.out)}</b></div><div><span>Targets</span><b>${m(T.outT)}</b></div></div>
- <div class="s-foot"><span>${T.inc-T.outT<0?'Short after targets':'Extra money'}</span><span>${m(Math.abs(T.inc-T.outT))}</span></div><div class="swipe-hint">‹ Swipe for other months ›</div></div></div>`;
+ const neg=left<0;
+ h+=`<div class="mclip"><div class="summary mswipe ${neg?'neg':''}" style="--tc:${neg?TINT.bad.join(' '):TINT.ok.join(' ')}"><div class="s-win"><div class="s-track">${sumPane(addMonth(ym,-1))}${sumPane(ym)}${sumPane(addMonth(ym,1))}</div></div><div class="swipe-hint">‹ Swipe for other months ›</div></div></div>`;
  if(st.uncatN)h+=`<div class="warn"><div><b>${st.uncatN} uncategorized</b> this month${st.uncatOut?` · ${m(st.uncatOut)} out`:''}${st.uncatIn?` · ${m(st.uncatIn)} in`:''}</div><button class="btn sm" data-act="reviewUncat">Review</button></div>`;
  const IM=incomeMonth(ym);let edb=0;
  for(const g of state.groups){
@@ -2151,19 +2164,29 @@ document.addEventListener('pointermove',e=>{if(!sw||e.pointerId!==sw.id)return;c
 function swEnd(){if(!sw)return;if(sw.mode==='h'){sw.fg.style.transition='';const open=sw.pos<-44;sw.w.classList.toggle('open',open);sw.fg.style.transform=open?'translateX(-88px)':'';if(open)sw.w.classList.remove('swiping');else swHide(sw.w);swNoClick=true;setTimeout(()=>swNoClick=false,80)}sw=null}
 document.addEventListener('pointerup',swEnd);document.addEventListener('pointercancel',swEnd);
 
-/* swipe the top card left/right to change month */
+/* swipe the top card left/right to change month: the card stays put, the months slide inside it and its colour blends */
 let ms=null;
-document.addEventListener('pointerdown',e=>{const c=e.target.closest('.summary.mswipe');if(!c||e.target.closest('input,button')||(e.pointerType==='mouse'&&e.button))return;ms={c,x:e.clientX,y:e.clientY,id:e.pointerId,mode:null,dx:0}});
+// blend around the colour wheel (green to amber to red) so the card stays bright mid-swipe instead of turning grey
+const msHsl=([r,g,b])=>{r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;let h=0,s=0;if(d){s=d/(1-Math.abs(2*l-1));h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}return[h,s,l]};
+const msRgb=([h,s,l])=>{const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m0=l-c/2;const [r,g,b]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];return[r,g,b].map(v=>Math.round((v+m0)*255))};
+const msMix=(a,b,t)=>{if(t<=0)return a.slice();if(t>=1)return b.slice();const A=msHsl(a),B=msHsl(b);let dh=B[0]-A[0];if(dh>180)dh-=360;if(dh<-180)dh+=360;return msRgb([(A[0]+dh*t+360)%360,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t])};
+const msCol=ym=>monthNeg(ym)?TINT.bad:TINT.ok;
+function msTint(c,from,to,t){c.style.setProperty('--tc',msMix(from,to,Math.max(0,Math.min(1,t))).join(' '))}
+document.addEventListener('pointerdown',e=>{const c=e.target.closest('.summary.mswipe');if(!c||e.target.closest('input,button')||(e.pointerType==='mouse'&&e.button))return;
+ if(c._busy)return;ms={c,t:$('.s-track',c),x:e.clientX,y:e.clientY,id:e.pointerId,mode:null,dx:0}});
 document.addEventListener('pointermove',e=>{if(!ms||e.pointerId!==ms.id)return;const dx=e.clientX-ms.x,dy=e.clientY-ms.y;
- if(!ms.mode){if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.2){ms.mode='h';ms.c.style.transition='none';try{ms.c.setPointerCapture(e.pointerId)}catch(_){}}else if(Math.abs(dy)>8){ms=null;return}else return}
- e.preventDefault();ms.dx=dx;ms.c.style.transform=`translateX(${dx}px)`;ms.c.style.opacity=String(Math.max(.35,1-Math.abs(dx)/320))},{passive:false});
-function msEnd(){if(!ms)return;const {c,dx,mode}=ms;ms=null;if(mode!=='h')return;swNoClick=true;setTimeout(()=>swNoClick=false,80);
- const rm=matchMedia('(prefers-reduced-motion: reduce)').matches,W=c.offsetWidth;
- if(Math.abs(dx)<70){c.style.transition=rm?'none':'transform .2s ease,opacity .2s ease';c.style.transform='';c.style.opacity='';return}
- const dir=dx<0?1:-1;c.style.transition=rm?'none':'transform .16s ease-in,opacity .16s ease-in';c.style.transform=`translateX(${-dir*W}px)`;c.style.opacity='0';
- setTimeout(()=>{ui.month=addMonth(ui.month,dir);render();const n=$('.summary.mswipe');if(!n||rm)return;
-  n.style.transition='none';n.style.transform=`translateX(${dir*W*0.6}px)`;n.style.opacity='0';n.offsetHeight;
-  n.style.transition='transform .22s ease-out,opacity .22s ease-out';n.style.transform='';n.style.opacity=''},rm?0:160)}
+ if(!ms.mode){if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)*1.2){ms.mode='h';ms.t.style.transition='none';ms.from=msCol(ui.month);try{ms.c.setPointerCapture(e.pointerId)}catch(_){}}else if(Math.abs(dy)>8){ms=null;return}else return}
+ e.preventDefault();ms.dx=dx;ms.t.style.transform=`translateX(${dx}px)`;
+ msTint(ms.c,ms.from,msCol(addMonth(ui.month,dx<0?1:-1)),Math.abs(dx)/ms.c.offsetWidth)},{passive:false});
+function msEnd(){if(!ms)return;const {c,t,dx,mode,from}=ms;ms=null;if(mode!=='h')return;swNoClick=true;setTimeout(()=>swNoClick=false,80);
+ const rm=matchMedia('(prefers-reduced-motion: reduce)').matches,W=c.offsetWidth,dir=dx<0?1:-1,commit=Math.abs(dx)>W*0.22;
+ const to=commit?msCol(addMonth(ui.month,dir)):from,end=commit?-dir*W:0,start=dx,dur=rm?0:(commit?260:200),t0=performance.now();
+ const tintFrom=msMix(from,msCol(addMonth(ui.month,dir)),Math.min(1,Math.abs(dx)/W));
+ c._busy=true;t.style.transition=rm?'none':`transform ${dur}ms cubic-bezier(.2,.7,.3,1)`;t.style.transform=`translateX(${end}px)`;
+ const step=now=>{const k=dur?Math.min(1,(now-t0)/dur):1,e=1-Math.pow(1-k,3);msTint(c,tintFrom,to,e);
+  if(k<1){requestAnimationFrame(step);return}
+  c._busy=false;if(commit){ui.month=addMonth(ui.month,dir);render()}else{t.style.transition='';t.style.transform=''}};
+ requestAnimationFrame(step)}
 document.addEventListener('pointerup',msEnd);document.addEventListener('pointercancel',msEnd);
 
 /* ---------- files ---------- */
