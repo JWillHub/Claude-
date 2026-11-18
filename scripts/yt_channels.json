@@ -24,12 +24,7 @@
       "channels": [
         "@FilmRiseMovies",
         "@Popcornflix",
-        "@MovieCentral",
-        {
-          "handle": "@WarnerBrosEntertainment",
-          "playlist": "full movies|free movies|full length",
-          "show_playlists": true
-        }
+        "@MovieCentral"
       ]
     },
     {
