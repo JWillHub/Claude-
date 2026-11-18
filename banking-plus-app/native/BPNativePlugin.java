@@ -132,27 +132,38 @@ public class BPNativePlugin extends Plugin {
                     File apk = new File(dir, "banking-plus.apk");
                     c = open(REL + "banking-plus.apk?t=" + System.currentTimeMillis());
                     long total = c.getContentLengthLong(), got = 0;
-                    int last = -2;
+                    int last = -2, lastMb = -1;
                     try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(apk)) {
                         byte[] buf = new byte[65536]; int k;
                         while ((k = in.read(buf)) > 0) {
                             out.write(buf, 0, k); got += k;
                             int pct = total > 0 ? (int) (got * 100 / total) : -1;
-                            if (pct != last) { last = pct; a.tellPage("window.BPUpdate&&BPUpdate.progress(" + pct + ")"); }
+                            int mbx = (int) (got / 262144); if (pct != last || (pct < 0 && mbx != lastMb)) { last = pct; lastMb = mbx; a.tellPage("window.BPUpdate&&BPUpdate.progress(" + pct + "," + (got / 1048576.0) + ")"); }
                         }
                     }
                     if (total > 0 && got < total) throw new IOException("the download was cut off");
                     Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".files", apk);
                     Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setDataAndType(uri, "application/vnd.android.package-archive");
-                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    a.runOnUiThread(() -> { try { a.startActivity(i); } catch (Exception ignored) {} });
+                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(i);
                     a.tellPage("window.BPUpdate&&BPUpdate.started()");
                 } catch (Exception e) {
                     String msg = (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()).replaceAll("[^A-Za-z0-9 .,:-]", " ");
                     a.tellPage("window.BPUpdate&&BPUpdate.failed('" + msg + "')");
                 } finally { if (c != null) c.disconnect(); }
             }).start();
+        }
+
+        // backup route for updates: open the download in the phone's browser
+        @JavascriptInterface
+        public void openUrl(String url) {
+            if (url == null || !url.startsWith("https://")) return;
+            try {
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getContext().startActivity(i);
+            } catch (Exception ignored) {}
         }
 
         // GitHub sends release files from another address, so follow its redirects
@@ -164,6 +175,7 @@ public class BPNativePlugin extends Plugin {
                 c.setConnectTimeout(15000);
                 c.setReadTimeout(30000);
                 c.setRequestProperty("User-Agent", "BankingPlus-Android");
+                c.setRequestProperty("Accept", "application/octet-stream");
                 int code = c.getResponseCode();
                 if (code >= 300 && code < 400) { u = new URL(u, c.getHeaderField("Location")); c.disconnect(); continue; }
                 if (code != 200) { c.disconnect(); throw new IOException("GitHub answered " + code); }

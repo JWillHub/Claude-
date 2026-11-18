@@ -38,7 +38,7 @@ MANIFEST=android/app/src/main/AndroidManifest.xml
 python3 - "$MANIFEST" <<'PY'
 import re, sys
 p = sys.argv[1]; s = open(p).read()
-prov = ('        <provider android:name="androidx.core.content.FileProvider"\n'
+prov = ('        <provider android:name="io.github.jwillhub.bankingplus.BPFileProvider"\n'
         '            android:authorities="io.github.jwillhub.bankingplus.files"\n'
         '            android:exported="false" android:grantUriPermissions="true">\n'
         '            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/bp_files" />\n'

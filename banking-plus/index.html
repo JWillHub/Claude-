@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-yeHdkcyzdNC57LmcK2Cj5eXQkALcHhL/OdT5vIL0UXU=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-5W6BWgvXdr97OR9v0+1c0YyCFobc2o9yOQh9cGURvrw=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -2021,16 +2021,21 @@ window.BPUpdate={latest:0,busy:'',pct:-1,fail:false,
  newer(){return this.latest>this.cur()},
  show(){const t=document.querySelector('.tab[data-tab="settings"]');if(t)t.classList.toggle('upd',this.newer());if(ui.tab==='settings'&&!ui.sub&&state)render()},
  checked(n){const asked=this.busy==='checking';this.busy='';if(n>0){this.latest=n;this.fail=false}else this.fail=true;this.show();if(asked&&!this.newer())toast(this.fail?'Couldn’t reach GitHub. Try again later.':'Banking+ is up to date')},
- progress(p){this.pct=p;const el=document.querySelector('[data-act="appUpdate"] .st-tx b');if(el)el.textContent=p>=0?`Downloading… ${p}%`:'Downloading…'},
- needsPermission(){this.busy='';this.show();toast('Turn on “Allow from this source”, come back, then tap Update again')},
- started(){this.busy='';this.show()},
- failed(m){this.busy='';this.show();toast('Update failed: '+m)}};
+ url:'https://github.com/JWillHub/Claude-/releases/download/banking-plus-latest/banking-plus.apk',
+ dlText(){return this.pct>=0?`Downloading\u2026 ${this.pct}%`:this.mb?`Downloading\u2026 ${this.mb.toFixed(1)} MB`:'Downloading\u2026'},
+ progress(p,mb){this.pct=p;this.mb=mb||0;this.tick=Date.now();const el=document.querySelector('[data-act="appUpdate"] .st-tx b');if(el)el.textContent=this.dlText()},
+ begin(){this.busy='downloading';this.pct=-1;this.mb=0;this.dlFail=false;this.tick=Date.now();clearInterval(this.dog);
+  // if nothing arrives for 25 seconds, stop waiting and offer the browser download
+  this.dog=setInterval(()=>{if(this.busy!=='downloading'){clearInterval(this.dog);return}if(Date.now()-this.tick>25000){clearInterval(this.dog);this.failed('the download stalled')}},2000)},
+ needsPermission(){this.busy='';clearInterval(this.dog);this.show();toast('Turn on \u201cAllow from this source\u201d, come back, then tap Update again')},
+ started(){this.busy='';clearInterval(this.dog);this.show()},
+ failed(m){this.busy='';this.dlFail=true;clearInterval(this.dog);this.show();toast('Update didn\u2019t download ('+m+'). Try again, or use Download in browser.')}};
 function stUpdRow(){
  const U=BPUpdate,cur=U.cur(),nw=U.newer(),dl=U.busy==='downloading';
- const title=dl?(U.pct>=0?`Downloading… ${U.pct}%`:'Downloading…'):nw?`Update to version ${U.latest}`:'App updates';
- const sub=U.busy==='checking'?'Checking…':nw?`You have version ${cur}`:U.fail?`Version ${cur} · couldn’t check`:U.latest?`Version ${cur} · up to date`:`Version ${cur}`;
- const btn=`<span class="st-act${nw?' hot':''}">${U.busy?'…':nw?'Update':'Check'}</span>`;
- return stRow('save',nw?'#1FA36A':'#5B6BD6',title,sub,'data-act="appUpdate"',btn);
+ const title=dl?U.dlText():nw?`Update to version ${U.latest}`:'App updates';
+ const sub=U.busy==='checking'?'Checking\u2026':nw&&U.dlFail?`Download didn\u2019t finish \u00b7 you have version ${cur}`:nw?`You have version ${cur}`:U.fail?`Version ${cur} · couldn’t check`:U.latest?`Version ${cur} · up to date`:`Version ${cur}`;
+ const btn=`<span class="st-act${nw?' hot':''}">${U.busy?'\u2026':nw?(U.dlFail?'Retry':'Update'):'Check'}</span>`;
+ return stRow('save',nw?'#1FA36A':'#5B6BD6',title,sub,'data-act="appUpdate"',btn)+(nw?stRow('open','#5B6BD6','Download in browser','Then open the file to install it','data-act="appUpdateBrowser"',''):'');
 }
 const stIco=(k,c)=>`<span class="st-ico" style="--ic:${c}" aria-hidden="true">${SI[k]}</span>`;
 const stChev=()=>`<span class="st-chev" aria-hidden="true">${ICON.r}</span>`;
@@ -2278,7 +2283,8 @@ const act={
  editCat(b){catSheet(cat(b.dataset.id))},addCat(b){catSheet(null,b.dataset.id)},
  toggleCard(b){toggleCard(b.closest('.fold'))},
  stGo(b){ui.sub=b.dataset.to;ui.stAnim=true;render();scrollTo(0,0)},
- appUpdate(){const U=BPUpdate;if(U.busy||!window.BPNative)return;if(U.newer()){U.busy='downloading';U.pct=-1;render();BPNative.installUpdate()}else{U.busy='checking';render();BPNative.checkUpdate()}},
+ appUpdate(){const U=BPUpdate;if(U.busy||!window.BPNative)return;if(U.newer()){U.begin();render();BPNative.installUpdate()}else{U.busy='checking';render();BPNative.checkUpdate()}},
+ appUpdateBrowser(){if(window.BPNative&&BPNative.openUrl)BPNative.openUrl(BPUpdate.url)},
  stBack(){ui.sub=null;ui.stAnim=true;render();scrollTo(0,0)},
  editGroup(b){groupSheet(grp(b.dataset.id))},addGroup(){groupSheet(null)},
  async backup(){if(await saveFile(`banking-plus-backup-${today()}.json`,backupText(),'application/json')!==false)markBackup()},
