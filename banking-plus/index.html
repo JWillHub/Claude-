@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DA4KYdmrLmSF+F+8BhCX2PmqM3j7sDmBiEZyx/4dj4M=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Yn7uXCzr+CRbW6vKG8DjryLiR5GroSujH4FepnjdySg=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xmAwIBmqfmGSW3tSDxQ4AR4WIE8BwdKOD022blxynxk=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-ZPPIJ00an5An00CelxGFsDMhlWxXFWY3c69Gcb6R8xU=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1304,6 +1304,10 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 /* main card: no white rim or edge line, just a soft shadow */
 :root[data-glass][data-look="glass"] #bp .summary{box-shadow:0 12px 30px rgba(20,60,120,.16)!important;border-color:transparent!important}
 :root[data-glass][data-look="glass-dark"] #bp .summary{box-shadow:0 14px 34px rgba(0,0,0,.55)!important;border-color:transparent!important}
+/* top bar: no bar, just the logo and name, scrolling away with the page */
+#bp .top{position:absolute!important;background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-bottom:0!important;box-shadow:none!important}
+#bp .top::before,#bp .top::after{display:none!important}
+[data-modebtn]{display:none!important}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -1315,7 +1319,7 @@ function apply(){d.setAttribute('data-look',M[set][mode==='navy'?'dark':mode]);d
  document.querySelectorAll('[data-modebtn]').forEach(function(b){b.setAttribute('aria-label',mode==='light'?'Switch to dark mode':'Switch to light mode')})}
 function store(){try{localStorage.setItem('bp-set',set);localStorage.setItem('bp-mode2',mode);if(mode!=='light')localStorage.setItem('bp-darkKind',mode)}catch(_){}}
 apply();
-function wire(){var top=document.querySelector('#bp .top');if(top&&!top.querySelector('[data-modebtn]'))top.insertAdjacentHTML('beforeend','<button class="themebtn modebtn" type="button" data-modebtn aria-label="Switch to dark mode"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>'+'');
+function wire(){var top=null;if(top&&!top.querySelector('[data-modebtn]'))top.insertAdjacentHTML('beforeend','<button class="themebtn modebtn" type="button" data-modebtn aria-label="Switch to dark mode"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>'+'');
  var ov=document.getElementById('lookOv');apply();
  document.addEventListener('click',function(e){
   if(e.target.closest('[data-lookbtn]')){e.stopPropagation();ov.classList.add('open');return}
@@ -1334,7 +1338,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       <span class="bp-mark"><svg class="bpm" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="bpmB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A92F0"/><stop offset="1" stop-color="#0B2E6E"/></linearGradient></defs><rect width="512" height="512" rx="118" fill="url(#bpmB)"/><rect x="128" y="132" width="268" height="176" rx="30" fill="#fff" opacity=".42" transform="rotate(-10 262 220)"/><rect x="104" y="196" width="304" height="196" rx="34" fill="#fff"/><rect x="104" y="246" width="304" height="34" fill="#1C5FC4" opacity=".14"/><path d="M336 300v56M308 328h56" stroke="#1C5FC4" stroke-width="22" stroke-linecap="round"/><rect x="140" y="318" width="96" height="20" rx="10" fill="#1C5FC4" opacity=".35"/></svg></span>
       <h1 id="homeTitle">Planner</h1>
     </div>
-    <div class="hdr-right"><button class="themebtn modebtn" type="button" data-modebtn aria-label="Switch to dark mode"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button></div>
+    <div class="hdr-right"></div>
   </header>
 
   <!-- HOME -->
@@ -1938,11 +1942,7 @@ function vPayoff(){
 /* ---------- Charts ---------- */
 function vCharts(){
  const ym=ui.month,T=monthTotals(ym);
- const items=state.cats.filter(c=>{const g=grp(c.gid);return g&&!g.income}).map(c=>({n:c.name,v:T.per[c.id].amt,b:T.per[c.id].tgt})).filter(x=>x.v>0.004);
- if(T.st.uncatOut>0)items.push({n:'Uncategorized',v:T.st.uncatOut,b:0,u:1});
- items.sort((a,b)=>b.v-a.v);const max=Math.max(1,...items.map(x=>x.v));
  let h=monthBar();
- h+=block('Spending by category',m(T.spent),items.length?items.map(x=>`<div class="row hbar"><div class="lab"><span>${esc(x.n)}</span><span>${m(x.v)}${x.b?` <span class="muted small">of ${m(x.b)}</span>`:''}</span></div><div class="track"><i class="${x.u?'amb':x.b&&x.v>x.b?'over':''}" style="width:${x.v/max*100}%"></i></div></div>`).join(''):'<div class="empty">No spending this month.</div>');
  const months=[];for(let k=5;k>=0;k--)months.push(addMonth(ym,-k));
  const data=months.map(x=>{const t=monthTotals(x);return {ym:x,sp:t.spent,inc:t.inc}});
  const mx=Math.max(1,...data.map(d=>Math.max(d.sp,d.inc)));
