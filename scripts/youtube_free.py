@@ -50,7 +50,13 @@ def playlist_ids(pl, pages):
 
 def channel_videos(src, lo, hi):
     if isinstance(src, str): src = {'handle': src}
-    ch = api('channels', part='snippet,contentDetails,statistics', forHandle=src['handle']).get('items', [])
+    if src.get('search'):        # find the channel by name when its handle isn't known
+        hits = api('search', part='snippet', q=src['search'], type='channel', maxResults=10).get('items', [])
+        hits = [h for h in hits if h['snippet']['title'].strip().lower() == src['expect'].lower()]
+        if hits: src['id'] = hits[0]['snippet']['channelId']
+        src.setdefault('handle', src['search'])
+    if src.get('id'): ch = api('channels', part='snippet,contentDetails,statistics', id=src['id']).get('items', [])
+    else: ch = api('channels', part='snippet,contentDetails,statistics', forHandle=src['handle']).get('items', [])
     if not ch: print(f'  {src["handle"]}: not found'); return []
     ch = ch[0]
     name = ch['snippet']['title']
@@ -59,11 +65,12 @@ def channel_videos(src, lo, hi):
     if src.get('playlist'):      # only the channel's playlists whose name matches, e.g. Warner Bros' "Full Movies"
         tok = None
         while True:
-            p = dict(part='snippet', channelId=ch['id'], maxResults=50)
+            p = dict(part='snippet,contentDetails', channelId=ch['id'], maxResults=50)
             if tok: p['pageToken'] = tok
             d = api('playlists', **p)
             for it in d.get('items', []):
-                if src['playlist'].lower() in it['snippet']['title'].lower():
+                if src.get('show_playlists'): print('    (playlist)', it['snippet']['title'], it['contentDetails']['itemCount'] if 'contentDetails' in it else '')
+                if re.search(src['playlist'], it['snippet']['title'], re.I) and not re.search('preview|trailer|clip', it['snippet']['title'], re.I):
                     pls.append(it['id']); print('    playlist:', it['snippet']['title'])
             tok = d.get('nextPageToken')
             if not tok: break
