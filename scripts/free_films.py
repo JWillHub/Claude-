@@ -130,6 +130,43 @@ def best_file(ident):
     if int(f.get('size') or 0) < 5_000_000: return None      # too small to be the real thing
     return 'https://archive.org/download/%s/%s' % (urllib.parse.quote(ident), urllib.parse.quote(f['name']))
 
+# ---------- what counts as free ----------
+# US copyright: everything released in 1930 or earlier is public domain (as of 2026).
+# Later films only when they're well known to be public domain (copyright never renewed or never filed),
+# or released by their makers under a free license (Blender's open movies). Everything else the Archive has
+# under "feature films" is left out, because that collection also holds plenty of uploads that aren't free.
+PD_YEAR = int(time.strftime('%Y')) - 96
+ALLOW = [
+    # features
+    ('Night of the Living Dead', 1968), ('His Girl Friday', 1940), ('Charade', 1963), ('Detour', 1945), ('D.O.A.', 1949),
+    ('The Little Shop of Horrors', 1960), ('Carnival of Souls', 1962), ('Plan 9 from Outer Space', 1957), ('McLintock!', 1963),
+    ('The Stranger', 1946), ('Scarlet Street', 1945), ('Kansas City Confidential', 1952), ('The Hitch-Hiker', 1953),
+    ('Meet John Doe', 1941), ('The Man with the Golden Arm', 1955), ('Royal Wedding', 1951), ("Father's Little Dividend", 1950),
+    ('Penny Serenade', 1941), ('The Last Man on Earth', 1964), ('House on Haunted Hill', 1959), ("The Brain That Wouldn't Die", 1962),
+    ('Dementia 13', 1963), ('Santa Claus Conquers the Martians', 1964), ('Angel and the Badman', 1947), ('Topper Returns', 1941),
+    ('Beat the Devil', 1953), ('Suddenly', 1954), ('The Terror', 1963), ('A Bucket of Blood', 1959), ('Reefer Madness', 1936),
+    ('Jungle Book', 1942), ('Rain', 1932), ('Love Affair', 1939), ('Of Human Bondage', 1934), ('The Inspector General', 1949),
+    ('Africa Screams', 1949), ('Gulliver\'s Travels', 1939), ('The Kid', 1921), ('Teenagers from Outer Space', 1959),
+    ('The Amazing Transparent Man', 1960), ('Indestructible Man', 1956), ('The Snow Creature', 1954), ('Bride of the Monster', 1955),
+    ('Life with Father', 1947),
+    # cartoons
+    ('Superman', 1941), ('The Mechanical Monsters', 1941), ('Billion Dollar Limited', 1942), ('The Arctic Giant', 1942),
+    ('The Bulleteers', 1942), ('The Magnetic Telescope', 1942), ('Electric Earthquake', 1942), ('Volcano', 1942),
+    ('Terror on the Midway', 1942), ('Showdown', 1942), ('Destruction, Inc.', 1942), ('The Mummy Strikes', 1943),
+    ('The Underground World', 1943), ('Secret Agent', 1943),
+    ('Popeye the Sailor Meets Sindbad the Sailor', 1936), ("Popeye the Sailor Meets Ali Baba's Forty Thieves", 1937),
+    ('Aladdin and His Wonderful Lamp', 1939),
+    # Blender Foundation open movies (Creative Commons)
+    ('Big Buck Bunny', 2008), ('Elephants Dream', 2006), ('Sintel', 2010), ('Tears of Steel', 2012), ('Cosmos Laundromat', 2015),
+    ('Caminandes: Llama Drama', 2013), ('Caminandes 2: Gran Dillama', 2013), ('Caminandes 3: Llamigos', 2016),
+    ('Agent 327: Operation Barbershop', 2017), ('Spring', 2019), ('Sprite Fright', 2021), ('Charge', 2022), ('Wing It!', 2023),
+]
+ALLOWED = {(norm(t), y) for t, y in ALLOW if y}
+def is_free(m, archive_title):
+    tt, yr = m[0], m[1]
+    if yr <= PD_YEAR: return True
+    return any((v, yr) in ALLOWED for v in variants(archive_title))
+
 def main():
     idx = load_imdb()
     sources = [
@@ -144,7 +181,7 @@ def main():
         for it in items:
             if SKIP_WORDS.search(as_text(it.get('title'))) or SKIP_WORDS.search(as_text(it.get('subject'))): continue
             m = match(it, idx, kind)
-            if not m: continue
+            if not m or not is_free(m, as_text(it.get('title'))): continue
             hit += 1
             tt = m[0]
             b = best.setdefault(tt, [m[3], kind, []])
