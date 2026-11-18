@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xmAwIBmqfmGSW3tSDxQ4AR4WIE8BwdKOD022blxynxk=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-yNowNHMLWKHGh7TKgC+GuyBilwKTruZ4mqk9ZD9qk7Y=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-yeHdkcyzdNC57LmcK2Cj5eXQkALcHhL/OdT5vIL0UXU=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9isSjAdYUJc/TL04AiCfJIK4OSPwkr8nV6a66a8qrms=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1315,6 +1315,30 @@ body[data-view=bills] #pl .bp-mark,body[data-view=todo] #pl .bp-mark{display:non
 .s-win{overflow:hidden;margin:0 -16px}
 .s-track{display:flex;width:300%;margin-left:-100%;will-change:transform}
 .s-pane{flex:none;width:33.3333%;box-sizing:border-box;padding:0 16px}
+/* Settings > Appearance: three preview tiles */
+.st-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+.st-theme{display:flex;flex-direction:column;align-items:center;gap:10px;padding:0;border:0;background:none;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.st-prev{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
+.st-theme:active .st-prev{transform:scale(.97)}
+.st-theme.on .st-prev{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.18)}
+.pv-light{background:linear-gradient(160deg,#EEF6FF,#BFDDFB)}
+.pv-dark{background:linear-gradient(160deg,#1C1C1E,#000)}
+.pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.45),transparent 70%),linear-gradient(160deg,#0E2550,#071430)}
+.pv-logo{position:absolute;top:10%;left:50%;width:22%;height:6%;margin-left:-11%;border-radius:4px;background:linear-gradient(135deg,#3A92F0,#0B2E6E)}
+.pv-card{position:absolute;top:22%;left:9%;right:9%;height:30%;border-radius:8px;background:linear-gradient(150deg,rgba(22,201,110,.85),rgba(22,201,110,.55))}
+.pv-dark .pv-card,.pv-navy .pv-card{background:linear-gradient(150deg,rgba(22,201,110,.7),rgba(22,201,110,.3))}
+.pv-card i,.pv-card b{position:absolute;left:10%;height:12%;border-radius:3px;background:rgba(7,28,48,.55)}
+.pv-card i{top:18%;width:35%}.pv-card b{top:42%;width:60%;height:20%}
+.pv-dark .pv-card i,.pv-dark .pv-card b,.pv-navy .pv-card i,.pv-navy .pv-card b{background:rgba(255,255,255,.85)}
+.pv-line{position:absolute;top:58%;left:9%;right:9%;height:9%;border-radius:5px;background:rgba(255,255,255,.7)}
+.pv-line.s{top:70%;right:30%}
+.pv-dark .pv-line{background:rgba(255,255,255,.12)}.pv-navy .pv-line{background:rgba(160,200,255,.16)}
+.pv-tabs{position:absolute;bottom:6%;left:14%;right:14%;height:8%;border-radius:999px;background:rgba(255,255,255,.75)}
+.pv-dark .pv-tabs{background:rgba(255,255,255,.14)}.pv-navy .pv-tabs{background:rgba(160,200,255,.18)}
+.st-tname{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:600}
+.st-radio{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--muted);display:grid;place-items:center;transition:box-shadow .18s}
+.st-theme.on .st-radio{box-shadow:inset 0 0 0 6px var(--accent)}
+.st-theme:focus-visible{outline:none}.st-theme:focus-visible .st-prev{box-shadow:0 0 0 3px var(--accent)}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -1322,7 +1346,7 @@ try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
  else{var old=localStorage.getItem('bp-look');for(var k in M)for(var x in M[k])if(M[k][x]===old){set=k;mode=x}}}catch(e){}
 function apply(){d.setAttribute('data-look',M[set][mode==='navy'?'dark':mode]);d.setAttribute('data-mode',mode==='light'?'light':'dark');if(mode==='navy')d.setAttribute('data-tint','navy');else d.removeAttribute('data-tint');try{if(window.BPNative)BPNative.setBars(mode==='light')}catch(_){}
  document.querySelectorAll('[data-set-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.setPick===set)});
- document.querySelectorAll('[data-mode-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.modePick===mode)});
+ document.querySelectorAll('[data-mode-pick]').forEach(function(b){b.classList.toggle('on',b.dataset.modePick===mode);if(b.hasAttribute('aria-checked'))b.setAttribute('aria-checked',String(b.dataset.modePick===mode))});
  document.querySelectorAll('[data-modebtn]').forEach(function(b){b.setAttribute('aria-label',mode==='light'?'Switch to dark mode':'Switch to light mode')})}
 function store(){try{localStorage.setItem('bp-set',set);localStorage.setItem('bp-mode2',mode);if(mode!=='light')localStorage.setItem('bp-darkKind',mode)}catch(_){}}
 apply();
@@ -2066,8 +2090,7 @@ function vSettings(){
   ${stRow('cats','#7C5CE0','Categories',`${spend} group${spend===1?'':'s'} · ${nc} categor${nc===1?'y':'ies'}`,'data-act="stGo" data-to="cats"',`<span class="st-pill">${nc}</span>${stChev()}`)}
  </div>
  <div class="st-label">Appearance</div>
- <div class="st-card st-list"><div class="st-row" style="cursor:default">${stIco('look','#5B6BD6')}<span class="st-tx"><b>Theme</b></span>
-  <span class="st-seg" role="group" aria-label="Theme"><button type="button" data-mode-pick="light" class="${mode==='light'?'on':''}">${SI.sun}Light</button><button type="button" data-mode-pick="dark" class="${mode==='dark'?'on':''}">${SI.moon}Dark</button><button type="button" data-mode-pick="navy" class="${mode==='navy'?'on':''}"><i class="st-navydot"></i>Navy</button></span></div></div>
+ <div class="st-card st-themes" role="radiogroup" aria-label="Theme">${[['light','Light'],['dark','Dark'],['navy','Navy']].map(([k,n])=>`<button type="button" class="st-theme ${mode===k?'on':''}" data-mode-pick="${k}" role="radio" aria-checked="${mode===k}"><span class="st-prev pv-${k}" aria-hidden="true"><span class="pv-logo"></span><span class="pv-card"><i></i><b></b></span><span class="pv-line"></span><span class="pv-line s"></span><span class="pv-tabs"></span></span><span class="st-tname"><span class="st-radio" aria-hidden="true"></span>${n}</span></button>`).join('')}</div>
  <div class="st-label">Your data</div>
  <div class="st-card st-list">${stRow('data','#1FA36A','Backup & data','Restore, export, erase','data-act="stGo" data-to="data"')}</div>
  ${window.BPNative&&BPNative.checkUpdate?`<div class="st-label">App</div><div class="st-card st-list">${stUpdRow()}</div>`:''}
