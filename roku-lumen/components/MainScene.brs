@@ -33,6 +33,7 @@ sub init()
     m.searching = ""
     m.lastSave = 0
     m.dirty = false
+    m.caps = deviceCaps()
 
     if m.rd = ""
         showSetup()
@@ -295,6 +296,45 @@ sub doSearch(q as String)
     buildRows(q)
 end sub
 
+' ---------- what this TV can play ----------
+' Asked once at start (instant). Files the TV can't handle go straight to Real-Debrid's converted stream.
+function deviceCaps() as Object
+    di = CreateObject("roDeviceInfo")
+    mode = di.GetVideoMode()
+    return {
+        dts: canAudio(di, "dts"),
+        truehd: canAudio(di, "truehd"),
+        hevc: canVideo(di, { Codec: "hevc" }),
+        hevc10: canVideo(di, { Codec: "hevc", Profile: "main10" }),
+        av1: canVideo(di, { Codec: "av1" }),
+        uhd: Instr(1, mode, "2160") > 0
+    }
+end function
+
+function canAudio(di as Object, codec as String) as Boolean
+    r = di.CanDecodeAudio({ Codec: codec })
+    return r <> invalid and r.result = true
+end function
+
+function canVideo(di as Object, spec as Object) as Boolean
+    r = di.CanDecodeVideo(spec)
+    return r <> invalid and r.result = true
+end function
+
+' reads the file name: { ok, why } where why names what this TV can't play
+function playable(path as String) as Object
+    p = LCase(path)
+    hevc = CreateObject("roRegex", "\b(hevc|x\.?265|h\.?265)\b", "").IsMatch(p)
+    if CreateObject("roRegex", "\.(avi|wmv)$", "").IsMatch(p) then return { ok: false, why: "this file type" }
+    if CreateObject("roRegex", "truehd", "").IsMatch(p) and not m.caps.truehd then return { ok: false, why: "TrueHD audio" }
+    if CreateObject("roRegex", "\bdts(-?hd|-?x|-?ma|-?es)?\b", "").IsMatch(p) and not m.caps.dts then return { ok: false, why: "DTS audio" }
+    if CreateObject("roRegex", "\bav1\b", "").IsMatch(p) and not m.caps.av1 then return { ok: false, why: "AV1 video" }
+    if hevc and not m.caps.hevc then return { ok: false, why: "HEVC video" }
+    if hevc and CreateObject("roRegex", "10.?bit|\bhdr|\bdv\b|dolby.?vision", "").IsMatch(p) and not m.caps.hevc10 then return { ok: false, why: "10-bit video" }
+    if CreateObject("roRegex", "2160p|\b4k\b|\buhd\b", "").IsMatch(p) and not m.caps.uhd then return { ok: false, why: "4K" }
+    return { ok: true, why: "" }
+end function
+
 ' ---------- title page ----------
 sub onPick()
     sel = m.rows.rowItemSelected
@@ -366,11 +406,16 @@ sub showFiles(files as Object)
         end if
         f.k = f.s * 1000 + f.e
         f.q = qualOf(f.path)
+        f.chk = playable(f.path)
+        mb = 0
+        if f.bytes <> invalid then mb = f.bytes / 1048576
+        f.rank = mb
+        if f.chk.ok then f.rank = mb + 100000000
     end for
     if m.cur.tv
         files.SortBy("k")
     else
-        files.SortBy("bytes", "r")
+        files.SortBy("rank", "r")
     end if
     m.files = files
     c = CreateObject("roSGNode", "ContentNode")
@@ -389,6 +434,7 @@ sub showFiles(files as Object)
             extra = extra + sz
         end if
         if extra <> "" then label = label + "   (" + extra + ")"
+        if not f.chk.ok then label = label + "   ·  converted"
         p = m.prog.Lookup(f.link)
         if p <> invalid and p.pos > 30 then label = label + "   ·  Resume " + clock(p.pos)
         it.title = label
@@ -413,7 +459,7 @@ sub onFile()
     i = m.dList.itemSelected
     if i < 0 or i >= m.files.Count() then return
     f = m.files[i]
-    m.playing = { link: f.link, tid: f.tid, title: m.cur.title, path: f.path, tried: false, id: "", streamable: 0, idx: i }
+    m.playing = { link: f.link, tid: f.tid, title: m.cur.title, path: f.path, tried: false, id: "", streamable: 0, idx: i, chk: f.chk }
     if m.cur.tv and f.e > 0 then m.playing.title = m.cur.title + "  S" + f.s.ToStr() + " E" + f.e.ToStr()
     say("Starting...")
     ask({ kind: "stream", link: f.link })
@@ -424,6 +470,12 @@ sub playUrl(url as String, r as Object)
     if m.playing = invalid then return
     m.playing.id = r.id
     m.playing.streamable = r.streamable
+    if not m.playing.chk.ok and r.streamable = 1 and r.id <> ""
+        m.playing.tried = true
+        say("This TV can't play " + m.playing.chk.why + ", so Lumen is using Real-Debrid's converted stream...")
+        ask({ kind: "transcode", id: r.id })
+        return
+    end if
     ext = LCase(CreateObject("roRegex", "^.*\.", "").Replace(m.playing.path, ""))
     fmt = "mp4"
     if ext = "mkv" then fmt = "mkv"
@@ -457,9 +509,15 @@ sub onVideoState()
             ask({ kind: "transcode", id: m.playing.id })
             return
         end if
-        msg = m.video.errorMsg
+        detail = m.video.errorMsg
+        es = m.video.getField("errorStr")
+        if es <> invalid and es <> "" and es <> detail then detail = detail + " / " + es
+        code = m.video.errorCode
+        pth = ""
+        if m.playing <> invalid then pth = m.playing.path
+        name = CreateObject("roRegex", "^.*/", "").Replace(pth, "")
         closeVideo()
-        say("The TV couldn't play this file. " + msg)
+        say("Couldn't play: " + detail + " (code " + code.ToStr() + "). File: " + name)
     else if st = "finished"
         if m.playing <> invalid then m.prog.Delete(m.playing.link)
         saveProg()

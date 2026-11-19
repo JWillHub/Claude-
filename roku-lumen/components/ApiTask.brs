@@ -250,7 +250,7 @@ function doTranscode(r as Object) as Object
     h = http(rdUrl("/streaming/transcode/" + r.id, r.rd))
     if h.code <> 200 then return { ok: false, error: rdErr(h.code) }
     j = ParseJson(h.body)
-    if j = invalid or j.apple = invalid then return { ok: false, error: "No converted stream available." }
+    if j = invalid or j.apple = invalid then return { ok: false, error: "Real-Debrid has no converted version of this file. Try another copy if you have one." }
     u = j.apple
     if type(u) = "roAssociativeArray"
         pick = u.Lookup("full")

@@ -27,13 +27,13 @@
       <Poster id="dPoster" width="400" height="600" translation="[96,160]" loadDisplayMode="scaleToZoom" />
       <Label id="dTitle" translation="[560,150]" width="1260" wrap="true" maxLines="2" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" />
       <Label id="dSub" translation="[560,280]" width="1260" color="0x9A9A9AFF" font="font:SmallSystemFont" />
-      <LabelList id="dList" translation="[560,340]" itemSize="[1260,72]" numRows="9" itemSpacing="[0,6]"
+      <LabelList id="dList" translation="[560,340]" itemSize="[1260,72]" numRows="8" itemSpacing="[0,6]"
         color="0xBBBBBBFF" focusedColor="0x000000FF" font="font:MediumSystemFont" focusedFont="font:MediumBoldSystemFont"
         vertFocusAnimationStyle="floatingFocus" />
     </Group>
 
     <Video id="video" width="1920" height="1080" visible="false" />
-    <Label id="status" translation="[96,1000]" width="1728" color="0x9A9A9AFF" font="font:SmallSystemFont" />
+    <Label id="status" translation="[96,970]" width="1728" height="90" wrap="true" maxLines="2" color="0xBBBBBBFF" font="font:SmallSystemFont" />
     <ApiTask id="api" />
   </children>
 </component>
