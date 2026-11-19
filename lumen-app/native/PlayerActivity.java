@@ -20,6 +20,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.widget.ImageButton;
+import android.view.ContextThemeWrapper;
+import androidx.media3.cast.CastPlayer;
+import androidx.media3.cast.SessionAvailabilityListener;
+import androidx.mediarouter.app.MediaRouteButton;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
+import java.util.concurrent.ConcurrentHashMap;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -81,6 +88,14 @@ import androidx.media3.ui.SubtitleView;
 public class PlayerActivity extends AppCompatActivity {
     private ExoPlayer exo;
     private Player current;
+    // ---- casting to a Chromecast TV ----
+    private CastContext castCtx;
+    private CastPlayer castPlayer;
+    private Player fwdPlayer;
+    private boolean casting = false, castForceConvert = false;
+    private long lastCastPos = 0;
+    private String curUrl = "";
+    private final ConcurrentHashMap<String, String> rdIds = new ConcurrentHashMap<>();   // playable address -> Real-Debrid file id
     private PlayerView view;
     private LinearLayout bar;
     private MediaItem item;
@@ -141,6 +156,8 @@ public class PlayerActivity extends AppCompatActivity {
         curKey = str(in.getStringExtra("key"));
         show = str(in.getStringExtra("show"));
         rdToken = str(in.getStringExtra("rdToken"));
+        curUrl = str(url);
+        if (!str(in.getStringExtra("rdId")).isEmpty() && !curUrl.isEmpty()) rdIds.put(curUrl, in.getStringExtra("rdId"));
         tmdbId = in.getIntExtra("tmdbId", 0);
         curS = in.getIntExtra("season", 0);
         curE = in.getIntExtra("episode", 0);
@@ -188,6 +205,14 @@ public class PlayerActivity extends AppCompatActivity {
         name.setShadowLayer(6f, 0f, 1f, Color.BLACK);
         bar.addView(back, new LinearLayout.LayoutParams(dp(42), dp(42)));
         bar.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        // cast button: shows when a Chromecast TV is on the Wi-Fi
+        try {
+            castCtx = CastContext.getSharedInstance(this);
+            MediaRouteButton cb = new MediaRouteButton(new ContextThemeWrapper(this, androidx.mediarouter.R.style.Theme_MediaRouter));
+            CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), cb);
+            cb.setContentDescription("Cast to TV");
+            bar.addView(cb, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        } catch (Throwable t) { castCtx = null; }
         bar.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{ 0x8C000000, 0x00000000 }));
         root.addView(bar, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
         view.setControllerVisibilityListener((PlayerView.ControllerVisibilityListener) visibility -> bar.setVisibility(isPip() ? View.GONE : visibility));
@@ -315,13 +340,14 @@ public class PlayerActivity extends AppCompatActivity {
         });
         current = exo;
         // the player's own Next button plays the next episode in the queue (otherwise it stays greyed out)
-        view.setPlayer(new androidx.media3.common.ForwardingPlayer(exo) {
+        view.setPlayer(fwdPlayer = new androidx.media3.common.ForwardingPlayer(exo) {
             @Override public boolean isCommandAvailable(int c) { return (c == Player.COMMAND_SEEK_TO_NEXT && hasNext()) || super.isCommandAvailable(c); }
             @Override public Player.Commands getAvailableCommands() { Player.Commands cm = super.getAvailableCommands(); return hasNext() ? cm.buildUpon().add(Player.COMMAND_SEEK_TO_NEXT).build() : cm; }
             @Override public void seekToNext() { if (hasNext()) goNext(); else super.seekToNext(); }
         });
         exo.prepare();
         exo.setPlayWhenReady(true);
+        setUpCast();
 
         updatePip();
         applyMidnight();
@@ -408,9 +434,10 @@ public class PlayerActivity extends AppCompatActivity {
         if (dir != runDir || now - lastSkipAt > 700) { runDir = dir; runTotal = 0; }
         runTotal += 10; lastSkipAt = now;
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-        long dur = exo.getDuration(), to = exo.getCurrentPosition() + dir * 10_000L;
+        Player pl = current != null ? current : exo;
+        long dur = pl.getDuration(), to = pl.getCurrentPosition() + dir * 10_000L;
         if (dur != C.TIME_UNSET) to = Math.min(to, dur - 1000);
-        exo.seekTo(Math.max(0, to));
+        pl.seekTo(Math.max(0, to));
         show(fwd ? "+" + runTotal + "s  \u00bb" : "\u00ab  \u2212" + runTotal + "s", -1, fwd ? Gravity.CENTER_VERTICAL | Gravity.END : Gravity.CENTER_VERTICAL | Gravity.START);
     }
 
@@ -475,7 +502,9 @@ public class PlayerActivity extends AppCompatActivity {
         lastSaveAt = SystemClock.uptimeMillis();
         if (exo == null || curKey.isEmpty() || loadingNext) return;
         try {
-            long pos = exo.getCurrentPosition(), dur = exo.getDuration();
+            Player pl = current != null ? current : exo;
+            long pos = pl.getCurrentPosition(), dur = pl.getDuration();
+            if (casting) lastCastPos = pos;
             if (dur == C.TIME_UNSET || dur <= 0) return;
             JSONObject o = new JSONObject();
             o.put("lastKey", curKey); o.put("positionMs", pos); o.put("durationMs", dur);
@@ -688,6 +717,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void startEpisode(int index, JSONObject n, String url) {
         qIndex = index;
+        curUrl = url;
         curKey = n.optString("key", "");
         curS = n.optInt("s", 0); curE = n.optInt("e", 0);
         curFinished = false; nextShown = false; nextCancelled = false; counting = false;
@@ -717,7 +747,9 @@ public class PlayerActivity extends AppCompatActivity {
         c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         try (OutputStream o = c.getOutputStream()) { o.write(("link=" + URLEncoder.encode(link, "UTF-8")).getBytes("UTF-8")); }
         if (c.getResponseCode() != 200) throw new Exception("rd " + c.getResponseCode());
-        String u = new JSONObject(read(c)).optString("download", "");
+        JSONObject j = new JSONObject(read(c));
+        String u = j.optString("download", "");
+        if (!u.isEmpty() && !j.optString("id", "").isEmpty()) rdIds.put(u, j.optString("id"));
         return u.isEmpty() ? null : u;
     }
 
@@ -1079,6 +1111,107 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     // Hand the position back to the page, then leave
+    // ---- Casting: the TV plays the file from Real-Debrid; the phone becomes the remote ----
+    private void setUpCast() {
+        if (castCtx == null) return;
+        try {
+            castPlayer = new CastPlayer(castCtx);
+            castPlayer.setSessionAvailabilityListener(new SessionAvailabilityListener() {
+                @Override public void onCastSessionAvailable() { startCast(); }
+                @Override public void onCastSessionUnavailable() { stopCast(); }
+            });
+            castPlayer.addListener(new Player.Listener() {
+                @Override public void onPlayerError(@NonNull PlaybackException e) { castFailed(); }
+            });
+            if (castPlayer.isCastSessionAvailable()) startCast();
+        } catch (Throwable t) { castPlayer = null; }
+    }
+
+    private void startCast() {
+        if (castPlayer == null || casting || exo == null) return;
+        casting = true;
+        final long pos = current != null && current != exo ? lastCastPos : exo.getCurrentPosition();
+        exo.pause();
+        final String title = String.valueOf(nameView.getText());
+        show("Sending to your TV\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        bg.execute(() -> {
+            final String[] src = castSource();
+            ui.post(() -> {
+                if (!casting || castPlayer == null) return;
+                MediaItem mi = new MediaItem.Builder()
+                    .setUri(src[0])
+                    .setMimeType(src[1])
+                    .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build())
+                    .build();
+                castPlayer.setMediaItem(mi, pos);
+                castPlayer.prepare();
+                castPlayer.setPlayWhenReady(true);
+                current = castPlayer;
+                view.setPlayer(castPlayer);
+                lastCastPos = pos;
+                show(src[2], -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            });
+        });
+    }
+
+    // What the TV gets: MP4 files go as they are; anything else (MKV, HEVC, DTS...) as Real-Debrid's converted stream
+    private String[] castSource() {
+        String path = curUrl.split("\\?")[0].toLowerCase();
+        if (path.endsWith(".mp4") && !castForceConvert) return new String[]{ curUrl, MimeTypes.VIDEO_MP4, "Playing on your TV" };
+        String id = rdIds.get(curUrl);
+        if (id != null && !rdToken.isEmpty()) {
+            try {
+                HttpURLConnection c = (HttpURLConnection) new URL("https://api.real-debrid.com/rest/1.0/streaming/transcode/" + URLEncoder.encode(id, "UTF-8")).openConnection();
+                c.setConnectTimeout(15_000); c.setReadTimeout(20_000);
+                c.setRequestProperty("Authorization", "Bearer " + rdToken);
+                if (c.getResponseCode() == 200) {
+                    JSONObject j = new JSONObject(read(c));
+                    String hls = pick(j.opt("apple"));
+                    if (hls != null) return new String[]{ hls, MimeTypes.APPLICATION_M3U8, "Playing on your TV (converted by Real-Debrid)" };
+                    String mp4 = pick(j.opt("liveMP4"));
+                    if (mp4 != null) return new String[]{ mp4, MimeTypes.VIDEO_MP4, "Playing on your TV (converted by Real-Debrid)" };
+                }
+            } catch (Exception ignored) {}
+        }
+        return new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV" };
+    }
+
+    private static String pick(Object o) {
+        if (o instanceof String) return (String) o;
+        if (o instanceof JSONObject) {
+            JSONObject j = (JSONObject) o;
+            if (j.optString("full", "").startsWith("http")) return j.optString("full");
+            java.util.Iterator<String> k = j.keys();
+            while (k.hasNext()) { String v = j.optString(k.next(), ""); if (v.startsWith("http")) return v; }
+        }
+        return null;
+    }
+
+    // the TV couldn't play it as sent: try the converted stream once
+    private void castFailed() {
+        if (!casting) return;
+        if (!castForceConvert) {
+            castForceConvert = true;
+            lastCastPos = castPlayer != null ? Math.max(lastCastPos, castPlayer.getCurrentPosition()) : lastCastPos;
+            casting = false;
+            startCast();
+            return;
+        }
+        show("Your TV couldn't play this file", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+    }
+
+    // casting ended (stopped from the phone or the TV): carry on here from the same spot
+    private void stopCast() {
+        if (!casting) return;
+        casting = false;
+        castForceConvert = false;
+        long pos = castPlayer != null ? castPlayer.getCurrentPosition() : 0;
+        if (pos <= 0) pos = lastCastPos;
+        current = exo;
+        view.setPlayer(fwdPlayer);
+        if (exo != null) { exo.seekTo(pos); exo.play(); }
+    }
+
     private void close(boolean ended) {
         if (done) return;
         done = true;
@@ -1120,6 +1253,8 @@ public class PlayerActivity extends AppCompatActivity {
         bg.shutdownNow();
         if (dyn != null) { try { dyn.release(); } catch (Exception ignored) {} dyn = null; }
         if (exo != null) { exo.release(); exo = null; }
+        // the TV keeps playing if you leave the player; only the phone's link to it is let go
+        if (castPlayer != null) { try { castPlayer.setSessionAvailabilityListener(null); castPlayer.release(); } catch (Exception ignored) {} castPlayer = null; }
         super.onDestroy();
     }
 }

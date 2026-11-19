@@ -34,6 +34,7 @@ public class RCPlayerPlugin extends Plugin {
         intent.putExtra("episode", e == null ? 0 : e);
         intent.putExtra("queue", call.getString("queue", "[]"));
         intent.putExtra("rdToken", call.getString("rdToken", ""));
+        intent.putExtra("rdId", call.getString("rdId", ""));
         Boolean skip = call.getBoolean("autoSkip", false), mid = call.getBoolean("midnightDefault", false);
         intent.putExtra("autoSkip", skip != null && skip);
         intent.putExtra("midnightDefault", mid != null && mid);

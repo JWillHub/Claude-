@@ -1430,7 +1430,7 @@ async function nativePlay(o, retry = false){
     const startT = !o.fromStart && prog[key] && prog[key].t > 20 ? prog[key].t : 0;
     const queue = (o.queue || []).map(x => { const k = x.tid + '|' + x.path;
       return { link:x.link, key:k, tid:x.tid, s:x.ep.s, e:x.ep.e, label:`S${x.ep.s} E${x.ep.e}`, url:'', startMs:prog[k] && prog[k].t > 20 ? Math.floor(prog[k].t * 1000) : 0 }; });
-    const opts = { ...playerPrefs(), url:s.url, title:full, startMs:Math.floor(startT * 1000), key, light:getComputedStyle(document.documentElement).getPropertyValue('--lc').trim() || '255,255,255' };
+    const opts = { ...playerPrefs(), url:s.url, title:full, startMs:Math.floor(startT * 1000), key, rdToken:store.get(K_RD, ''), rdId:s.id || '', light:getComputedStyle(document.documentElement).getPropertyValue('--lc').trim() || '255,255,255' };
     if(o.tv) Object.assign(opts, { show:o.title, tmdbId:+o.tmdbId || 0, season:o.ep ? +o.ep.s : 0, episode:o.ep ? +o.ep.e : 0,
       queue:JSON.stringify(queue), rdToken:store.get(K_RD, ''), autoplay:store.get(K_PL_AUTO, true) });
     const ctx = { key, tid:o.f.tid, link, o:{ id:o.id, title:o.title, label:o.label || '', poster:o.poster || null }, queue, at:Date.now() };
