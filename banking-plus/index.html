@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-c6YtZohwhiLDYaaN2pRlKV49Fs0qFjCdN4PNIHquP1U=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-WWPlIE8VNY66xNRVnv3G8IXv93ThM83x4qfBZrp9o8U=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-7qyIsTAKorcD+5TUCDojpv/yzcE6aJtBLSjejvyVAf4=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1394,6 +1394,31 @@ html:root[data-glass][data-look][data-mode="dark"] :is(.grp,.st-card,.summary,.s
 html:root[data-glass][data-look][data-mode] :is(#pl .bill,#pl .sum div,#pl .bx-date,#pl .bx-sd,#pl .day,.tabpill){box-shadow:none!important}
 html:root[data-glass][data-look][data-mode="light"] .tabpill{box-shadow:0 4px 14px rgba(20,60,120,.25)!important}
 html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14px rgba(0,0,0,.4)!important}
+/* ===================== iPad and other wide screens ===================== */
+.bud-l,.bud-r{min-width:0}
+@media (min-width:768px){
+ /* a slim floating side bar, centred on the left edge */
+ :root:is([data-look="glass"],[data-look="glass-dark"]) .tabs{top:50%!important;bottom:auto!important;left:18px!important;right:auto!important;width:92px!important;height:auto!important;transform:translateY(-50%);flex-direction:column!important;padding:8px!important;gap:6px!important;border-radius:30px!important;border-right:0!important}
+ :root:is([data-look="glass"],[data-look="glass-dark"]) .tabs .tab{flex:none!important;width:100%;height:64px;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:5px!important;padding:0 4px!important;font-size:11.5px!important;text-align:center}
+ :root:is([data-look="glass"],[data-look="glass-dark"]) .tabs .tab svg{width:23px;height:23px}
+ :root:is([data-look="glass"],[data-look="glass-dark"]) main{margin-left:128px!important;padding-left:8px!important;padding-right:28px!important}
+ :root:is([data-look="glass"],[data-look="glass-dark"]) #view{max-width:760px;margin-left:auto;margin-right:auto}
+ :root:is([data-look="glass"],[data-look="glass-dark"]) #bp .top{left:110px!important;right:0!important}
+ /* the home page, bills and to-dos: a wider centred column */
+ #pl .wrap,#pl main,#pl .page{max-width:760px;margin-left:auto;margin-right:auto}
+ .st-prev{aspect-ratio:auto;height:150px}
+ .st-themes{gap:16px;padding:16px}
+}
+@media (min-width:1024px){
+ :root:is([data-look="glass"],[data-look="glass-dark"]) #view{max-width:1180px}
+ :root:is([data-look="glass"],[data-look="glass-dark"]) #view:has(> .bud-cols){max-width:1180px}
+ .bud-cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px;align-items:start}
+ /* the main card and income stay in view while the spending list scrolls */
+ .bud-l{position:sticky;top:20px}
+ .bud-r>.edbar:first-child{margin-top:0}
+ /* other tabs keep a comfortable reading width */
+ :root:is([data-look="glass"],[data-look="glass-dark"]) #view:not(:has(> .bud-cols)){max-width:820px}
+}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -1816,7 +1841,7 @@ function sumPane(ym){const T=monthTotals(ym),left=r2(T.inc-T.out);
  <div class="s-foot"><span>${T.inc-T.outT<0?'Short after targets':'Extra money'}</span><span>${m(Math.abs(T.inc-T.outT))}</span></div></div>`}
 function vBudget(){
  const ym=ui.month,T=monthTotals(ym),st=T.st,left=r2(T.inc-T.out);
- let h='';
+ let h='<div class="bud-cols"><div class="bud-l">';
  const neg=left<0;
  h+=`<div class="mclip"><div class="summary mswipe ${neg?'neg':''}" style="--tc:${neg?TINT.bad.join(' '):TINT.ok.join(' ')}"><div class="s-win"><div class="s-track">${sumPane(addMonth(ym,-1))}${sumPane(ym)}${sumPane(addMonth(ym,1))}</div></div><div class="swipe-hint">‹ Swipe for other months ›</div></div></div>`;
  if(st.uncatN)h+=`<div class="warn"><div><b>${st.uncatN} uncategorized</b> this month${st.uncatOut?` · ${m(st.uncatOut)} out`:''}${st.uncatIn?` · ${m(st.uncatIn)} in`:''}</div><button class="btn sm" data-act="reviewUncat">Review</button></div>`;
@@ -1831,7 +1856,7 @@ function vBudget(){
    rows+=`<div class="row"><button class="btn sec sm" data-act="addIncome">Add income</button></div>`;
    h+=block(g.name,`${m(IM.rows.filter(r=>r.c.gid===g.id).reduce((s,r)=>s+r.sum,0))} this month`,rows);continue;
   }
-  if(!edb){edb=1;h+=`<div class="edbar"><span>${ui.editT?'Editing targets. Changes apply from this month on.':'Spending'}</span><button class="btn sm${ui.editT?'':' sec'}" data-act="editTargets">${ui.editT?'Done':'Edit targets'}</button></div>`}
+  if(!edb){edb=1;h+=`</div><div class="bud-r"><div class="edbar"><span>${ui.editT?'Editing targets. Changes apply from this month on.':'Spending'}</span><button class="btn sm${ui.editT?'':' sec'}" data-act="editTargets">${ui.editT?'Done':'Edit targets'}</button></div>`}
   for(const c of cs){const n=T.per[c.id];ga+=n.amt;gt+=n.tgt;
    let pill;
    if(g.income)pill=n.left>0.004?`<span class="pill zero">${mc(n.left)}</span>`:n.left<-0.004?`<span class="pill pos">+${mc(-n.left)}</span>`:`<span class="pill ${n.tgt?'pos':'zero'}">${n.tgt?'Met':'$0'}</span>`;
@@ -1842,7 +1867,7 @@ function vBudget(){
   h+=block(g.name,`${m(ga)} of ${m(gt)}`,`<div class="colh cg">${ch}</div>`+rows);
  }
  if(st.uncatN&&st.uncatOut)h+=block('Uncategorized',m(st.uncatOut),`<div class="row cat"><div class="cname" style="color:var(--amber)">Needs a category</div><div class="num">${mc(st.uncatOut)}</div><div></div><span class="pill neg">−${mc(st.uncatOut)}</span></div>`);
- 
+ h+=edb?'</div></div>':'</div><div class="bud-r"></div></div>';
  return h;
 }
 
@@ -3173,23 +3198,24 @@ var pill=document.createElement('i');pill.className='tabpill';pill.setAttribute(
 function on(){return /^glass/.test(d.getAttribute('data-look')||'')}
 function tabs(){return [].slice.call(bar.querySelectorAll('.tab'))}
 /* the bubble moves on a spring: it glides, overshoots a touch and settles, and stretches a little when it moves fast */
-var S={x:0,w:0,y:0,h:0,vx:0,vw:0,tx:0,tw:0,ty:0,th:0,run:false,init:false,t:0};
+var S={x:0,w:0,y:0,h:0,vx:0,vw:0,vy:0,vh:0,tx:0,tw:0,ty:0,th:0,run:false,init:false,t:0};
 var still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-function paint(){var st=Math.min(.16,Math.abs(S.vx)/4200);
+function paint(){var vy=Math.abs(S.vy)>Math.abs(S.vx),st=Math.min(.16,Math.max(Math.abs(S.vx),Math.abs(S.vy))/4200),sx=vy?1-st*.45:1+st,sy=vy?1+st:1-st*.45;
  pill.style.width=S.w+'px';pill.style.height=S.h+'px';
- pill.style.transform='translate('+S.x+'px,'+S.y+'px) scale('+(1+st)+','+(1-st*.45)+')'}
+ pill.style.transform='translate('+S.x+'px,'+S.y+'px) scale('+sx+','+sy+')'}
 function tick(now){var dt=Math.min(.032,(now-S.t)/1000);S.t=now;
  var k=drag?420:190,c=drag?38:17;
  S.vx+=(k*(S.tx-S.x)-c*S.vx)*dt;S.x+=S.vx*dt;
  S.vw+=(k*1.3*(S.tw-S.w)-c*1.1*S.vw)*dt;S.w+=S.vw*dt;
- S.y=S.ty;S.h=S.th;
- if(Math.abs(S.tx-S.x)<.25&&Math.abs(S.vx)<4&&Math.abs(S.tw-S.w)<.25&&Math.abs(S.vw)<4){S.x=S.tx;S.w=S.tw;S.vx=S.vw=0;paint();S.run=false;return}
+ S.vy+=(k*(S.ty-S.y)-c*S.vy)*dt;S.y+=S.vy*dt;
+ S.vh+=(k*1.3*(S.th-S.h)-c*1.1*S.vh)*dt;S.h+=S.vh*dt;
+ if(Math.abs(S.tx-S.x)<.25&&Math.abs(S.vx)<4&&Math.abs(S.tw-S.w)<.25&&Math.abs(S.vw)<4&&Math.abs(S.ty-S.y)<.25&&Math.abs(S.vy)<4&&Math.abs(S.th-S.h)<.25&&Math.abs(S.vh)<4){S.x=S.tx;S.w=S.tw;S.y=S.ty;S.h=S.th;S.vx=S.vw=S.vy=S.vh=0;paint();S.run=false;return}
  paint();requestAnimationFrame(tick)}
 function aim(x,w,y,h){S.tx=x;S.tw=w;S.ty=y;S.th=h;
- if(!S.init||still||!pill.offsetParent){S.x=x;S.w=w;S.y=y;S.h=h;S.vx=S.vw=0;S.init=!!pill.offsetParent;paint();return}
+ if(!S.init||still||!pill.offsetParent){S.x=x;S.w=w;S.y=y;S.h=h;S.vx=S.vw=S.vy=S.vh=0;S.init=!!pill.offsetParent;paint();return}
  if(!S.run){S.run=true;S.t=performance.now();requestAnimationFrame(tick)}}
 /* wide enough for the label (Transactions is longer than its share of the bar) */
-function need(b){var r=document.createRange();r.selectNodeContents(b);var cw=r.getBoundingClientRect().width;return Math.max(b.offsetWidth,Math.ceil(cw)+22)}
+function need(b){if(bar.offsetHeight>bar.offsetWidth)return b.offsetWidth;var r=document.createRange();r.selectNodeContents(b);var cw=r.getBoundingClientRect().width;return Math.max(b.offsetWidth,Math.ceil(cw)+22)}
 function put(b,x){if(!b)return;var tw=b.offsetWidth,w=need(b),h=b.offsetHeight,l=b.offsetLeft+(tw-w)/2,t=b.offsetTop;
  if(x!=null){var r=bar.getBoundingClientRect();l=x-r.left-w/2}
  var first=tabs()[0],last=tabs().slice(-1)[0],lo=first.offsetLeft,hi=last.offsetLeft+last.offsetWidth-w;
