@@ -300,12 +300,12 @@ sub onPick()
     if t = invalid then return
     m.cur = t
     m.dTitle.text = t.title
-    sub_ = t.year
+    subt = t.year
     if t.tv
-        if sub_ <> "" then sub_ = sub_ + "  ·  "
-        sub_ = sub_ + "TV show"
+        if subt <> "" then subt = subt + "  ·  "
+        subt = subt + "TV show"
     end if
-    m.dSub.text = sub_
+    m.dSub.text = subt
     m.dPoster.uri = posterUrl(t.poster, "w500")
     m.dList.content = CreateObject("roSGNode", "ContentNode")
     m.rows.visible = false

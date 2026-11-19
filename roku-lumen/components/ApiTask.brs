@@ -1,8 +1,8 @@
 sub init()
-    m.top.functionName = "run"
+    m.top.functionName = "go"
 end sub
 
-sub run()
+sub go()
     r = m.top.request
     res = { ok: false, error: "" }
     if r.kind = "sync"
