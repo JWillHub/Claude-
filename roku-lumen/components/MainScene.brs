@@ -464,12 +464,12 @@ end sub
 
 sub onVideoPos()
     if m.playing = invalid then return
-    pos = Int(m.video.position)
+    sec = Int(m.video.position)
     dur = Int(m.video.duration)
-    if pos < 5 then return
-    m.prog[m.playing.link] = { pos: pos, dur: dur, at: CreateObject("roDateTime").AsSeconds(), tid: m.playing.tid }
-    if Abs(pos - m.lastSave) >= 10
-        m.lastSave = pos
+    if sec < 5 then return
+    m.prog[m.playing.link] = { pos: sec, dur: dur, at: CreateObject("roDateTime").AsSeconds(), tid: m.playing.tid }
+    if Abs(sec - m.lastSave) >= 10
+        m.lastSave = sec
         saveProg()
     end if
 end sub
