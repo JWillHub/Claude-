@@ -32,6 +32,7 @@ sub init()
     m.queue = []
     m.searching = ""
     m.lastSave = 0
+    m.dirty = false
 
     if m.rd = ""
         showSetup()
@@ -62,10 +63,10 @@ end sub
 sub onSetKeys()
     k = m.top.setKeys
     if k = invalid or k.rd = invalid or k.rd = "" then return
-    m.rd = k.rd
+    m.rd = k.rd.Trim()
     m.reg.Write("rd", m.rd)
     if k.tmdb <> invalid and k.tmdb <> ""
-        m.tmdb = k.tmdb
+        m.tmdb = k.tmdb.Trim()
         m.reg.Write("tmdb", m.tmdb)
     end if
     m.reg.Flush()
@@ -111,6 +112,8 @@ sub onKeyDialog()
     pressed = d.buttonSelected
     d.close = true
     if pressed <> 0 then return
+    txt = CreateObject("roRegex", "\s+", "").ReplaceAll(txt, "")
+    if m.asking = "search" then txt = d.text.Trim()
     if m.asking = "rd"
         if txt = "" then return
         m.newRd = txt
@@ -160,6 +163,7 @@ sub onApi()
     else if r.kind = "stream"
         playUrl(r.url, r)
     else if r.kind = "transcode"
+        if m.playing = invalid then return
         m.playing.tried = true
         playStream(r.url, "hls")
     end if
@@ -432,6 +436,7 @@ sub playStream(url as String, fmt as String)
     c.url = url
     c.title = m.playing.title
     c.streamFormat = fmt
+    c.HttpCertificatesFile = "common:/certs/ca-bundle.crt"
     p = m.prog.Lookup(m.playing.link)
     if p <> invalid and p.pos > 30 and (p.dur = 0 or p.pos < p.dur - 60) then c.PlayStart = p.pos
     m.video.content = c
@@ -467,6 +472,7 @@ sub onVideoPos()
     sec = Int(m.video.position)
     dur = Int(m.video.duration)
     if sec < 5 then return
+    m.dirty = true
     m.prog[m.playing.link] = { pos: sec, dur: dur, at: CreateObject("roDateTime").AsSeconds(), tid: m.playing.tid }
     if Abs(sec - m.lastSave) >= 10
         m.lastSave = sec
@@ -513,10 +519,18 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             return true
         else if m.detail.visible
             m.detail.visible = false
+            m.playing = invalid
             m.rows.visible = true
             m.hint.visible = true
+            if m.dirty
+                m.dirty = false
+                if m.searching <> ""
+                    buildRows(m.searching)
+                else
+                    buildRows()
+                end if
+            end if
             m.rows.setFocus(true)
-            buildRows()
             return true
         else if m.searching <> ""
             buildRows()
