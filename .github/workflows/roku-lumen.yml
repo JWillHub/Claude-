@@ -1,0 +1,32 @@
+# Packages Lumen for Roku (roku-lumen/) and publishes it as the "roku-latest" release (lumen-roku.zip),
+# ready to upload on the Roku's developer installer page.
+name: Lumen Roku app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['roku-lumen/**', '.github/workflows/roku-lumen.yml']
+permissions:
+  contents: write
+concurrency: roku-lumen
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package
+        run: |
+          cd roku-lumen
+          sed -i "s/__BUILD__/${GITHUB_RUN_NUMBER}/" manifest
+          zip -qr ../lumen-roku.zip manifest source components images
+          cd .. && unzip -l lumen-roku.zip
+      - name: Publish as the roku-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: roku-latest
+          name: Lumen for Roku (latest build)
+          body: "Latest build from ${{ github.sha }}. Download lumen-roku.zip, then upload it on your Roku's developer page (http://<your Roku's address>)."
+          prerelease: false
+          make_latest: false
+          files: lumen-roku.zip

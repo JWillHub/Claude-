@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="MainScene" extends="Scene">
+  <interface>
+    <field id="setKeys" type="assocarray" onChange="onSetKeys" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
+  <children>
+    <Rectangle id="bgfill" width="1920" height="1080" color="0x000000FF" />
+    <Label id="logo" text="lumen" translation="[96,52]" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" />
+    <Label id="hint" translation="[1024,66]" width="800" horizAlign="right" color="0x777777FF" font="font:SmallestSystemFont" text="Press * to search" />
+
+    <Group id="setup" visible="false">
+      <Label id="s1" translation="[96,240]" width="1728" wrap="true" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" text="Set up Lumen on this TV" />
+      <Label id="s2" translation="[96,340]" width="1500" wrap="true" color="0xBBBBBBFF" font="font:MediumSystemFont" text="On your phone, open Lumen, go to Settings, then Roku. Enter this TV's address and tap Send keys." />
+      <Label id="ip" translation="[96,500]" width="1728" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" />
+      <Label id="s3" translation="[96,640]" width="1500" wrap="true" color="0x777777FF" font="font:SmallSystemFont" text="Or press OK to type the keys with the remote." />
+    </Group>
+
+    <RowList id="rows" translation="[96,150]" visible="false"
+      itemComponentName="PosterItem" numRows="2" itemSize="[1824,470]" itemSpacing="[0,30]"
+      rowItemSize="[[240,412]]" rowItemSpacing="[[30,0]]"
+      showRowLabel="[true]" rowLabelOffset="[[0,14]]" rowLabelColor="0xFFFFFFFF" rowLabelFont="font:MediumBoldSystemFont"
+      rowFocusAnimationStyle="floatingFocus" vertFocusAnimationStyle="floatingFocus" />
+
+    <Group id="detail" visible="false">
+      <Rectangle width="400" height="600" translation="[96,160]" color="0x1A1A1AFF" />
+      <Poster id="dPoster" width="400" height="600" translation="[96,160]" loadDisplayMode="scaleToZoom" />
+      <Label id="dTitle" translation="[560,150]" width="1260" wrap="true" maxLines="2" color="0xFFFFFFFF" font="font:LargeBoldSystemFont" />
+      <Label id="dSub" translation="[560,280]" width="1260" color="0x9A9A9AFF" font="font:SmallSystemFont" />
+      <LabelList id="dList" translation="[560,340]" itemSize="[1260,72]" numRows="9" itemSpacing="[0,6]"
+        color="0xBBBBBBFF" focusedColor="0x000000FF" font="font:MediumSystemFont" focusedFont="font:MediumBoldSystemFont"
+        vertFocusAnimationStyle="floatingFocus" />
+    </Group>
+
+    <Video id="video" width="1920" height="1080" visible="false" />
+    <Label id="status" translation="[96,1000]" width="1728" color="0x9A9A9AFF" font="font:SmallSystemFont" />
+    <ApiTask id="api" />
+  </children>
+</component>

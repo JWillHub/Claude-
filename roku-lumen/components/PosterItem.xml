@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PosterItem" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="show" />
+    <field id="focusPercent" type="float" onChange="focus" />
+  </interface>
+  <script type="text/brightscript">
+  <![CDATA[
+    sub init()
+        m.bg = m.top.findNode("bg")
+        m.img = m.top.findNode("img")
+        m.name = m.top.findNode("name")
+        m.alt = m.top.findNode("alt")
+        m.bar = m.top.findNode("bar")
+        m.barbg = m.top.findNode("barbg")
+    end sub
+    sub show()
+        c = m.top.itemContent
+        if c = invalid then return
+        m.name.text = c.title
+        m.alt.text = c.title
+        m.img.uri = c.HDPosterUrl
+        m.alt.visible = (c.HDPosterUrl = "")
+        p = c.getField("progress")
+        if p <> invalid and p > 0
+            m.barbg.visible = true
+            m.bar.visible = true
+            m.bar.width = 220 * p
+        else
+            m.barbg.visible = false
+            m.bar.visible = false
+        end if
+    end sub
+    sub focus()
+        f = m.top.focusPercent
+        m.name.color = &hFFFFFFFF
+        if f < 0.5 then m.name.color = &h9A9A9AFF
+    end sub
+  ]]>
+  </script>
+  <children>
+    <Rectangle id="bg" width="240" height="360" color="0x1A1A1AFF" />
+    <Label id="alt" width="220" height="340" translation="[10,10]" wrap="true" horizAlign="center" vertAlign="center" color="0xBBBBBBFF" font="font:SmallSystemFont" />
+    <Poster id="img" width="240" height="360" loadDisplayMode="scaleToZoom" />
+    <Rectangle id="barbg" translation="[10,342]" width="220" height="6" color="0x00000099" visible="false" />
+    <Rectangle id="bar" translation="[10,342]" width="0" height="6" color="0xFFFFFFFF" visible="false" />
+    <Label id="name" translation="[0,372]" width="240" height="40" color="0x9A9A9AFF" font="font:SmallestSystemFont" />
+  </children>
+</component>

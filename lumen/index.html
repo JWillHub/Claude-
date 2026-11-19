@@ -613,6 +613,7 @@ const store = {
 
 // appearance: the colour of the light, and the background
 const K_THEME = P + 'theme';
+const K_ROKU = P + 'roku';
 // accent: [name, on dark backgrounds, on the light background]
 const LIGHTS = [['Mono', '255,255,255', '28,28,34'], ['Charcoal', '135,138,148', '60,62,70'], ['Cyan', '80,215,255', '0,125,170'], ['Blue', '95,145,255', '30,85,215'], ['Purple', '170,130,255', '105,60,215'],
   ['Pink', '255,105,195', '195,25,130'], ['Red', '255,85,95', '205,30,45'], ['Gold', '255,205,80', '170,115,0'],
@@ -1510,6 +1511,7 @@ function drawSettings(){
   <button class="navrow glass press" data-sub="player"><span><b>${NATIVE ? 'Player' : 'Playback'}</b><small>${NATIVE ? 'Episodes, sound and subtitles' : 'In-browser player and VLC'}</small></span>${CHEV}</button>
   <button class="navrow glass press" data-sub="appear"><span><b>Appearance</b><small>Light colour and background</small></span>${CHEV}</button>
   <button class="navrow glass press" data-sub="data"><span><b>Your data</b><small>Back up, restore and storage</small></span>${CHEV}</button>
+  ${NATIVE ? `<button class="navrow glass press" data-sub="roku"><span><b>Roku</b><small>Watch your library on your Roku TV</small></span>${CHEV}</button>` : ''}
   <div id="sp-appear" hidden>
   <div class="card glass">
     <div class="sub">Light</div><div class="sws" id="swl">${LIGHTS.map(([n, cd, cl]) => `<button class="swc ${(OLD_LIGHT[store.get(K_THEME, {}).light] || store.get(K_THEME, {}).light || 'Mono') === n ? 'on' : ''}" data-n="${n}" style="--c:${document.documentElement.classList.contains('light') ? cl : cd}"><i></i>${n}</button>`).join('')}</div>
@@ -1540,6 +1542,11 @@ function drawSettings(){
     ${mobile ? `<button class="tg ${store.get(K_VLC, false) ? 'on' : ''}" id="tvlc"><span>Always open in VLC<small>Skip the built-in player</small></span><i class="sw2"></i></button>` : ''}
     <button class="tg" id="tclear" style="margin-top:${mobile ? 12 : 0}px"><span>Clear watch progress<small>Resume points and watched marks</small></span></button></div>`}
   </div>
+  <div id="sp-roku" hidden>
+  <div class="card glass"><h3>Roku</h3><p>Open Lumen on your Roku TV, enter the address it shows, then tap Send keys. Your phone and TV need to be on the same Wi-Fi. This sends your Real-Debrid and TMDB keys to the TV once, so you don't have to type them with the remote.</p>
+    <div class="fld"><input id="rkip" type="text" inputmode="decimal" placeholder="TV address, like 192.168.1.20" value="${esc(store.get(K_ROKU, ''))}" autocomplete="off"><button class="sv" id="rksend">Send keys</button></div>
+    <div class="stat" id="rkstat"></div></div>
+  </div>
   <div id="sp-data" hidden>
   <div class="card glass"><p>Watch progress and settings, in one file. Your tokens are never included.</p>
     <div class="row2b"><button class="wide glass press" id="bkexp">Back up</button><button class="wide glass press" id="bkimp">Restore</button></div>
@@ -1556,6 +1563,19 @@ function drawSettings(){
       store.set(k, e.target.value); $('#subprev').className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; });
   }
   $$('.navrow[data-sub]', b).forEach(x => x.onclick = () => openSub(x.dataset.sub));
+  // Roku: hand the keys to Lumen on the TV through the Roku's own remote-control service (port 8060)
+  if($('#rksend')) $('#rksend').onclick = async () => {
+    const st = $('#rkstat'), ip = $('#rkip').value.trim().replace(/^https?:\/\//, '').replace(/[:\/].*$/, '');
+    if(!/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)){ st.textContent = 'Enter the address shown on the TV, like 192.168.1.20.'; return; }
+    if(!rk){ st.textContent = 'Add your Real-Debrid token under Connections first.'; return; }
+    store.set(K_ROKU, ip); st.textContent = 'Sending…';
+    try{
+      const r = await fetch(`http://${ip}:8060/launch/dev?rd=${encodeURIComponent(rk)}&tmdb=${encodeURIComponent(tk)}`, { method:'POST' });
+      st.textContent = r.ok ? 'Sent. Lumen on the TV will load your library.'
+        : r.status === 403 ? 'The TV blocked it. On the Roku, go to Settings, System, Advanced system settings, Control by mobile apps, and set Network access to Permissive. Then try again.'
+        : r.status === 404 ? "The TV doesn't have Lumen installed yet." : 'The TV answered with an error (' + r.status + ').';
+    }catch(e){ st.textContent = "Couldn't reach the TV. Check the address and that your phone is on the same Wi-Fi."; }
+  };
   if(curSub && $('#sub').classList.contains('open')) showSub(curSub);
   $$('#swl .swc').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), light:x.dataset.n }); applyTheme(); if(document.documentElement.classList.contains('tinted')) return drawSettings(); $$('#swl .swc').forEach(y => y.classList.toggle('on', y === x)); });
   $$('#swb button').forEach(x => x.onclick = () => { store.set(K_THEME, { ...store.get(K_THEME, {}), bg:x.dataset.n }); applyTheme(); drawSettings(); });
@@ -1581,7 +1601,7 @@ function showSub(name){
   $('#subbody').innerHTML = ''; n.hidden = false; $('#subbody').appendChild(n);
 }
 function openSub(name){
-  curSub = name; $('#subt').textContent = ({ conn:'Connections', appear:'Appearance', data:'Your data', app:'App', player:NATIVE ? 'Player' : 'Playback' })[name];
+  curSub = name; $('#subt').textContent = ({ conn:'Connections', appear:'Appearance', data:'Your data', app:'App', roku:'Roku', player:NATIVE ? 'Player' : 'Playback' })[name];
   showSub(name); $('#subbody').scrollTop = 0;
   const el = $('#sub'); el.classList.add('open');
   pushLayer('sub', () => { el.classList.remove('open'); curSub = null; if($('#set').classList.contains('open')) setTimeout(drawSettings, 450); });
