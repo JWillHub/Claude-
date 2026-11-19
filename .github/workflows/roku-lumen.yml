@@ -15,6 +15,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check the code with Roku's BrightScript compiler (brighterscript)
+        run: |
+          cd roku-lumen
+          npx -y brighterscript@0 --create-package false --root-dir . 2>&1 | tee ../bsc.txt
+          ! grep -E "error|ERROR" ../bsc.txt | grep -v "0 errors"
       - name: Package
         run: |
           cd roku-lumen
