@@ -888,8 +888,8 @@ const back = () => { if(layers.length) history.back(); };
 
 function openSheet(id){
   const el = $('#' + id); if(el.classList.contains('open')) return;
-  // the two dock sheets replace each other
-  ['lib', 'set', 'watch'].filter(x => x !== id && $('#' + x).classList.contains('open')).forEach(x => { const i = layers.findIndex(l => l.name === x); if(i >= 0){ layers.splice(i, 1); } $('#' + x).classList.remove('open'); });
+  // switching tabs closes everything that was open on top (another tab, a settings page, a title, a card), newest first
+  while(layers.length){ const l = layers.pop(); try{ l.close(); }catch(e){} }
   el.classList.add('open'); dockState();
   if(id === 'lib'){ drawLib(); if(store.get(K_RD, '') && Date.now() - lib.synced > 2 * 60e3) syncNow(true); } if(id === 'set') drawSettings(); if(id === 'watch') drawWatch();
   pushLayer(id, () => { el.classList.remove('open'); dockState(); });
