@@ -1383,7 +1383,7 @@ function openGenrePage(def){
   b.innerHTML = `<div class="pad"><div class="gopts" style="margin:14px 0"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
       <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
-  const load = () => { const gd = genreDef(def.tv, def.genreId, sort, decade); setPageSource({ title:def.title, def:gd }); feed(null, $('.grid', b), $('.sent', b), $('.msg', b), gd); };
+  const load = () => { const gd = def.all ? allGenreDef(def, sort, decade) : genreDef(def.tv, def.genreId, sort, decade); setPageSource({ title:def.title, def:gd }); feed(null, $('.grid', b), $('.sent', b), $('.msg', b), gd); };
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); scrollTo(0, 0); load(); });
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
@@ -1412,25 +1412,54 @@ function fitPills(bar, lists){
   run();
   document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
-const gb = { tv:false, g:'*', sort:'popular', kind:'all', q:'' };
-const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
+const gb = { kind:'all', q:'' };
 const GB_KINDS = [['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']];
-// Genres tab: the same search bar + three-line filter button as Library. Filter = All / Movies / Series.
+// films and series share a genre when TMDB has a matching one (Sci-Fi and Fantasy share "Sci-Fi & Fantasy" on the series side)
+const G2TV = { 28:10759, 12:10759, 16:16, 35:35, 80:80, 99:99, 18:18, 10751:10751, 14:10765, 878:10765, 9648:9648, 10752:10768, 37:37 };
+function allGenreDef(def, sort, decade){
+  const mix = [];
+  if(def.mid) mix.push(genreDef(false, def.mid, sort, decade));
+  if(def.tid) mix.push(genreDef(true, def.tid, sort, decade));
+  return mix.length === 1 ? mix[0] : { mix, byDate:sort === 'newest', path:'mix', tv:false };
+}
+function genreTiles(kind){
+  const tile = (k, name, d) => ({ k, name, d });
+  const list = kind === 'movie' ? GENRES.map(([id, n]) => tile('m' + id, n, { title:n, genreId:id, tv:false }))
+    : kind === 'tv' ? TVGENRES.map(([id, n]) => tile('t' + id, n, { title:n, genreId:id, tv:true }))
+    : [...GENRES.map(([id, n]) => tile('a' + id, n, { title:n, all:true, mid:id, tid:G2TV[id] })),
+       ...TVGENRES.filter(([id]) => !Object.values(G2TV).includes(id)).map(([id, n]) => tile('t' + id, n, { title:n, genreId:id, tv:true }))];
+  return list.sort((a, b) => a.name.localeCompare(b.name));
+}
+// a backdrop from the genre's most popular title, cached for a day
+const tileArt = t => cached('gtile:' + t.k, 24, async () => {
+  const d = t.d, tv = d.all ? false : d.tv, id = d.all ? d.mid : d.genreId;
+  const r = await tmdb(tv ? '/discover/tv' : '/discover/movie', { with_genres:id, sort_by:'popularity.desc', 'vote_count.gte':300, include_adult:'false' });
+  const hit = (r.results || []).find(m => m.backdrop_path); return hit ? hit.backdrop_path : '';
+});
+// Genres tab: the Library-style search bar + filter (All / Movies / Series); square genre tiles below, each opens its own page
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
   v.innerHTML = `<div class="pad ltop gtop"><div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="gq" autocomplete="off" enterkeyhint="search"></label>
       <button class="lsortbtn" id="gfilt"><svg viewBox="0 0 24 24"><path d="M5 7h14M7.5 12h9M10 17h4"/></svg></button></div></div>
-    <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
-  const q = $('#gq', v), fb = $('#gfilt', v);
+    <div class="pad"><div class="gtiles"></div><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
+  const q = $('#gq', v), fb = $('#gfilt', v), tilesEl = $('.gtiles', v), grid = $('.grid', v);
   const label = () => { const l = GB_KINDS.find(x => x[0] === gb.kind)[1];
     q.placeholder = gb.kind === 'all' ? 'Search movies and series' : 'Search ' + l.toLowerCase();
     fb.setAttribute('aria-label', 'Filter: ' + l); fb.classList.toggle('on', gb.kind !== 'all'); };
+  const tiles = () => {
+    const list = genreTiles(gb.kind);
+    tilesEl.innerHTML = list.map((t, i) => `<button class="gtile" data-i="${i}"><span class="gtart"></span><b>${esc(t.name)}</b></button>`).join('');
+    $$('.gtile', tilesEl).forEach(el => { const t = list[+el.dataset.i];
+      el.onclick = () => openGenrePage(t.d);
+      tileArt(t).then(p => { if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w500${p})`; }).catch(() => {}); });
+  };
   const load = () => {
     const t = gb.q.trim(), k = gb.kind;
-    const def = t ? { path:k === 'all' ? '/search/multi' : '/search/' + k, params:{ query:t }, tv:k === 'tv' }
-      : { path:k === 'all' ? '/trending/all/week' : '/discover/' + k, params:k === 'all' ? {} : { sort_by:'popularity.desc', 'vote_count.gte':k === 'tv' ? 100 : 150 }, tv:k === 'tv' };
-    setPageSource({ title:t ? 'Search' : GB_KINDS.find(x => x[0] === k)[1], def });
-    feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
+    tilesEl.hidden = !!t; grid.hidden = !t; $('.msg', v).textContent = '';
+    if(!t){ grid._gen = (grid._gen || 0) + 1; grid._obs?.disconnect(); grid.innerHTML = ''; tiles(); return; }
+    const def = { path:k === 'all' ? '/search/multi' : '/search/' + k, params:{ query:t }, tv:k === 'tv' };
+    setPageSource({ title:'Search', def });
+    feed(null, grid, $('.sent', v), $('.msg', v), def);
   };
   q.value = gb.q; label();
   let tm; q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { gb.q = q.value; load(); }, 350); };

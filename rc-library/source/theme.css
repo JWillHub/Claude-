@@ -360,4 +360,17 @@ html.light #v-genres .gtop{background:var(--bg)}
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 12px 32px rgba(0,0,0,.6)!important}
 .lsearch,.ltools #gfilt{box-shadow:none!important}
 html.light .lsearch,html.light .ltools #gfilt,html.light .ltools #gfilt.lsortbtn{background:#f2f2f4!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
-body:not(.libv) #v-genres .gtop{margin-top:0;padding-top:calc(34px + env(safe-area-inset-top))!important}
+
+
+/* no gap above the Library / Genres search bars: the bar itself carries the status-bar space, nothing else does */
+body:has(#v-genres:not([hidden])) main,body.libv main{padding-top:0!important}
+body.libv #lmain>div[style="height:8px"]:first-child{display:none}
+body.libv .ltop,body:not(.libv) #v-genres .gtop{padding-top:calc(10px + env(safe-area-inset-top))!important;margin-top:0!important}
+/* genre tiles: two columns of squares, backdrop art with the name on top */
+.gtiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 0 10px}
+.gtile{position:relative;aspect-ratio:1;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--card2);padding:0;cursor:pointer;text-align:left}
+.gtile .gtart{position:absolute;inset:0;background:center/cover no-repeat;transition:transform .3s}
+.gtile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 35%,rgba(0,0,0,.78))}
+.gtile b{position:absolute;left:14px;right:12px;bottom:12px;z-index:1;color:#fff;font-family:var(--disp);font-size:21px;line-height:1.05;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.gtile:active .gtart{transform:scale(1.04)}
+body.libv #v-library>div:has(#lmain),body.libv #lmain{padding-top:0!important;margin-top:0!important}
