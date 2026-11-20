@@ -664,7 +664,7 @@ function callNative(plugin, method, opts){
   return Promise.reject(new Error('not available'));
 }
 const K_PL_AUTO = P + 'pl.autoplay', K_PL_SKIP = P + 'pl.autoskip', K_PL_MID = P + 'pl.midnight', K_PL_AUD = P + 'pl.audio', K_PL_TXT = P + 'pl.text', K_PL_SIZE = P + 'pl.subsize', K_PL_STYLE = P + 'pl.substyle';
-const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), midnightDefault:!!store.get(K_PL_MID, false), audioLang:store.get(K_PL_AUD, ''),
+const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), audioLang:store.get(K_PL_AUD, ''),
   textLang:store.get(K_PL_TXT, ''), subSize:store.get(K_PL_SIZE, 'm'), subStyle:store.get(K_PL_STYLE, 'shadow') });
 const APP_BUILD = parseInt('__BUILDNUM__', 10) || 0;
 const REL = 'https://github.com/JWillHub/Claude-/releases/download/lumen-latest/';
@@ -1530,7 +1530,6 @@ function drawSettings(){
     ${tgl('pauto', 'Play next episode', 'A countdown when the credits start', store.get(K_PL_AUTO, true))}
     ${tgl('pskip', 'Skip intros', 'Jumps past intros and recaps, with a tap to undo', store.get(K_PL_SKIP, false))}
     <div class="sub">Sound</div>
-    ${tgl('pmid', 'Midnight mode', 'Evens out loud peaks from the start', store.get(K_PL_MID, false))}
     ${sel('pal', 'Audio language', store.get(K_PL_AUD, ''), [['', 'Last used'], ...LANGS])}
     <div class="sub">Subtitles</div>
     ${sel('ptl', 'Language', store.get(K_PL_TXT, ''), [['', 'Last used'], ['off', 'Off'], ...LANGS])}
@@ -1558,7 +1557,7 @@ function drawSettings(){
   <div class="ver">LUMEN${APP_BUILD ? ' · BUILD ' + APP_BUILD : ''}</div>`;
   if(NATIVE){
     fillVersion();
-    [['pauto', K_PL_AUTO, true], ['pskip', K_PL_SKIP, false], ['pmid', K_PL_MID, false]].forEach(([id, k, d]) => $('#' + id).onclick = e => { const on = !store.get(k, d); store.set(k, on); e.currentTarget.classList.toggle('on', on); });
+    [['pauto', K_PL_AUTO, true], ['pskip', K_PL_SKIP, false]].forEach(([id, k, d]) => $('#' + id).onclick = e => { const on = !store.get(k, d); store.set(k, on); e.currentTarget.classList.toggle('on', on); });
     [['pal', K_PL_AUD], ['ptl', K_PL_TXT], ['pts', K_PL_SIZE], ['pst', K_PL_STYLE]].forEach(([id, k]) => $('#' + id).onchange = e => {
       store.set(k, e.target.value); $('#subprev').className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; });
   }

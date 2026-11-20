@@ -3023,7 +3023,7 @@ function callNative(plugin, method, opts){
   return Promise.reject(new Error('this part of the app is not available'));
 }
 // your Player settings ride along with every video
-const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), midnightDefault:!!store.get(K_PL_MID, false),
+const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false),
   audioLang:store.get(K_PL_AUD, ''), textLang:store.get(K_PL_TXT, ''), subSize:store.get(K_PL_SIZE, 'm'), subStyle:store.get(K_PL_STYLE, 'shadow') });
 const playerPlay = opts => callNative('RCPlayer', 'play', { ...playerPrefs(), ...opts });
 
@@ -4224,7 +4224,6 @@ function renderSettings(){
         ${sw('p-auto', 'next', 'Auto-play next episode', 'A 10-second countdown when the credits start', g(K_AUTOPLAY, true))}
         ${sw('p-skip', 'skip', 'Skip intros automatically', 'Jumps past intros and recaps, with a tap to undo', g(K_PL_SKIP, false))}</div>
         <div class="sgh">Sound</div><div class="scard">
-        ${sw('p-mid', 'moon', 'Midnight mode by default', 'Every video starts with loud peaks evened out', g(K_PL_MID, false))}
         ${selRow('audio', 'Audio language', 'When a file has more than one', pick('p-al', g(K_PL_AUD, ''), [['', 'Last used'], ...LANGS]))}</div>
         <div class="sgh">Subtitles</div><div class="scard">
         ${selRow('cc', 'Subtitle language', '', pick('p-tl', g(K_PL_TXT, ''), [['', 'Last used'], ['off', 'Off'], ...LANGS]))}
@@ -4233,7 +4232,7 @@ function renderSettings(){
         <div class="subprev ${g(K_PL_STYLE, 'shadow')} s-${g(K_PL_SIZE, 'm')}"><span>This is how subtitles will look.</span></div></div>`;
       const bind = (id, k, isBool) => { const el = $('#' + id, box); el.onchange = () => { store.set(k, isBool ? el.checked : el.value); if(!isBool) draw2(); }; };
       const draw2 = () => { const pv = $('.subprev', box); pv.className = `subprev ${store.get(K_PL_STYLE, 'shadow')} s-${store.get(K_PL_SIZE, 'm')}`; };
-      bind('p-auto', K_AUTOPLAY, true); bind('p-skip', K_PL_SKIP, true); bind('p-mid', K_PL_MID, true);
+      bind('p-auto', K_AUTOPLAY, true); bind('p-skip', K_PL_SKIP, true);
       bind('p-al', K_PL_AUD); bind('p-tl', K_PL_TXT); bind('p-ts', K_PL_SIZE); bind('p-tst', K_PL_STYLE);
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {

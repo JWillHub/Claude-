@@ -15,7 +15,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.media.audiofx.DynamicsProcessing;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -96,7 +95,7 @@ public class PlayerActivity extends AppCompatActivity {
     private float swipeStartLevel = 0f;
     private TextView nameView;
 
-    // ---- episodes in a row, skip intro, midnight mode ----
+    // ---- episodes in a row, skip intro ----
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final ExecutorService bg = Executors.newSingleThreadExecutor();
     private String rdToken = "", show = "", curKey = "";
@@ -113,12 +112,9 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean counting = false;
     private long lastSkipAt = 0; private int runDir = 0, runTotal = 0;
     private float downX, downY; private boolean runTap = false;
-    private DynamicsProcessing dyn;
-    private boolean midnight = false;
     private boolean autoSkip = false;
     private final java.util.Set<Long> autoSkipped = new java.util.HashSet<>();
     private long undoTo = 0, undoUntil = 0;
-    private ImageButton moonBtn; private MoonDrawable moon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,7 +139,6 @@ public class PlayerActivity extends AppCompatActivity {
         curE = in.getIntExtra("episode", 0);
         autoplay = in.getBooleanExtra("autoplay", true);
         try { queue = new JSONArray(str(in.getStringExtra("queue")).isEmpty() ? "[]" : in.getStringExtra("queue")); } catch (Exception e) { queue = new JSONArray(); }
-        midnight = in.getBooleanExtra("midnightDefault", false);   // Settings → Player → Midnight mode by default
         autoSkip = in.getBooleanExtra("autoSkip", false);
 
         view = new PlayerView(this);
@@ -302,8 +297,6 @@ public class PlayerActivity extends AppCompatActivity {
             }
             @Override
             public void onIsPlayingChanged(boolean playing) { updatePip(); }
-            @Override
-            public void onAudioSessionIdChanged(int id) { applyMidnight(); }
         });
         current = exo;
         view.setPlayer(exo);
@@ -311,8 +304,6 @@ public class PlayerActivity extends AppCompatActivity {
         exo.setPlayWhenReady(true);
 
         updatePip();
-        applyMidnight();
-        addMoonButton();
         fetchSegments();
         ui.postDelayed(tick, 500);
 
@@ -675,75 +666,6 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    // ---- Midnight mode: evens out loud and quiet parts (compressor + a ceiling on sudden peaks) ----
-    private void applyMidnight() {
-        if (Build.VERSION.SDK_INT < 28 || exo == null) return;
-        try {
-            if (dyn != null) { dyn.release(); dyn = null; }
-            if (!midnight) return;
-            int sid = exo.getAudioSessionId();
-            if (sid == C.AUDIO_SESSION_ID_UNSET || sid == 0) return;
-            DynamicsProcessing.Config cfg = new DynamicsProcessing.Config.Builder(
-                DynamicsProcessing.VARIANT_FAVOR_FREQUENCY_RESOLUTION, 2, false, 0, true, 1, false, 0, true).build();
-            dyn = new DynamicsProcessing(0, sid, cfg);
-            // above -32 dB, every 3.5 dB louder only comes out 1 dB louder; then quiet parts are lifted 8 dB
-            dyn.setMbcBandAllChannelsTo(0, new DynamicsProcessing.MbcBand(true, 20000f, 5f, 250f, 3.5f, -32f, 6f, -90f, 1f, 0f, 8f));
-            // hard ceiling: nothing goes above -9 dB
-            dyn.setLimiterAllChannelsTo(new DynamicsProcessing.Limiter(true, true, 0, 1f, 80f, 12f, -9f, 0f));
-            dyn.setEnabled(true);
-        } catch (Throwable t) { dyn = null; }
-    }
-
-    private void toggleMidnight() {
-        midnight = !midnight;
-        applyMidnight();
-        if (moon != null) { moon.on = midnight; moon.invalidateSelf(); }
-        show(midnight ? "Midnight mode on" : "Midnight mode off", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-    }
-
-    // a moon button next to the player's CC button (or in the top bar if the player's layout changes)
-    private void addMoonButton() {
-        moon = new MoonDrawable(); moon.on = midnight;
-        moonBtn = new ImageButton(this);
-        moonBtn.setImageDrawable(moon);
-        moonBtn.setContentDescription("Midnight mode");
-        moonBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); toggleMidnight(); });
-        try {
-            View cc = view.findViewById(androidx.media3.ui.R.id.exo_subtitle);
-            ViewGroup parent = (ViewGroup) cc.getParent();
-            moonBtn.setBackground(cc.getBackground() != null && cc.getBackground().getConstantState() != null ? cc.getBackground().getConstantState().newDrawable().mutate() : null);
-            moonBtn.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-            moonBtn.setPadding(cc.getPaddingLeft(), cc.getPaddingTop(), cc.getPaddingRight(), cc.getPaddingBottom());
-            parent.addView(moonBtn, parent.indexOfChild(cc), new ViewGroup.LayoutParams(cc.getLayoutParams()));
-        } catch (Exception e) {
-            moonBtn.setBackground(null);
-            moonBtn.setPadding(dp(10), dp(10), dp(10), dp(10));
-            bar.addView(moonBtn, new LinearLayout.LayoutParams(dp(44), dp(44)));
-        }
-    }
-
-    private static class MoonDrawable extends Drawable {
-        boolean on = false;
-        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        @Override public void draw(@NonNull Canvas c) {
-            Rect b = getBounds();
-            float size = Math.min(b.width(), b.height()), cx = b.exactCenterX(), cy = b.exactCenterY(), r = size * 0.3f;
-            Path p = new Path(); p.addCircle(cx, cy, r, Path.Direction.CW);
-            Path cut = new Path(); cut.addCircle(cx + r * 0.55f, cy - r * 0.42f, r * 0.82f, Path.Direction.CW);
-            p.op(cut, Path.Op.DIFFERENCE);
-            paint.setColor(Color.WHITE);
-            paint.setStyle(on ? Paint.Style.FILL : Paint.Style.STROKE);
-            paint.setStrokeWidth(size * 0.06f);
-            paint.setStrokeJoin(Paint.Join.ROUND);
-            c.drawPath(p, paint);
-        }
-        @Override public void setAlpha(int a) { paint.setAlpha(a); }
-        @Override public void setColorFilter(ColorFilter f) { paint.setColorFilter(f); }
-        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
-        @Override public int getIntrinsicWidth() { return 96; }
-        @Override public int getIntrinsicHeight() { return 96; }
-    }
-
     // ---- Remember track choices ----
     private void rememberTracks(Tracks tracks) {
         String audio = null, text = "";
@@ -940,7 +862,6 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         ui.removeCallbacksAndMessages(null);
         bg.shutdownNow();
-        if (dyn != null) { try { dyn.release(); } catch (Exception ignored) {} dyn = null; }
         if (exo != null) { exo.release(); exo = null; }
         super.onDestroy();
     }

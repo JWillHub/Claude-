@@ -13,7 +13,7 @@ function callNative(plugin, method, opts){
   return Promise.reject(new Error('this part of the app is not available'));
 }
 // your Player settings ride along with every video
-const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false), midnightDefault:!!store.get(K_PL_MID, false),
+const playerPrefs = () => ({ autoSkip:!!store.get(K_PL_SKIP, false),
   audioLang:store.get(K_PL_AUD, ''), textLang:store.get(K_PL_TXT, ''), subSize:store.get(K_PL_SIZE, 'm'), subStyle:store.get(K_PL_STYLE, 'shadow') });
 const playerPlay = opts => callNative('RCPlayer', 'play', { ...playerPrefs(), ...opts });
 
