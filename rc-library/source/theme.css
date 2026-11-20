@@ -510,3 +510,6 @@ body.libv .ltop .ltools{margin:0!important;gap:8px}
 /* title logos: no drop-shadow filter (Android draws it as a visible box around the logo) */
 .mtlogo,.mtlogo.tall{filter:none!important}
 html.light .mtlogo{filter:brightness(0)!important}
+
+b,strong{font-weight:500}
+h1,h2,h3,.rowhead h3{font-weight:500}
