@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-5MZenooln0y4JG+Bb4TZIiLomQuKyaw8/ZjkZ2R21d4=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1419,6 +1419,63 @@ html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14p
  /* other tabs keep a comfortable reading width */
  :root:is([data-look="glass"],[data-look="glass-dark"]) #view:not(:has(> .bud-cols)){max-width:820px}
 }
+/* ===================== Bills page (redesign) ===================== */
+#pl .bc-mh{display:flex;align-items:center;gap:8px;margin:6px 0 14px}
+#pl .bc-nav{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:0;background:var(--card);color:var(--text);cursor:pointer;box-shadow:0 4px 14px rgba(20,60,120,.12)}
+#pl .bc-mt{flex:1;border:0;background:none;font:inherit;font-size:21px;font-weight:800;letter-spacing:-.3px;color:var(--text);text-align:left;padding:0 4px;cursor:default}
+#pl .bc-mt span{font-weight:500;color:var(--muted)}
+#pl .bc-mt[data-bxtoday]{cursor:pointer}
+#pl .bc-today{flex:none;border:0;border-radius:999px;padding:9px 14px;background:var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+:root[data-mode="dark"] #pl .bc-today{color:#0B1B33}
+#pl .bc-hero{display:flex;align-items:center;gap:14px;padding:18px}
+#pl .bc-hl{flex:1;min-width:0}
+#pl .bc-hl small{display:block;font-size:12px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
+#pl .bc-hl b{display:block;font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin:4px 0 4px;font-variant-numeric:tabular-nums}
+#pl .bc-hl span{font-size:13px;color:var(--muted)}
+#pl .bc-ring{position:relative;flex:none;width:84px;height:84px;display:grid;place-items:center;text-align:center}
+#pl .bc-ring svg{position:absolute;inset:0;width:100%;height:100%}
+#pl .bc-ring circle{fill:none;stroke-width:8}
+#pl .bc-ring .t{stroke:color-mix(in srgb,var(--text) 10%,transparent)}
+#pl .bc-ring .p{stroke:var(--green);stroke-linecap:round;transition:stroke-dasharray .5s ease}
+#pl .bc-ring b{position:relative;font-size:19px;font-weight:800;line-height:1;margin-top:4px}
+#pl .bc-ring small{position:relative;font-size:10.5px;color:var(--muted);margin-top:-14px}
+#pl .bc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 0}
+#pl .bc-stat{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 12px 11px;border:0;border-radius:16px;background:var(--card);color:var(--text);font:inherit;text-align:left;cursor:pointer;box-shadow:0 6px 18px rgba(20,60,120,.10);overflow:hidden}
+#pl .bc-stat i{width:9px;height:9px;border-radius:50%;margin-bottom:6px;background:var(--sc)}
+#pl .bc-stat b{font-size:15.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#pl .bc-stat span{font-size:12px;color:var(--muted)}
+#pl .bc-stat::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,color-mix(in srgb,var(--sc) 16%,transparent),transparent 70%);pointer-events:none}
+#pl .bc-stat.paid{--sc:var(--green)}#pl .bc-stat.over{--sc:var(--red)}#pl .bc-stat.due{--sc:var(--amber)}#pl .bc-stat.auto{--sc:var(--accent)}
+#pl .bc-stat:active{transform:scale(.97)}
+#pl .bc-cal{margin-top:14px;padding:14px 10px 12px}
+#pl .bc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+#pl .bc-wd{text-align:center;font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);padding:0 0 8px}
+#pl .bc-cell{display:flex;flex-direction:column;align-items:center;gap:5px;height:52px;padding:4px 0 0;border:0;border-radius:14px;background:none;color:var(--text);font:inherit;cursor:pointer}
+#pl .bc-cell .d{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+#pl .bc-cell.past .d{color:var(--muted);font-weight:500}
+#pl .bc-cell.today .d{background:var(--accent);color:#fff;font-weight:800}
+:root[data-mode="dark"] #pl .bc-cell.today .d{color:#0B1B33}
+#pl .bc-cell.sel{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+#pl .bc-cell.sel .d{box-shadow:inset 0 0 0 2px var(--accent)}
+#pl .bc-cell.today.sel .d{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+#pl .bc-dots{display:flex;gap:3px;height:6px}
+#pl .bc-dots i,#pl .bc-legend i,#pl .bc-sh i{display:inline-block;width:6px;height:6px;border-radius:50%}
+#pl .bc-dots i.more{width:4px;height:4px;margin-top:1px;background:var(--muted)}
+#pl i.s-paid{background:var(--green)}#pl i.s-over{background:var(--red)}#pl i.s-soon{background:var(--amber)}#pl i.s-up{background:var(--accent)}
+#pl .bc-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin:10px 0 0;font-size:12px;color:var(--muted)}
+#pl .bc-legend span{display:inline-flex;align-items:center;gap:6px}
+#pl .bc-legend i{width:8px;height:8px}
+#pl .bc-sec{margin-top:22px}
+#pl .bc-sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 6px 8px}
+#pl .bc-sh span{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:750;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+#pl .bc-sh i{width:8px;height:8px}
+#pl .bc-sh small{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+#pl .bc-link{border:0;background:none;color:var(--accent-text,var(--accent));font:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:4px 2px}
+#pl .bc-none,#pl .bc-empty{padding:18px;color:var(--muted);font-size:14px;text-align:center}
+#pl .bc-empty{display:flex;flex-direction:column;align-items:center;gap:6px}
+#pl .bc-empty b{color:var(--text);font-size:17px}
+#pl .bc-sec .bx-list{padding:2px 14px}
+#v-bills .bx-top{display:none}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -2681,11 +2738,11 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && sheetK) closeSheet(); });
     // tapping a day that has bills pulls up that day
     document.addEventListener('click', e => {
-      const d = e.target.closest('#v-bills .bx-cell.has');
-      if (d) setTimeout(() => { if (selDay === Number(d.dataset.day)) openSheet('day'); }, 0);
+      // (the redesigned page shows a tapped day's bills right under the calendar)
     });
   })();
   const WD1 = ['S','M','T','W','T','F','S'], WD3 = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const CHEV_L = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>', CHEV_R = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
   function overdueBills(){
     const items = [];
     for (let i = 6; i >= 0; i--) {
@@ -2722,53 +2779,73 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     const isNow = viewY === today.getFullYear() && viewM === today.getMonth();
     const occ = occurrences(viewY, viewM);
     const earlier = isNow ? overdueBills().filter(o => o.y !== viewY || o.m !== viewM) : [];
-    const total = occ.reduce((s, o) => s + o.amt, 0);
-    const paid = occ.filter(o => o.paid).reduce((s, o) => s + o.amt, 0);
-    const overAll = [...earlier, ...occ.filter(o => status(o) === 'over')];
-    const overAmt = overAll.reduce((s, o) => s + o.amt, 0);
-    const pct = total > 0 ? paid / total : 0;
+    const all = [...earlier, ...occ];
+    const sum = l => l.reduce((s, o) => s + o.amt, 0);
+    const total = sum(occ), paid = sum(occ.filter(o => o.paid)), left = total - paid;
+    const pct = total > 0 ? paid / total : 0, pctR = Math.round(pct * 100);
+    const overL = all.filter(o => status(o) === 'over'), unpaidL = all.filter(o => !o.paid), autoL = occ.filter(o => o.bill.autopay);
 
     $('monthTitle').innerHTML = `<b>${MONTHS[viewM]}</b> ${viewY}` + (isNow ? '' : ' <button class="bx-today" type="button" data-bxtoday>Today</button>');
+    $('bxHero').hidden = true; morph($('bxHero'), ''); morph($('bxQuick'), '');
 
-    // ---- hero: ring + numbers
-    const C = 2 * Math.PI * 50;
-    const next = occ.find(o => !o.paid && daysUntil(o.date) >= 0);
-    morph($('bxHero'), !state.bills.length
-      ? `<div class="bx-empty"><b>No bills yet</b><span>Tap “Add bill” to start your calendar.</span>${SAMPLE_BTN}</div>`
-      : `<div class="bx-sum"><div><small>Left to pay</small><b>${money(total - paid)}</b></div><em>${Math.round(pct * 100)}%<small>paid</small></em></div>
-        <div class="bx-bar2"><i class="p" style="width:${total > 0 ? (paid / total * 100).toFixed(1) : 0}%"></i><i class="o" style="width:${total > 0 ? (occ.filter(o => status(o) === 'over').reduce((s, o) => s + o.amt, 0) / total * 100).toFixed(1) : 0}%"></i></div>
-        <div class="bx-legend"><span><i class="paid"></i>Paid <b>${money(paid)}</b></span><span><i class="over"></i>Late <b>${money(overAmt)}</b></span><span><i class="up"></i>Total <b>${money(total)}</b></span></div>`);
-
-    // ---- quick pay: overdue and the next 7 days (current month only)
-    const soon = isNow ? [...earlier, ...occ.filter(o => !o.paid && daysUntil(o.date) <= 7)] : [];
-    morph($('bxQuick'), '');
-
-    // ---- body
     const byDay = {};
     occ.forEach(o => (byDay[o.day] = byDay[o.day] || []).push(o));
     const n = lastDay(viewY, viewM);
+
+    // ---- 1. month switcher
+    const head = `<div class="bc-mh"><button type="button" class="bc-nav" data-bxprev aria-label="Previous month">${CHEV_L}</button>
+      <button type="button" class="bc-mt" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}>${MONTHS[viewM]} <span>${viewY}</span></button>
+      ${isNow ? '' : '<button type="button" class="bc-today" data-bxtoday>Today</button>'}
+      <button type="button" class="bc-nav" data-bxnext aria-label="Next month">${CHEV_R}</button></div>`;
+
+    // ---- 2. summary: left to pay, a ring for how much is paid, and tappable totals
+    const C = 2 * Math.PI * 30;
+    const hero = !state.bills.length
+      ? `<div class="pcard bc-empty"><b>No bills yet</b><span>Add your first bill and it shows up on the calendar.</span>${SAMPLE_BTN}</div>`
+      : `<div class="pcard bc-hero"><div class="bc-hl"><small>Left to pay</small><b>${money(left)}</b><span>of ${money(total)} · ${occ.length} bill${occ.length === 1 ? '' : 's'} in ${MONTHS[viewM]}</span></div>
+          <div class="bc-ring" role="img" aria-label="${pctR}% paid"><svg viewBox="0 0 72 72"><circle class="t" cx="36" cy="36" r="30"/><circle class="p" cx="36" cy="36" r="30" stroke-dasharray="${(C * pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 36 36)"/></svg><b>${pctR}%</b><small>paid</small></div></div>
+        <div class="bc-stats">
+          <button type="button" class="bc-stat paid" data-bxf="paid"><i></i><b>${money(paid)}</b><span>Paid · ${occ.filter(o => o.paid).length}</span></button>
+          <button type="button" class="bc-stat ${overL.length ? 'over' : 'due'}" data-bxf="unpaid"><i></i><b>${money(overL.length ? sum(overL) : sum(unpaidL))}</b><span>${overL.length ? 'Overdue · ' + overL.length : 'Unpaid · ' + unpaidL.length}</span></button>
+          <button type="button" class="bc-stat auto" data-bxf="auto"><i></i><b>${money(sum(autoL))}</b><span>Autopay · ${autoL.length}</span></button></div>`;
+
+    // ---- 3. calendar: a dot per bill, coloured by status
     const dayCls = d => {
       const c = [];
       if (isNow && d === today.getDate()) c.push('today');
       if (selDay === d) c.push('sel');
-      if (byDay[d]) c.push('has', 'st-' + worst(byDay[d]));
-      if (isNow && d < today.getDate() || new Date(viewY, viewM, d) < today && !isNow) c.push('past');
+      if (byDay[d]) c.push('has');
+      if (new Date(viewY, viewM, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate())) c.push('past');
       return c.join(' ');
     };
-    // month calendar on top; tap a day to show only its bills below
-    let g = WD1.map(w => `<div class="bx-wd">${w}</div>`).join('');
-    for (let i = 0, s = new Date(viewY, viewM, 1).getDay(); i < s; i++) g += '<div></div>';
+    let g = WD1.map(w => `<div class="bc-wd">${w}</div>`).join('');
+    for (let i = 0, s0 = new Date(viewY, viewM, 1).getDay(); i < s0; i++) g += '<div></div>';
     for (let d = 1; d <= n; d++) {
       const list = byDay[d] || [];
-      const amt = list.reduce((s, o) => s + o.amt, 0);
-      g += `<button class="bx-cell ${dayCls(d)}" data-day="${d}" aria-label="${MONTHS[viewM]} ${d}${list.length ? ', ' + list.length + ' bill' + (list.length > 1 ? 's' : '') : ''}"><span class="d">${d}</span>${list.length ? `<span class="a">${shortMoney(amt)}</span>` : ''}</button>`;
+      g += `<button type="button" class="bc-cell ${dayCls(d)}" data-day="${d}" aria-label="${MONTHS[viewM]} ${d}${list.length ? ', ' + list.length + ' bill' + (list.length > 1 ? 's' : '') + ', ' + money(sum(list)) : ''}"><span class="d">${d}</span><span class="bc-dots">${list.slice(0, 3).map(o => `<i class="s-${status(o)}"></i>`).join('')}${list.length > 3 ? '<i class="more"></i>' : ''}</span></button>`;
     }
-    const all = [...earlier, ...occ];
-    const counts = { all: all.length, unpaid: all.filter(o => !o.paid).length, paid: all.filter(o => o.paid).length, auto: all.filter(o => o.bill.autopay).length };
+    const cal = `<div class="pcard bc-cal"><div class="bc-grid" id="bxGrid">${g}</div>
+      <div class="bc-legend"><span><i class="s-paid"></i>Paid</span><span><i class="s-soon"></i>Due soon</span><span><i class="s-up"></i>Coming up</span><span><i class="s-over"></i>Late</span></div></div>`;
+
+    // ---- 4. the bills themselves, on the page: a tapped day, or grouped by what needs doing
+    let list = '';
+    if (state.bills.length) {
+      if (selDay) {
+        const l = byDay[selDay] || [], wd = new Date(viewY, viewM, selDay).toLocaleDateString('en-US', { weekday: 'long' });
+        list = `<div class="bc-sec"><div class="bc-sh"><span>${wd}, ${MONTHS[viewM]} ${selDay}</span><button type="button" class="bc-link" data-day="${selDay}">Show all</button></div>
+          ${l.length ? `<div class="pcard bx-list">${l.map(bxRow).join('')}</div>` : '<div class="pcard bc-none">Nothing due this day.</div>'}</div>`;
+      } else {
+        const groups = [['over', 'Overdue'], ['soon', 'Due soon'], ['up', 'Coming up'], ['paid', 'Paid']];
+        for (const [k, label] of groups) {
+          const l = all.filter(o => status(o) === k);
+          if (!l.length) continue;
+          list += `<div class="bc-sec"><div class="bc-sh"><span><i class="s-${k}"></i>${label}</span><small>${l.length} · ${money(sum(l))}</small></div><div class="pcard bx-list">${l.map(bxRow).join('')}</div></div>`;
+        }
+        if (!list) list = '<div class="pcard bc-none">No bills this month.</div>';
+      }
+    }
+    morph($('bxBody'), head + hero + cal + list);
     const pass = k => o => k === 'all' || (k === 'unpaid' && !o.paid) || (k === 'paid' && o.paid) || (k === 'auto' && o.bill.autopay);
-    const chip = (k, label) => `<button class="bx-chip" type="button" data-bxf="${k}">${label}<span>${counts[k]}</span></button>`;
-    morph($('bxBody'), `<div class="pcard bx-gridcard"><div class="bx-gh"><button type="button" data-bxprev aria-label="Previous month">&#8249;</button><button class="bx-ghm" type="button" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}>${MONTHS[viewM]} <span>${viewY}</span></button><button type="button" data-bxnext aria-label="Next month">&#8250;</button></div><div class="bx-grid" id="bxGrid">${g}</div></div>
-      <div class="bx-chips">${chip('all', 'All')}${chip('unpaid', 'Unpaid')}${chip('paid', 'Paid')}${chip('auto', 'Autopay')}</div>`);
 
     // ---- pull-up sheet for a chip or a tapped day
     if (sheetK) {
