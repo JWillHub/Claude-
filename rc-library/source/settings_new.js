@@ -132,11 +132,11 @@ function renderSettings(){
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
       const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
-      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard acchue">
-          <div class="accrow"><span class="accdot"></span><span class="slab">Slide to pick a colour<small id="acchex">${cur === '#ffffff' ? 'White' : cur.toUpperCase()}</small></span>
-          <button class="accw${cur === '#ffffff' ? ' on' : ''}" id="accwhite">White</button></div>
+      box.innerHTML = `<div class="sgh">Theme</div>${themeCards()}
+        <div class="sgh">Accent color</div><div class="scard acchue">
+          <div class="accrow"><span class="accdot"></span><span class="slab">Slide to pick a colour<small id="acchex">${cur === '#ffffff' ? 'White' : cur.toUpperCase()}</small></span></div>
           <input type="range" class="huebar" id="hue" min="0" max="359" step="1" value="${Math.max(0, hexHue(cur))}" aria-label="Accent colour"></div>
-        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
+        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" class="rng" id="tba" min="0" max="90" step="5" value="${see}" style="--p:${see / 90 * 100}%" aria-label="Tab bar see-through"></div></div>
         <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
@@ -144,12 +144,14 @@ function renderSettings(){
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
       // live while dragging (just one colour value changes, no reload), saved when you let go
       const hue = $('#hue', box), hx = $('#acchex', box);
-      hue.oninput = () => { const c = hueHex(+hue.value); applyAccent(c); hx.textContent = c.toUpperCase(); $('#accwhite', box).classList.remove('on'); };
+      hue.oninput = () => { const c = hueHex(+hue.value); applyAccent(c); hx.textContent = c.toUpperCase(); };
       hue.onchange = () => { store.set(K_ACCENT, hueHex(+hue.value)); hap(); };
-      $('#accwhite', box).onclick = () => { store.set(K_ACCENT, '#ffffff'); applyAccent(); hap(); redraw(); };
+      // sliders keep the finger to themselves (the page's swipe gesture was taking it, so they only jumped)
+      $$('input[type=range]', box).forEach(r => ['touchstart', 'touchmove', 'pointerdown', 'pointermove'].forEach(ev => r.addEventListener(ev, e => e.stopPropagation(), { passive:true })));
+      $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
-      $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
+      $('#tba', box).oninput = e => { e.target.style.setProperty('--p', (+e.target.value / 90 * 100) + '%'); store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
       $('#nomo', box).onchange = e => { store.set(K_NOMO, e.target.checked); applyTheme(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
     });

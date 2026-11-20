@@ -14,16 +14,16 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
 <script>try{var _t=JSON.parse(localStorage.getItem('rclib.theme')||'"dark"');if(_t==='light'||(_t==='system'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light')}catch(e){}</script>
 <style>
 :root{
   --bg:#000;--bg2:#000;--card:#1c1823;--card2:#262030;--line:#30293b;
   --text:#fff;--muted:#fff;--accent:#b8242c;--accent2:#ff6f61;--good:#5ad19a;
-  --disp:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  --disp:'Inter Tight','Inter Display','Inter',system-ui,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
 body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 html:has(body.locked),body.locked{overflow:hidden}
 .sbk{touch-action:none}
@@ -1025,7 +1025,7 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
 .rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
 .rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
-.tbrow input[type=range]{flex:1;max-width:46%;accent-color:var(--accent)}
+
 
 /* ==== ACCENT COLORS: two even rows of five, with names ==== */
 .accgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px 6px;padding:18px 10px 16px}
@@ -1055,8 +1055,7 @@ html.light .acci.on[data-c="#ffffff"] .accsw{box-shadow:0 0 0 3px var(--bg),0 0 
 .huebar::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);border:3px solid #fff}
 
 /* ==== SETTINGS HOME: a header card with your numbers, coloured icon tiles ==== */
-.shero{position:relative;overflow:hidden;margin:14px 0 6px;padding:18px;border-radius:22px;border:1px solid var(--line);
-  background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 62%),var(--card2)}
+.shero{position:relative;overflow:hidden;margin:14px 0 6px;padding:18px;border-radius:24px}
 .shtop{display:flex;align-items:center;gap:14px}
 .shico{width:54px;height:54px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .shtop b{display:block;font-family:var(--disp);font-size:24px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
@@ -1070,6 +1069,50 @@ html.light .sstats span{background:rgba(0,0,0,.05)}
 .smain .srow .sic svg{stroke:#fff!important;width:19px;height:19px}
 #g-conn .sic{background:#2f7fd8!important}#g-play .sic{background:#7c5ce0!important}#g-look .sic{background:var(--accent)!important}
 #g-data .sic{background:#1fa36a!important}#s-about .sic{background:#6b7280!important}
+
+
+/* ==== SLIDERS: drawn by hand so only the filled part takes the accent ==== */
+input[type=range]{touch-action:none}
+.rng{-webkit-appearance:none;appearance:none;flex:1;max-width:46%;height:8px;border-radius:999px;margin:0;outline:none;
+  background:linear-gradient(90deg,var(--accent) 0 var(--p,0%),rgba(255,255,255,.16) var(--p,0%) 100%)}
+html.light .rng{background:linear-gradient(90deg,var(--accent) 0 var(--p,0%),rgba(0,0,0,.14) var(--p,0%) 100%)}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%,transparent),0 2px 8px rgba(0,0,0,.4)}
+.rng::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:0}
+
+/* ==== LIQUID GLASS, everywhere ====
+   Frosted panels: a see-through tint with a bright top edge, a soft inner shine and a deep shadow.
+   Over the page they sit on a faint accent glow so the glass has something to catch. */
+:root{--gl-a:rgba(255,255,255,.085);--gl-b:rgba(255,255,255,.025);--gl-edge:rgba(255,255,255,.14);
+  --gl-shine:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.28),inset 0 0 22px rgba(255,255,255,.025);--gl-drop:0 12px 32px rgba(0,0,0,.38)}
+html.light{--gl-a:rgba(255,255,255,.62);--gl-b:rgba(255,255,255,.32);--gl-edge:rgba(255,255,255,.85);
+  --gl-shine:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(0,0,0,.06);--gl-drop:0 10px 26px rgba(0,0,0,.10)}
+html.navy{--gl-a:rgba(170,190,255,.085);--gl-b:rgba(170,190,255,.025);--gl-edge:rgba(180,200,255,.15)}
+html:not(.light) body{background-image:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 70%),radial-gradient(60% 40% at 100% 100%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%)!important;background-attachment:fixed!important}
+html.light body{background-image:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%)!important;background-attachment:fixed!important}
+/* panels */
+.scard,.shero,.gpk,.toast,.ptr{background:linear-gradient(150deg,var(--gl-a),var(--gl-b))!important;border:1px solid var(--gl-edge)!important;box-shadow:var(--gl-shine),var(--gl-drop)!important}
+.shero{background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 62%),linear-gradient(150deg,var(--gl-a),var(--gl-b))!important}
+.gpk{-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);background:linear-gradient(150deg,color-mix(in srgb,var(--bg) 70%,transparent),color-mix(in srgb,var(--bg) 82%,transparent))!important}
+.toast,.ptr{-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);background:color-mix(in srgb,var(--bg) 72%,transparent)!important}
+.sstats span{background:linear-gradient(150deg,var(--gl-a),transparent)!important;border:1px solid var(--gl-edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+/* tab bar and floating button: glass with a bright rim */
+.tabbar{border-color:var(--gl-edge)!important;box-shadow:var(--gl-shine),0 14px 34px rgba(0,0,0,.55)!important}
+html.light .tabbar{box-shadow:var(--gl-shine),0 12px 28px rgba(0,0,0,.14)!important}
+.tb.on{background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+html.light .tb.on{background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(255,255,255,.55))!important;box-shadow:inset 0 1px 0 #fff,0 2px 8px rgba(0,0,0,.08)}
+body>#hcar{box-shadow:var(--gl-shine),0 10px 26px rgba(0,0,0,.5)!important}
+/* buttons */
+.pill.ghost,.btn.ghost,.sclr,.ssel,.gsel{background:linear-gradient(150deg,var(--gl-a),var(--gl-b))!important;border:1px solid var(--gl-edge)!important;box-shadow:var(--gl-shine)!important}
+.pill:not(.ghost){box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(0,0,0,.2),0 6px 16px color-mix(in srgb,var(--accent) 35%,transparent)}
+/* search boxes */
+.hsearch,.lsearch{background:linear-gradient(150deg,var(--gl-a),var(--gl-b))!important;border:1px solid var(--gl-edge)!important;box-shadow:var(--gl-shine)!important}
+/* picture cards get a glass rim */
+.hcard{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1px var(--gl-edge),0 16px 34px rgba(0,0,0,.55)!important}
+.rcth .pv{box-shadow:0 0 0 1px var(--gl-edge),inset 0 1px 0 rgba(255,255,255,.2)}
+
+html.light body>#hcar,html.light body>#hcar svg{color:var(--accent)!important;stroke:var(--accent)}
+/* sleeker type: Inter Tight headings, a touch tighter than before since the old font was narrow */
+h1,h2,h3,.stitle,.rowhead h3{letter-spacing:-.01em}
 </style>
 <style id="lightgen">html.light .top{background-color:#d2d1d7!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -3130,8 +3173,8 @@ async function saveReviewImage(d, btn){
   const x = c.getContext('2d');
   const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2a1d2e'); g.addColorStop(1, '#0c0a0f');
   x.fillStyle = g; x.fillRect(0, 0, W, H);
-  try{ await document.fonts.load('700 100px "Barlow Condensed"'); }catch(e){}
-  const disp = (sz) => `700 ${sz}px "Barlow Condensed", "Arial Narrow", sans-serif`;
+  try{ await document.fonts.load('700 100px "Inter Tight"'); }catch(e){}
+  const disp = (sz) => `700 ${sz}px "Inter Tight", "Inter", sans-serif`;
   x.textAlign = 'center';
   x.fillStyle = '#b8242c'; x.font = disp(54); x.fillText('ROLLING CREDITS', W / 2, 110);
   x.fillStyle = '#9c93a9'; x.font = '600 34px system-ui, sans-serif'; x.fillText(d.thisYear ? `MY ${d.yr} IN FILM` : 'MY FILM LIFE SO FAR', W / 2, 165);
@@ -4413,11 +4456,11 @@ function renderSettings(){
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
       const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
-      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard acchue">
-          <div class="accrow"><span class="accdot"></span><span class="slab">Slide to pick a colour<small id="acchex">${cur === '#ffffff' ? 'White' : cur.toUpperCase()}</small></span>
-          <button class="accw${cur === '#ffffff' ? ' on' : ''}" id="accwhite">White</button></div>
+      box.innerHTML = `<div class="sgh">Theme</div>${themeCards()}
+        <div class="sgh">Accent color</div><div class="scard acchue">
+          <div class="accrow"><span class="accdot"></span><span class="slab">Slide to pick a colour<small id="acchex">${cur === '#ffffff' ? 'White' : cur.toUpperCase()}</small></span></div>
           <input type="range" class="huebar" id="hue" min="0" max="359" step="1" value="${Math.max(0, hexHue(cur))}" aria-label="Accent colour"></div>
-        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
+        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" class="rng" id="tba" min="0" max="90" step="5" value="${see}" style="--p:${see / 90 * 100}%" aria-label="Tab bar see-through"></div></div>
         <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
@@ -4425,12 +4468,14 @@ function renderSettings(){
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
       // live while dragging (just one colour value changes, no reload), saved when you let go
       const hue = $('#hue', box), hx = $('#acchex', box);
-      hue.oninput = () => { const c = hueHex(+hue.value); applyAccent(c); hx.textContent = c.toUpperCase(); $('#accwhite', box).classList.remove('on'); };
+      hue.oninput = () => { const c = hueHex(+hue.value); applyAccent(c); hx.textContent = c.toUpperCase(); };
       hue.onchange = () => { store.set(K_ACCENT, hueHex(+hue.value)); hap(); };
-      $('#accwhite', box).onclick = () => { store.set(K_ACCENT, '#ffffff'); applyAccent(); hap(); redraw(); };
+      // sliders keep the finger to themselves (the page's swipe gesture was taking it, so they only jumped)
+      $$('input[type=range]', box).forEach(r => ['touchstart', 'touchmove', 'pointerdown', 'pointermove'].forEach(ev => r.addEventListener(ev, e => e.stopPropagation(), { passive:true })));
+      $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
-      $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
+      $('#tba', box).oninput = e => { e.target.style.setProperty('--p', (+e.target.value / 90 * 100) + '%'); store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
       $('#nomo', box).onchange = e => { store.set(K_NOMO, e.target.checked); applyTheme(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
     });
