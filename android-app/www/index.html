@@ -957,12 +957,12 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 
 /* ==== FLOATING GLASS TAB BAR (solid glass, no live blur) ==== */
 .tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:7px 6px;border-radius:30px;pointer-events:auto;
-  background:linear-gradient(180deg,rgba(30,30,32,.94),rgba(10,10,11,.96))!important;border:1px solid rgba(255,255,255,.1);
+  background:linear-gradient(180deg,rgba(30,30,32,calc(.94*var(--tbA,1))),rgba(10,10,11,calc(.96*var(--tbA,1))))!important;border:1px solid rgba(255,255,255,.1);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.65)}
 .tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
 .tb svg{filter:none}
 .tb.on{background:rgba(255,255,255,.1)}
-html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,248,.97))!important;border-color:rgba(0,0,0,.07);
+html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,calc(.97*var(--tbA,1))),rgba(246,246,248,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
 
@@ -976,6 +976,37 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 .mvsheet>.bdrop,.sh.shcard .shbg{transition:opacity .4s ease}
 .sh.artwait>.bdrop,.sh.artwait .shbg{opacity:0}
 .mvsheet .mvhead h2,.mvsheet .mvhead h2.haslogo,.shcard .shname,.shcard .shname.haslogo{margin-bottom:12px!important}
+
+
+/* ==== NAVY THEME (html.navy; black backgrounds get navy twins, generated in light_gen.py) ==== */
+html.navy{--bg:#081833;--bg2:#081833;--card2:#10264a;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
+
+/* ==== REDUCE MOTION (Settings, Appearance): no slides, fades or zooms ==== */
+html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+
+/* ==== THEME PICKER: three little previews (Light, Dark, Navy) ==== */
+.rcth{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+.rcth button{display:flex;flex-direction:column;align-items:center;gap:9px;padding:0;border:0;background:none;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rcth .pv{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
+.rcth button:active .pv{transform:scale(.97)}
+.rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
+.rcth .pv-light{background:linear-gradient(160deg,#ffffff,#e9e9ee)}
+.rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
+.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.45),transparent 70%),linear-gradient(160deg,#0e2550,#071430)}
+.rcth .pv i{position:absolute;display:block}
+.rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
+.rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}
+.rcth .pv .p1,.rcth .pv .p2,.rcth .pv .p3{top:53%;width:22%;height:24%;border-radius:5px}
+.rcth .pv .p1{left:10%}.rcth .pv .p2{left:39%}.rcth .pv .p3{left:68%}
+.rcth .pv-light .p1,.rcth .pv-light .p2,.rcth .pv-light .p3{background:#d6d6dc}
+.rcth .pv-dark .p1,.rcth .pv-dark .p2,.rcth .pv-dark .p3{background:#2c2c30}
+.rcth .pv-navy .p1,.rcth .pv-navy .p2,.rcth .pv-navy .p3{background:rgba(160,200,255,.18)}
+.rcth .pv .tb2{bottom:6%;left:12%;right:12%;height:9%;border-radius:999px}
+.rcth .pv-light .tb2{background:rgba(0,0,0,.08)}.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-navy .tb2{background:rgba(160,200,255,.2)}
+.rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
+.rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
+.rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
+.tbrow input[type=range]{flex:1;max-width:46%;accent-color:var(--accent)}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1107,6 +1138,42 @@ html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
 html.light .shbg{background-color:#ececef!important}
+</style>
+<style id="navygen">html.navy .top{background:#081833!important}
+html.navy .lcx{background:rgba(8,24,51,.6)!important}
+html.navy .shcard{background:#081833!important}
+html.navy .shbg{background:#081833 center top/cover no-repeat!important}
+html.navy .shbg::after{background:linear-gradient(180deg,rgba(8,24,51,.15) 0%,rgba(8,24,51,.5) 55%,#081833 96%)!important}
+html.navy .shcard .shwrap .pad{background:#081833!important}
+html.navy .toast,html.navy .ptr{background:#081833!important}
+html.navy .sh.page{background:#081833!important}
+html.navy .ltools select option{background:#081833!important}
+html.navy .grid img,html.navy .rarow img,html.navy .lshow img,html.navy .cwimg,html.navy .epth{background-color:#081833!important}
+html.navy .skel{background-color:#081833!important}
+html.navy .ssel option{background:#081833!important}
+html.navy .subprev.box span{background:rgba(8,24,51,.7)!important}
+html.navy .mvsheet>.bdrop{background-color:#081833!important}
+html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(8,24,51,.1) 0%,rgba(8,24,51,.45) 55%,#081833 97%)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#081833 calc(340px + env(safe-area-inset-top))) local!important}
+html.navy .gpk-bk{background:rgba(8,24,51,.25)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#081833 calc(300px + env(safe-area-inset-top))) local!important}
+html.navy .gpk{background:rgba(8,24,51,.72)!important}
+html.navy .gpk-bk{background:rgba(8,24,51,.4)!important}
+html.navy .gpk-bk{background:rgba(8,24,51,.55)!important}
+html.navy body.libv .ltop{background:#081833!important}
+html.navy .hcard{background:#081833 center/cover no-repeat!important}
+html.navy .hcard::after{background:linear-gradient(180deg,rgba(8,24,51,0) 30%,rgba(8,24,51,.92) 100%)!important}
+html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background:#081833!important}
+html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(8,24,51,.25) 0%,rgba(8,24,51,0) 18%,rgba(8,24,51,0) 45%,rgba(8,24,51,.75) 78%,#081833 100%)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#081833 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.navy .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(8,24,51,.25) 0%,rgba(8,24,51,0) 18%,rgba(8,24,51,0) 42%,rgba(8,24,51,.8) 78%,#081833 100%)!important}
+html.navy .seapick{background:#081833!important}
+html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#081833)!important}
+html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(8,24,51,.35))!important}
+html.navy .rcth .pv-light .tb2{background:rgba(8,24,51,.08)!important}
+html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.28) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.45) 0%,transparent 65%),#081833 fixed!important}
+html.navy .tabbar{background:linear-gradient(180deg,rgba(20,46,94,calc(.94*var(--tbA,1))),rgba(8,24,51,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
+html.navy .tb.on{background:rgba(160,200,255,.14)}
 </style>
 </head>
 <body>
@@ -4139,7 +4206,7 @@ function openLibrary(){ setView('library'); }
 // Settings keys for the player and the look of the app
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
-const K_THEME = 'rclib.theme';
+const K_THEME = 'rclib.theme', K_TBA = 'rclib.tabsee', K_NOMO = 'rclib.nomotion';
 function applyAccent(){ try{
   let c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
   if(document.documentElement.classList.contains('light') && lum > 0.85){ c = '#000000'; lum = 0; }   // white accent becomes black in light mode
@@ -4149,9 +4216,13 @@ function applyAccent(){ try{
 // Light or dark: the setting is Dark, Light, or match the phone
 const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
 function applyTheme(){ try{
-  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches);
-  document.documentElement.classList.toggle('light', light);
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#ffffff' : '#000000';
+  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), navy = t === 'navy';
+  const r = document.documentElement;
+  r.classList.toggle('light', light); r.classList.toggle('navy', navy);
+  // tab bar see-through (0 = solid) and reduce motion
+  r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
+  r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#ffffff' : navy ? '#081833' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -4251,8 +4322,12 @@ function renderSettings(){
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard">
-        ${selRow('palette', 'Mode', '', pick('l-theme', store.get(K_THEME, 'dark'), [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match phone']]))}</div>
+      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
+      const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['light', 'Light'], ['dark', 'Dark'], ['navy', 'Navy']].map(([k, n]) =>
+          `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
+        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
+        <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
         <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
         <div class="sgh">Start on</div><div class="scard">
@@ -4261,7 +4336,9 @@ function renderSettings(){
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
       $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
-      $('#l-theme', box).onchange = e => { store.set(K_THEME, e.target.value); applyTheme(); hap(); };
+      $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
+      $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
+      $('#nomo', box).onchange = e => { store.set(K_NOMO, e.target.checked); applyTheme(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
     });
     $('#g-data', b).onclick = () => subPage('Your data', box => {

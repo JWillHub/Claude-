@@ -3,7 +3,7 @@
 import re
 KEEP = ('.hcard', '.hero', '.bd', '.card .rb', '.card .num', '.chip.on', '.rdot', '.c9', '.c5', '.c4', '.c8', '.c7', '.c6',
         '.subprev', '.glback', '.cwplay', '.lcx', '.grid .rk', '.stamp', '.mtlogo', '.lplay', '.toast', '.ptr', 'html.light',
-        '.gpk', '.lsearch', '#lsort', '.seapick', '.skel', '.updbtn', '#hcar', '.pill')
+        '.gpk', '.lsearch', '#lsort', '.seapick', '.skel', '.updbtn', '#hcar', '.pill', 'html.navy', 'html.nomotion', '.rcth')
 def gen(s):
     css = ''.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
     css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
@@ -35,3 +35,31 @@ html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
 html.light .shbg{background-color:#ececef!important}
 '''
+
+
+# Navy, generated: every black or near-black background gets a navy twin (html.navy), so no black patches remain
+NAVY = '#081833'
+def navy(s):
+    css = ''.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    css = re.sub(r'@keyframes[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}', '', css)
+    out = []
+    for m in re.finditer(r'([^{}@]+)\{([^{}]*)\}', css):
+        sel, body = ' '.join(m.group(1).split()), m.group(2)
+        if not sel or sel.startswith(('0%', '50%', '100%', 'from', 'to')): continue
+        sels = [x.strip() for x in sel.split(',') if x.strip() and not x.strip().startswith('html.') and 'video' not in x and '::-webkit' not in x]
+        if not sels: continue
+        decls = []
+        for d in re.finditer(r'(background(?:-color)?)\s*:\s*([^;]+)', body):
+            prop, val = d.group(1), d.group(2).replace('!important', '').strip()
+            if not re.search(r'#000\b|#000000|#0c0a0f|#141119|#120f17|#111\b|rgba\(0,\s*0,\s*0,', val): continue
+            if 'url(' in val: continue
+            nv = re.sub(r'#000000|#000\b|#0c0a0f|#141119|#120f17|#111\b', NAVY, val)
+            nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(8,24,51,', nv)
+            decls.append(f'{prop}:{nv}!important')
+        if decls: out.append(','.join('html.navy ' + x for x in sels) + '{' + ';'.join(decls) + '}')
+    return s.replace('</head>', '<style id="navygen">' + '\n'.join(out) + '\n' + NAVY_LATE + '</style>\n</head>', 1)
+NAVY_LATE = """html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.28) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.45) 0%,transparent 65%),#081833 fixed!important}
+html.navy .tabbar{background:linear-gradient(180deg,rgba(20,46,94,calc(.94*var(--tbA,1))),rgba(8,24,51,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
+html.navy .tb.on{background:rgba(160,200,255,.14)}
+"""

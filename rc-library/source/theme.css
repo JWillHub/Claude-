@@ -326,12 +326,12 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 
 /* ==== FLOATING GLASS TAB BAR (solid glass, no live blur) ==== */
 .tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:7px 6px;border-radius:30px;pointer-events:auto;
-  background:linear-gradient(180deg,rgba(30,30,32,.94),rgba(10,10,11,.96))!important;border:1px solid rgba(255,255,255,.1);
+  background:linear-gradient(180deg,rgba(30,30,32,calc(.94*var(--tbA,1))),rgba(10,10,11,calc(.96*var(--tbA,1))))!important;border:1px solid rgba(255,255,255,.1);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.65)}
 .tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
 .tb svg{filter:none}
 .tb.on{background:rgba(255,255,255,.1)}
-html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(246,246,248,.97))!important;border-color:rgba(0,0,0,.07);
+html.light .tabbar{background:linear-gradient(180deg,rgba(255,255,255,calc(.97*var(--tbA,1))),rgba(246,246,248,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
 
@@ -345,3 +345,34 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 .mvsheet>.bdrop,.sh.shcard .shbg{transition:opacity .4s ease}
 .sh.artwait>.bdrop,.sh.artwait .shbg{opacity:0}
 .mvsheet .mvhead h2,.mvsheet .mvhead h2.haslogo,.shcard .shname,.shcard .shname.haslogo{margin-bottom:12px!important}
+
+
+/* ==== NAVY THEME (html.navy; black backgrounds get navy twins, generated in light_gen.py) ==== */
+html.navy{--bg:#081833;--bg2:#081833;--card2:#10264a;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
+
+/* ==== REDUCE MOTION (Settings, Appearance): no slides, fades or zooms ==== */
+html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+
+/* ==== THEME PICKER: three little previews (Light, Dark, Navy) ==== */
+.rcth{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+.rcth button{display:flex;flex-direction:column;align-items:center;gap:9px;padding:0;border:0;background:none;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rcth .pv{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
+.rcth button:active .pv{transform:scale(.97)}
+.rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
+.rcth .pv-light{background:linear-gradient(160deg,#ffffff,#e9e9ee)}
+.rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
+.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.45),transparent 70%),linear-gradient(160deg,#0e2550,#071430)}
+.rcth .pv i{position:absolute;display:block}
+.rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
+.rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}
+.rcth .pv .p1,.rcth .pv .p2,.rcth .pv .p3{top:53%;width:22%;height:24%;border-radius:5px}
+.rcth .pv .p1{left:10%}.rcth .pv .p2{left:39%}.rcth .pv .p3{left:68%}
+.rcth .pv-light .p1,.rcth .pv-light .p2,.rcth .pv-light .p3{background:#d6d6dc}
+.rcth .pv-dark .p1,.rcth .pv-dark .p2,.rcth .pv-dark .p3{background:#2c2c30}
+.rcth .pv-navy .p1,.rcth .pv-navy .p2,.rcth .pv-navy .p3{background:rgba(160,200,255,.18)}
+.rcth .pv .tb2{bottom:6%;left:12%;right:12%;height:9%;border-radius:999px}
+.rcth .pv-light .tb2{background:rgba(0,0,0,.08)}.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-navy .tb2{background:rgba(160,200,255,.2)}
+.rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
+.rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
+.rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
+.tbrow input[type=range]{flex:1;max-width:46%;accent-color:var(--accent)}

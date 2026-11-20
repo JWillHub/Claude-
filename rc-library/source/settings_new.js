@@ -1,7 +1,7 @@
 // Settings keys for the player and the look of the app
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
-const K_THEME = 'rclib.theme';
+const K_THEME = 'rclib.theme', K_TBA = 'rclib.tabsee', K_NOMO = 'rclib.nomotion';
 function applyAccent(){ try{
   let c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
   if(document.documentElement.classList.contains('light') && lum > 0.85){ c = '#000000'; lum = 0; }   // white accent becomes black in light mode
@@ -11,9 +11,13 @@ function applyAccent(){ try{
 // Light or dark: the setting is Dark, Light, or match the phone
 const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
 function applyTheme(){ try{
-  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches);
-  document.documentElement.classList.toggle('light', light);
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#ffffff' : '#000000';
+  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), navy = t === 'navy';
+  const r = document.documentElement;
+  r.classList.toggle('light', light); r.classList.toggle('navy', navy);
+  // tab bar see-through (0 = solid) and reduce motion
+  r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
+  r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#ffffff' : navy ? '#081833' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -113,8 +117,12 @@ function renderSettings(){
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard">
-        ${selRow('palette', 'Mode', '', pick('l-theme', store.get(K_THEME, 'dark'), [['dark', 'Dark'], ['light', 'Light'], ['system', 'Match phone']]))}</div>
+      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
+      const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['light', 'Light'], ['dark', 'Dark'], ['navy', 'Navy']].map(([k, n]) =>
+          `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
+        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
+        <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
         <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
         <div class="sgh">Start on</div><div class="scard">
@@ -123,7 +131,9 @@ function renderSettings(){
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
       $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
-      $('#l-theme', box).onchange = e => { store.set(K_THEME, e.target.value); applyTheme(); hap(); };
+      $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
+      $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
+      $('#nomo', box).onchange = e => { store.set(K_NOMO, e.target.checked); applyTheme(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
     });
     $('#g-data', b).onclick = () => subPage('Your data', box => {
