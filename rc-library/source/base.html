@@ -1381,11 +1381,13 @@ function openGenrePage(def){
   setView('genre');
   const b = $('#v-genre');
   b.innerHTML = `<div class="pad"><div class="gopts" style="margin:14px 0"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
-      <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
+      <button class="ysel" id="gdec" aria-label="Decade"><span>Any year</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></div>
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   const load = () => { const gd = def.all ? allGenreDef(def, sort, decade) : genreDef(def.tv, def.genreId, sort, decade); setPageSource({ title:def.title, def:gd }); feed(null, $('.grid', b), $('.sent', b), $('.msg', b), gd); };
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); scrollTo(0, 0); load(); });
-  $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
+  // decades in the app's own glass pop-up: a vertical list you can flick through
+  $('#gdec', b).onclick = () => glassPick([['', 'Any year'], ...DECADES.map(d => [d, d])], decade, v => {
+    decade = v; $('#gdec span', b).textContent = v || 'Any year'; $('#gdec', b).classList.toggle('on', !!v); scrollTo(0, 0); load(); });
   load();
 }
 const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.kind = tv ? 'tv' : 'movie'; setView('genres'); if(built.genres) buildGenreBrowse(); };

@@ -1007,6 +1007,23 @@ body.libv .ltop,body:not(.libv) #v-genres .gtop{padding-top:calc(10px + env(safe
 .gtile b{position:absolute;left:14px;right:12px;bottom:12px;z-index:1;color:#fff;font-family:var(--disp);font-size:21px;line-height:1.05;text-shadow:0 2px 8px rgba(0,0,0,.6)}
 .gtile:active .gtart{transform:scale(1.04)}
 body.libv #v-library>div:has(#lmain),body.libv #lmain{padding-top:0!important;margin-top:0!important}
+
+/* sub-page back button: the same glass circle as on title pages; title shifted to sit beside it */
+header.top{height:calc(62px + env(safe-area-inset-top))}
+header.top .ib.hback{width:42px;height:42px;border-radius:50%;color:#fff;margin-right:6px;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.32);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.35)}
+header.top .ib.hback svg{width:22px;height:22px;margin-left:-2px}
+header.top:has(#hback:not([hidden])){justify-content:flex-start;gap:12px}
+header.top:has(#hback:not([hidden])) .logo.sub{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;margin:0;text-align:left}
+html.light header.top .ib.hback{color:#111;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.7));border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+/* year button: opens the decade pop-up */
+.ysel{flex:none;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 16px;border-radius:14px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);color:var(--text);font:inherit;font-size:14px;font-weight:600}
+.ysel svg{opacity:.7}
+.ysel.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.gpk{max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1136,6 +1153,7 @@ html.light .morecp{color:var(--text)!important}
 html.light .tabbar{border-color:rgba(0,0,0,0.12)!important}
 html.light body:not(.libv) #v-genres .gtop{background-color:#fff!important}
 html.light .gtile b{color:var(--text)!important}
+html.light header.top .ib.hback{color:var(--text)!important;border-color:rgba(0,0,0,0.30)!important}
 html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
@@ -2178,11 +2196,13 @@ function openGenrePage(def){
   setView('genre');
   const b = $('#v-genre');
   b.innerHTML = `<div class="pad"><div class="gopts" style="margin:14px 0"><div class="seg">${[['popular','Popular'],['rated','Top rated'],['newest','Newest']].map(([k, l]) => `<button data-s="${k}" class="${k === sort ? 'on' : ''}">${l}</button>`).join('')}</div>
-      <select id="gdec" aria-label="Decade"><option value="">Any year</option>${DECADES.map(d => `<option>${d}</option>`).join('')}</select></div>
+      <button class="ysel" id="gdec" aria-label="Decade"><span>Any year</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button></div>
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   const load = () => { const gd = def.all ? allGenreDef(def, sort, decade) : genreDef(def.tv, def.genreId, sort, decade); setPageSource({ title:def.title, def:gd }); feed(null, $('.grid', b), $('.sent', b), $('.msg', b), gd); };
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); scrollTo(0, 0); load(); });
-  $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
+  // decades in the app's own glass pop-up: a vertical list you can flick through
+  $('#gdec', b).onclick = () => glassPick([['', 'Any year'], ...DECADES.map(d => [d, d])], decade, v => {
+    decade = v; $('#gdec span', b).textContent = v || 'Any year'; $('#gdec', b).classList.toggle('on', !!v); scrollTo(0, 0); load(); });
   load();
 }
 const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.kind = tv ? 'tv' : 'movie'; setView('genres'); if(built.genres) buildGenreBrowse(); };
