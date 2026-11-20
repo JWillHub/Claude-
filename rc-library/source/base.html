@@ -53,6 +53,11 @@ svg{display:block}
 .hproj[hidden],.top.searching .hproj{display:none}
 .top.searching .hsearch{display:flex;animation:fadein .2s ease}
 #hsearch:not([hidden]){display:none}
+/* Search tab: its own page; the tab you were on is hidden behind it */
+body.spage main>section[id^="v-"]{display:none!important}
+body.spage #srch{min-height:60vh}
+body.spage header.top{display:flex!important}
+.sidle{margin:16px 0 10px;font-size:17px;font-weight:800;color:var(--text);text-transform:none;letter-spacing:0}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
 .srch[hidden]{display:none}
@@ -1063,7 +1068,7 @@ function setHeaderTitle(t){
 }
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
 // Search lives in the tab bar: it opens the search box at the top and lights up while you're searching
-if($('#searchTab')) $('#searchTab').onclick = () => openSearch(lastTab === 'tv');
+if($('#searchTab')) $('#searchTab').onclick = () => openSearch(lastTab === 'tv', true);
 $('#hcancel').onclick = () => history.back();
 $('#setTab').onclick = openSettings;
 
@@ -1286,9 +1291,20 @@ function discoverDef(f){
 }
 // search opens in the header and lays results over the page you're on; Cancel or Back puts you right back
 let searchOn = false, searchTV = false;
-function openSearch(tv){
+// Empty search: recent searches; on the Search tab's own page, also what's trending this week
+function searchIdle(){
+  const panel = $('#srch');
+  $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  if(typeof showRecent === 'function') showRecent(); else panel.hidden = true;
+  if(!document.body.classList.contains('spage')) return;
+  panel.hidden = false;
+  $('#fpeople').innerHTML = '<div class="lbl sidle">Trending this week</div>';
+  feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), searchTV ? { path:'/trending/tv/week', tv:true } : { path:'/trending/all/week' });
+}
+function openSearch(tv, asPage){
   if(searchOn){ $('#hq').focus(); return; }
   searchOn = true; searchTV = tv;
+  document.body.classList.toggle('spage', !!asPage);
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === 'search'));
   history.pushState({ search:1 }, '');
   $('.top').classList.add('searching');
@@ -1299,6 +1315,7 @@ function openSearch(tv){
 function closeSearch(fromPop){
   if(!searchOn) return;
   searchOn = false;
+  document.body.classList.remove('spage');
   $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(view)));
   $('.top').classList.remove('searching'); $('#srch').hidden = true; $('#hq').blur();
   if(!fromPop){ popSkip++; history.back(); }

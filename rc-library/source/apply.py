@@ -655,5 +655,14 @@ $('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) ret
 
 
 
+
+
+# ---------- SEARCH TAB PAGE: empty search shows recents (+ trending on the Search page) ----------
+rep("""  const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
+  showRecent();
+  q.focus();""", """  searchIdle();
+  q.focus();""")
+rep("""    if(!q){ $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = ''; showRecent(); return; }""",
+    """    if(!q){ searchIdle(); return; }""")
 open(p, 'w').write(s)
 print('applied cast chips')
