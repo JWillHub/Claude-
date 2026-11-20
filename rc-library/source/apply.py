@@ -565,7 +565,7 @@ s = s[:_i] + _svg + s[_j:]
 # ---------- HIDE TOP BAR ON SCROLL DOWN, SHOW ON SCROLL UP ----------
 _hide_js = r"""
 <script>(()=>{let y=scrollY,off=0,H=0,q=0;
-const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const bars=()=>document.querySelectorAll('header.top');
 const measure=()=>{H=0;bars().forEach(b=>H=Math.max(H,b.offsetHeight+2));};
 const set=(o,glide)=>{if(o===off&&!glide)return;off=o;bars().forEach(b=>{b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,H)}px)`:'';});};
 const tick=()=>{q=0;const n=Math.max(0,scrollY),d=n-y;y=n;

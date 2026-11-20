@@ -1123,8 +1123,8 @@ html body header.top.top,html body.libv .ltop.ltop{
 html.navy body header.top.top,html.navy body.libv .ltop.ltop{background:rgba(18,20,27,calc(.94*var(--tbA,1)))!important}
 html.light body header.top.top,html.light body.libv .ltop.ltop{background:rgba(212,201,180,calc(.94*var(--tbA,1)))!important}
 /* cover the strip above the bar so nothing peeks through */
-header.top.top::before,body.libv .ltop.ltop::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:200px;background:inherit;pointer-events:none}
-header.top.top,body.libv .ltop.ltop{position:sticky;top:0}
+header.top.top::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:200px;background:inherit;pointer-events:none}
+header.top.top{position:sticky;top:0}
 body.libv #v-library>div:has(#lmain){padding-top:0!important}
 body.libv #lmain{margin-top:0!important;padding-top:0!important}
 body.libv #lmain>.ltop{margin-top:0!important}
@@ -1149,6 +1149,13 @@ body.libv #lmain>div[style="height:8px"]:first-child{display:none}
 .pill.ghost,.btn.ghost,.sclr,.ssel,.gsel,.hsearch,.lsearch,.ltools #lsort,.ltools #lsort.lsortbtn,body>#hcar,.pkp,.chip,.sstats span{
   background:color-mix(in srgb,var(--card2) calc(var(--tbA,1)*90%),transparent)!important}
 .tb.on{background:color-mix(in srgb,var(--text) calc(var(--tbA,1)*14% + 4%),transparent)!important}
+
+/* Library search row scrolls away with the page (like the Search tab) and matches its size */
+html body.libv .ltop.ltop{position:relative!important;top:auto;transform:none!important;padding:calc(7px + env(safe-area-inset-top)) 16px 7px!important}
+body.libv .ltop .lsearch{height:38px!important;border-radius:12px!important;padding:0 10px!important;gap:8px}
+body.libv .ltop .lsearch svg{width:18px;height:18px}
+body.libv .ltools #lsort,body.libv .ltools #lsort.lsortbtn{height:38px!important;width:38px!important;border-radius:12px!important}
+body.libv .ltop .ltools{margin:0!important;gap:8px}
 </style>
 <style id="lightgen">html.light .top{background-color:#d4c9b4!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -4615,7 +4622,7 @@ if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') na
 </script>
 
 <script>(()=>{let y=scrollY,off=0,H=0,q=0;
-const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const bars=()=>document.querySelectorAll('header.top');
 const measure=()=>{H=0;bars().forEach(b=>H=Math.max(H,b.offsetHeight+2));};
 const set=(o,glide)=>{if(o===off&&!glide)return;off=o;bars().forEach(b=>{b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,H)}px)`:'';});};
 const tick=()=>{q=0;const n=Math.max(0,scrollY),d=n-y;y=n;
