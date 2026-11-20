@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Z34KcKPLz1p4YJt1yNXIDBr38T8i0pYhB0OknXTy48Y=' 'sha256-dwKyPLtYLJWMIN6i6qJKo9Q8mgerGMMIek7UXSAw2cY=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Z34KcKPLz1p4YJt1yNXIDBr38T8i0pYhB0OknXTy48Y=' 'sha256-bRPpppFUk9gqR+tPi84t8vx285otd6cjbTt9QeTfdnw=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1485,12 +1485,17 @@ html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14p
 #pl .bt-mn small{display:block;min-height:16px;font-size:13px;font-weight:600;color:var(--muted);margin-top:3px}
 #pl .bt-mn[data-bxtoday]{cursor:pointer}
 #pl .bt-mn[data-bxtoday] small{color:var(--accent-text,var(--accent))}
-#pl .bt-sum{display:flex;align-items:baseline;gap:6px;margin:0 4px;font-variant-numeric:tabular-nums}
-#pl .bt-sum b{font-size:22px;font-weight:800}
-#pl .bt-sum span{font-size:14px;color:var(--muted)}
-#pl .bt-sum em{margin-left:auto;font-style:normal;font-size:14px;font-weight:700;color:var(--green)}
+#pl .bt-sum{margin:0 4px}
+#pl .bt-sum .bt-pn{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+#pl .bt-sum .bt-pn b{font-size:22px;font-weight:800}
+#pl .bt-sum .bt-pn span{font-size:14px;color:var(--muted)}
+#pl .bt-sum .bt-pn em{margin-left:auto;font-style:normal;font-size:14px;font-weight:700;color:var(--green)}
 body[data-view=bills] #pl{touch-action:pan-y}
-#pl #bxBody{will-change:transform}
+#pl .bt-clip{overflow:hidden}
+#pl .bt-list{overflow:hidden;box-sizing:border-box}
+#pl .bt-trk{position:relative}
+#pl .bt-pn.side{position:absolute;top:0;left:0;width:100%}
+#pl .bt-mn .bt-pn.side,#pl .bt-sum .bt-pn.side{height:100%}
 #pl .home-set{display:flex;align-items:center;gap:8px;margin:20px auto 0;padding:11px 20px;border:0;border-radius:999px;background:color-mix(in srgb,var(--text) 8%,transparent);color:var(--text);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
 #pl .home-set:active{transform:scale(.96)}
 #pl .bt-bar{height:6px;border-radius:3px;margin:8px 4px 16px;background:color-mix(in srgb,var(--text) 10%,transparent);overflow:hidden}
@@ -2817,6 +2822,34 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
   function worst(list){ const st = list.map(status); return ['over', 'soon', 'up', 'paid'].find(s => st.includes(s)); }
   function shortMoney(n){ n = Number(n) || 0; return n >= 1000 ? '$' + (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'k' : '$' + Math.round(n); }
 
+  // one month's header text, summary and bill rows (the swipe draws the months next door with this too)
+  function btPane(y, m){
+    const isNow = y === today.getFullYear() && m === today.getMonth();
+    const occ = occurrences(y, m);
+    const all = [...(isNow ? overdueBills().filter(o => o.y !== y || o.m !== m) : []), ...occ];
+    const sum = l => l.reduce((s, o) => s + o.amt, 0);
+    const total = sum(occ), paid = sum(occ.filter(o => o.paid)), left = total - paid, pct = total > 0 ? paid / total : 0;
+    const todayIsoS = iso(today.getFullYear(), today.getMonth(), today.getDate());
+    const mon = `<b>${MONTHS[m]}${y !== today.getFullYear() ? ' ' + y : ''}</b><small>${isNow ? '' : 'Tap for today'}</small>`;
+    const sumH = `<b>${money(left)}</b><span>left of ${money(total)}</span><em>${Math.round(pct * 100)}% paid</em>`;
+    let list = '';
+    if (!state.bills.length) list = `<div class="bt-none"><b>No bills yet</b><span>Tap “Add bill” to start.</span>${SAMPLE_BTN}</div>`;
+    else {
+      const ordered = [...all].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : a.bill.name.localeCompare(b.bill.name));
+      for (const o of ordered) {
+        const st = status(o), b = o.bill, k = keyOf(o), dt = new Date(o.y, o.m, o.day);
+        const wd = dt.toLocaleDateString('en-US', { weekday: 'short' }), other = o.m !== m || o.y !== y;
+        const sub = [countdown(o), b.autopay ? 'Autopay' : ''].filter(Boolean).join(' · ');
+        list += `<div class="bt-row s-${st}${o.date === todayIsoS ? ' now' : ''}" data-edit="${esc(b.id)}">
+          <div class="bt-d"><b>${o.day}</b><small>${other ? MONTHS[o.m].slice(0, 3) : wd}</small></div>
+          <div class="bt-n"><b>${esc(b.name)}</b><small>${sub}</small></div>
+          <div class="bt-a">${money(o.amt)}</div>
+          <button class="chk bt-chk ${o.paid ? 'on' : ''}${o.paid && justStamped === k ? ' stamp' : ''}" data-pay="${esc(k)}" data-amt="${o.amt}" data-label="PAID" aria-label="${o.paid ? 'Mark unpaid' : 'Mark paid'}"></button></div>`;
+      }
+      if (!ordered.length) list = '<div class="bt-none">No bills this month.</div>';
+    }
+    return { mon, sum: sumH, pct, list };
+  }
   function renderBills(){
     const isNow = viewY === today.getFullYear() && viewM === today.getMonth();
     const occ = occurrences(viewY, viewM);
@@ -2830,34 +2863,13 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     $('monthTitle').innerHTML = `<b>${MONTHS[viewM]}</b> ${viewY}` + (isNow ? '' : ' <button class="bx-today" type="button" data-bxtoday>Today</button>');
     $('bxHero').hidden = true; morph($('bxHero'), ''); morph($('bxQuick'), '');
 
-    const byDay = {};
-    occ.forEach(o => (byDay[o.day] = byDay[o.day] || []).push(o));
-    const n = lastDay(viewY, viewM);
-
-    // ---- simple timeline: one line on top, then every bill in date order, today's shaded
-    const todayIsoS = iso(today.getFullYear(), today.getMonth(), today.getDate());
+    const P = btPane(viewY, viewM);
     const head = `<div class="bt-mbar"><button type="button" class="bt-m" data-bxprev aria-label="Previous month">‹</button>
-        <button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}><b>${MONTHS[viewM]}${viewY !== today.getFullYear() ? ' ' + viewY : ''}</b><small>${isNow ? '' : 'Tap for today'}</small></button>
+        <button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}><div class="bt-clip"><div class="bt-trk"><div class="bt-pn">${P.mon}</div></div></div></button>
         <button type="button" class="bt-m" data-bxnext aria-label="Next month">›</button></div>
-      ${state.bills.length ? `<div class="bt-sum"><b>${money(left)}</b><span>left of ${money(total)}</span><em>${pctR}% paid</em></div>
-      <div class="bt-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div>` : ''}`;
-    let list = '';
-    if (!state.bills.length) list = `<div class="bt-none"><b>No bills yet</b><span>Tap “Add bill” to start.</span>${SAMPLE_BTN}</div>`;
-    else {
-      const ordered = [...all].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : a.bill.name.localeCompare(b.bill.name));
-      for (const o of ordered) {
-        const st = status(o), b = o.bill, k = keyOf(o), dt = new Date(o.y, o.m, o.day);
-        const wd = dt.toLocaleDateString('en-US', { weekday: 'short' }), other = o.m !== viewM || o.y !== viewY;
-        const sub = [countdown(o), b.autopay ? 'Autopay' : ''].filter(Boolean).join(' · ');
-        list += `<div class="bt-row s-${st}${o.date === todayIsoS ? ' now' : ''}" data-edit="${esc(b.id)}">
-          <div class="bt-d"><b>${o.day}</b><small>${other ? MONTHS[o.m].slice(0, 3) : wd}</small></div>
-          <div class="bt-n"><b>${esc(b.name)}</b><small>${sub}</small></div>
-          <div class="bt-a">${money(o.amt)}</div>
-          <button class="chk bt-chk ${o.paid ? 'on' : ''}${o.paid && justStamped === k ? ' stamp' : ''}" data-pay="${esc(k)}" data-amt="${o.amt}" data-label="PAID" aria-label="${o.paid ? 'Mark unpaid' : 'Mark paid'}"></button></div>`;
-      }
-      if (!ordered.length) list = '<div class="bt-none">No bills this month.</div>';
-    }
-    morph($('bxBody'), head + `<div class="pcard bt-list">${list}</div>`);
+      ${state.bills.length ? `<div class="bt-sum bt-clip"><div class="bt-trk"><div class="bt-pn">${P.sum}</div></div></div>
+      <div class="bt-bar"><i style="width:${(P.pct * 100).toFixed(1)}%"></i></div>` : ''}`;
+    morph($('bxBody'), head + `<div class="pcard bt-list"><div class="bt-trk"><div class="bt-pn">${P.list}</div></div></div>`);
     $('bxAcct').hidden = true;
     const pass = k => o => k === 'all' || (k === 'unpaid' && !o.paid) || (k === 'paid' && o.paid) || (k === 'auto' && o.bill.autopay);
 
@@ -3093,34 +3105,49 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     if (e.target.closest('[data-bxclear]')) { selDay = null; renderBills(); return; }
     if (e.target.closest('[data-bxtoday]')) { viewY = today.getFullYear(); viewM = today.getMonth(); selDay = null; renderBills(); }
   });
-  // swipe anywhere on the Bills screen to change months: the page follows the finger, then the next month slides in
+  // swipe anywhere on the Bills screen to change months: the boxes stay, what's inside slides (like the Budget card)
   (function(){
     let g = null, busy = false, noClick = false;
     const rm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const put = (el, x, ms) => { el.style.transition = ms ? `transform ${ms}ms cubic-bezier(.2,.7,.3,1), opacity ${ms}ms ease` : 'none'; el.style.transform = x ? `translateX(${x}px)` : ''; el.style.opacity = x ? String(Math.max(.25, 1 - Math.abs(x) / el.offsetWidth * .9)) : ''; };
+    const nb = d => { let y = viewY, m = viewM + d; if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; } return btPane(y, m); };
+    const tracks = () => [...document.querySelectorAll('#bxBody .bt-trk')];
+    const kind = tr => tr.closest('.bt-mn') ? 'mon' : tr.closest('.bt-sum') ? 'sum' : 'list';
+    function setup(){
+      const P = { '-1': nb(-1), '1': nb(1) }; g.P = P; g.p0 = parseFloat(($('bxBody').querySelector('.bt-bar i') || {}).style?.width) / 100 || 0;
+      tracks().forEach(tr => { for (const d of [-1, 1]) { const el = document.createElement('div'); el.className = 'bt-pn side'; el.style.left = `calc(${d * 100}% + ${d * 28}px)`; el.dataset.d = d; el.setAttribute('aria-hidden', 'true'); el.innerHTML = P[d][kind(tr)]; tr.appendChild(el); } tr.style.transition = 'none'; });
+    }
+    const paint = (f, ms) => {
+      tracks().forEach(tr => { tr.style.transition = ms ? `transform ${ms}ms cubic-bezier(.2,.7,.3,1)` : 'none'; tr.style.transform = f ? `translateX(${f * (tr.offsetWidth + 28)}px)` : ''; });
+      const bar = $('bxBody').querySelector('.bt-bar i');
+      if (bar && g0) { const to = g0.P[f < 0 ? 1 : -1].pct, k = Math.min(1, Math.abs(f)); bar.style.transition = ms ? `width ${ms}ms cubic-bezier(.2,.7,.3,1)` : 'none'; bar.style.width = ((g0.p0 + (to - g0.p0) * k) * 100).toFixed(1) + '%'; }
+    };
+    let g0 = null;
     document.addEventListener('pointerdown', e => {
       if (busy || sheetK || document.body.dataset.view !== 'bills' || !e.target.closest('#pl') || e.target.closest('#bxOv,.bx-ov,.overlay,.fab,input,select,textarea,[role=dialog]') || (e.pointerType === 'mouse' && e.button)) return;
-      g = { x: e.clientX, y: e.clientY, id: e.pointerId, mode: null, dx: 0 };
+      g = { x: e.clientX, y: e.clientY, id: e.pointerId, mode: null, dx: 0, t: performance.now() };
     });
     document.addEventListener('pointermove', e => {
       if (!g || e.pointerId !== g.id) return;
       const dx = e.clientX - g.x, dy = e.clientY - g.y;
-      if (!g.mode) { if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2) g.mode = 'h'; else if (Math.abs(dy) > 10) { g = null; return; } else return; }
-      g.dx = dx; put($('bxBody'), dx * .9, 0);
+      if (!g.mode) { if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2) { g.mode = 'h'; setup(); g0 = g; } else if (Math.abs(dy) > 10) { g = null; return; } else return; }
+      g.dx = dx; paint(dx / $('bxBody').offsetWidth, 0);
     });
     const end = () => {
-      if (!g) return; const { mode, dx } = g; g = null; if (mode !== 'h') return;
+      if (!g) return; const cur = g; g = null; if (cur.mode !== 'h') return;
       noClick = true; setTimeout(() => noClick = false, 80);
-      const el = $('bxBody'), W = el.offsetWidth, dir = dx < 0 ? 1 : -1;
-      if (Math.abs(dx) < W * .2) { put(el, 0, rm() ? 0 : 200); return; }
-      busy = true; const out = rm() ? 0 : 150;
-      put(el, -dir * W, out);
+      const W = $('bxBody').offsetWidth, f = cur.dx / W, dir = f < 0 ? 1 : -1, fast = Math.abs(cur.dx) > 50 && performance.now() - cur.t < 250;
+      const commit = Math.abs(f) > .22 || fast, dur = rm() ? 0 : commit ? 280 : 200;
+      busy = true;
+      const card = $('bxBody').querySelector('.bt-list');
+      if (commit && card && !rm()) { const side = card.querySelector(`.bt-pn.side[data-d="${dir}"]`); if (side) { card.style.height = card.offsetHeight + 'px'; void card.offsetHeight; card.style.transition = `height ${dur}ms cubic-bezier(.2,.7,.3,1)`; card.style.height = (side.offsetHeight + card.offsetHeight - card.clientHeight + parseFloat(getComputedStyle(card).paddingTop) + parseFloat(getComputedStyle(card).paddingBottom)) + 'px'; } }
+      paint(commit ? -dir : 0, dur);
       setTimeout(() => {
-        $(dir > 0 ? 'next' : 'prev').click();
-        put(el, dir * W * .6, 0); void el.offsetWidth;
-        put(el, 0, rm() ? 0 : 280);
-        setTimeout(() => { busy = false; el.style.transition = ''; }, rm() ? 0 : 290);
-      }, out);
+        tracks().forEach(tr => { tr.style.transition = 'none'; tr.style.transform = ''; });
+        if (card) { card.style.transition = ''; card.style.height = ''; }
+        if (commit) $(dir > 0 ? 'next' : 'prev').click();
+        else { document.querySelectorAll('#bxBody .bt-pn.side').forEach(x => x.remove()); const bar = $('bxBody').querySelector('.bt-bar i'); if (bar) bar.style.transition = ''; }
+        g0 = null; busy = false;
+      }, dur + 10);
     };
     document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
     document.addEventListener('click', e => { if (noClick && e.target.closest('#pl')) { e.stopPropagation(); e.preventDefault(); } }, true);
