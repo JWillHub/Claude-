@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-I5BgTXx1nmL3vWYKz7nTfqc12x99y35lOJKdFJqdTnU=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-Lj/VtwZZuiWgEc/lAOE1zKRJ2aRj4miEeIfgnyjDVUc=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1496,9 +1496,11 @@ html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14p
 #pl .bt-a{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
 #pl .bt-row.s-over .bt-n small{color:var(--red)}
 #pl .bt-row.s-paid .bt-n b,#pl .bt-row.s-paid .bt-a{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
-#pl .bt-today{display:flex;align-items:center;gap:10px;padding:4px 16px;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--accent-text,var(--accent))}
-#pl .bt-today::before,#pl .bt-today::after{content:"";flex:1;height:1.5px;background:currentColor;opacity:.6}
-#pl .bt-today+.bt-row{border-top:0}
+#pl .bt-d{width:38px;flex:none;text-align:center;line-height:1}
+#pl .bt-d b{display:block;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+#pl .bt-d small{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:4px}
+#pl .bt-row.s-over .bt-d b,#pl .bt-row.s-over .bt-d small,#pl .bt-row.s-over .bt-n b,#pl .bt-row.s-over .bt-a{color:var(--red)}
+#pl .bt-row.s-paid .bt-d{opacity:.5}
 #pl .bt-none{display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px;color:var(--muted);font-size:14px;text-align:center}
 #pl .bt-none b{color:var(--text);font-size:17px}
 /* a straight PAID stamp in this list */
@@ -2822,7 +2824,7 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     occ.forEach(o => (byDay[o.day] = byDay[o.day] || []).push(o));
     const n = lastDay(viewY, viewM);
 
-    // ---- simple timeline: one line on top, then every bill in date order with a line for today
+    // ---- simple timeline: one line on top, then every bill in date order, today's shaded
     const todayIsoS = iso(today.getFullYear(), today.getMonth(), today.getDate());
     const head = `<div class="bt-top"><div class="bt-left"><b>${state.bills.length ? money(left) + ' left' : 'Bills'}</b>
         <span><button type="button" class="bt-m" data-bxprev aria-label="Previous month">‹</button><button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}>${MONTHS[viewM]}${viewY !== today.getFullYear() ? ' ' + viewY : ''}</button><button type="button" class="bt-m" data-bxnext aria-label="Next month">›</button>${state.bills.length ? ` · ${pctR}% paid` : ''}</span></div></div>
@@ -2831,17 +2833,16 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     if (!state.bills.length) list = `<div class="bt-none"><b>No bills yet</b><span>Tap “Add bill” to start.</span>${SAMPLE_BTN}</div>`;
     else {
       const ordered = [...all].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : a.bill.name.localeCompare(b.bill.name));
-      let marked = !isNow;
       for (const o of ordered) {
-        if (!marked && o.date >= todayIsoS) { list += `<div class="bt-today">Today · ${MONTHS[today.getMonth()].slice(0, 3)} ${today.getDate()}</div>`; marked = true; }
         const st = status(o), b = o.bill, k = keyOf(o), dt = new Date(o.y, o.m, o.day);
-        const when = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const wd = dt.toLocaleDateString('en-US', { weekday: 'short' }), other = o.m !== viewM || o.y !== viewY;
+        const sub = [countdown(o), b.autopay ? 'Autopay' : ''].filter(Boolean).join(' · ');
         list += `<div class="bt-row s-${st}${o.date === todayIsoS ? ' now' : ''}" data-edit="${esc(b.id)}">
-          <div class="bt-n"><b>${esc(b.name)}</b><small>${when} · ${countdown(o)}${b.autopay ? ' · Autopay' : ''}</small></div>
+          <div class="bt-d"><b>${o.day}</b><small>${other ? MONTHS[o.m].slice(0, 3) : wd}</small></div>
+          <div class="bt-n"><b>${esc(b.name)}</b><small>${sub}</small></div>
           <div class="bt-a">${money(o.amt)}</div>
           <button class="chk bt-chk ${o.paid ? 'on' : ''}${o.paid && justStamped === k ? ' stamp' : ''}" data-pay="${esc(k)}" data-amt="${o.amt}" data-label="PAID" aria-label="${o.paid ? 'Mark unpaid' : 'Mark paid'}"></button></div>`;
       }
-      if (!marked) list += `<div class="bt-today">Today · ${MONTHS[today.getMonth()].slice(0, 3)} ${today.getDate()}</div>`;
       if (!ordered.length) list = '<div class="bt-none">No bills this month.</div>';
     }
     morph($('bxBody'), head + `<div class="pcard bt-list">${list}</div>`);
