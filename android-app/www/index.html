@@ -58,6 +58,9 @@ svg{display:block}
 body.spage main>section[id^="v-"]{display:none!important}
 body.spage #srch{min-height:60vh}
 body.spage header.top{display:flex!important}
+/* no logo in the header: the Discover tab does its job */
+#logo,#hproj{display:none!important}
+.top .hact{margin-left:auto}
 .sidle{margin:16px 0 10px;font-size:17px;font-weight:800;color:var(--text);text-transform:none;letter-spacing:0}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
