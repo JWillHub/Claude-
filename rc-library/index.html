@@ -72,6 +72,10 @@ main>section.enter{animation:viewin .26s ease}
 .ib{background:var(--card);border:1px solid var(--line);border-radius:12px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;color:#fff;flex:none}
 .ib svg{width:20px;height:20px}
 main{max-width:1100px;margin:0 auto}
+/* no top bar on the main tabs: no logo, no search/carousel buttons. Sub-pages keep only a back arrow + page title */
+#hproj,.logo:not(.sub),.top .hact{display:none!important}
+header.top:not(.searching):has(#hback[hidden]){display:none!important}
+body:has(#hback[hidden]) main{padding-top:calc(env(safe-area-inset-top) + 10px)}
 .vt{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1.05;margin:2px 16px 4px}
 .vs{color:#fff;margin:0 16px 16px;font-size:14px}
 
