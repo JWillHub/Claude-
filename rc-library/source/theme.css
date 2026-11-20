@@ -391,3 +391,32 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 html.light .acci .accsw{box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.15)}
 html.light .acci.on .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--c)}
 html.light .acci.on[data-c="#ffffff"] .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px #111}
+
+/* ==== ACCENT SLIDER ==== */
+.acchue{padding:14px 16px 18px}
+.accrow{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.accdot{flex:none;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.35),transparent 55%),var(--accent);box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent),0 0 22px var(--accent)}
+.accrow .slab{flex:1;min-width:0}
+.accw{flex:none;border:1px solid var(--line);background:none;color:var(--text);font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border-radius:999px}
+.accw.on{background:#fff;color:#111;border-color:#fff}
+.huebar{-webkit-appearance:none;appearance:none;display:block;width:100%;height:16px;border-radius:999px;margin:0;outline:none;
+  background:linear-gradient(90deg,hsl(0,68%,50%),hsl(45,68%,50%),hsl(90,68%,50%),hsl(135,68%,50%),hsl(180,68%,50%),hsl(225,68%,50%),hsl(270,68%,50%),hsl(315,68%,50%),hsl(359,68%,50%))}
+.huebar::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.45)}
+.huebar::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);border:3px solid #fff}
+
+/* ==== SETTINGS HOME: a header card with your numbers, coloured icon tiles ==== */
+.shero{position:relative;overflow:hidden;margin:14px 0 6px;padding:18px;border-radius:22px;border:1px solid var(--line);
+  background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 62%),var(--card2)}
+.shtop{display:flex;align-items:center;gap:14px}
+.shico{width:54px;height:54px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.shtop b{display:block;font-family:var(--disp);font-size:24px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
+.shtop small{color:var(--muted);font-size:13px}
+.sstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.sstats span{display:flex;flex-direction:column;align-items:center;padding:10px 4px;border-radius:14px;background:rgba(255,255,255,.05)}
+html.light .sstats span{background:rgba(0,0,0,.05)}
+.sstats b{font-size:22px;font-weight:800;line-height:1.1}
+.sstats small{font-size:12px;color:var(--muted)}
+.smain .srow .sic{width:34px!important;height:34px!important;border-radius:10px!important;display:flex;align-items:center;justify-content:center;color:#fff}
+.smain .srow .sic svg{stroke:#fff!important;width:19px;height:19px}
+#g-conn .sic{background:#2f7fd8!important}#g-play .sic{background:#7c5ce0!important}#g-look .sic{background:var(--accent)!important}
+#g-data .sic{background:#1fa36a!important}#s-about .sic{background:#6b7280!important}

@@ -2,12 +2,17 @@
 const K_ACCENT = 'rclib.accent', K_START = 'rclib.start', K_LASTV = 'rclib.lastview';
 const K_PL_SKIP = 'rclib.pl.autoskip', K_PL_MID = 'rclib.pl.midnight', K_PL_AUD = 'rclib.pl.audio', K_PL_TXT = 'rclib.pl.text', K_PL_SIZE = 'rclib.pl.subsize', K_PL_STYLE = 'rclib.pl.substyle';
 const K_THEME = 'rclib.theme', K_TBA = 'rclib.tabsee', K_NOMO = 'rclib.nomotion';
-function applyAccent(){ try{
-  let c = store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
+function applyAccent(live){ try{
+  let c = live || store.get(K_ACCENT, '#b8242c'), n = parseInt(c.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255;
   if(document.documentElement.classList.contains('light') && lum > 0.85){ c = '#000000'; lum = 0; }   // white accent becomes black in light mode
   document.documentElement.style.setProperty('--accent', c);
   document.documentElement.style.setProperty('--on-accent', lum > 0.6 ? '#000' : '#fff');   // text on a solid accent button: black on light colors
 }catch(e){} }
+// Accent slider: hue -> colour (same strength all the way round) and back
+const hueHex = h => { const s = .68, l = .5, k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1)))).toString(16).padStart(2, '0'); return '#' + f(0) + f(8) + f(4); };
+const hexHue = hex => { const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  if(!d) return -1; let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return Math.round((h * 60 + 360) % 360); };
 // Light or dark: the setting is Dark, Light, or match the phone
 const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
 function applyTheme(){ try{
@@ -73,7 +78,11 @@ function renderSettings(){
   const paint = () => {
     if(!b.isConnected) return;
     const tm = !!store.get(K_KEY, '');
+    let nLib = 0; try{ nLib = typeof libTitles === 'function' && store.get(K_RD, '') ? libTitles().length : 0; }catch(e){}
+    const nRated = Object.keys(ratings || {}).length, nWatch = Object.keys(watch || {}).length;
     $('#setbody', b).innerHTML = `
+      <div class="shero"><div class="shtop"><img class="shico" src="icon-192.png" alt=""><span><b>Rolling Credits</b><small>Your films, rated your way</small></span></div>
+        <div class="sstats"><span><b>${nRated}</b><small>Rated</small></span><span><b>${nWatch}</b><small>Watchlist</small></span><span><b>${nLib}</b><small>In library</small></span></div></div>
       <div class="sgh">Theme</div>${themeCards()}
       <div class="sgroup smain"><div class="scard">
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
@@ -123,15 +132,21 @@ function renderSettings(){
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
       const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
-      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard accgrid" role="radiogroup" aria-label="Accent color">${ACCENTS.map(([c, n]) =>
-          `<button class="acci${c === cur ? ' on' : ''}" data-c="${c}" role="radio" aria-checked="${c === cur}" style="--c:${c}"><span class="accsw"></span><span class="accn">${n}</span></button>`).join('')}</div>
+      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard acchue">
+          <div class="accrow"><span class="accdot"></span><span class="slab">Slide to pick a colour<small id="acchex">${cur === '#ffffff' ? 'White' : cur.toUpperCase()}</small></span>
+          <button class="accw${cur === '#ffffff' ? ' on' : ''}" id="accwhite">White</button></div>
+          <input type="range" class="huebar" id="hue" min="0" max="359" step="1" value="${Math.max(0, hexHue(cur))}" aria-label="Accent colour"></div>
         <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
         <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
         <div class="sgh">Browsing</div><div class="scard">
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
-      $$('.acci', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      // live while dragging (just one colour value changes, no reload), saved when you let go
+      const hue = $('#hue', box), hx = $('#acchex', box);
+      hue.oninput = () => { const c = hueHex(+hue.value); applyAccent(c); hx.textContent = c.toUpperCase(); $('#accwhite', box).classList.remove('on'); };
+      hue.onchange = () => { store.set(K_ACCENT, hueHex(+hue.value)); hap(); };
+      $('#accwhite', box).onclick = () => { store.set(K_ACCENT, '#ffffff'); applyAccent(); hap(); redraw(); };
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
