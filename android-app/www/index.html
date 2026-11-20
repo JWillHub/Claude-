@@ -1025,6 +1025,28 @@ html.light header.top .ib.hback{color:#111;background:linear-gradient(145deg,rgb
 .ysel svg{opacity:.7}
 .ysel.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
 .gpk{max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* scroll wheel (Banking+ date chooser style) */
+.dw-ov{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.dw-ov.open{opacity:1;pointer-events:auto}
+.dw-sheet{width:100%;max-width:520px;background:#111113;color:#fff;border-radius:26px 26px 0 0;border-top:1px solid rgba(255,255,255,.12);padding:8px 14px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.9,.25,1);box-shadow:0 -14px 40px rgba(0,0,0,.5)}
+.dw-ov.open .dw-sheet{transform:none}
+.dw-grab{width:42px;height:5px;border-radius:99px;background:currentColor;opacity:.25;margin:2px auto 8px}
+.dw-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
+.dw-head b{font-size:16px;font-weight:700}
+.dw-head button{border:0;background:none;font:inherit;font-size:15px;font-weight:600;padding:10px 6px;cursor:pointer;color:rgba(255,255,255,.6)}
+.dw-head .dw-done{color:var(--accent);font-weight:700}
+.dw-wheels{position:relative;height:220px;-webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent)}
+.dw-band{position:absolute;left:0;right:0;top:88px;height:44px;border-radius:12px;background:rgba(255,255,255,.08);pointer-events:none}
+.dw-col{position:relative;height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.dw-col::-webkit-scrollbar{display:none}
+.dw-it,.dw-pad{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:18px;color:rgba(255,255,255,.45);transition:color .15s,transform .15s;cursor:pointer}
+.dw-it.on{color:#fff;font-weight:700;transform:scale(1.08)}
+html.light .dw-sheet{background:var(--bg);color:#111;border-top-color:rgba(0,0,0,.08)}
+html.light .dw-head button{color:rgba(0,0,0,.55)}
+html.light .dw-band{background:rgba(0,0,0,.06)}
+html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
+@media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1155,6 +1177,10 @@ html.light .tabbar{border-color:rgba(0,0,0,0.12)!important}
 html.light body:not(.libv) #v-genres .gtop{background-color:#fff!important}
 html.light .gtile b{color:var(--text)!important}
 html.light header.top .ib.hback{color:var(--text)!important;border-color:rgba(0,0,0,0.30)!important}
+html.light .dw-sheet{color:var(--text)!important}
+html.light .dw-head button{color:rgba(0,0,0,0.65)!important}
+html.light .dw-it,html.light .dw-pad{color:rgba(0,0,0,0.50)!important}
+html.light .dw-it.on{color:var(--text)!important}
 html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
@@ -2208,10 +2234,35 @@ function openGenrePage(def){
     <div class="grid"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   const load = () => { const gd = def.all ? allGenreDef(def, sort, decade) : genreDef(def.tv, def.genreId, sort, decade); setPageSource({ title:def.title, def:gd }); feed(null, $('.grid', b), $('.sent', b), $('.msg', b), gd); };
   $$('.seg button', b).forEach(x => x.onclick = () => { sort = x.dataset.s; $$('.seg button', b).forEach(y => y.classList.toggle('on', y === x)); scrollTo(0, 0); load(); });
-  // decades in the app's own glass pop-up: a vertical list you can flick through
-  $('#gdec', b).onclick = () => glassPick([['', 'Any year'], ...DECADES.map(d => [d, d])], decade, v => {
+  // decades on a scroll wheel (same as Banking+'s date chooser)
+  $('#gdec', b).onclick = () => wheelPick('Year', [['', 'Any year'], ...DECADES.map(d => [d, d])], decade, v => {
     decade = v; $('#gdec span', b).textContent = v || 'Any year'; $('#gdec', b).classList.toggle('on', !!v); scrollTo(0, 0); load(); });
   load();
+}
+/* scroll-wheel picker, ported from Banking+'s date chooser: one snapping column, the middle row is the pick */
+function wheelPick(title, opts, cur, onPick){
+  const H = 44;
+  const ov = document.createElement('div'); ov.className = 'dw-ov';
+  ov.innerHTML = `<div class="dw-sheet" role="dialog" aria-label="${esc(title)}"><div class="dw-grab"></div>
+    <div class="dw-head"><button type="button" class="dw-x">Cancel</button><b>${esc(title)}</b><button type="button" class="dw-done">Done</button></div>
+    <div class="dw-wheels"><div class="dw-band"></div><div class="dw-col">${'<div class="dw-pad"></div>'.repeat(2)}${opts.map(([v, l], i) => `<div class="dw-it" data-i="${i}">${esc(l)}</div>`).join('')}${'<div class="dw-pad"></div>'.repeat(2)}</div></div></div>`;
+  document.body.append(ov);
+  const col = $('.dw-col', ov), sh = $('.dw-sheet', ov);
+  let idx = Math.max(0, opts.findIndex(([v]) => String(v) === String(cur || '')));
+  const mark = () => { const i = Math.round(col.scrollTop / H); if(i !== idx){ idx = i; hap(); } $$('.dw-it', col).forEach(el => el.classList.toggle('on', +el.dataset.i === idx)); };
+  const close = () => { ov.classList.remove('open'); setTimeout(() => ov.remove(), 300); };
+  col.addEventListener('scroll', mark, { passive:true });
+  ov.onclick = e => {
+    if(e.target === ov || e.target.closest('.dw-x')) close();
+    else if(e.target.closest('.dw-done')){ close(); const v = opts[Math.min(idx, opts.length - 1)][0]; if(String(v) !== String(cur || '')) onPick(v); }
+    else { const it = e.target.closest('.dw-it'); if(it) col.scrollTo({ top:+it.dataset.i * H, behavior:'smooth' }); }
+  };
+  // swipe the header down to close
+  let y0 = null, dy = 0;
+  sh.addEventListener('touchstart', e => { if(!e.target.closest('.dw-head,.dw-grab')) return; y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, { passive:true });
+  sh.addEventListener('touchmove', e => { if(y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = `translateY(${dy}px)`; }, { passive:true });
+  sh.addEventListener('touchend', () => { if(y0 === null) return; y0 = null; sh.style.transition = ''; sh.style.transform = ''; if(dy > 80) close(); });
+  requestAnimationFrame(() => { col.scrollTop = idx * H; $$('.dw-it', col).forEach(el => el.classList.toggle('on', +el.dataset.i === idx)); ov.classList.add('open'); });
 }
 const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.kind = tv ? 'tv' : 'movie'; setView('genres'); if(built.genres) buildGenreBrowse(); };
 

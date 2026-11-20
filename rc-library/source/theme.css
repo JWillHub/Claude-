@@ -391,3 +391,25 @@ html.light header.top .ib.hback{color:#111;background:linear-gradient(145deg,rgb
 .ysel svg{opacity:.7}
 .ysel.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
 .gpk{max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* scroll wheel (Banking+ date chooser style) */
+.dw-ov{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.dw-ov.open{opacity:1;pointer-events:auto}
+.dw-sheet{width:100%;max-width:520px;background:#111113;color:#fff;border-radius:26px 26px 0 0;border-top:1px solid rgba(255,255,255,.12);padding:8px 14px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.9,.25,1);box-shadow:0 -14px 40px rgba(0,0,0,.5)}
+.dw-ov.open .dw-sheet{transform:none}
+.dw-grab{width:42px;height:5px;border-radius:99px;background:currentColor;opacity:.25;margin:2px auto 8px}
+.dw-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
+.dw-head b{font-size:16px;font-weight:700}
+.dw-head button{border:0;background:none;font:inherit;font-size:15px;font-weight:600;padding:10px 6px;cursor:pointer;color:rgba(255,255,255,.6)}
+.dw-head .dw-done{color:var(--accent);font-weight:700}
+.dw-wheels{position:relative;height:220px;-webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(180deg,transparent,#000 30%,#000 70%,transparent)}
+.dw-band{position:absolute;left:0;right:0;top:88px;height:44px;border-radius:12px;background:rgba(255,255,255,.08);pointer-events:none}
+.dw-col{position:relative;height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.dw-col::-webkit-scrollbar{display:none}
+.dw-it,.dw-pad{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:18px;color:rgba(255,255,255,.45);transition:color .15s,transform .15s;cursor:pointer}
+.dw-it.on{color:#fff;font-weight:700;transform:scale(1.08)}
+html.light .dw-sheet{background:var(--bg);color:#111;border-top-color:rgba(0,0,0,.08)}
+html.light .dw-head button{color:rgba(0,0,0,.55)}
+html.light .dw-band{background:rgba(0,0,0,.06)}
+html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
+@media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
