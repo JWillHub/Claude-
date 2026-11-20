@@ -189,6 +189,7 @@ print('applied storage fix')
 
 # ---- Library tab + "In my library" filters ----
 rep("""  <button class="tb" id="setTab">""", """  <button class="tb" data-v="library"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/></svg>Library</button>
+  <button class="tb" id="searchTab" data-v="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search</button>
   <button class="tb" id="setTab">""")
 rep("""  <section id="v-list" hidden></section>""", """  <section id="v-list" hidden></section>
   <section id="v-library" hidden></section>""")

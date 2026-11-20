@@ -52,6 +52,7 @@ svg{display:block}
 .hproj{width:34px;height:34px;flex:none;display:block;margin-right:-4px;cursor:pointer}
 .hproj[hidden],.top.searching .hproj{display:none}
 .top.searching .hsearch{display:flex;animation:fadein .2s ease}
+#hsearch:not([hidden]){display:none}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
 .srch[hidden]{display:none}
@@ -1061,6 +1062,8 @@ function setHeaderTitle(t){
   else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); }
 }
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
+// Search lives in the tab bar: it opens the search box at the top and lights up while you're searching
+if($('#searchTab')) $('#searchTab').onclick = () => openSearch(lastTab === 'tv');
 $('#hcancel').onclick = () => history.back();
 $('#setTab').onclick = openSettings;
 
@@ -1286,6 +1289,7 @@ let searchOn = false, searchTV = false;
 function openSearch(tv){
   if(searchOn){ $('#hq').focus(); return; }
   searchOn = true; searchTV = tv;
+  $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === 'search'));
   history.pushState({ search:1 }, '');
   $('.top').classList.add('searching');
   const q = $('#hq'); q.value = ''; q.placeholder = tv ? 'Search any series…' : 'Search films, series or people…';
@@ -1295,6 +1299,7 @@ function openSearch(tv){
 function closeSearch(fromPop){
   if(!searchOn) return;
   searchOn = false;
+  $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(view)));
   $('.top').classList.remove('searching'); $('#srch').hidden = true; $('#hq').blur();
   if(!fromPop){ popSkip++; history.back(); }
 }
