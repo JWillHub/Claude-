@@ -95,6 +95,7 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean casting = false, castForceConvert = false;
     private long lastCastPos = 0;
     private String curUrl = "";
+    private boolean triedConvert = false;
     private final ConcurrentHashMap<String, String> rdIds = new ConcurrentHashMap<>();   // playable address -> Real-Debrid file id
     private PlayerView view;
     private LinearLayout bar;
@@ -718,6 +719,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void startEpisode(int index, JSONObject n, String url) {
         qIndex = index;
         curUrl = url;
+        triedConvert = false;
         curKey = n.optString("key", "");
         curS = n.optInt("s", 0); curE = n.optInt("e", 0);
         curFinished = false; nextShown = false; nextCancelled = false; counting = false;
@@ -1036,6 +1038,25 @@ public class PlayerActivity extends AppCompatActivity {
             detail += " (HTTP " + ((androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException) c).responseCode + ")";
         else if (c != null && c.getMessage() != null) detail += " (" + c.getClass().getSimpleName() + ": " + (c.getMessage().length() > 120 ? c.getMessage().substring(0, 120) : c.getMessage()) + ")";
         boolean network = code >= 2000 && code < 3000;
+        // a file the phone's player can't read (some MKVs use compression it doesn't support): play Real-Debrid's converted stream instead
+        if (!network && !triedConvert && !rdToken.isEmpty() && rdIds.get(curUrl) != null) {
+            triedConvert = true;
+            logError(detail + " at " + fmt(resumeAt) + ", switching to Real-Debrid's converted stream");
+            show("Switching to Real-Debrid's converted stream\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+            final long at = resumeAt;
+            final String title = String.valueOf(nameView.getText());
+            bg.execute(() -> {
+                final String[] src = rdConverted();
+                ui.post(() -> {
+                    if (exo == null || done) return;
+                    if (src == null) { error = e.getErrorCodeName(); showErrorPanel(friendly(code) + "\n\n" + detail); return; }
+                    exo.setMediaItem(new MediaItem.Builder().setUri(src[0]).setMimeType(src[1])
+                        .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build()).build(), at);
+                    exo.prepare(); exo.setPlayWhenReady(true);
+                });
+            });
+            return;
+        }
         int maxTries = network ? 6 : 1;   // connection trouble: keep trying; decoder/file trouble: one more go
         logError(detail + " at " + fmt(resumeAt) + (retries < maxTries ? ", retrying" : ", gave up"));
         if (retries < maxTries) {
@@ -1158,6 +1179,13 @@ public class PlayerActivity extends AppCompatActivity {
     private String[] castSource() {
         String path = curUrl.split("\\?")[0].toLowerCase();
         if (path.endsWith(".mp4") && !castForceConvert) return new String[]{ curUrl, MimeTypes.VIDEO_MP4, "Playing on your TV" };
+        String[] conv = rdConverted();
+        if (conv != null) return new String[]{ conv[0], conv[1], "Playing on your TV (converted by Real-Debrid)" };
+        return new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV" };
+    }
+
+    // Real-Debrid's converted version of the current file (HLS, or MP4), or null
+    private String[] rdConverted() {
         String id = rdIds.get(curUrl);
         if (id != null && !rdToken.isEmpty()) {
             try {
@@ -1167,13 +1195,13 @@ public class PlayerActivity extends AppCompatActivity {
                 if (c.getResponseCode() == 200) {
                     JSONObject j = new JSONObject(read(c));
                     String hls = pick(j.opt("apple"));
-                    if (hls != null) return new String[]{ hls, MimeTypes.APPLICATION_M3U8, "Playing on your TV (converted by Real-Debrid)" };
+                    if (hls != null) return new String[]{ hls, MimeTypes.APPLICATION_M3U8 };
                     String mp4 = pick(j.opt("liveMP4"));
-                    if (mp4 != null) return new String[]{ mp4, MimeTypes.VIDEO_MP4, "Playing on your TV (converted by Real-Debrid)" };
+                    if (mp4 != null) return new String[]{ mp4, MimeTypes.VIDEO_MP4 };
                 }
             } catch (Exception ignored) {}
         }
-        return new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV" };
+        return null;
     }
 
     private static String pick(Object o) {
