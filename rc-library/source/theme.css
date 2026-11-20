@@ -259,14 +259,14 @@ header.top,.top{border-bottom:0!important;box-shadow:none!important}
 header.top,.ltop{will-change:transform}
 
 /* ==== LIGHT MODE (html.light) ==== */
-html.light{--bg:#d2d1d7;--bg2:#d2d1d7;--card:transparent;--card2:#c6c5cb;--line:#bdbcc3;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
-html.light .top,html.light body.libv .ltop{background:#d2d1d7}
-html.light .tabbar{background:linear-gradient(to top,rgba(210,209,215,.96),rgba(210,209,215,.75) 60%,rgba(210,209,215,0))}
+html.light{--bg:#d4c9b4;--bg2:#d4c9b4;--card:transparent;--card2:#c8bca5;--line:#b8ab92;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
+html.light .top,html.light body.libv .ltop{background:#d4c9b4}
+html.light .tabbar{background:linear-gradient(to top,rgba(212,201,180,.96),rgba(212,201,180,.75) 60%,rgba(212,201,180,0))}
 html.light .tb,html.light .tb.on{color:#1c1c1e}
 html.light .ov,html.light .bio{color:#3a3a3c}
 html.light .sh{box-shadow:0 -12px 40px rgba(0,0,0,.12)}
-html.light .sh.page{background:#d2d1d7}
-html.light .toast,html.light .ptr{background:#d2d1d7;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+html.light .sh.page{background:#d4c9b4}
+html.light .toast,html.light .ptr{background:#d4c9b4;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
 /* round glass buttons: frosted white with dark icons, readable over pictures and plain pages */
 html.light .glback{color:#111;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.7));border:1px solid rgba(0,0,0,.08);
   box-shadow:inset 0 1px 0 #fff,0 6px 18px rgba(0,0,0,.18)}
@@ -275,25 +275,25 @@ html.light .pill.ghost,html.light .btn.ghost{border-color:rgba(0,0,0,.28)}
 html.light .btn,html.light .sclr,html.light .ssel,html.light .gsel,html.light .morecp,html.light .updbtn{color:#111!important}
 html.light .gsel::after{border-color:#111}
 html.light .ltools input,html.light .ltools select{color:#111}
-html.light .ltools select option,html.light .ssel option{background:#d2d1d7}
-html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#c6c5cb!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+html.light .ltools select option,html.light .ssel option{background:#d4c9b4}
+html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#c8bca5!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
 html.light .lsearch svg{stroke:rgba(0,0,0,.55)}
 html.light .ltools .lsearch input{color:#111}
 html.light .lsearch input::placeholder{color:rgba(0,0,0,.45)}
 html.light .lsearch input::-webkit-search-cancel-button{filter:none}
 html.light .lsortbtn svg{stroke:#111}
-html.light .seapick{background:#d2d1d7;border-color:rgba(0,0,0,.18);color:#111}
+html.light .seapick{background:#d4c9b4;border-color:rgba(0,0,0,.18);color:#111}
 html.light .seapick::after{border-color:#111}
 /* pop-up lists: white with a soft shadow */
 html.light .gpk-bk{background:rgba(0,0,0,.25)}
-html.light .gpk{background:#d2d1d7!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
+html.light .gpk{background:#d4c9b4!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
 html.light .gpk button{color:#111}
 html.light .gpk button:active,html.light .gpk button.on{background:rgba(0,0,0,.05)!important}
 html.light .gpk button+button::before{background:rgba(0,0,0,.07)}
 /* placeholders and posters */
 @keyframes skell{0%,100%{background-color:#ececef}50%{background-color:#e0e0e4}}
-html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#c3c2c8}
-html.light .skel{background-color:#c3c2c8;animation-name:skell}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#c5b9a2}
+html.light .skel{background-color:#c5b9a2;animation-name:skell}
 html.light .pw img,html.light .pw .ph,html.light .lshow img,html.light .lshow .ph,html.light .lsea img,html.light .lsea .ph,html.light .shpo img,html.light .mvhead img,html.light .lcw img,html.light .sehp img,html.light .rpc .rph img{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.16)!important}
 html.light .stbar{background:#e5e5ea}
 html.light .accsw{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px rgba(0,0,0,.12)}
@@ -303,9 +303,9 @@ html.light .hcard .hin,html.light .hero .hin{--text:#fff;color:#fff}
 html.light .hcard .pill,html.light .hcard .btn{color:#fff!important;border-color:rgba(255,255,255,.6)}
 /* Title pages: the poster art fades into white; dark title and details; title logos turn dark */
 html.light .mvsheet>.bdrop{background-color:#fff}
-html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(210,209,215,0) 45%,rgba(210,209,215,.8) 78%,#d2d1d7 100%)!important}
-html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#d2d1d7 calc(var(--hero) + env(safe-area-inset-top))) local!important}
-html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(210,209,215,0) 42%,rgba(210,209,215,.85) 78%,#d2d1d7 100%)!important}
+html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(212,201,180,0) 45%,rgba(212,201,180,.8) 78%,#d4c9b4 100%)!important}
+html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#d4c9b4 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(212,201,180,0) 42%,rgba(212,201,180,.85) 78%,#d4c9b4 100%)!important}
 html.light .mvsheet .mvhead h2,html.light .shcard .shname{text-shadow:0 2px 16px rgba(255,255,255,.7)}
 html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7)}
 html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
@@ -331,7 +331,7 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 .tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
 .tb svg{filter:none}
 .tb.on{background:rgba(255,255,255,.1)}
-html.light .tabbar{background:linear-gradient(180deg,rgba(210,209,215,calc(.97*var(--tbA,1))),rgba(203,202,208,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
+html.light .tabbar{background:linear-gradient(180deg,rgba(212,201,180,calc(.97*var(--tbA,1))),rgba(204,192,170,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
 
@@ -359,7 +359,7 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth .pv{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
 .rcth button:active .pv{transform:scale(.97)}
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
-.rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#c6c5cb)}
+.rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#c8bca5)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
 .rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(70,100,170,.08),transparent 70%),linear-gradient(160deg,#1a1d27,#101218)}
 .rcth .pv i{position:absolute;display:block}
@@ -434,11 +434,12 @@ html.light .rng{background:linear-gradient(90deg,var(--accent) 0 var(--p,0%),rgb
    Over the page they sit on a faint accent glow so the glass has something to catch. */
 :root{--gl-a:rgba(255,255,255,.085);--gl-b:rgba(255,255,255,.025);--gl-edge:rgba(255,255,255,.14);
   --gl-shine:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.28),inset 0 0 22px rgba(255,255,255,.025);--gl-drop:0 12px 32px rgba(0,0,0,.38)}
-html.light{--gl-a:rgba(255,255,255,.62);--gl-b:rgba(255,255,255,.32);--gl-edge:rgba(255,255,255,.85);
+html.light{--gl-a:rgba(255,250,238,.5);--gl-b:rgba(255,250,238,.22);--gl-edge:rgba(255,250,238,.7);
   --gl-shine:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(0,0,0,.06);--gl-drop:0 10px 26px rgba(0,0,0,.10)}
 html.navy{--gl-a:rgba(170,190,255,.085);--gl-b:rgba(170,190,255,.025);--gl-edge:rgba(180,200,255,.15)}
-html:not(.light) body{background-image:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 70%),radial-gradient(60% 40% at 100% 100%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%)!important;background-attachment:fixed!important}
-html.light body{background-image:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%)!important;background-attachment:fixed!important}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 70%),radial-gradient(60% 40% at 100% 100%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%)}
+html.light body::before{background:radial-gradient(70% 40% at 0% 0%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 70%)}
 /* panels */
 .scard,.shero,.gpk,.toast,.ptr{background:linear-gradient(150deg,var(--gl-a),var(--gl-b))!important;border:1px solid var(--gl-edge)!important;box-shadow:var(--gl-shine),var(--gl-drop)!important}
 .shero{background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 62%),linear-gradient(150deg,var(--gl-a),var(--gl-b))!important}
@@ -461,7 +462,7 @@ body>#hcar{box-shadow:var(--gl-shine),0 10px 26px rgba(0,0,0,.5)!important}
 .rcth .pv{box-shadow:0 0 0 1px var(--gl-edge),inset 0 1px 0 rgba(255,255,255,.2)}
 
 html.light body>#hcar,html.light body>#hcar svg{color:var(--accent)!important;stroke:var(--accent)}
-/* sleeker type: Inter Tight headings, a touch tighter than before since the old font was narrow */
+/* Sora, same as Lumen */
 h1,h2,h3,.stitle,.rowhead h3{letter-spacing:-.01em}
 /* top bars (Search page header, Library search row): see-through glass, same slider as the tab bar */
 body.libv main{padding-top:0!important}
@@ -470,11 +471,31 @@ html body header.top.top,html body.libv .ltop.ltop{
   background:rgba(12,12,14,calc(.94*var(--tbA,1)))!important;
   -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5)}
 html.navy body header.top.top,html.navy body.libv .ltop.ltop{background:rgba(18,20,27,calc(.94*var(--tbA,1)))!important}
-html.light body header.top.top,html.light body.libv .ltop.ltop{background:rgba(210,209,215,calc(.94*var(--tbA,1)))!important}
+html.light body header.top.top,html.light body.libv .ltop.ltop{background:rgba(212,201,180,calc(.94*var(--tbA,1)))!important}
 /* cover the strip above the bar so nothing peeks through */
-header.top.top::before,body.libv .ltop.ltop::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:200px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;pointer-events:none}
+header.top.top::before,body.libv .ltop.ltop::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:200px;background:inherit;pointer-events:none}
 header.top.top,body.libv .ltop.ltop{position:sticky;top:0}
 body.libv #v-library>div:has(#lmain){padding-top:0!important}
 body.libv #lmain{margin-top:0!important;padding-top:0!important}
 body.libv #lmain>.ltop{margin-top:0!important}
 body.libv #lmain>div[style="height:8px"]:first-child{display:none}
+
+/* smooth scrolling: blur only on the bars that float over content, not on every card, badge or box inside them */
+.bd{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.ltop .lsearch,.top .hsearch,.pill.ghost{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.pc img,.pc .ph{box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.track{-webkit-overflow-scrolling:touch;scroll-snap-type:none;contain:layout paint;transform:translateZ(0)}
+.pc{contain:layout style}
+/* Top 100: the number sits in front, in its own space, so it is never hidden by the poster */
+.track>.pc.ranked{width:150px;padding-left:38px}
+.track>.pc.ranked.r2{width:170px;padding-left:58px}
+.track>.pc.ranked.r3{width:186px;padding-left:74px}
+.rk3{font-size:40px!important}
+.rk{z-index:2!important;font-size:46px!important;letter-spacing:-.06em;left:-2px!important;bottom:-2px!important;
+  text-shadow:0 2px 10px rgba(0,0,0,.55)}
+
+/* every pill follows the see-through slider (same one as the tab bar) */
+.pill:not(.ghost){background:color-mix(in srgb,var(--accent) calc(var(--tbA,1)*100%),transparent)!important}
+.pill.ghost,.btn.ghost,.sclr,.ssel,.gsel,.hsearch,.lsearch,.ltools #lsort,.ltools #lsort.lsortbtn,body>#hcar,.pkp,.chip,.sstats span{
+  background:color-mix(in srgb,var(--card2) calc(var(--tbA,1)*90%),transparent)!important}
+.tb.on{background:color-mix(in srgb,var(--text) calc(var(--tbA,1)*14% + 4%),transparent)!important}

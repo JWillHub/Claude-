@@ -22,7 +22,7 @@ def gen(s):
             col = 'var(--text)' if not a or float(a) > .8 else f'rgba(0,0,0,{min(.85, float(a) + .05):.2f})'
             rules.append(f'color:{col}!important')
         bg = re.search(r'background(-color)?:\s*(#000\b|#000000|#0c0a0f|#111\b|#120f17|#141119)\s*(!important)?\s*(;|$)', body)
-        if bg: rules.append('background-color:#d2d1d7!important')
+        if bg: rules.append('background-color:#d4c9b4!important')
         if re.search(r'box-shadow:[^;]*\s#000\b', body) and bg: rules.append('box-shadow:none!important')
         b = re.search(r'border(-color)?:[^;]*rgba\(255,\s*255,\s*255,\s*([\d.]+)\)', body)
         if b: rules.append(f'border-color:rgba(0,0,0,{min(.3, float(b.group(2)) * .8 + .04):.2f})!important')
@@ -32,8 +32,8 @@ def gen(s):
 # hand-written fixes that must come after the generated rules
 LATE = '''html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
-html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #d2d1d7!important}
-html.light .shbg{background-color:#c3c2c8!important}
+html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #d4c9b4!important}
+html.light .shbg{background-color:#c5b9a2!important}
 '''
 
 

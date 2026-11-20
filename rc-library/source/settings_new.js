@@ -22,7 +22,7 @@ function applyTheme(){ try{
   // tab bar see-through (0 = solid) and reduce motion
   r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
   r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#12141b' : '#000000';
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d4c9b4' : navy ? '#12141b' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -83,7 +83,6 @@ function renderSettings(){
     $('#setbody', b).innerHTML = `
       <div class="shero"><div class="shtop"><img class="shico" src="icon-192.png" alt=""><span><b>Rolling Credits</b><small>Your films, rated your way</small></span></div>
         <div class="sstats"><span><b>${nRated}</b><small>Rated</small></span><span><b>${nWatch}</b><small>Watchlist</small></span><span><b>${nLib}</b><small>In library</small></span></div></div>
-      <div class="sgh">Theme</div>${themeCards()}
       <div class="sgroup smain"><div class="scard">
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
@@ -94,7 +93,6 @@ function renderSettings(){
         ${NATIVE ? '<div class="srow static" id="appupd"></div>' : ''}
         ${row('s-about', 'info', 'About', '')}
       </div></div>`;
-    $$('[data-th]', b).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); paint(); });
     $('#g-conn', b).onclick = () => subPage('Connections', box => {
       const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
       box.innerHTML = `<div class="scard">
@@ -150,7 +148,6 @@ function renderSettings(){
       $$('input[type=range]', box).forEach(r => ['touchstart', 'touchmove', 'pointerdown', 'pointermove'].forEach(ev => r.addEventListener(ev, e => e.stopPropagation(), { passive:true })));
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
-      $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#tba', box).oninput = e => { e.target.style.setProperty('--p', (+e.target.value / 90 * 100) + '%'); store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };
       $('#nomo', box).onchange = e => { store.set(K_NOMO, e.target.checked); applyTheme(); };
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };

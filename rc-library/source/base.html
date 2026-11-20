@@ -14,15 +14,15 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0c0a0f;--bg2:#141119;--card:#1c1823;--card2:#262030;--line:#30293b;
   --text:#f4efe9;--muted:#9c93a9;--accent:#ffb547;--accent2:#ff6f61;--good:#5ad19a;
-  --disp:'Inter Tight','Inter Display','Inter',system-ui,sans-serif;
+  --disp:'Sora',system-ui,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Sora",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
 body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 html:has(body.locked),body.locked{overflow:hidden}
 .sbk{touch-action:none}
@@ -784,7 +784,7 @@ function refreshBadges(){
 }
 function cardHTML(m, rank){
   const b = badge(m.id);
-  return `<div class="pc${rank ? ' ranked' : ''}" data-id="${m.id}">${rank ? `<span class="rk">${rank}</span>` : ''}
+  return `<div class="pc${rank ? ' ranked r' + String(rank).length : ''}" data-id="${m.id}">${rank ? `<span class="rk rk${String(rank).length}">${rank}</span>` : ''}
     <div class="pw">${poster(m.poster, '', 'w185', m.title)}<span class="bd${bdCls(m.id, b)}">${b}</span></div></div>`;
 }
 
@@ -2272,8 +2272,8 @@ async function saveReviewImage(d, btn){
   const x = c.getContext('2d');
   const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2a1d2e'); g.addColorStop(1, '#0c0a0f');
   x.fillStyle = g; x.fillRect(0, 0, W, H);
-  try{ await document.fonts.load('700 100px "Inter Tight"'); }catch(e){}
-  const disp = (sz) => `700 ${sz}px "Inter Tight", "Inter", sans-serif`;
+  try{ await document.fonts.load('700 100px "Sora"'); }catch(e){}
+  const disp = (sz) => `700 ${sz}px "Sora", sans-serif`;
   x.textAlign = 'center';
   x.fillStyle = '#ffb547'; x.font = disp(54); x.fillText('ROLLING CREDITS', W / 2, 110);
   x.fillStyle = '#9c93a9'; x.font = '600 34px system-ui, sans-serif'; x.fillText(d.thisYear ? `MY ${d.yr} IN FILM` : 'MY FILM LIFE SO FAR', W / 2, 165);
