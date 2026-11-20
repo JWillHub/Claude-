@@ -506,3 +506,7 @@ body.libv .ltop .lsearch{height:38px!important;border-radius:12px!important;padd
 body.libv .ltop .lsearch svg{width:18px;height:18px}
 body.libv .ltools #lsort,body.libv .ltools #lsort.lsortbtn{height:38px!important;width:38px!important;border-radius:12px!important}
 body.libv .ltop .ltools{margin:0!important;gap:8px}
+
+/* title logos: no drop-shadow filter (Android draws it as a visible box around the logo) */
+.mtlogo,.mtlogo.tall{filter:none!important}
+html.light .mtlogo{filter:brightness(0)!important}

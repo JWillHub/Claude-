@@ -1156,6 +1156,10 @@ body.libv .ltop .lsearch{height:38px!important;border-radius:12px!important;padd
 body.libv .ltop .lsearch svg{width:18px;height:18px}
 body.libv .ltools #lsort,body.libv .ltools #lsort.lsortbtn{height:38px!important;width:38px!important;border-radius:12px!important}
 body.libv .ltop .ltools{margin:0!important;gap:8px}
+
+/* title logos: no drop-shadow filter (Android draws it as a visible box around the logo) */
+.mtlogo,.mtlogo.tall{filter:none!important}
+html.light .mtlogo{filter:brightness(0)!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#d4c9b4!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1321,6 +1325,7 @@ html.navy .seapick{background-color:#12141b!important}
 html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#12141b)!important}
 html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(18,20,27,.35))!important}
 html.navy .rcth .pv-light .tb2{background-color:rgba(18,20,27,.08)!important}
+html.navy .shcard .shwrap .pad{box-shadow:0 -18px 18px #12141b!important}
 html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(70,100,170,.05) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(40,60,120,.08) 0%,transparent 65%),#12141b fixed!important}
 html.navy .tabbar{background:linear-gradient(180deg,rgba(28,31,40,calc(.94*var(--tbA,1))),rgba(18,20,27,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
 html.navy .tb.on{background:rgba(160,200,255,.14)}

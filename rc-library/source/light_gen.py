@@ -64,7 +64,8 @@ def navy(s):
             decls.append(f'{prop}:{nv}!important')
         if decls: out.append(','.join('html.navy ' + x for x in sels) + '{' + ';'.join(decls) + '}')
     return s.replace('</head>', '<style id="navygen">' + '\n'.join(out) + '\n' + NAVY_LATE + '</style>\n</head>', 1)
-NAVY_LATE = """html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(70,100,170,.05) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(40,60,120,.08) 0%,transparent 65%),#12141b fixed!important}
+NAVY_LATE = """html.navy .shcard .shwrap .pad{box-shadow:0 -18px 18px #12141b!important}
+html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(70,100,170,.05) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(40,60,120,.08) 0%,transparent 65%),#12141b fixed!important}
 html.navy .tabbar{background:linear-gradient(180deg,rgba(28,31,40,calc(.94*var(--tbA,1))),rgba(18,20,27,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
 html.navy .tb.on{background:rgba(160,200,255,.14)}
 """
