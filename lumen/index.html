@@ -193,6 +193,12 @@ body.playing .dock,body.kb .dock,body.tp .dock{transform:translate(-50%,140%);op
 #epx .er b{background:#f5c518;color:#000;font:800 8.5px/1.25 Arial,Helvetica,sans-serif;padding:1px 3.5px;border-radius:3px}
 #epx p{font-size:14px;line-height:1.6;font-weight:300;color:rgba(var(--tr),.82);margin:12px 0 16px}
 #epx .play{width:100%}
+#epx .tal{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+#epx .tab{width:100%;height:48px;border-radius:24px;font-size:14px;color:var(--text);font-weight:400}
+#epx .tac .epcb{padding:20px 20px 22px}
+#epx .tah{display:flex;align-items:center;gap:14px}
+#epx .tah img{width:56px;height:84px;aspect-ratio:auto;border-radius:10px;object-fit:cover;flex:none}
+#epx .tah h4{margin-bottom:0}
 .ep .ck{width:20px;height:20px;color:rgba(var(--lc),.85);flex:none}
 
 /* ---------- settings ---------- */
@@ -962,6 +968,7 @@ function drawHome(){
       const i = +c.dataset.i;
       if(i === carMid) openTitle(carList[i % carN].id); else tr.scrollTo({ left:i * CAR_STEP, behavior:'smooth' });
     });
+    $$('.ci', tr).forEach(c => holdable(c, () => titleActions(carList[+c.dataset.i % carN])));
     carMid = -1;
     requestAnimationFrame(() => { tr.scrollLeft = (carLoop ? carN : 0) * CAR_STEP; carPaint(); carGlow(); });
   }
@@ -1087,7 +1094,7 @@ function drawLib(quiet){
         return `<button class="pt press" data-id="${esc(t.id)}" style="animation-delay:${Math.min(i, 15) * 20}ms"><div class="pf">${t.poster ? `<img src="${poster(t.poster)}" alt="" loading="lazy" decoding="async">` : `<div class="np">${esc(t.title)}</div>`}${p ? `<div class="pb"><i style="width:${(p.t / p.d * 100).toFixed(1)}%"></i></div>` : ''}</div></button>`; }).join('')}</div>`}`;
   $$('.seg button', b).forEach(x => x.onclick = () => { store.set(K_KIND, x.dataset.k); drawLib(); });
   $('#sortb').onclick = () => { const ks = Object.keys(SORTS); store.set(K_SORT, ks[(ks.indexOf(sort) + 1) % ks.length]); drawLib(); };
-  $$('.pt', b).forEach(x => x.onclick = () => openTitle(x.dataset.id, $('.pf', x)));
+  $$('.pt', b).forEach(x => { x.onclick = () => openTitle(x.dataset.id, $('.pf', x)); holdable(x, () => { const t = titles().find(y => String(y.id) === x.dataset.id); if(t) titleActions(t); }); });
 }
 /* ================= watching ================= */
 function drawWatch(){
@@ -1283,6 +1290,54 @@ function drawShow(eps){
   if(t.tv && t.tid && cur.season > 0){ const s = cur.season; details(t).then(d => d && d.imdb ? imdbShow(d.imdb) : null).then(sh => { if(sh && sh.s[s] && cur && cur.t === t && cur.season === s){ ir = sh.s[s]; draw(lastMeta); } }).catch(() => {}); }
   if(t.tv && t.tid && cur.season > 0){ const s = cur.season; seasonEps(t.tid, s).then(m => { if(cur && cur.t === t && cur.season === s) draw(m); }).catch(() => {}); }
 }
+// press and hold (about 0.4 s, finger still): fn runs, and the tap that follows is swallowed
+// the finger lifting after a hold lands on the card that just opened: ignore taps on it for a moment
+$('#epx').addEventListener('click', e => { if(Date.now() - (+$('#epx').dataset.at || 0) < 650){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+function holdable(el, fn){
+  let tm = 0, sx = 0, sy = 0;
+  el.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; clearTimeout(tm); tm = setTimeout(() => { el._held = true; buzz(12); fn(); }, 420); });
+  el.addEventListener('pointermove', e => { if(Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 10) clearTimeout(tm); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => el.addEventListener(n, () => clearTimeout(tm)));
+  el.addEventListener('click', e => { if(el._held){ el._held = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  el.oncontextmenu = e => e.preventDefault();
+}
+// quick actions for a title, from holding its poster: resume, open, start over, watched, remove from Watching
+async function titleActions(t){
+  const el = $('#epx'), keys = Object.keys(prog).filter(k => t.tors.includes(prog[k].tid)).sort((a, b) => prog[b].at - prog[a].at);
+  const k0 = keys[0], p0 = k0 ? prog[k0] : null;
+  let movieKey = !t.tv ? k0 || Object.keys(done).find(k => t.tors.includes(k.split('|')[0])) || null : null;
+  const draw = () => {
+    const seen = movieKey && done[movieKey];
+    el.innerHTML = `<div class="epc glass tac"><div class="epcb">
+      <div class="tah">${t.poster ? `<img src="${poster(t.poster, 'w154')}" alt="">` : ''}<div><small>${t.tv ? 'Series' : 'Film'}${t.year ? ' · ' + t.year : ''}</small><h4>${esc(t.title)}</h4></div></div>
+      <div class="tal">
+        ${p0 ? `<button class="play acc glass press" data-a="resume">${PLAY}Resume${p0.label ? ' ' + esc(p0.label) : ''} · ${esc(left(p0))}</button>` : ''}
+        <button class="tab glass press" data-a="open">Open</button>
+        ${p0 && !t.tv ? '<button class="tab glass press" data-a="over">Start over</button>' : ''}
+        ${!t.tv ? `<button class="tab glass press" data-a="seen">${seen ? 'Mark unwatched' : 'Mark watched'}</button>` : ''}
+        ${keys.length ? '<button class="tab glass press" data-a="drop">Remove from Watching</button>' : ''}
+      </div></div></div>`;
+    $$('[data-a]', el).forEach(b => b.onclick = () => act(b.dataset.a));
+  };
+  const act = async a => {
+    if(a === 'resume'){ back(); setTimeout(() => resume(k0), 250); return; }
+    if(a === 'open'){ back(); setTimeout(() => openTitle(t.id), 250); return; }
+    if(a === 'over'){ prog[k0].t = 0; saveProg(); back(); setTimeout(() => resume(k0), 250); return; }
+    if(a === 'drop'){ keys.forEach(k => delete prog[k]); saveProg(); back(); toast('Removed from Watching'); refreshAfter(); return; }
+    if(a === 'seen'){
+      if(!movieKey){ try{ const fs = (await Promise.all(t.tors.map(files))).flat().sort((x, y) => y.bytes - x.bytes); if(fs[0]) movieKey = fs[0].tid + '|' + fs[0].path; }catch(e){ toast(errMsg(e)); return; } }
+      if(!movieKey) return;
+      if(done[movieKey]) delete done[movieKey]; else { done[movieKey] = Date.now(); delete prog[movieKey]; }
+      saveProg(); back(); toast(done[movieKey] ? 'Marked watched' : 'Marked unwatched'); refreshAfter();
+    }
+  };
+  const refreshAfter = () => setTimeout(() => { try{ if(isOpen('lib')) drawLib(true); if(isOpen('watch')) drawWatch(); drawHome(); }catch(e){} }, 300);
+  draw();
+  el.classList.add('open');
+  pushLayer('epx', () => el.classList.remove('open'));
+  el.dataset.at = Date.now();
+  el.onclick = e => { if(!e.target.closest('.epc')) back(); };
+}
 // the full description of one episode, in a glass card over the page; tap anywhere or go back to close
 function epInfo(x, m, r){
   const el = $('#epx'), pr = prog[x.tid + '|' + x.path];
@@ -1295,6 +1350,7 @@ function epInfo(x, m, r){
   el.classList.add('open');
   const close = () => el.classList.remove('open');
   pushLayer('epx', close);
+  el.dataset.at = Date.now();
   el.onclick = e => { if(!e.target.closest('.epc')) back(); };
   $('#epxp').onclick = () => { back(); setTimeout(() => playEp(x), 250); };
 }

@@ -627,7 +627,10 @@ public class PlayerActivity extends AppCompatActivity {
         if (SystemClock.uptimeMillis() < undoUntil && !isPip()) { skipBtn.setText("Undo skip"); fade(skipBtn, true); }
         else if (label != null && !isPip()) { skipBtn.setText(label); fade(skipBtn, true); } else fade(skipBtn, false);
         if (dur == C.TIME_UNSET || dur < 120_000) return;
-        long trigger = creditsMs > dur / 2 && creditsMs < dur - 5000 ? creditsMs : (long) (dur * 0.95);
+        // Next episode comes up when the credits start, but never later than a few minutes from the end
+        // (6% of the runtime, kept between 75 s and 4 min: about 3.5 min on an hour-long episode), since credits data can be late or missing
+        long fallback = dur - Math.max(75_000L, Math.min(240_000L, (long) (dur * 0.06)));
+        long trigger = creditsMs > dur / 2 && creditsMs < dur - 5000 ? Math.min(creditsMs, fallback) : fallback;
         if (hasNext() && pos > dur * 0.7) prefetchNext();
         if (!nextShown && pos >= trigger) {
             curFinished = true;   // counts as watched once the credits start
@@ -757,7 +760,7 @@ public class PlayerActivity extends AppCompatActivity {
     // TheIntroDB: community timestamps for intros, recaps and credits (episodes only)
     private void statusReadout() {
         int left = queue == null ? 0 : Math.max(0, queue.length() - qIndex - 1);
-        show("Intro data: " + segInfo + "\nCredits: " + (creditsMs > 0 ? (creditsMs / 60000) + "m" : "not known (next shows at 95%)")
+        show("Intro data: " + segInfo + "\nCredits: " + (creditsMs > 0 ? (creditsMs / 60000) + "m" : "not known (next shows a few minutes from the end)")
             + "\nUp next: " + (left > 0 ? left + " episode" + (left == 1 ? "" : "s") : "none") + (rdToken.isEmpty() ? " (no Real-Debrid key)" : "")
             + "\nShow " + tmdbId + " · S" + curS + " E" + curE + " · auto-skip " + (autoSkip ? "on" : "off"), -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     }
