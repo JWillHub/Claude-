@@ -1058,7 +1058,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void setUpCast() {
         if (castCtx == null) return;
         try {
-            castPlayer = new CastPlayer(castCtx);
+            castPlayer = new CastPlayer(castCtx, new HlsCastConverter());
             castPlayer.setSessionAvailabilityListener(new SessionAvailabilityListener() {
                 @Override public void onCastSessionAvailable() { startCast(); }
                 @Override public void onCastSessionUnavailable() { stopCast(); }
@@ -1068,6 +1068,28 @@ public class PlayerActivity extends AppCompatActivity {
             });
             if (castPlayer.isCastSessionAvailable()) startCast();
         } catch (Throwable t) { castPlayer = null; }
+    }
+
+    // Real-Debrid's converted streams are HLS in MPEG-TS pieces. Chromecasts assume a different packaging unless told,
+    // and then play the picture with no sound, so say so explicitly for HLS.
+    private static class HlsCastConverter implements androidx.media3.cast.MediaItemConverter {
+        private final androidx.media3.cast.DefaultMediaItemConverter base = new androidx.media3.cast.DefaultMediaItemConverter();
+        @Override public com.google.android.gms.cast.MediaQueueItem toMediaQueueItem(MediaItem item) {
+            com.google.android.gms.cast.MediaQueueItem q = base.toMediaQueueItem(item);
+            com.google.android.gms.cast.MediaInfo mi = q.getMedia();
+            String type = mi == null ? null : mi.getContentType();
+            if (mi == null || type == null || !type.toLowerCase().contains("mpegurl")) return q;
+            com.google.android.gms.cast.MediaInfo.Builder b = new com.google.android.gms.cast.MediaInfo.Builder(mi.getContentId())
+                .setContentType(type)
+                .setStreamType(mi.getStreamType())
+                .setHlsSegmentFormat(com.google.android.gms.cast.HlsSegmentFormat.TS)
+                .setHlsVideoSegmentFormat(com.google.android.gms.cast.HlsVideoSegmentFormat.MPEG2_TS);
+            if (mi.getContentUrl() != null) b.setContentUrl(mi.getContentUrl());
+            if (mi.getMetadata() != null) b.setMetadata(mi.getMetadata());
+            if (mi.getCustomData() != null) b.setCustomData(mi.getCustomData());
+            return new com.google.android.gms.cast.MediaQueueItem.Builder(b.build()).build();
+        }
+        @Override public MediaItem toMediaItem(com.google.android.gms.cast.MediaQueueItem q) { return base.toMediaItem(q); }
     }
 
     private void startCast() {
