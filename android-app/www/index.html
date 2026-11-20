@@ -59,8 +59,19 @@ body.spage main>section[id^="v-"]{display:none!important}
 body.spage #srch{min-height:60vh}
 body.spage header.top{display:flex!important}
 /* no logo in the header: the Discover tab does its job */
-#logo,#hproj{display:none!important}
+#logo:not(.sub),#hproj{display:none!important}
 .top .hact{margin-left:auto}
+/* the top bar only shows when it has a job (searching, or a page with a back button and title); otherwise the page moves up */
+header.top:not(.searching):not(:has(#hback:not([hidden]))){display:none!important}
+body:not(.libv):not(:has(header.top.searching)):not(:has(#hback:not([hidden]))) main{padding-top:calc(env(safe-area-inset-top) + 12px)}
+/* carousel: a round button floating above the tab bar's right end */
+body>#hcar{position:fixed;right:18px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:29;width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(180deg,rgba(30,30,32,.92),rgba(10,10,11,.94))!important;border:1px solid var(--accent)!important;color:#fff!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.5)!important}
+body>#hcar svg{width:22px;height:22px}
+html.light body>#hcar{background:linear-gradient(180deg,rgba(240,239,243,.95),rgba(226,225,230,.95))!important;box-shadow:0 8px 20px rgba(0,0,0,.15)!important}
+html.navy body>#hcar{background:linear-gradient(180deg,rgba(14,32,66,.94),rgba(6,17,39,.96))!important}
+body:has(header.top.searching)>#hcar,body:has(#v-settings:not([hidden]))>#hcar,body.spage>#hcar{display:none!important}
 .sidle{margin:16px 0 10px;font-size:17px;font-weight:800;color:var(--text);text-transform:none;letter-spacing:0}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
@@ -1147,38 +1158,38 @@ html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #e6e5ea!important}
 html.light .shbg{background-color:#d6d5db!important}
 </style>
-<style id="navygen">html.navy .top{background:#061127!important}
-html.navy .lcx{background:rgba(6,17,39,.6)!important}
-html.navy .shcard{background:#061127!important}
-html.navy .shbg{background:#061127 center top/cover no-repeat!important}
+<style id="navygen">html.navy .top{background-color:#061127!important}
+html.navy .lcx{background-color:rgba(6,17,39,.6)!important}
+html.navy .shcard{background-color:#061127!important}
+html.navy .shbg{background-color:#061127!important}
 html.navy .shbg::after{background:linear-gradient(180deg,rgba(6,17,39,.15) 0%,rgba(6,17,39,.5) 55%,#061127 96%)!important}
-html.navy .shcard .shwrap .pad{background:#061127!important}
-html.navy .toast,html.navy .ptr{background:#061127!important}
-html.navy .sh.page{background:#061127!important}
-html.navy .ltools select option{background:#061127!important}
+html.navy .shcard .shwrap .pad{background-color:#061127!important}
+html.navy .toast,html.navy .ptr{background-color:#061127!important}
+html.navy .sh.page{background-color:#061127!important}
+html.navy .ltools select option{background-color:#061127!important}
 html.navy .grid img,html.navy .rarow img,html.navy .lshow img,html.navy .cwimg,html.navy .epth{background-color:#061127!important}
 html.navy .skel{background-color:#061127!important}
-html.navy .ssel option{background:#061127!important}
-html.navy .subprev.box span{background:rgba(6,17,39,.7)!important}
+html.navy .ssel option{background-color:#061127!important}
+html.navy .subprev.box span{background-color:rgba(6,17,39,.7)!important}
 html.navy .mvsheet>.bdrop{background-color:#061127!important}
 html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(6,17,39,.1) 0%,rgba(6,17,39,.45) 55%,#061127 97%)!important}
 html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#061127 calc(340px + env(safe-area-inset-top))) local!important}
-html.navy .gpk-bk{background:rgba(6,17,39,.25)!important}
+html.navy .gpk-bk{background-color:rgba(6,17,39,.25)!important}
 html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#061127 calc(300px + env(safe-area-inset-top))) local!important}
-html.navy .gpk{background:rgba(6,17,39,.72)!important}
-html.navy .gpk-bk{background:rgba(6,17,39,.4)!important}
-html.navy .gpk-bk{background:rgba(6,17,39,.55)!important}
-html.navy body.libv .ltop{background:#061127!important}
-html.navy .hcard{background:#061127 center/cover no-repeat!important}
+html.navy .gpk{background-color:rgba(6,17,39,.72)!important}
+html.navy .gpk-bk{background-color:rgba(6,17,39,.4)!important}
+html.navy .gpk-bk{background-color:rgba(6,17,39,.55)!important}
+html.navy body.libv .ltop{background-color:#061127!important}
+html.navy .hcard{background-color:#061127!important}
 html.navy .hcard::after{background:linear-gradient(180deg,rgba(6,17,39,0) 30%,rgba(6,17,39,.92) 100%)!important}
-html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background:#061127!important}
+html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background-color:#061127!important}
 html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(6,17,39,.25) 0%,rgba(6,17,39,0) 18%,rgba(6,17,39,0) 45%,rgba(6,17,39,.75) 78%,#061127 100%)!important}
 html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#061127 calc(var(--hero) + env(safe-area-inset-top))) local!important}
 html.navy .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(6,17,39,.25) 0%,rgba(6,17,39,0) 18%,rgba(6,17,39,0) 42%,rgba(6,17,39,.8) 78%,#061127 100%)!important}
-html.navy .seapick{background:#061127!important}
+html.navy .seapick{background-color:#061127!important}
 html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#061127)!important}
 html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(6,17,39,.35))!important}
-html.navy .rcth .pv-light .tb2{background:rgba(6,17,39,.08)!important}
+html.navy .rcth .pv-light .tb2{background-color:rgba(6,17,39,.08)!important}
 html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.12) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.22) 0%,transparent 65%),#061127 fixed!important}
 html.navy .tabbar{background:linear-gradient(180deg,rgba(14,32,66,calc(.94*var(--tbA,1))),rgba(6,17,39,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
 html.navy .tb.on{background:rgba(160,200,255,.14)}
@@ -1838,6 +1849,7 @@ function savePos(key, val){
 const posOf = key => (store.get(K_CARPOS, {})[key] || {}).id;
 // On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
 const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', library:'My library', settings:'Settings', diary:'Diary', franchises:'Franchises' };
+document.body.appendChild($('#hcar'));   // lives outside the top bar, floating above the tab bar
 $('#hcar').onclick = () => {
   let src = pageSource;
   if(!src){

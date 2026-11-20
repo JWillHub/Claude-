@@ -56,6 +56,11 @@ def navy(s):
             if 'url(' in val: continue
             nv = re.sub(r'#000000|#000\b|#0c0a0f|#141119|#120f17|#111\b', NAVY, val)
             nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(6,17,39,', nv)
+            if prop == 'background' and 'gradient' not in nv:
+                # a plain colour in the shorthand: only change the colour, so pictures set elsewhere (posters, backdrops) stay
+                c = re.search(r'#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)', nv)
+                if not c: continue
+                prop, nv = 'background-color', c.group(0)
             decls.append(f'{prop}:{nv}!important')
         if decls: out.append(','.join('html.navy ' + x for x in sels) + '{' + ';'.join(decls) + '}')
     return s.replace('</head>', '<style id="navygen">' + '\n'.join(out) + '\n' + NAVY_LATE + '</style>\n</head>', 1)
