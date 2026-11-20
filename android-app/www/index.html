@@ -70,7 +70,7 @@ body>#hcar{position:fixed;right:18px;bottom:calc(96px + env(safe-area-inset-bott
   box-shadow:0 8px 22px rgba(0,0,0,.5)!important}
 body>#hcar svg{width:22px;height:22px}
 html.light body>#hcar{background:linear-gradient(180deg,rgba(240,239,243,.95),rgba(226,225,230,.95))!important;box-shadow:0 8px 20px rgba(0,0,0,.15)!important}
-html.navy body>#hcar{background:linear-gradient(180deg,rgba(14,32,66,.94),rgba(6,17,39,.96))!important}
+html.navy body>#hcar{background:linear-gradient(180deg,rgba(6,24,82,.94),rgba(0,12,54,.96))!important}
 body:has(header.top.searching)>#hcar,body:has(#v-settings:not([hidden]))>#hcar,body.spage>#hcar{display:none!important}
 .sidle{margin:16px 0 10px;font-size:17px;font-weight:800;color:var(--text);text-transform:none;letter-spacing:0}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
@@ -909,14 +909,14 @@ header.top,.top{border-bottom:0!important;box-shadow:none!important}
 header.top,.ltop{will-change:transform}
 
 /* ==== LIGHT MODE (html.light) ==== */
-html.light{--bg:#e6e5ea;--bg2:#e6e5ea;--card:transparent;--card2:#d9d8de;--line:#cfced5;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
-html.light .top,html.light body.libv .ltop{background:#e6e5ea}
-html.light .tabbar{background:linear-gradient(to top,rgba(230,229,234,.96),rgba(230,229,234,.75) 60%,rgba(230,229,234,0))}
+html.light{--bg:#d2d1d7;--bg2:#d2d1d7;--card:transparent;--card2:#c6c5cb;--line:#bdbcc3;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
+html.light .top,html.light body.libv .ltop{background:#d2d1d7}
+html.light .tabbar{background:linear-gradient(to top,rgba(210,209,215,.96),rgba(210,209,215,.75) 60%,rgba(210,209,215,0))}
 html.light .tb,html.light .tb.on{color:#1c1c1e}
 html.light .ov,html.light .bio{color:#3a3a3c}
 html.light .sh{box-shadow:0 -12px 40px rgba(0,0,0,.12)}
-html.light .sh.page{background:#e6e5ea}
-html.light .toast,html.light .ptr{background:#e6e5ea;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+html.light .sh.page{background:#d2d1d7}
+html.light .toast,html.light .ptr{background:#d2d1d7;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
 /* round glass buttons: frosted white with dark icons, readable over pictures and plain pages */
 html.light .glback{color:#111;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.7));border:1px solid rgba(0,0,0,.08);
   box-shadow:inset 0 1px 0 #fff,0 6px 18px rgba(0,0,0,.18)}
@@ -925,25 +925,25 @@ html.light .pill.ghost,html.light .btn.ghost{border-color:rgba(0,0,0,.28)}
 html.light .btn,html.light .sclr,html.light .ssel,html.light .gsel,html.light .morecp,html.light .updbtn{color:#111!important}
 html.light .gsel::after{border-color:#111}
 html.light .ltools input,html.light .ltools select{color:#111}
-html.light .ltools select option,html.light .ssel option{background:#e6e5ea}
-html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#d9d8de!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+html.light .ltools select option,html.light .ssel option{background:#d2d1d7}
+html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#c6c5cb!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
 html.light .lsearch svg{stroke:rgba(0,0,0,.55)}
 html.light .ltools .lsearch input{color:#111}
 html.light .lsearch input::placeholder{color:rgba(0,0,0,.45)}
 html.light .lsearch input::-webkit-search-cancel-button{filter:none}
 html.light .lsortbtn svg{stroke:#111}
-html.light .seapick{background:#e6e5ea;border-color:rgba(0,0,0,.18);color:#111}
+html.light .seapick{background:#d2d1d7;border-color:rgba(0,0,0,.18);color:#111}
 html.light .seapick::after{border-color:#111}
 /* pop-up lists: white with a soft shadow */
 html.light .gpk-bk{background:rgba(0,0,0,.25)}
-html.light .gpk{background:#e6e5ea!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
+html.light .gpk{background:#d2d1d7!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
 html.light .gpk button{color:#111}
 html.light .gpk button:active,html.light .gpk button.on{background:rgba(0,0,0,.05)!important}
 html.light .gpk button+button::before{background:rgba(0,0,0,.07)}
 /* placeholders and posters */
 @keyframes skell{0%,100%{background-color:#ececef}50%{background-color:#e0e0e4}}
-html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#d6d5db}
-html.light .skel{background-color:#d6d5db;animation-name:skell}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#c3c2c8}
+html.light .skel{background-color:#c3c2c8;animation-name:skell}
 html.light .pw img,html.light .pw .ph,html.light .lshow img,html.light .lshow .ph,html.light .lsea img,html.light .lsea .ph,html.light .shpo img,html.light .mvhead img,html.light .lcw img,html.light .sehp img,html.light .rpc .rph img{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.16)!important}
 html.light .stbar{background:#e5e5ea}
 html.light .accsw{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px rgba(0,0,0,.12)}
@@ -953,9 +953,9 @@ html.light .hcard .hin,html.light .hero .hin{--text:#fff;color:#fff}
 html.light .hcard .pill,html.light .hcard .btn{color:#fff!important;border-color:rgba(255,255,255,.6)}
 /* Title pages: the poster art fades into white; dark title and details; title logos turn dark */
 html.light .mvsheet>.bdrop{background-color:#fff}
-html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(230,229,234,0) 45%,rgba(230,229,234,.8) 78%,#e6e5ea 100%)!important}
-html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#e6e5ea calc(var(--hero) + env(safe-area-inset-top))) local!important}
-html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(230,229,234,0) 42%,rgba(230,229,234,.85) 78%,#e6e5ea 100%)!important}
+html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(210,209,215,0) 45%,rgba(210,209,215,.8) 78%,#d2d1d7 100%)!important}
+html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#d2d1d7 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(210,209,215,0) 42%,rgba(210,209,215,.85) 78%,#d2d1d7 100%)!important}
 html.light .mvsheet .mvhead h2,html.light .shcard .shname{text-shadow:0 2px 16px rgba(255,255,255,.7)}
 html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7)}
 html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
@@ -981,7 +981,7 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 .tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
 .tb svg{filter:none}
 .tb.on{background:rgba(255,255,255,.1)}
-html.light .tabbar{background:linear-gradient(180deg,rgba(230,229,234,calc(.97*var(--tbA,1))),rgba(222,221,226,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
+html.light .tabbar{background:linear-gradient(180deg,rgba(210,209,215,calc(.97*var(--tbA,1))),rgba(203,202,208,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
 
@@ -998,7 +998,7 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 
 
 /* ==== NAVY THEME (html.navy; black backgrounds get navy twins, generated in light_gen.py) ==== */
-html.navy{--bg:#061127;--bg2:#061127;--card2:#0c1c3a;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
+html.navy{--bg:#000c36;--bg2:#000c36;--card2:#071650;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
 
 /* ==== REDUCE MOTION (Settings, Appearance): no slides, fades or zooms ==== */
 html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
@@ -1009,9 +1009,9 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth .pv{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
 .rcth button:active .pv{transform:scale(.97)}
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
-.rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#d9d8de)}
+.rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#c6c5cb)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.22),transparent 70%),linear-gradient(160deg,#0a1a38,#050e20)}
+.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.14),transparent 70%),linear-gradient(160deg,#04124a,#000a2c)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
 .rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}
@@ -1026,8 +1026,23 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
 .rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
 .tbrow input[type=range]{flex:1;max-width:46%;accent-color:var(--accent)}
+
+/* ==== ACCENT COLORS: two even rows of five, with names ==== */
+.accgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px 6px;padding:18px 10px 16px}
+.acci{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;background:none;font:inherit;color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.acci .accsw{position:relative;width:44px;height:44px;border-radius:50%;border:0;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.35),transparent 55%),var(--c);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 4px 12px rgba(0,0,0,.35);transition:transform .18s,box-shadow .18s}
+.acci:active .accsw{transform:scale(.92)}
+.acci.on .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--c),0 6px 16px rgba(0,0,0,.4)}
+.acci.on .accsw::after{content:"";position:absolute;left:50%;top:46%;width:8px;height:15px;border:solid #fff;border-width:0 3px 3px 0;transform:translate(-50%,-50%) rotate(45deg)}
+.acci.on[data-c="#ffffff"] .accsw::after,.acci.on[data-c="#d4a72c"] .accsw::after{border-color:#111}
+.acci .accn{font-size:12px;font-weight:600}
+.acci.on .accn{color:var(--text)}
+html.light .acci .accsw{box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.15)}
+html.light .acci.on .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--c)}
+html.light .acci.on[data-c="#ffffff"] .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px #111}
 </style>
-<style id="lightgen">html.light .top{background-color:#e6e5ea!important}
+<style id="lightgen">html.light .top{background-color:#d2d1d7!important}
 html.light .logo .w1{color:var(--text)!important}
 html.light .logo .w2{color:var(--text)!important}
 html.light .ib.hback{color:var(--text)!important}
@@ -1124,8 +1139,8 @@ html.light .ept b{color:var(--text)!important}
 html.light .epm{color:var(--text)!important}
 html.light .epo{color:var(--text)!important}
 html.light .upnth{color:var(--text)!important}
-html.light .shcard{background-color:#e6e5ea!important}
-html.light .shcard .shwrap .pad{background-color:#e6e5ea!important;box-shadow:none!important}
+html.light .shcard{background-color:#d2d1d7!important}
+html.light .shcard .shwrap .pad{background-color:#d2d1d7!important;box-shadow:none!important}
 html.light .shov{color:var(--text)!important}
 html.light .shtabs button{color:var(--text)!important}
 html.light .mlown{color:var(--text)!important}
@@ -1135,63 +1150,63 @@ html.light .cwh{color:var(--text)!important}
 html.light .cwph{color:var(--text)!important}
 html.light .cwlib{color:var(--text)!important}
 html.light .lnk{color:var(--text)!important}
-html.light .sh.page{background-color:#e6e5ea!important}
+html.light .sh.page{background-color:#d2d1d7!important}
 html.light .tb{color:var(--text)!important}
 html.light .tb.on{color:var(--text)!important}
 html.light .ltools input{color:var(--text)!important}
 html.light .ltools select{color:var(--text)!important}
-html.light .ltools select option{background-color:#e6e5ea!important}
+html.light .ltools select option{background-color:#d2d1d7!important}
 html.light .sclr{color:var(--text)!important}
-html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#e6e5ea!important}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#d2d1d7!important}
 html.light .ssel{color:var(--text)!important}
-html.light .ssel option{background-color:#e6e5ea!important}
+html.light .ssel option{background-color:#d2d1d7!important}
 html.light .btn{color:var(--text)!important}
 html.light .btn.ghost{border-color:rgba(0,0,0,0.30)!important}
 html.light .gsel{color:var(--text)!important}
-html.light body.libv .ltop{background-color:#e6e5ea!important}
+html.light body.libv .ltop{background-color:#d2d1d7!important}
 html.light .mvsheet .mvhead .meta{color:var(--text)!important}
 html.light .shcard .shmeta{color:var(--text)!important}
 html.light .morecp{color:var(--text)!important}
 html.light .tabbar{border-color:rgba(0,0,0,0.12)!important}
 html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
-html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #e6e5ea!important}
-html.light .shbg{background-color:#d6d5db!important}
+html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #d2d1d7!important}
+html.light .shbg{background-color:#c3c2c8!important}
 </style>
-<style id="navygen">html.navy .top{background-color:#061127!important}
-html.navy .lcx{background-color:rgba(6,17,39,.6)!important}
-html.navy .shcard{background-color:#061127!important}
-html.navy .shbg{background-color:#061127!important}
-html.navy .shbg::after{background:linear-gradient(180deg,rgba(6,17,39,.15) 0%,rgba(6,17,39,.5) 55%,#061127 96%)!important}
-html.navy .shcard .shwrap .pad{background-color:#061127!important}
-html.navy .toast,html.navy .ptr{background-color:#061127!important}
-html.navy .sh.page{background-color:#061127!important}
-html.navy .ltools select option{background-color:#061127!important}
-html.navy .grid img,html.navy .rarow img,html.navy .lshow img,html.navy .cwimg,html.navy .epth{background-color:#061127!important}
-html.navy .skel{background-color:#061127!important}
-html.navy .ssel option{background-color:#061127!important}
-html.navy .subprev.box span{background-color:rgba(6,17,39,.7)!important}
-html.navy .mvsheet>.bdrop{background-color:#061127!important}
-html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(6,17,39,.1) 0%,rgba(6,17,39,.45) 55%,#061127 97%)!important}
-html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#061127 calc(340px + env(safe-area-inset-top))) local!important}
-html.navy .gpk-bk{background-color:rgba(6,17,39,.25)!important}
-html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#061127 calc(300px + env(safe-area-inset-top))) local!important}
-html.navy .gpk{background-color:rgba(6,17,39,.72)!important}
-html.navy .gpk-bk{background-color:rgba(6,17,39,.4)!important}
-html.navy .gpk-bk{background-color:rgba(6,17,39,.55)!important}
-html.navy body.libv .ltop{background-color:#061127!important}
-html.navy .hcard{background-color:#061127!important}
-html.navy .hcard::after{background:linear-gradient(180deg,rgba(6,17,39,0) 30%,rgba(6,17,39,.92) 100%)!important}
-html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background-color:#061127!important}
-html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(6,17,39,.25) 0%,rgba(6,17,39,0) 18%,rgba(6,17,39,0) 45%,rgba(6,17,39,.75) 78%,#061127 100%)!important}
-html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#061127 calc(var(--hero) + env(safe-area-inset-top))) local!important}
-html.navy .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(6,17,39,.25) 0%,rgba(6,17,39,0) 18%,rgba(6,17,39,0) 42%,rgba(6,17,39,.8) 78%,#061127 100%)!important}
-html.navy .seapick{background-color:#061127!important}
-html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#061127)!important}
-html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(6,17,39,.35))!important}
-html.navy .rcth .pv-light .tb2{background-color:rgba(6,17,39,.08)!important}
-html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.12) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.22) 0%,transparent 65%),#061127 fixed!important}
-html.navy .tabbar{background:linear-gradient(180deg,rgba(14,32,66,calc(.94*var(--tbA,1))),rgba(6,17,39,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
+<style id="navygen">html.navy .top{background-color:#000c36!important}
+html.navy .lcx{background-color:rgba(0,12,54,.6)!important}
+html.navy .shcard{background-color:#000c36!important}
+html.navy .shbg{background-color:#000c36!important}
+html.navy .shbg::after{background:linear-gradient(180deg,rgba(0,12,54,.15) 0%,rgba(0,12,54,.5) 55%,#000c36 96%)!important}
+html.navy .shcard .shwrap .pad{background-color:#000c36!important}
+html.navy .toast,html.navy .ptr{background-color:#000c36!important}
+html.navy .sh.page{background-color:#000c36!important}
+html.navy .ltools select option{background-color:#000c36!important}
+html.navy .grid img,html.navy .rarow img,html.navy .lshow img,html.navy .cwimg,html.navy .epth{background-color:#000c36!important}
+html.navy .skel{background-color:#000c36!important}
+html.navy .ssel option{background-color:#000c36!important}
+html.navy .subprev.box span{background-color:rgba(0,12,54,.7)!important}
+html.navy .mvsheet>.bdrop{background-color:#000c36!important}
+html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,12,54,.1) 0%,rgba(0,12,54,.45) 55%,#000c36 97%)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#000c36 calc(340px + env(safe-area-inset-top))) local!important}
+html.navy .gpk-bk{background-color:rgba(0,12,54,.25)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#000c36 calc(300px + env(safe-area-inset-top))) local!important}
+html.navy .gpk{background-color:rgba(0,12,54,.72)!important}
+html.navy .gpk-bk{background-color:rgba(0,12,54,.4)!important}
+html.navy .gpk-bk{background-color:rgba(0,12,54,.55)!important}
+html.navy body.libv .ltop{background-color:#000c36!important}
+html.navy .hcard{background-color:#000c36!important}
+html.navy .hcard::after{background:linear-gradient(180deg,rgba(0,12,54,0) 30%,rgba(0,12,54,.92) 100%)!important}
+html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background-color:#000c36!important}
+html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,12,54,.25) 0%,rgba(0,12,54,0) 18%,rgba(0,12,54,0) 45%,rgba(0,12,54,.75) 78%,#000c36 100%)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000c36 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.navy .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,12,54,.25) 0%,rgba(0,12,54,0) 18%,rgba(0,12,54,0) 42%,rgba(0,12,54,.8) 78%,#000c36 100%)!important}
+html.navy .seapick{background-color:#000c36!important}
+html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000c36)!important}
+html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(0,12,54,.35))!important}
+html.navy .rcth .pv-light .tb2{background-color:rgba(0,12,54,.08)!important}
+html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.07) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.14) 0%,transparent 65%),#000c36 fixed!important}
+html.navy .tabbar{background:linear-gradient(180deg,rgba(6,24,82,calc(.94*var(--tbA,1))),rgba(0,12,54,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
 html.navy .tb.on{background:rgba(160,200,255,.14)}
 </style>
 </head>
@@ -4253,7 +4268,7 @@ function applyTheme(){ try{
   // tab bar see-through (0 = solid) and reduce motion
   r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
   r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#e6e5ea' : navy ? '#061127' : '#000000';
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#000c36' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -4287,7 +4302,7 @@ function renderSettings(){
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
-  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink'],['#ffffff','White']];
+  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e0457b','Pink'],['#8a5cf6','Violet'],['#3b7ddd','Blue'],['#1aa3a3','Teal'],['#2fa86b','Green'],['#d4a72c','Gold'],['#e8902a','Amber'],['#ffffff','White']];
   const PICKS = {};
   const pick = (id, cur, opts) => { PICKS[id] = opts; return `<button class="ssel gsel" id="${id}" value="${esc(cur)}">${esc((opts.find(o => String(o[0]) === String(cur)) || opts[0])[1])}</button>`; };
   // a picker button: opens the glass list, then behaves like a changed select (el.value + el.onchange)
@@ -4296,6 +4311,9 @@ function renderSettings(){
   const sw = (id, icon, label, sub, on) => `<label class="srow sw">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i class="swi"></i></label>`;
   const selRow = (icon, label, sub, sel) => `<div class="srow static">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${sel}</div>`;
   const langName = c => (LANGS.find(x => x[0] === c) || [])[1];
+  const themeCards = () => { const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
+    return `<div class="scard rcth" role="radiogroup" aria-label="Theme">${[['light', 'Light'], ['dark', 'Dark'], ['navy', 'Navy']].map(([k, n]) =>
+      `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>`; };
   // a settings section as its own page (glass back button), repainted when something changes
   const subPage = (title, build) => {
     const pg = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="spg"></div>`, { tall:true, page:true });
@@ -4307,6 +4325,7 @@ function renderSettings(){
     if(!b.isConnected) return;
     const tm = !!store.get(K_KEY, '');
     $('#setbody', b).innerHTML = `
+      <div class="sgh">Theme</div>${themeCards()}
       <div class="sgroup smain"><div class="scard">
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
@@ -4317,6 +4336,7 @@ function renderSettings(){
         ${NATIVE ? '<div class="srow static" id="appupd"></div>' : ''}
         ${row('s-about', 'info', 'About', '')}
       </div></div>`;
+    $$('[data-th]', b).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); paint(); });
     $('#g-conn', b).onclick = () => subPage('Connections', box => {
       const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
       box.innerHTML = `<div class="scard">
@@ -4353,19 +4373,16 @@ function renderSettings(){
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
       const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['light', 'Light'], ['dark', 'Dark'], ['navy', 'Navy']].map(([k, n]) =>
-          `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
+      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard accgrid" role="radiogroup" aria-label="Accent color">${ACCENTS.map(([c, n]) =>
+          `<button class="acci${c === cur ? ' on' : ''}" data-c="${c}" role="radio" aria-checked="${c === cur}" style="--c:${c}"><span class="accsw"></span><span class="accn">${n}</span></button>`).join('')}</div>
         <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
         <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
-        <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
-          `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
         <div class="sgh">Browsing</div><div class="scard">
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
-      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      $$('.acci', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };

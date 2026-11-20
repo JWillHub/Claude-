@@ -22,7 +22,7 @@ def gen(s):
             col = 'var(--text)' if not a or float(a) > .8 else f'rgba(0,0,0,{min(.85, float(a) + .05):.2f})'
             rules.append(f'color:{col}!important')
         bg = re.search(r'background(-color)?:\s*(#000\b|#000000|#0c0a0f|#111\b|#120f17|#141119)\s*(!important)?\s*(;|$)', body)
-        if bg: rules.append('background-color:#e6e5ea!important')
+        if bg: rules.append('background-color:#d2d1d7!important')
         if re.search(r'box-shadow:[^;]*\s#000\b', body) and bg: rules.append('box-shadow:none!important')
         b = re.search(r'border(-color)?:[^;]*rgba\(255,\s*255,\s*255,\s*([\d.]+)\)', body)
         if b: rules.append(f'border-color:rgba(0,0,0,{min(.3, float(b.group(2)) * .8 + .04):.2f})!important')
@@ -32,13 +32,13 @@ def gen(s):
 # hand-written fixes that must come after the generated rules
 LATE = '''html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
-html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #e6e5ea!important}
-html.light .shbg{background-color:#d6d5db!important}
+html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #d2d1d7!important}
+html.light .shbg{background-color:#c3c2c8!important}
 '''
 
 
 # Navy, generated: every black or near-black background gets a navy twin (html.navy), so no black patches remain
-NAVY = '#061127'
+NAVY = '#000c36'
 def navy(s):
     css = ''.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
     css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
@@ -55,7 +55,7 @@ def navy(s):
             if not re.search(r'#000\b|#000000|#0c0a0f|#141119|#120f17|#111\b|rgba\(0,\s*0,\s*0,', val): continue
             if 'url(' in val: continue
             nv = re.sub(r'#000000|#000\b|#0c0a0f|#141119|#120f17|#111\b', NAVY, val)
-            nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(6,17,39,', nv)
+            nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(0,12,54,', nv)
             if prop == 'background' and 'gradient' not in nv:
                 # a plain colour in the shorthand: only change the colour, so pictures set elsewhere (posters, backdrops) stay
                 c = re.search(r'#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)', nv)
@@ -64,7 +64,7 @@ def navy(s):
             decls.append(f'{prop}:{nv}!important')
         if decls: out.append(','.join('html.navy ' + x for x in sels) + '{' + ';'.join(decls) + '}')
     return s.replace('</head>', '<style id="navygen">' + '\n'.join(out) + '\n' + NAVY_LATE + '</style>\n</head>', 1)
-NAVY_LATE = """html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.12) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.22) 0%,transparent 65%),#061127 fixed!important}
-html.navy .tabbar{background:linear-gradient(180deg,rgba(14,32,66,calc(.94*var(--tbA,1))),rgba(6,17,39,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
+NAVY_LATE = """html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.07) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.14) 0%,transparent 65%),#000c36 fixed!important}
+html.navy .tabbar{background:linear-gradient(180deg,rgba(6,24,82,calc(.94*var(--tbA,1))),rgba(0,12,54,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
 html.navy .tb.on{background:rgba(160,200,255,.14)}
 """

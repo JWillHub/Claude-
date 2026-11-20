@@ -17,7 +17,7 @@ function applyTheme(){ try{
   // tab bar see-through (0 = solid) and reduce motion
   r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
   r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#e6e5ea' : navy ? '#061127' : '#000000';
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#000c36' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -51,7 +51,7 @@ function renderSettings(){
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
-  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e8902a','Amber'],['#2fa86b','Green'],['#1aa3a3','Teal'],['#3b7ddd','Blue'],['#8a5cf6','Violet'],['#e0457b','Pink'],['#ffffff','White']];
+  const ACCENTS = [['#b8242c','Red'],['#e23a44','Crimson'],['#e0457b','Pink'],['#8a5cf6','Violet'],['#3b7ddd','Blue'],['#1aa3a3','Teal'],['#2fa86b','Green'],['#d4a72c','Gold'],['#e8902a','Amber'],['#ffffff','White']];
   const PICKS = {};
   const pick = (id, cur, opts) => { PICKS[id] = opts; return `<button class="ssel gsel" id="${id}" value="${esc(cur)}">${esc((opts.find(o => String(o[0]) === String(cur)) || opts[0])[1])}</button>`; };
   // a picker button: opens the glass list, then behaves like a changed select (el.value + el.onchange)
@@ -60,6 +60,9 @@ function renderSettings(){
   const sw = (id, icon, label, sub, on) => `<label class="srow sw">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i class="swi"></i></label>`;
   const selRow = (icon, label, sub, sel) => `<div class="srow static">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${sel}</div>`;
   const langName = c => (LANGS.find(x => x[0] === c) || [])[1];
+  const themeCards = () => { const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
+    return `<div class="scard rcth" role="radiogroup" aria-label="Theme">${[['light', 'Light'], ['dark', 'Dark'], ['navy', 'Navy']].map(([k, n]) =>
+      `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>`; };
   // a settings section as its own page (glass back button), repainted when something changes
   const subPage = (title, build) => {
     const pg = sheet(`<h2 class="stitle">${esc(title)}</h2><div class="spg"></div>`, { tall:true, page:true });
@@ -71,6 +74,7 @@ function renderSettings(){
     if(!b.isConnected) return;
     const tm = !!store.get(K_KEY, '');
     $('#setbody', b).innerHTML = `
+      <div class="sgh">Theme</div>${themeCards()}
       <div class="sgroup smain"><div class="scard">
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
@@ -81,6 +85,7 @@ function renderSettings(){
         ${NATIVE ? '<div class="srow static" id="appupd"></div>' : ''}
         ${row('s-about', 'info', 'About', '')}
       </div></div>`;
+    $$('[data-th]', b).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); paint(); });
     $('#g-conn', b).onclick = () => subPage('Connections', box => {
       const tm = !!store.get(K_KEY, ''), rd = !!store.get(K_RD, ''), om = !!store.get(K_OMDB, ''), n = libTitles().length;
       box.innerHTML = `<div class="scard">
@@ -117,19 +122,16 @@ function renderSettings(){
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
       const see = Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0));
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['light', 'Light'], ['dark', 'Dark'], ['navy', 'Navy']].map(([k, n]) =>
-          `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
+      box.innerHTML = `<div class="sgh">Accent color</div><div class="scard accgrid" role="radiogroup" aria-label="Accent color">${ACCENTS.map(([c, n]) =>
+          `<button class="acci${c === cur ? ' on' : ''}" data-c="${c}" role="radio" aria-checked="${c === cur}" style="--c:${c}"><span class="accsw"></span><span class="accn">${n}</span></button>`).join('')}</div>
         <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" id="tba" min="0" max="90" step="5" value="${see}" aria-label="Tab bar see-through"></div></div>
         <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
-        <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
-          `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
         <div class="sgh">Browsing</div><div class="scard">
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
-      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      $$('.acci', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#tba', box).oninput = e => { store.set(K_TBA, +e.target.value); $('#tbv', box).textContent = +e.target.value ? e.target.value + '%' : 'Solid'; applyTheme(); };

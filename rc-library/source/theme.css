@@ -259,14 +259,14 @@ header.top,.top{border-bottom:0!important;box-shadow:none!important}
 header.top,.ltop{will-change:transform}
 
 /* ==== LIGHT MODE (html.light) ==== */
-html.light{--bg:#e6e5ea;--bg2:#e6e5ea;--card:transparent;--card2:#d9d8de;--line:#cfced5;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
-html.light .top,html.light body.libv .ltop{background:#e6e5ea}
-html.light .tabbar{background:linear-gradient(to top,rgba(230,229,234,.96),rgba(230,229,234,.75) 60%,rgba(230,229,234,0))}
+html.light{--bg:#d2d1d7;--bg2:#d2d1d7;--card:transparent;--card2:#c6c5cb;--line:#bdbcc3;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
+html.light .top,html.light body.libv .ltop{background:#d2d1d7}
+html.light .tabbar{background:linear-gradient(to top,rgba(210,209,215,.96),rgba(210,209,215,.75) 60%,rgba(210,209,215,0))}
 html.light .tb,html.light .tb.on{color:#1c1c1e}
 html.light .ov,html.light .bio{color:#3a3a3c}
 html.light .sh{box-shadow:0 -12px 40px rgba(0,0,0,.12)}
-html.light .sh.page{background:#e6e5ea}
-html.light .toast,html.light .ptr{background:#e6e5ea;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+html.light .sh.page{background:#d2d1d7}
+html.light .toast,html.light .ptr{background:#d2d1d7;color:#000;box-shadow:0 6px 20px rgba(0,0,0,.15)}
 /* round glass buttons: frosted white with dark icons, readable over pictures and plain pages */
 html.light .glback{color:#111;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(255,255,255,.7));border:1px solid rgba(0,0,0,.08);
   box-shadow:inset 0 1px 0 #fff,0 6px 18px rgba(0,0,0,.18)}
@@ -275,25 +275,25 @@ html.light .pill.ghost,html.light .btn.ghost{border-color:rgba(0,0,0,.28)}
 html.light .btn,html.light .sclr,html.light .ssel,html.light .gsel,html.light .morecp,html.light .updbtn{color:#111!important}
 html.light .gsel::after{border-color:#111}
 html.light .ltools input,html.light .ltools select{color:#111}
-html.light .ltools select option,html.light .ssel option{background:#e6e5ea}
-html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#d9d8de!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+html.light .ltools select option,html.light .ssel option{background:#d2d1d7}
+html.light .lsearch,html.light .ltools #lsort,html.light .ltools #lsort.lsortbtn{background:#c6c5cb!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
 html.light .lsearch svg{stroke:rgba(0,0,0,.55)}
 html.light .ltools .lsearch input{color:#111}
 html.light .lsearch input::placeholder{color:rgba(0,0,0,.45)}
 html.light .lsearch input::-webkit-search-cancel-button{filter:none}
 html.light .lsortbtn svg{stroke:#111}
-html.light .seapick{background:#e6e5ea;border-color:rgba(0,0,0,.18);color:#111}
+html.light .seapick{background:#d2d1d7;border-color:rgba(0,0,0,.18);color:#111}
 html.light .seapick::after{border-color:#111}
 /* pop-up lists: white with a soft shadow */
 html.light .gpk-bk{background:rgba(0,0,0,.25)}
-html.light .gpk{background:#e6e5ea!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
+html.light .gpk{background:#d2d1d7!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:0 18px 50px rgba(0,0,0,.22)!important}
 html.light .gpk button{color:#111}
 html.light .gpk button:active,html.light .gpk button.on{background:rgba(0,0,0,.05)!important}
 html.light .gpk button+button::before{background:rgba(0,0,0,.07)}
 /* placeholders and posters */
 @keyframes skell{0%,100%{background-color:#ececef}50%{background-color:#e0e0e4}}
-html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#d6d5db}
-html.light .skel{background-color:#d6d5db;animation-name:skell}
+html.light .grid img,html.light .rarow img,html.light .lshow img,html.light .cwimg,html.light .epth{background-color:#c3c2c8}
+html.light .skel{background-color:#c3c2c8;animation-name:skell}
 html.light .pw img,html.light .pw .ph,html.light .lshow img,html.light .lshow .ph,html.light .lsea img,html.light .lsea .ph,html.light .shpo img,html.light .mvhead img,html.light .lcw img,html.light .sehp img,html.light .rpc .rph img{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.16)!important}
 html.light .stbar{background:#e5e5ea}
 html.light .accsw{box-shadow:inset 0 0 0 2px #fff,0 0 0 1px rgba(0,0,0,.12)}
@@ -303,9 +303,9 @@ html.light .hcard .hin,html.light .hero .hin{--text:#fff;color:#fff}
 html.light .hcard .pill,html.light .hcard .btn{color:#fff!important;border-color:rgba(255,255,255,.6)}
 /* Title pages: the poster art fades into white; dark title and details; title logos turn dark */
 html.light .mvsheet>.bdrop{background-color:#fff}
-html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(230,229,234,0) 45%,rgba(230,229,234,.8) 78%,#e6e5ea 100%)!important}
-html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#e6e5ea calc(var(--hero) + env(safe-area-inset-top))) local!important}
-html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(230,229,234,0) 42%,rgba(230,229,234,.85) 78%,#e6e5ea 100%)!important}
+html.light .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(210,209,215,0) 45%,rgba(210,209,215,.8) 78%,#d2d1d7 100%)!important}
+html.light .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#d2d1d7 calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.light .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,0,0,.22) 0%,rgba(0,0,0,0) 18%,rgba(210,209,215,0) 42%,rgba(210,209,215,.85) 78%,#d2d1d7 100%)!important}
 html.light .mvsheet .mvhead h2,html.light .shcard .shname{text-shadow:0 2px 16px rgba(255,255,255,.7)}
 html.light .mvsheet .mvhead .meta,html.light .shcard .shmeta{color:rgba(0,0,0,.7)}
 html.light .mtlogo{filter:brightness(0) drop-shadow(0 2px 10px rgba(255,255,255,.6))}
@@ -331,7 +331,7 @@ html.light #srecent .srrow{border-bottom-color:rgba(0,0,0,.08)}
 .tb{text-shadow:none;padding:6px 0 5px;border-radius:22px;transition:background-color .25s ease,transform .18s cubic-bezier(.3,.7,.4,1.4)}
 .tb svg{filter:none}
 .tb.on{background:rgba(255,255,255,.1)}
-html.light .tabbar{background:linear-gradient(180deg,rgba(230,229,234,calc(.97*var(--tbA,1))),rgba(222,221,226,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
+html.light .tabbar{background:linear-gradient(180deg,rgba(210,209,215,calc(.97*var(--tbA,1))),rgba(203,202,208,calc(.97*var(--tbA,1))))!important;border-color:rgba(0,0,0,.07);
   box-shadow:inset 0 1px 0 #fff,0 10px 28px rgba(0,0,0,.16)}
 html.light .tb.on{background:rgba(0,0,0,.06)}
 
@@ -348,7 +348,7 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 
 
 /* ==== NAVY THEME (html.navy; black backgrounds get navy twins, generated in light_gen.py) ==== */
-html.navy{--bg:#061127;--bg2:#061127;--card2:#0c1c3a;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
+html.navy{--bg:#000c36;--bg2:#000c36;--card2:#071650;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
 
 /* ==== REDUCE MOTION (Settings, Appearance): no slides, fades or zooms ==== */
 html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
@@ -359,9 +359,9 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth .pv{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
 .rcth button:active .pv{transform:scale(.97)}
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
-.rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#d9d8de)}
+.rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#c6c5cb)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.22),transparent 70%),linear-gradient(160deg,#0a1a38,#050e20)}
+.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.14),transparent 70%),linear-gradient(160deg,#04124a,#000a2c)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
 .rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}
@@ -376,3 +376,18 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
 .rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
 .tbrow input[type=range]{flex:1;max-width:46%;accent-color:var(--accent)}
+
+/* ==== ACCENT COLORS: two even rows of five, with names ==== */
+.accgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px 6px;padding:18px 10px 16px}
+.acci{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0;border:0;background:none;font:inherit;color:var(--muted);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.acci .accsw{position:relative;width:44px;height:44px;border-radius:50%;border:0;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.35),transparent 55%),var(--c);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 4px 12px rgba(0,0,0,.35);transition:transform .18s,box-shadow .18s}
+.acci:active .accsw{transform:scale(.92)}
+.acci.on .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--c),0 6px 16px rgba(0,0,0,.4)}
+.acci.on .accsw::after{content:"";position:absolute;left:50%;top:46%;width:8px;height:15px;border:solid #fff;border-width:0 3px 3px 0;transform:translate(-50%,-50%) rotate(45deg)}
+.acci.on[data-c="#ffffff"] .accsw::after,.acci.on[data-c="#d4a72c"] .accsw::after{border-color:#111}
+.acci .accn{font-size:12px;font-weight:600}
+.acci.on .accn{color:var(--text)}
+html.light .acci .accsw{box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.15)}
+html.light .acci.on .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--c)}
+html.light .acci.on[data-c="#ffffff"] .accsw{box-shadow:0 0 0 3px var(--bg),0 0 0 5px #111}
