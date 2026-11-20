@@ -44,6 +44,8 @@ public class RCPlayerPlugin extends Plugin {
         Boolean auto = call.getBoolean("autoplay", true);
         intent.putExtra("autoplay", auto == null || auto);
         intent.putExtra("light", call.getString("light", ""));   // Lumen's light colour for the player's controls
+        intent.putExtra("castArt", call.getString("castArt", ""));
+        intent.putExtra("castSub", call.getString("castSub", ""));
         startActivityForResult(call, intent, "playerClosed");
         try { getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); } catch (Exception ignored) {}
     }

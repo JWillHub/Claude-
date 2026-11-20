@@ -123,6 +123,15 @@ public class PlayerActivity extends AppCompatActivity {
     private String preUrl = null; private int preFor = -2; private boolean prefetching = false;
     private long creditsMs = -1, skipTarget = 0;
     private String segInfo = "";
+    private String castArt = "", castSub = "";
+    // what the Chromecast shows while loading and paused: title, episode name (or year) and wide artwork
+    private MediaMetadata meta(String title) {
+        MediaMetadata.Builder b = new MediaMetadata.Builder().setTitle(title).setDisplayTitle(title);
+        if (!castSub.isEmpty()) { b.setSubtitle(castSub); b.setArtist(castSub); }
+        if (!castArt.isEmpty()) b.setArtworkUri(android.net.Uri.parse(castArt));
+        b.setMediaType(curS > 0 ? MediaMetadata.MEDIA_TYPE_TV_SHOW : MediaMetadata.MEDIA_TYPE_MOVIE);
+        return b.build();
+    }
     private final List<long[]> segs = new ArrayList<>();      // {start, end, kind 0 intro / 1 recap}
     private TextView skipBtn, nextBtn;
     private ClipDrawable nextFill;
@@ -161,6 +170,7 @@ public class PlayerActivity extends AppCompatActivity {
         autoplay = in.getBooleanExtra("autoplay", true);
         try { queue = new JSONArray(str(in.getStringExtra("queue")).isEmpty() ? "[]" : in.getStringExtra("queue")); } catch (Exception e) { queue = new JSONArray(); }
         autoSkip = in.getBooleanExtra("autoSkip", false);
+        castArt = str(in.getStringExtra("castArt")); castSub = str(in.getStringExtra("castSub"));
         try { String[] c = str(in.getStringExtra("light")).split(","); if (c.length == 3) lc = 0xFF000000 | (Integer.parseInt(c[0].trim()) << 16) | (Integer.parseInt(c[1].trim()) << 8) | Integer.parseInt(c[2].trim()); } catch (Exception e) { lc = Color.WHITE; }
 
         view = new PlayerView(this);
@@ -308,7 +318,7 @@ public class PlayerActivity extends AppCompatActivity {
         item = new MediaItem.Builder()
             .setUri(url)
             .setMimeType(mimeFor(url))
-            .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build())
+            .setMediaMetadata(meta(title))
             .build();
         exo.setMediaItem(item);
         if (startMs > 0) exo.seekTo(startMs);
@@ -719,11 +729,12 @@ public class PlayerActivity extends AppCompatActivity {
         curFinished = false; nextShown = false; nextCancelled = false; counting = false;
         segs.clear(); creditsMs = -1; preUrl = null; preFor = -2; autoSkipped.clear(); undoUntil = 0;
         String title = show + (n.optString("label", "").isEmpty() ? "" : " \u00b7 " + n.optString("label"));
+        castSub = n.optString("name", "");
         nameView.setText(title);
         item = new MediaItem.Builder()
             .setUri(url)
             .setMimeType(mimeFor(url))
-            .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build())
+            .setMediaMetadata(meta(title))
             .build();
         exo.setMediaItem(item);
         long st = n.optLong("startMs", 0L);
@@ -976,7 +987,7 @@ public class PlayerActivity extends AppCompatActivity {
                     if (exo == null || done) return;
                     if (src == null) { error = e.getErrorCodeName(); showErrorPanel(friendly(code) + "\n\n" + det); return; }
                     exo.setMediaItem(new MediaItem.Builder().setUri(src[0]).setMimeType(src[1])
-                        .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build()).build(), at);
+                        .setMediaMetadata(meta(title)).build(), at);
                     exo.prepare(); exo.setPlayWhenReady(true);
                 });
             });
@@ -1109,7 +1120,7 @@ public class PlayerActivity extends AppCompatActivity {
                 MediaItem mi = new MediaItem.Builder()
                     .setUri(src[0])
                     .setMimeType(src[1])
-                    .setMediaMetadata(new MediaMetadata.Builder().setTitle(title).build())
+                    .setMediaMetadata(meta(title))
                     .build();
                 castPlayer.setMediaItem(mi, pos);
                 castPlayer.prepare();
