@@ -189,7 +189,6 @@ print('applied storage fix')
 
 # ---- Library tab + "In my library" filters ----
 rep("""  <button class="tb" id="setTab">""", """  <button class="tb" data-v="library"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.2v5.6l4.8-2.8z"/></svg>Library</button>
-  <button class="tb" id="searchTab" data-v="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search</button>
   <button class="tb" id="setTab">""")
 rep("""  <section id="v-list" hidden></section>""", """  <section id="v-list" hidden></section>
   <section id="v-library" hidden></section>""")
@@ -564,15 +563,13 @@ s = s[:_i] + _svg + s[_j:]
 
 # ---------- HIDE TOP BAR ON SCROLL DOWN, SHOW ON SCROLL UP ----------
 _hide_js = r"""
-<script>(()=>{let y=scrollY,off=0,H=0,q=0;
-const bars=()=>document.querySelectorAll('header.top');
-const measure=()=>{H=0;bars().forEach(b=>H=Math.max(H,b.offsetHeight+2));};
-const set=(o,glide)=>{if(o===off&&!glide)return;off=o;bars().forEach(b=>{b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,H)}px)`:'';});};
-const tick=()=>{q=0;const n=Math.max(0,scrollY),d=n-y;y=n;
+<script>(()=>{let y=scrollY,off=0,acc=0,gliding=false;
+const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const set=(o,glide)=>{off=o;bars().forEach(b=>{const h=b.offsetHeight+2;b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,h)}px)`:'';});};
+addEventListener('scroll',()=>{const n=Math.max(0,scrollY),d=n-y;y=n;
 if(document.querySelector('.top.searching')){if(off)set(0,true);return}
-if(d>0){if(n>0){if(!off)measure();set(Math.min(H,off+d),false)}}
-else if(d<0&&off){set(Math.max(0,Math.min(off+d,n)),false)}};
-addEventListener('scroll',()=>{if(!q){q=1;requestAnimationFrame(tick)}},{passive:true});
+if(d>0){acc=0;if(n>0){let H=0;bars().forEach(b=>H=Math.max(H,b.offsetHeight+2));set(Math.min(H,off+d),false)}}
+else if(d<0&&off){set(Math.max(0,Math.min(off+d,n)),false)}},{passive:true});
 document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))set(0,false)},true);})();</script>
 """
 s = s.replace('</body>', _hide_js + '</body>', 1)
@@ -657,14 +654,5 @@ $('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) ret
 
 
 
-
-
-# ---------- SEARCH TAB PAGE: empty search shows recents (+ trending on the Search page) ----------
-rep("""  const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
-  showRecent();
-  q.focus();""", """  searchIdle();
-  if(!asPage) q.focus();   // the Search tab opens without the keyboard; tap the box to type""")
-rep("""    if(!q){ $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = ''; showRecent(); return; }""",
-    """    if(!q){ searchIdle(); return; }""")
 open(p, 'w').write(s)
 print('applied cast chips')

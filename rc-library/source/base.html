@@ -14,15 +14,15 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0c0a0f;--bg2:#141119;--card:#1c1823;--card2:#262030;--line:#30293b;
   --text:#f4efe9;--muted:#9c93a9;--accent:#ffb547;--accent2:#ff6f61;--good:#5ad19a;
-  --disp:'Sora',system-ui,sans-serif;
+  --disp:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Sora",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior-y:none}
 body{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 html:has(body.locked),body.locked{overflow:hidden}
 .sbk{touch-action:none}
@@ -52,26 +52,6 @@ svg{display:block}
 .hproj{width:34px;height:34px;flex:none;display:block;margin-right:-4px;cursor:pointer}
 .hproj[hidden],.top.searching .hproj{display:none}
 .top.searching .hsearch{display:flex;animation:fadein .2s ease}
-#hsearch:not([hidden]){display:none}
-/* Search tab: its own page; the tab you were on is hidden behind it */
-body.spage main>section[id^="v-"]{display:none!important}
-body.spage #srch{min-height:60vh}
-body.spage header.top{display:flex!important}
-/* no logo in the header: the Discover tab does its job */
-#logo:not(.sub),#hproj{display:none!important}
-.top .hact{margin-left:auto}
-/* the top bar only shows when it has a job (searching, or a page with a back button and title); otherwise the page moves up */
-header.top:not(.searching):not(:has(#hback:not([hidden]))){display:none!important}
-body:not(.libv):not(:has(header.top.searching)):not(:has(#hback:not([hidden]))) main{padding-top:calc(env(safe-area-inset-top) + 12px)}
-/* carousel: a round button floating above the tab bar's right end */
-body>#hcar{position:fixed;right:18px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:29;width:50px;height:50px;border-radius:50%;
-  background:linear-gradient(180deg,rgba(30,30,32,.92),rgba(10,10,11,.94))!important;border:1px solid var(--accent)!important;color:var(--accent)!important;
-  box-shadow:0 8px 22px rgba(0,0,0,.5)!important}
-body>#hcar svg{width:22px;height:22px}
-html.light body>#hcar{background:linear-gradient(180deg,rgba(240,239,243,.95),rgba(226,225,230,.95))!important;box-shadow:0 8px 20px rgba(0,0,0,.15)!important}
-html.navy body>#hcar{background:linear-gradient(180deg,rgba(28,31,40,.94),rgba(18,20,27,.96))!important}
-body:has(header.top.searching)>#hcar,body:has(#v-settings:not([hidden]))>#hcar,body.spage>#hcar{display:none!important}
-.sidle{margin:16px 0 10px;font-size:17px;font-weight:800;color:var(--text);text-transform:none;letter-spacing:0}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
   background:var(--bg);padding:12px 16px calc(96px + env(safe-area-inset-bottom));animation:fadein .2s ease}
 .srch[hidden]{display:none}
@@ -784,7 +764,7 @@ function refreshBadges(){
 }
 function cardHTML(m, rank){
   const b = badge(m.id);
-  return `<div class="pc${rank ? ' ranked r' + String(rank).length : ''}" data-id="${m.id}">${rank ? `<span class="rk rk${String(rank).length}">${rank}</span>` : ''}
+  return `<div class="pc${rank ? ' ranked' : ''}" data-id="${m.id}">${rank ? `<span class="rk">${rank}</span>` : ''}
     <div class="pw">${poster(m.poster, '', 'w185', m.title)}<span class="bd${bdCls(m.id, b)}">${b}</span></div></div>`;
 }
 
@@ -1055,7 +1035,6 @@ function savePos(key, val){
 const posOf = key => (store.get(K_CARPOS, {})[key] || {}).id;
 // On a tab, the carousel runs through every title showing on it, shuffled; on a See all or genre page, through that list
 const TAB_NAMES = { discover:'Discover', tv:'Series', genres:'Genres', films:'My films', diary:'Diary', franchises:'Franchises' };
-document.body.appendChild($('#hcar'));   // lives outside the top bar, floating above the tab bar
 $('#hcar').onclick = () => {
   let src = pageSource;
   if(!src){
@@ -1082,8 +1061,6 @@ function setHeaderTitle(t){
   else { $('.w1', lg).textContent = 'Rolling'; $('.w2', lg).textContent = 'Credits'; lg.classList.remove('sub'); }
 }
 $('#hsearch').onclick = () => openSearch(lastTab === 'tv');
-// Search lives in the tab bar: it opens the search box at the top and lights up while you're searching
-if($('#searchTab')) $('#searchTab').onclick = () => openSearch(lastTab === 'tv', true);
 $('#hcancel').onclick = () => history.back();
 $('#setTab').onclick = openSettings;
 
@@ -1306,21 +1283,9 @@ function discoverDef(f){
 }
 // search opens in the header and lays results over the page you're on; Cancel or Back puts you right back
 let searchOn = false, searchTV = false;
-// Empty search: recent searches; on the Search tab's own page, also what's trending this week
-function searchIdle(){
-  const panel = $('#srch');
-  $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
-  if(typeof showRecent === 'function') showRecent(); else panel.hidden = true;
-  if(!document.body.classList.contains('spage')) return;
-  panel.hidden = false;
-  $('#fpeople').innerHTML = '<div class="lbl sidle">Trending this week</div>';
-  feed(panel, $('.grid', panel), $('.sent', panel), $('.msg', panel), searchTV ? { path:'/trending/tv/week', tv:true } : { path:'/trending/all/week' });
-}
-function openSearch(tv, asPage){
+function openSearch(tv){
   if(searchOn){ $('#hq').focus(); return; }
   searchOn = true; searchTV = tv;
-  document.body.classList.toggle('spage', !!asPage);
-  $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === 'search'));
   history.pushState({ search:1 }, '');
   $('.top').classList.add('searching');
   const q = $('#hq'); q.value = ''; q.placeholder = tv ? 'Search any series…' : 'Search films, series or people…';
@@ -1330,8 +1295,6 @@ function openSearch(tv, asPage){
 function closeSearch(fromPop){
   if(!searchOn) return;
   searchOn = false;
-  document.body.classList.remove('spage');
-  $$('.tb').forEach(t => t.classList.toggle('on', t.dataset.v === lastTab && !PAGES.includes(view)));
   $('.top').classList.remove('searching'); $('#srch').hidden = true; $('#hq').blur();
   if(!fromPop){ popSkip++; history.back(); }
 }
@@ -1992,7 +1955,7 @@ async function openMovie(id){
     $('#mclr', b).style.visibility = r ? '' : 'hidden';
     const logs = entries.filter(e => e.tmdb === id).sort((a, c) => c.date.localeCompare(a.date) || c.added - a.added);
     $('#mhist', b).innerHTML = logs.length ? `<div class="sec" style="margin:4px 0 4px">Your watches</div>` + logs.map(l => `<div class="hrow" data-e="${l.id}">
-      <div><div>${new Date(l.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}${l.rewatch ? '<span class="rw">Rewatch</span>' : ''}</div>
+      <div><div>${new Date(l.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}${l.rewatch ? '<span class="rw">REWATCH</span>' : ''}</div>
       ${l.note ? `<div class="note">${esc(l.note)}</div>` : ''}</div><span class="mini">${starTxt(l.rating)}</span></div>`).join('') : '';
     $$('#mhist .hrow', b).forEach(h => h.onclick = () => openEntry(h.dataset.e));
   };
@@ -2202,7 +2165,7 @@ function renderDiary(){
     if(label !== cur){ html += `<div class="month">${label}</div>`; cur = label; }
     html += `<div class="lrow" data-k="${e.kind}" data-e="${e.id}"><div class="day"><b>${+d}</b><span>${dt.toLocaleString(undefined, { weekday:'short' })}</span></div>
       ${poster(e.poster, 'thumb', 'w92', e.title)}<div class="li"><div class="lt">${esc(e.title)}</div>
-      <div class="ls">${esc(e.year || '')}${e.rewatch ? '<span class="rw">Rewatch</span>' : ''}${e.note ? ' · ' + esc(e.note.slice(0, 40)) : ''}</div></div>
+      <div class="ls">${esc(e.year || '')}${e.rewatch ? '<span class="rw">REWATCH</span>' : ''}${e.note ? ' · ' + esc(e.note.slice(0, 40)) : ''}</div></div>
       <span class="mini">${starTxt(e.rating)}</span></div>`;
   }
   v.innerHTML = html + '</div>';
@@ -2272,8 +2235,8 @@ async function saveReviewImage(d, btn){
   const x = c.getContext('2d');
   const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2a1d2e'); g.addColorStop(1, '#0c0a0f');
   x.fillStyle = g; x.fillRect(0, 0, W, H);
-  try{ await document.fonts.load('700 100px "Sora"'); }catch(e){}
-  const disp = (sz) => `700 ${sz}px "Sora", sans-serif`;
+  try{ await document.fonts.load('700 100px "Barlow Condensed"'); }catch(e){}
+  const disp = (sz) => `700 ${sz}px "Barlow Condensed", "Arial Narrow", sans-serif`;
   x.textAlign = 'center';
   x.fillStyle = '#ffb547'; x.font = disp(54); x.fillText('ROLLING CREDITS', W / 2, 110);
   x.fillStyle = '#9c93a9'; x.font = '600 34px system-ui, sans-serif'; x.fillText(d.thisYear ? `MY ${d.yr} IN FILM` : 'MY FILM LIFE SO FAR', W / 2, 165);
