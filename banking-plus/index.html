@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-7qyIsTAKorcD+5TUCDojpv/yzcE6aJtBLSjejvyVAf4=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-WeLo6LabjzyKFQ5rX5H9DVpPyTi04WNKWs/JsfBzhlw=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -2188,8 +2188,8 @@ function vSettings(){
  ${stBackupCard(true)}
  <div class="st-label">Budget</div>
  <div class="st-card st-list">
-  ${stRow('acct','#2F7FD8','Accounts',esc(names),'data-act="stGo" data-to="accounts"',`<span class="st-pill">${state.accounts.length}</span>${stChev()}`)}
-  ${stRow('cats','#7C5CE0','Categories',`${spend} group${spend===1?'':'s'} · ${nc} categor${nc===1?'y':'ies'}`,'data-act="stGo" data-to="cats"',`<span class="st-pill">${nc}</span>${stChev()}`)}
+  ${stRow('acct','#2F7FD8','Accounts','','data-act="stGo" data-to="accounts"',`<span class="st-pill">${state.accounts.length}</span>${stChev()}`)}
+  ${stRow('cats','#7C5CE0','Categories','','data-act="stGo" data-to="cats"',`<span class="st-pill">${nc}</span>${stChev()}`)}
  </div>
  <div class="st-label">Appearance</div>
  <div class="st-card st-themes" role="radiogroup" aria-label="Theme">${[['light','Light'],['dark','Dark'],['navy','Navy']].map(([k,n])=>`<button type="button" class="st-theme ${mode===k?'on':''}" data-mode-pick="${k}" role="radio" aria-checked="${mode===k}"><span class="st-prev pv-${k}" aria-hidden="true"><span class="pv-logo"></span><span class="pv-card"><i></i><b></b></span><span class="pv-line"></span><span class="pv-line s"></span><span class="pv-tabs"></span></span><span class="st-tname"><span class="st-radio" aria-hidden="true"></span>${n}</span></button>`).join('')}</div>
