@@ -663,7 +663,7 @@ $('#srch').addEventListener('click', e => { if(e.target.closest('#srecent')) ret
 rep("""  const panel = $('#srch'); panel.hidden = true; $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = '';
   showRecent();
   q.focus();""", """  searchIdle();
-  q.focus();""")
+  if(!asPage) q.focus();   // the Search tab opens without the keyboard; tap the box to type""")
 rep("""    if(!q){ $('.grid', panel).innerHTML = ''; $('#fpeople').innerHTML = ''; $('.msg', panel).textContent = ''; showRecent(); return; }""",
     """    if(!q){ searchIdle(); return; }""")
 open(p, 'w').write(s)

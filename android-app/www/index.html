@@ -2276,7 +2276,7 @@ function openSearch(tv, asPage){
   $('.top').classList.add('searching');
   const q = $('#hq'); q.value = ''; q.placeholder = tv ? 'Search any series…' : 'Search films, series or people…';
   searchIdle();
-  q.focus();
+  if(!asPage) q.focus();   // the Search tab opens without the keyboard; tap the box to type
 }
 function closeSearch(fromPop){
   if(!searchOn) return;
