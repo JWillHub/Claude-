@@ -564,7 +564,7 @@ s = s[:_i] + _svg + s[_j:]
 # ---------- HIDE TOP BAR ON SCROLL DOWN, SHOW ON SCROLL UP ----------
 _hide_js = r"""
 <script>(()=>{let y=scrollY,off=0,acc=0,gliding=false;
-const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const bars=()=>document.querySelectorAll('header.top,body.libv .ltop,#v-genres:not([hidden]) .gtop');
 const set=(o,glide)=>{off=o;bars().forEach(b=>{const h=b.offsetHeight+2;b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,h)}px)`:'';});};
 addEventListener('scroll',()=>{const n=Math.max(0,scrollY),d=n-y;y=n;
 if(document.querySelector('.top.searching')){if(off)set(0,true);return}
@@ -592,31 +592,7 @@ rep("""async function pageOf(def, page){
     return { page, total:Math.max(...def.mix.map(d => d._total || 0), page), results };
   }
 """)
-rep("const gb = { tv:false, g:'*', sort:'popular' };", """const gb = { tv:false, all:true, g:'*', sort:'popular' };
-// "All": movie genres, each matched to the closest series genre (none = films only); plus the series-only ones
-const G2TV = { 28:10759, 12:10759, 16:16, 35:35, 80:80, 99:99, 18:18, 10751:10751, 14:10765, 878:10765, 9648:9648, 10752:10768, 37:37 };
-const ALLGENRES = [...GENRES.map(([id, n]) => ['m' + id, n]), ['t10762', 'Kids'], ['t10764', 'Reality']].sort((a, b) => a[1].localeCompare(b[1]));
-function allDef(g, sort){
-  const mix = [];
-  if(g === '*' || g[0] === 'm') mix.push(genreDef(false, g === '*' ? null : +g.slice(1), sort, ''));
-  const tg = g === '*' ? null : g[0] === 't' ? +g.slice(1) : G2TV[+g.slice(1)];
-  if(g === '*' || tg) mix.push(genreDef(true, tg, sort, ''));
-  return mix.length === 1 ? mix[0] : { mix, byDate:sort === 'newest', path:'mix', tv:false };
-}""")
-rep("""  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'Series' }];
-  const list = gb.tv ? TVGENRES : GENRES;
-  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];""",
-"""  const types = [{ k:'all', label:'All' }, { k:'film', label:'Films' }, { k:'tv', label:'Series' }];
-  const list = gb.all ? ALLGENRES : gb.tv ? TVGENRES : GENRES;
-  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];""")
-rep("""pickPill('gbtype', gb.tv ? 'Series' : 'Films')""", """pickPill('gbtype', gb.all ? 'All' : gb.tv ? 'Series' : 'Films')""")
-rep("""  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });""",
-"""  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.all ? 'all' : gb.tv ? 'tv' : 'film', k => { gb.all = k === 'all'; gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });""")
-rep("""  const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
-  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });""",
-"""  const def = gb.all ? allDef(gb.g, gb.sort) : genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
-  setPageSource({ title:(gl.k === '*' ? (gb.all ? 'All' : gb.tv ? 'Series' : 'Films') : gl.label), def });""")
-rep("const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv;", "const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; gb.all = false;")
+# (old Genres pill bar patches removed: the Genres tab now uses a Library-style search bar + All/Movies/Series filter in base.html)
 
 
 # ---------- RECENT SEARCHES ----------

@@ -979,6 +979,22 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 .mvsheet>.bdrop,.sh.shcard .shbg{transition:opacity .4s ease}
 .sh.artwait>.bdrop,.sh.artwait .shbg{opacity:0}
 .mvsheet .mvhead h2,.mvsheet .mvhead h2.haslogo,.shcard .shname,.shcard .shname.haslogo{margin-bottom:12px!important}
+
+/* Genres tab bar: same look and behaviour as the Library search bar */
+body:not(.libv) #v-genres .gtop{position:sticky;top:0;z-index:30;background:#000;padding:calc(12px + env(safe-area-inset-top)) 16px 10px!important;margin:0}
+html.light #v-genres .gtop{background:var(--bg)}
+#gfilt.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+
+/* the Genres filter button is styled exactly like Library's */
+.ltools #gfilt{height:48px;border-radius:16px;padding:0 32px 0 14px;font-size:13.5px;
+  background:linear-gradient(145deg,rgba(255,255,255,.17),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.26);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 18px rgba(0,0,0,.35)}
+.ltools #gfilt.lsortbtn{flex:none;width:48px;height:48px;padding:0;display:grid;place-items:center;cursor:pointer;border-radius:16px;color:#fff}
+.lsearch,.ltools #gfilt,.ltools #gfilt.lsortbtn,.gpk{background:#000!important;border:1px solid rgba(255,255,255,.14)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 12px 32px rgba(0,0,0,.6)!important}
+.lsearch,.ltools #gfilt{box-shadow:none!important}
+html.light .lsearch,html.light .ltools #gfilt,html.light .ltools #gfilt.lsortbtn{background:#f2f2f4!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+body:not(.libv) #v-genres .gtop{margin-top:0;padding-top:calc(34px + env(safe-area-inset-top))!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1106,6 +1122,7 @@ html.light .mvsheet .mvhead .meta{color:var(--text)!important}
 html.light .shcard .shmeta{color:var(--text)!important}
 html.light .morecp{color:var(--text)!important}
 html.light .tabbar{border-color:rgba(0,0,0,0.12)!important}
+html.light body:not(.libv) #v-genres .gtop{background-color:#fff!important}
 html.light .hcard *,html.light .hero .hin *{color:#fff!important}
 html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
@@ -1328,7 +1345,7 @@ async function listPage(path, params, page, tv){
   const run = async () => {
     const d = await tmdb(path, p);
     // search/multi mixes films and series (people are dropped here; they have their own row)
-    const rows = path === '/search/multi' ? (d.results||[]).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m))
+    const rows = (path === '/search/multi' || path.startsWith('/trending/all')) ? (d.results||[]).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m))
       : (d.results||[]).filter(m => tv ? m.name : m.title).map(tv ? slimTV : slim);
     return { page:d.page, total:Math.min(d.total_pages||1, 500), count:d.total_results, results:rows.filter(keep) };
   };
@@ -2162,7 +2179,7 @@ function openGenrePage(def){
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
 }
-const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; gb.all = false; setView('genres'); if(built.genres) buildGenreBrowse(); };
+const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.kind = tv ? 'tv' : 'movie'; setView('genres'); if(built.genres) buildGenreBrowse(); };
 
 /* Stremio-style Genres: Type / Genre / Sort over a three-across poster grid */
 const PICK_CHECK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -2186,34 +2203,31 @@ function fitPills(bar, lists){
   run();
   document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
-const gb = { tv:false, all:true, g:'*', sort:'popular' };
-// "All": movie genres, each matched to the closest series genre (none = films only); plus the series-only ones
-const G2TV = { 28:10759, 12:10759, 16:16, 35:35, 80:80, 99:99, 18:18, 10751:10751, 14:10765, 878:10765, 9648:9648, 10752:10768, 37:37 };
-const ALLGENRES = [...GENRES.map(([id, n]) => ['m' + id, n]), ['t10762', 'Kids'], ['t10764', 'Reality']].sort((a, b) => a[1].localeCompare(b[1]));
-function allDef(g, sort){
-  const mix = [];
-  if(g === '*' || g[0] === 'm') mix.push(genreDef(false, g === '*' ? null : +g.slice(1), sort, ''));
-  const tg = g === '*' ? null : g[0] === 't' ? +g.slice(1) : G2TV[+g.slice(1)];
-  if(g === '*' || tg) mix.push(genreDef(true, tg, sort, ''));
-  return mix.length === 1 ? mix[0] : { mix, byDate:sort === 'newest', path:'mix', tv:false };
-}
+const gb = { tv:false, g:'*', sort:'popular', kind:'all', q:'' };
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
+const GB_KINDS = [['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']];
+// Genres tab: the same search bar + three-line filter button as Library. Filter = All / Movies / Series.
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
-  const types = [{ k:'all', label:'All' }, { k:'film', label:'Films' }, { k:'tv', label:'Series' }];
-  const list = gb.all ? ALLGENRES : gb.tv ? TVGENRES : GENRES;
-  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
-  if(!genres.some(g => g.k === gb.g)) gb.g = '*';
-  const gl = genres.find(g => g.k === gb.g);
-  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.all ? 'All' : gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
+  v.innerHTML = `<div class="pad ltop gtop"><div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="gq" autocomplete="off" enterkeyhint="search"></label>
+      <button class="lsortbtn" id="gfilt"><svg viewBox="0 0 24 24"><path d="M5 7h14M7.5 12h9M10 17h4"/></svg></button></div></div>
     <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
-  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.all ? 'all' : gb.tv ? 'tv' : 'film', k => { gb.all = k === 'all'; gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
-  $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
-  $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
-  fitPills($('.pkbar', v));
-  const def = gb.all ? allDef(gb.g, gb.sort) : genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
-  setPageSource({ title:(gl.k === '*' ? (gb.all ? 'All' : gb.tv ? 'Series' : 'Films') : gl.label), def });
-  feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
+  const q = $('#gq', v), fb = $('#gfilt', v);
+  const label = () => { const l = GB_KINDS.find(x => x[0] === gb.kind)[1];
+    q.placeholder = gb.kind === 'all' ? 'Search movies and series' : 'Search ' + l.toLowerCase();
+    fb.setAttribute('aria-label', 'Filter: ' + l); fb.classList.toggle('on', gb.kind !== 'all'); };
+  const load = () => {
+    const t = gb.q.trim(), k = gb.kind;
+    const def = t ? { path:k === 'all' ? '/search/multi' : '/search/' + k, params:{ query:t }, tv:k === 'tv' }
+      : { path:k === 'all' ? '/trending/all/week' : '/discover/' + k, params:k === 'all' ? {} : { sort_by:'popularity.desc', 'vote_count.gte':k === 'tv' ? 100 : 150 }, tv:k === 'tv' };
+    setPageSource({ title:t ? 'Search' : GB_KINDS.find(x => x[0] === k)[1], def });
+    feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
+  };
+  q.value = gb.q; label();
+  let tm; q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { gb.q = q.value; load(); }, 350); };
+  q.onkeydown = e => { if(e.key === 'Enter'){ clearTimeout(tm); gb.q = q.value; q.blur(); load(); } };
+  fb.onclick = () => glassPick(GB_KINDS, gb.kind, k => { gb.kind = k; label(); scrollTo(0, 0); load(); });
+  load();
 }
 
 /* ---------- Sagas ---------- */
@@ -4365,7 +4379,7 @@ if(!NATIVE && 'serviceWorker' in navigator && location.protocol === 'https:') na
 </script>
 
 <script>(()=>{let y=scrollY,off=0,acc=0,gliding=false;
-const bars=()=>document.querySelectorAll('header.top,body.libv .ltop');
+const bars=()=>document.querySelectorAll('header.top,body.libv .ltop,#v-genres:not([hidden]) .gtop');
 const set=(o,glide)=>{off=o;bars().forEach(b=>{const h=b.offsetHeight+2;b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,h)}px)`:'';});};
 addEventListener('scroll',()=>{const n=Math.max(0,scrollY),d=n-y;y=n;
 if(document.querySelector('.top.searching')){if(off)set(0,true);return}

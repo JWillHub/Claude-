@@ -345,3 +345,19 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 .mvsheet>.bdrop,.sh.shcard .shbg{transition:opacity .4s ease}
 .sh.artwait>.bdrop,.sh.artwait .shbg{opacity:0}
 .mvsheet .mvhead h2,.mvsheet .mvhead h2.haslogo,.shcard .shname,.shcard .shname.haslogo{margin-bottom:12px!important}
+
+/* Genres tab bar: same look and behaviour as the Library search bar */
+body:not(.libv) #v-genres .gtop{position:sticky;top:0;z-index:30;background:#000;padding:calc(12px + env(safe-area-inset-top)) 16px 10px!important;margin:0}
+html.light #v-genres .gtop{background:var(--bg)}
+#gfilt.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
+
+/* the Genres filter button is styled exactly like Library's */
+.ltools #gfilt{height:48px;border-radius:16px;padding:0 32px 0 14px;font-size:13.5px;
+  background:linear-gradient(145deg,rgba(255,255,255,.17),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.26);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 18px rgba(0,0,0,.35)}
+.ltools #gfilt.lsortbtn{flex:none;width:48px;height:48px;padding:0;display:grid;place-items:center;cursor:pointer;border-radius:16px;color:#fff}
+.lsearch,.ltools #gfilt,.ltools #gfilt.lsortbtn,.gpk{background:#000!important;border:1px solid rgba(255,255,255,.14)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 12px 32px rgba(0,0,0,.6)!important}
+.lsearch,.ltools #gfilt{box-shadow:none!important}
+html.light .lsearch,html.light .ltools #gfilt,html.light .ltools #gfilt.lsortbtn{background:#f2f2f4!important;border:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;color:#111}
+body:not(.libv) #v-genres .gtop{margin-top:0;padding-top:calc(34px + env(safe-area-inset-top))!important}

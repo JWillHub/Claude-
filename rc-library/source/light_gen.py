@@ -3,7 +3,7 @@
 import re
 KEEP = ('.hcard', '.hero', '.bd', '.card .rb', '.card .num', '.chip.on', '.rdot', '.c9', '.c5', '.c4', '.c8', '.c7', '.c6',
         '.subprev', '.glback', '.cwplay', '.lcx', '.grid .rk', '.stamp', '.mtlogo', '.lplay', '.toast', '.ptr', 'html.light',
-        '.gpk', '.lsearch', '#lsort', '.seapick', '.skel', '.updbtn', '#hcar', '.pill')
+        '.gpk', '.lsearch', '#lsort', '#gfilt', '.seapick', '.skel', '.updbtn', '#hcar', '.pill')
 def gen(s):
     css = ''.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
     css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)

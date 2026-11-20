@@ -666,7 +666,7 @@ async function listPage(path, params, page, tv){
   const run = async () => {
     const d = await tmdb(path, p);
     // search/multi mixes films and series (people are dropped here; they have their own row)
-    const rows = path === '/search/multi' ? (d.results||[]).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m))
+    const rows = (path === '/search/multi' || path.startsWith('/trending/all')) ? (d.results||[]).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m))
       : (d.results||[]).filter(m => tv ? m.name : m.title).map(tv ? slimTV : slim);
     return { page:d.page, total:Math.min(d.total_pages||1, 500), count:d.total_results, results:rows.filter(keep) };
   };
@@ -1388,7 +1388,7 @@ function openGenrePage(def){
   $('#gdec', b).onchange = e => { decade = e.target.value; scrollTo(0, 0); load(); };
   load();
 }
-const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.tv = !!tv; setView('genres'); if(built.genres) buildGenreBrowse(); };
+const openGenres = tv => { genreKind = tv ? 'tv' : 'film'; gb.kind = tv ? 'tv' : 'movie'; setView('genres'); if(built.genres) buildGenreBrowse(); };
 
 /* Stremio-style Genres: Type / Genre / Sort over a three-across poster grid */
 const PICK_CHECK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -1412,24 +1412,31 @@ function fitPills(bar, lists){
   run();
   document.fonts && document.fonts.ready.then(() => bar.isConnected && run());
 }
-const gb = { tv:false, g:'*', sort:'popular' };
+const gb = { tv:false, g:'*', sort:'popular', kind:'all', q:'' };
 const GB_SORTS = [{ k:'popular', label:'Most popular' }, { k:'rated', label:'Highest rated' }, { k:'newest', label:'Newest' }];
+const GB_KINDS = [['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']];
+// Genres tab: the same search bar + three-line filter button as Library. Filter = All / Movies / Series.
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
-  const types = [{ k:'film', label:'Films' }, { k:'tv', label:'Series' }];
-  const list = gb.tv ? TVGENRES : GENRES;
-  const genres = [{ k:'*', label:'All genres' }, ...list.map(([id, name]) => ({ k:String(id), label:name }))];
-  if(!genres.some(g => g.k === gb.g)) gb.g = '*';
-  const gl = genres.find(g => g.k === gb.g);
-  v.innerHTML = `<div class="pkbar">${pickPill('gbtype', gb.tv ? 'Series' : 'Films')}${pickPill('gbg', gl.label)}${pickPill('gbsort', GB_SORTS.find(x => x.k === gb.sort).label)}</div>
+  v.innerHTML = `<div class="pad ltop gtop"><div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="gq" autocomplete="off" enterkeyhint="search"></label>
+      <button class="lsortbtn" id="gfilt"><svg viewBox="0 0 24 24"><path d="M5 7h14M7.5 12h9M10 17h4"/></svg></button></div></div>
     <div class="pad"><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
-  $('#gbtype', v).onclick = () => pickSheet('Type', types, gb.tv ? 'tv' : 'film', k => { gb.tv = k === 'tv'; gb.g = '*'; buildGenreBrowse(); scrollTo(0, 0); });
-  $('#gbg', v).onclick = () => pickSheet('Genre', genres, gb.g, k => { gb.g = k; buildGenreBrowse(); scrollTo(0, 0); });
-  $('#gbsort', v).onclick = () => pickSheet('Sort', GB_SORTS, gb.sort, k => { gb.sort = k; buildGenreBrowse(); scrollTo(0, 0); });
-  fitPills($('.pkbar', v));
-  const def = genreDef(gb.tv, gb.g === '*' ? null : +gb.g, gb.sort, '');
-  setPageSource({ title:(gl.k === '*' ? (gb.tv ? 'Series' : 'Films') : gl.label), def });
-  feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
+  const q = $('#gq', v), fb = $('#gfilt', v);
+  const label = () => { const l = GB_KINDS.find(x => x[0] === gb.kind)[1];
+    q.placeholder = gb.kind === 'all' ? 'Search movies and series' : 'Search ' + l.toLowerCase();
+    fb.setAttribute('aria-label', 'Filter: ' + l); fb.classList.toggle('on', gb.kind !== 'all'); };
+  const load = () => {
+    const t = gb.q.trim(), k = gb.kind;
+    const def = t ? { path:k === 'all' ? '/search/multi' : '/search/' + k, params:{ query:t }, tv:k === 'tv' }
+      : { path:k === 'all' ? '/trending/all/week' : '/discover/' + k, params:k === 'all' ? {} : { sort_by:'popularity.desc', 'vote_count.gte':k === 'tv' ? 100 : 150 }, tv:k === 'tv' };
+    setPageSource({ title:t ? 'Search' : GB_KINDS.find(x => x[0] === k)[1], def });
+    feed(null, $('.grid', v), $('.sent', v), $('.msg', v), def);
+  };
+  q.value = gb.q; label();
+  let tm; q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { gb.q = q.value; load(); }, 350); };
+  q.onkeydown = e => { if(e.key === 'Enter'){ clearTimeout(tm); gb.q = q.value; q.blur(); load(); } };
+  fb.onclick = () => glassPick(GB_KINDS, gb.kind, k => { gb.kind = k; label(); scrollTo(0, 0); load(); });
+  load();
 }
 
 /* ---------- Sagas ---------- */
