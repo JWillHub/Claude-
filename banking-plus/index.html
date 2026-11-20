@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-Lj/VtwZZuiWgEc/lAOE1zKRJ2aRj4miEeIfgnyjDVUc=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-ebN5t094Zv3ZtEY/dmIkOCAwGyRAiiHLNPHk27SGMIc=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1477,14 +1477,19 @@ html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14p
 #pl .bc-sec .bx-list{padding:2px 14px}
 #v-bills .bx-top{display:none}
 /* ===================== Bills: simple timeline ===================== */
-#pl .bt-top{display:flex;align-items:flex-end;justify-content:space-between;margin:4px 4px 0}
-#pl .bt-left b{display:block;font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1;font-variant-numeric:tabular-nums}
-#pl .bt-left span{display:flex;align-items:center;gap:2px;font-size:15px;color:var(--muted);margin-top:4px}
-#pl .bt-m{border:0;background:none;color:var(--muted);font:inherit;font-size:22px;line-height:1;padding:2px 8px;cursor:pointer}
-#pl .bt-m:first-child{padding-left:0}
-#pl .bt-mn{border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--text);padding:0;cursor:default}
-#pl .bt-mn[data-bxtoday]{cursor:pointer;color:var(--accent-text,var(--accent))}
-#pl .bt-bar{height:6px;border-radius:3px;margin:12px 4px 16px;background:color-mix(in srgb,var(--text) 10%,transparent);overflow:hidden}
+#pl .bt-mbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 14px}
+#pl .bt-m{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:color-mix(in srgb,var(--text) 8%,transparent);color:var(--text);font:inherit;font-size:24px;line-height:1;padding:0 0 3px;cursor:pointer}
+#pl .bt-m:active{transform:scale(.92)}
+#pl .bt-mn{flex:1;border:0;background:none;font:inherit;color:var(--text);padding:0;cursor:default;text-align:center;line-height:1.1}
+#pl .bt-mn b{display:block;font-size:26px;font-weight:800;letter-spacing:-.5px}
+#pl .bt-mn small{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:3px}
+#pl .bt-mn[data-bxtoday]{cursor:pointer}
+#pl .bt-mn[data-bxtoday] small{color:var(--accent-text,var(--accent))}
+#pl .bt-sum{display:flex;align-items:baseline;gap:6px;margin:0 4px;font-variant-numeric:tabular-nums}
+#pl .bt-sum b{font-size:22px;font-weight:800}
+#pl .bt-sum span{font-size:14px;color:var(--muted)}
+#pl .bt-sum em{margin-left:auto;font-style:normal;font-size:14px;font-weight:700;color:var(--green)}
+#pl .bt-bar{height:6px;border-radius:3px;margin:8px 4px 16px;background:color-mix(in srgb,var(--text) 10%,transparent);overflow:hidden}
 #pl .bt-bar i{display:block;height:100%;border-radius:3px;background:var(--green);transition:width .4s ease}
 #pl .bt-list{padding:2px 0}
 #pl .bt-row{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}
@@ -2826,9 +2831,11 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
 
     // ---- simple timeline: one line on top, then every bill in date order, today's shaded
     const todayIsoS = iso(today.getFullYear(), today.getMonth(), today.getDate());
-    const head = `<div class="bt-top"><div class="bt-left"><b>${state.bills.length ? money(left) + ' left' : 'Bills'}</b>
-        <span><button type="button" class="bt-m" data-bxprev aria-label="Previous month">‹</button><button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}>${MONTHS[viewM]}${viewY !== today.getFullYear() ? ' ' + viewY : ''}</button><button type="button" class="bt-m" data-bxnext aria-label="Next month">›</button>${state.bills.length ? ` · ${pctR}% paid` : ''}</span></div></div>
-      ${state.bills.length ? `<div class="bt-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div>` : ''}`;
+    const head = `<div class="bt-mbar"><button type="button" class="bt-m" data-bxprev aria-label="Previous month">‹</button>
+        <button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}><b>${MONTHS[viewM]}</b><small>${isNow ? viewY : viewY + ' · Tap for today'}</small></button>
+        <button type="button" class="bt-m" data-bxnext aria-label="Next month">›</button></div>
+      ${state.bills.length ? `<div class="bt-sum"><b>${money(left)}</b><span>left of ${money(total)}</span><em>${pctR}% paid</em></div>
+      <div class="bt-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div>` : ''}`;
     let list = '';
     if (!state.bills.length) list = `<div class="bt-none"><b>No bills yet</b><span>Tap “Add bill” to start.</span>${SAMPLE_BTN}</div>`;
     else {
