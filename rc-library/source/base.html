@@ -1992,7 +1992,7 @@ async function openMovie(id){
     $('#mclr', b).style.visibility = r ? '' : 'hidden';
     const logs = entries.filter(e => e.tmdb === id).sort((a, c) => c.date.localeCompare(a.date) || c.added - a.added);
     $('#mhist', b).innerHTML = logs.length ? `<div class="sec" style="margin:4px 0 4px">Your watches</div>` + logs.map(l => `<div class="hrow" data-e="${l.id}">
-      <div><div>${new Date(l.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}${l.rewatch ? '<span class="rw">REWATCH</span>' : ''}</div>
+      <div><div>${new Date(l.date + 'T12:00').toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' })}${l.rewatch ? '<span class="rw">Rewatch</span>' : ''}</div>
       ${l.note ? `<div class="note">${esc(l.note)}</div>` : ''}</div><span class="mini">${starTxt(l.rating)}</span></div>`).join('') : '';
     $$('#mhist .hrow', b).forEach(h => h.onclick = () => openEntry(h.dataset.e));
   };
@@ -2202,7 +2202,7 @@ function renderDiary(){
     if(label !== cur){ html += `<div class="month">${label}</div>`; cur = label; }
     html += `<div class="lrow" data-k="${e.kind}" data-e="${e.id}"><div class="day"><b>${+d}</b><span>${dt.toLocaleString(undefined, { weekday:'short' })}</span></div>
       ${poster(e.poster, 'thumb', 'w92', e.title)}<div class="li"><div class="lt">${esc(e.title)}</div>
-      <div class="ls">${esc(e.year || '')}${e.rewatch ? '<span class="rw">REWATCH</span>' : ''}${e.note ? ' · ' + esc(e.note.slice(0, 40)) : ''}</div></div>
+      <div class="ls">${esc(e.year || '')}${e.rewatch ? '<span class="rw">Rewatch</span>' : ''}${e.note ? ' · ' + esc(e.note.slice(0, 40)) : ''}</div></div>
       <span class="mini">${starTxt(e.rating)}</span></div>`;
   }
   v.innerHTML = html + '</div>';

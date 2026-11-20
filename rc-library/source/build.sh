@@ -32,6 +32,8 @@ s = s.replace('</style>', open(os.path.join(os.environ['SRC'], 'theme.css')).rea
 # Lumen's typography: Sora at light weights (heavy weights made it look like a different font)
 _wmap = {'900':'600','800':'600','750':'600','700':'600','650':'500','600':'500','500':'400'}
 s = re.sub(r'font-weight:\s*(\d00|750|650)', lambda m: 'font-weight:' + _wmap.get(m.group(1), m.group(1)), s)
+s = re.sub(r'text-transform:\s*uppercase', 'text-transform:none', s)
+s = re.sub(r'letter-spacing:(?:[1-9][.0-9]*px|\.(?:0[5-9]|[1-9][0-9]*)em)', 'letter-spacing:0', s)   # caps-style wide tracking   # normal capitalisation, like Lumen
 s = s.replace('font:15px/1.45 "Sora"', 'font:300 15px/1.5 "Sora"')
 s = s.replace('<b>', '<b style="font-weight:500">', 0)
 import sys; sys.path.insert(0, os.environ['SRC']); import light_gen; s = light_gen.navy(light_gen.gen(s))

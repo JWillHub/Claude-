@@ -134,7 +134,7 @@ function renderSettings(){
         <div class="sgh">Accent color</div><div class="scard acchue">
           <div class="accrow"><span class="accdot"></span><span class="slab">Slide to pick a colour<small id="acchex">${cur === '#ffffff' ? 'White' : cur.toUpperCase()}</small></span></div>
           <input type="range" class="huebar" id="hue" min="0" max="359" step="1" value="${Math.max(0, hexHue(cur))}" aria-label="Accent colour"></div>
-        <div class="sgh">Tab bar</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" class="rng" id="tba" min="0" max="90" step="5" value="${see}" style="--p:${see / 90 * 100}%" aria-label="Tab bar see-through"></div></div>
+        <div class="sgh">Transparency</div><div class="scard"><div class="srow static tbrow">${ico('lib')}<span class="slab">See-through<small id="tbv">${see ? see + '%' : 'Solid'}</small></span><input type="range" class="rng" id="tba" min="0" max="90" step="5" value="${see}" style="--p:${see / 90 * 100}%" aria-label="Tab bar see-through"></div></div>
         <div class="sgh">Motion</div><div class="scard">${sw('nomo', 'eye', 'Reduce motion', 'No slides, fades or zooms', !!store.get(K_NOMO, false))}</div>
         <div class="sgh">Start on</div><div class="scard">
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
