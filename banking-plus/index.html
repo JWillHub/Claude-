@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-5MZenooln0y4JG+Bb4TZIiLomQuKyaw8/ZjkZ2R21d4=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-I5BgTXx1nmL3vWYKz7nTfqc12x99y35lOJKdFJqdTnU=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1476,6 +1476,36 @@ html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14p
 #pl .bc-empty b{color:var(--text);font-size:17px}
 #pl .bc-sec .bx-list{padding:2px 14px}
 #v-bills .bx-top{display:none}
+/* ===================== Bills: simple timeline ===================== */
+#pl .bt-top{display:flex;align-items:flex-end;justify-content:space-between;margin:4px 4px 0}
+#pl .bt-left b{display:block;font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.1;font-variant-numeric:tabular-nums}
+#pl .bt-left span{display:flex;align-items:center;gap:2px;font-size:15px;color:var(--muted);margin-top:4px}
+#pl .bt-m{border:0;background:none;color:var(--muted);font:inherit;font-size:22px;line-height:1;padding:2px 8px;cursor:pointer}
+#pl .bt-m:first-child{padding-left:0}
+#pl .bt-mn{border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--text);padding:0;cursor:default}
+#pl .bt-mn[data-bxtoday]{cursor:pointer;color:var(--accent-text,var(--accent))}
+#pl .bt-bar{height:6px;border-radius:3px;margin:12px 4px 16px;background:color-mix(in srgb,var(--text) 10%,transparent);overflow:hidden}
+#pl .bt-bar i{display:block;height:100%;border-radius:3px;background:var(--green);transition:width .4s ease}
+#pl .bt-list{padding:2px 0}
+#pl .bt-row{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}
+#pl .bt-row+.bt-row{border-top:1px solid var(--border)}
+#pl .bt-row.now{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+#pl .bt-n{flex:1;min-width:0}
+#pl .bt-n b{display:block;font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pl .bt-n small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+#pl .bt-a{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+#pl .bt-row.s-over .bt-n small{color:var(--red)}
+#pl .bt-row.s-paid .bt-n b,#pl .bt-row.s-paid .bt-a{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
+#pl .bt-today{display:flex;align-items:center;gap:10px;padding:4px 16px;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--accent-text,var(--accent))}
+#pl .bt-today::before,#pl .bt-today::after{content:"";flex:1;height:1.5px;background:currentColor;opacity:.6}
+#pl .bt-today+.bt-row{border-top:0}
+#pl .bt-none{display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px;color:var(--muted);font-size:14px;text-align:center}
+#pl .bt-none b{color:var(--text);font-size:17px}
+/* a straight PAID stamp in this list */
+#pl .bt-chk.on{transform:none}
+#pl .bt-chk.on.stamp{animation:btstamp .22s ease-out}
+@keyframes btstamp{0%{transform:scale(1.6);opacity:0}70%{transform:scale(.95);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){#pl .bt-chk.on.stamp{animation:none}}
 </style>
 <script>(function(){var d=document.documentElement,M={"glass": {"light": "glass", "dark": "glass-dark"}},set='glass',mode='light';
 try{var s=localStorage.getItem('bp-set'),m=localStorage.getItem('bp-mode2');
@@ -2792,59 +2822,30 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     occ.forEach(o => (byDay[o.day] = byDay[o.day] || []).push(o));
     const n = lastDay(viewY, viewM);
 
-    // ---- 1. month switcher
-    const head = `<div class="bc-mh"><button type="button" class="bc-nav" data-bxprev aria-label="Previous month">${CHEV_L}</button>
-      <button type="button" class="bc-mt" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}>${MONTHS[viewM]} <span>${viewY}</span></button>
-      ${isNow ? '' : '<button type="button" class="bc-today" data-bxtoday>Today</button>'}
-      <button type="button" class="bc-nav" data-bxnext aria-label="Next month">${CHEV_R}</button></div>`;
-
-    // ---- 2. summary: left to pay, a ring for how much is paid, and tappable totals
-    const C = 2 * Math.PI * 30;
-    const hero = !state.bills.length
-      ? `<div class="pcard bc-empty"><b>No bills yet</b><span>Add your first bill and it shows up on the calendar.</span>${SAMPLE_BTN}</div>`
-      : `<div class="pcard bc-hero"><div class="bc-hl"><small>Left to pay</small><b>${money(left)}</b><span>of ${money(total)} · ${occ.length} bill${occ.length === 1 ? '' : 's'} in ${MONTHS[viewM]}</span></div>
-          <div class="bc-ring" role="img" aria-label="${pctR}% paid"><svg viewBox="0 0 72 72"><circle class="t" cx="36" cy="36" r="30"/><circle class="p" cx="36" cy="36" r="30" stroke-dasharray="${(C * pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 36 36)"/></svg><b>${pctR}%</b><small>paid</small></div></div>
-        <div class="bc-stats">
-          <button type="button" class="bc-stat paid" data-bxf="paid"><i></i><b>${money(paid)}</b><span>Paid · ${occ.filter(o => o.paid).length}</span></button>
-          <button type="button" class="bc-stat ${overL.length ? 'over' : 'due'}" data-bxf="unpaid"><i></i><b>${money(overL.length ? sum(overL) : sum(unpaidL))}</b><span>${overL.length ? 'Overdue · ' + overL.length : 'Unpaid · ' + unpaidL.length}</span></button>
-          <button type="button" class="bc-stat auto" data-bxf="auto"><i></i><b>${money(sum(autoL))}</b><span>Autopay · ${autoL.length}</span></button></div>`;
-
-    // ---- 3. calendar: a dot per bill, coloured by status
-    const dayCls = d => {
-      const c = [];
-      if (isNow && d === today.getDate()) c.push('today');
-      if (selDay === d) c.push('sel');
-      if (byDay[d]) c.push('has');
-      if (new Date(viewY, viewM, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate())) c.push('past');
-      return c.join(' ');
-    };
-    let g = WD1.map(w => `<div class="bc-wd">${w}</div>`).join('');
-    for (let i = 0, s0 = new Date(viewY, viewM, 1).getDay(); i < s0; i++) g += '<div></div>';
-    for (let d = 1; d <= n; d++) {
-      const list = byDay[d] || [];
-      g += `<button type="button" class="bc-cell ${dayCls(d)}" data-day="${d}" aria-label="${MONTHS[viewM]} ${d}${list.length ? ', ' + list.length + ' bill' + (list.length > 1 ? 's' : '') + ', ' + money(sum(list)) : ''}"><span class="d">${d}</span><span class="bc-dots">${list.slice(0, 3).map(o => `<i class="s-${status(o)}"></i>`).join('')}${list.length > 3 ? '<i class="more"></i>' : ''}</span></button>`;
-    }
-    const cal = `<div class="pcard bc-cal"><div class="bc-grid" id="bxGrid">${g}</div>
-      <div class="bc-legend"><span><i class="s-paid"></i>Paid</span><span><i class="s-soon"></i>Due soon</span><span><i class="s-up"></i>Coming up</span><span><i class="s-over"></i>Late</span></div></div>`;
-
-    // ---- 4. the bills themselves, on the page: a tapped day, or grouped by what needs doing
+    // ---- simple timeline: one line on top, then every bill in date order with a line for today
+    const todayIsoS = iso(today.getFullYear(), today.getMonth(), today.getDate());
+    const head = `<div class="bt-top"><div class="bt-left"><b>${state.bills.length ? money(left) + ' left' : 'Bills'}</b>
+        <span><button type="button" class="bt-m" data-bxprev aria-label="Previous month">‹</button><button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}>${MONTHS[viewM]}${viewY !== today.getFullYear() ? ' ' + viewY : ''}</button><button type="button" class="bt-m" data-bxnext aria-label="Next month">›</button>${state.bills.length ? ` · ${pctR}% paid` : ''}</span></div></div>
+      ${state.bills.length ? `<div class="bt-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div>` : ''}`;
     let list = '';
-    if (state.bills.length) {
-      if (selDay) {
-        const l = byDay[selDay] || [], wd = new Date(viewY, viewM, selDay).toLocaleDateString('en-US', { weekday: 'long' });
-        list = `<div class="bc-sec"><div class="bc-sh"><span>${wd}, ${MONTHS[viewM]} ${selDay}</span><button type="button" class="bc-link" data-day="${selDay}">Show all</button></div>
-          ${l.length ? `<div class="pcard bx-list">${l.map(bxRow).join('')}</div>` : '<div class="pcard bc-none">Nothing due this day.</div>'}</div>`;
-      } else {
-        const groups = [['over', 'Overdue'], ['soon', 'Due soon'], ['up', 'Coming up'], ['paid', 'Paid']];
-        for (const [k, label] of groups) {
-          const l = all.filter(o => status(o) === k);
-          if (!l.length) continue;
-          list += `<div class="bc-sec"><div class="bc-sh"><span><i class="s-${k}"></i>${label}</span><small>${l.length} · ${money(sum(l))}</small></div><div class="pcard bx-list">${l.map(bxRow).join('')}</div></div>`;
-        }
-        if (!list) list = '<div class="pcard bc-none">No bills this month.</div>';
+    if (!state.bills.length) list = `<div class="bt-none"><b>No bills yet</b><span>Tap “Add bill” to start.</span>${SAMPLE_BTN}</div>`;
+    else {
+      const ordered = [...all].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : a.bill.name.localeCompare(b.bill.name));
+      let marked = !isNow;
+      for (const o of ordered) {
+        if (!marked && o.date >= todayIsoS) { list += `<div class="bt-today">Today · ${MONTHS[today.getMonth()].slice(0, 3)} ${today.getDate()}</div>`; marked = true; }
+        const st = status(o), b = o.bill, k = keyOf(o), dt = new Date(o.y, o.m, o.day);
+        const when = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        list += `<div class="bt-row s-${st}${o.date === todayIsoS ? ' now' : ''}" data-edit="${esc(b.id)}">
+          <div class="bt-n"><b>${esc(b.name)}</b><small>${when} · ${countdown(o)}${b.autopay ? ' · Autopay' : ''}</small></div>
+          <div class="bt-a">${money(o.amt)}</div>
+          <button class="chk bt-chk ${o.paid ? 'on' : ''}${o.paid && justStamped === k ? ' stamp' : ''}" data-pay="${esc(k)}" data-amt="${o.amt}" data-label="PAID" aria-label="${o.paid ? 'Mark unpaid' : 'Mark paid'}"></button></div>`;
       }
+      if (!marked) list += `<div class="bt-today">Today · ${MONTHS[today.getMonth()].slice(0, 3)} ${today.getDate()}</div>`;
+      if (!ordered.length) list = '<div class="bt-none">No bills this month.</div>';
     }
-    morph($('bxBody'), head + hero + cal + list);
+    morph($('bxBody'), head + `<div class="pcard bt-list">${list}</div>`);
+    $('bxAcct').hidden = true;
     const pass = k => o => k === 'all' || (k === 'unpaid' && !o.paid) || (k === 'paid' && o.paid) || (k === 'auto' && o.bill.autopay);
 
     // ---- pull-up sheet for a chip or a tapped day
@@ -2856,15 +2857,7 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
         ${sl.length ? `<div class="pcard bx-list">${sl.map(bxRow).join('')}</div>` : `<div class="bx-shnone">${{ unpaid: 'Everything is paid.', paid: 'Nothing paid yet this month.', auto: 'No autopay bills this month.', all: 'No bills this month.', day: 'Nothing due this day.' }[sheetK]}</div>`}`);
     }
 
-    // ---- by account
-    const acc = {};
-    occ.forEach(o => { const a = o.bill.account || 'No account set'; const r = acc[a] = acc[a] || { t: 0, p: 0, n: 0 }; r.t += o.amt; r.n++; if (o.paid) r.p += o.amt; });
-    const rows = Object.entries(acc).sort((a, b) => b[1].t - a[1].t);
-    const max = rows.length ? rows[0][1].t || 1 : 1;
-    $('bxAcct').hidden = !rows.length;
-    morph($('bxAcct'), rows.length ? `<div class="bx-h in"><span>By account</span><small>${MONTHS[viewM]}</small></div>` + rows.map(([a, r]) => `
-      <div class="bx-ac"><div class="bx-acn"><b>${esc(a)}</b><span>${r.n} bill${r.n > 1 ? 's' : ''} · ${money(r.p)} of ${money(r.t)} paid</span></div>
-      <div class="bx-acb"><i style="width:${(r.t / max * 100).toFixed(1)}%"><u style="width:${r.t ? (r.p / r.t * 100).toFixed(1) : 0}%"></u></i></div></div>`).join('') : '');
+    // (no by-account card in the simple layout)
   }
 
   function taskStatus(t){
