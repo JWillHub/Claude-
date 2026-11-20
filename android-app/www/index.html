@@ -70,7 +70,7 @@ body>#hcar{position:fixed;right:18px;bottom:calc(96px + env(safe-area-inset-bott
   box-shadow:0 8px 22px rgba(0,0,0,.5)!important}
 body>#hcar svg{width:22px;height:22px}
 html.light body>#hcar{background:linear-gradient(180deg,rgba(240,239,243,.95),rgba(226,225,230,.95))!important;box-shadow:0 8px 20px rgba(0,0,0,.15)!important}
-html.navy body>#hcar{background:linear-gradient(180deg,rgba(6,24,82,.94),rgba(0,12,54,.96))!important}
+html.navy body>#hcar{background:linear-gradient(180deg,rgba(28,31,40,.94),rgba(18,20,27,.96))!important}
 body:has(header.top.searching)>#hcar,body:has(#v-settings:not([hidden]))>#hcar,body.spage>#hcar{display:none!important}
 .sidle{margin:16px 0 10px;font-size:17px;font-weight:800;color:var(--text);text-transform:none;letter-spacing:0}
 .srch{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:0;z-index:7;overflow-y:auto;overscroll-behavior:contain;
@@ -998,7 +998,7 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 
 
 /* ==== NAVY THEME (html.navy; black backgrounds get navy twins, generated in light_gen.py) ==== */
-html.navy{--bg:#000c36;--bg2:#000c36;--card2:#071650;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
+html.navy{--bg:#12141b;--bg2:#12141b;--card2:#1b1e27;--line:rgba(170,180,210,.12);--muted:#9fb3d6}
 
 /* ==== REDUCE MOTION (Settings, Appearance): no slides, fades or zooms ==== */
 html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
@@ -1011,7 +1011,7 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
 .rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#c6c5cb)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.14),transparent 70%),linear-gradient(160deg,#04124a,#000a2c)}
+.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(70,100,170,.08),transparent 70%),linear-gradient(160deg,#1a1d27,#101218)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
 .rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}
@@ -1173,40 +1173,40 @@ html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #d2d1d7!important}
 html.light .shbg{background-color:#c3c2c8!important}
 </style>
-<style id="navygen">html.navy .top{background-color:#000c36!important}
-html.navy .lcx{background-color:rgba(0,12,54,.6)!important}
-html.navy .shcard{background-color:#000c36!important}
-html.navy .shbg{background-color:#000c36!important}
-html.navy .shbg::after{background:linear-gradient(180deg,rgba(0,12,54,.15) 0%,rgba(0,12,54,.5) 55%,#000c36 96%)!important}
-html.navy .shcard .shwrap .pad{background-color:#000c36!important}
-html.navy .toast,html.navy .ptr{background-color:#000c36!important}
-html.navy .sh.page{background-color:#000c36!important}
-html.navy .ltools select option{background-color:#000c36!important}
-html.navy .grid img,html.navy .rarow img,html.navy .lshow img,html.navy .cwimg,html.navy .epth{background-color:#000c36!important}
-html.navy .skel{background-color:#000c36!important}
-html.navy .ssel option{background-color:#000c36!important}
-html.navy .subprev.box span{background-color:rgba(0,12,54,.7)!important}
-html.navy .mvsheet>.bdrop{background-color:#000c36!important}
-html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,12,54,.1) 0%,rgba(0,12,54,.45) 55%,#000c36 97%)!important}
-html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#000c36 calc(340px + env(safe-area-inset-top))) local!important}
-html.navy .gpk-bk{background-color:rgba(0,12,54,.25)!important}
-html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#000c36 calc(300px + env(safe-area-inset-top))) local!important}
-html.navy .gpk{background-color:rgba(0,12,54,.72)!important}
-html.navy .gpk-bk{background-color:rgba(0,12,54,.4)!important}
-html.navy .gpk-bk{background-color:rgba(0,12,54,.55)!important}
-html.navy body.libv .ltop{background-color:#000c36!important}
-html.navy .hcard{background-color:#000c36!important}
-html.navy .hcard::after{background:linear-gradient(180deg,rgba(0,12,54,0) 30%,rgba(0,12,54,.92) 100%)!important}
-html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background-color:#000c36!important}
-html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(0,12,54,.25) 0%,rgba(0,12,54,0) 18%,rgba(0,12,54,0) 45%,rgba(0,12,54,.75) 78%,#000c36 100%)!important}
-html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#000c36 calc(var(--hero) + env(safe-area-inset-top))) local!important}
-html.navy .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(0,12,54,.25) 0%,rgba(0,12,54,0) 18%,rgba(0,12,54,0) 42%,rgba(0,12,54,.8) 78%,#000c36 100%)!important}
-html.navy .seapick{background-color:#000c36!important}
-html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000c36)!important}
-html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(0,12,54,.35))!important}
-html.navy .rcth .pv-light .tb2{background-color:rgba(0,12,54,.08)!important}
-html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(52,120,220,.07) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(16,58,140,.14) 0%,transparent 65%),#000c36 fixed!important}
-html.navy .tabbar{background:linear-gradient(180deg,rgba(6,24,82,calc(.94*var(--tbA,1))),rgba(0,12,54,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
+<style id="navygen">html.navy .top{background-color:#12141b!important}
+html.navy .lcx{background-color:rgba(18,20,27,.6)!important}
+html.navy .shcard{background-color:#12141b!important}
+html.navy .shbg{background-color:#12141b!important}
+html.navy .shbg::after{background:linear-gradient(180deg,rgba(18,20,27,.15) 0%,rgba(18,20,27,.5) 55%,#12141b 96%)!important}
+html.navy .shcard .shwrap .pad{background-color:#12141b!important}
+html.navy .toast,html.navy .ptr{background-color:#12141b!important}
+html.navy .sh.page{background-color:#12141b!important}
+html.navy .ltools select option{background-color:#12141b!important}
+html.navy .grid img,html.navy .rarow img,html.navy .lshow img,html.navy .cwimg,html.navy .epth{background-color:#12141b!important}
+html.navy .skel{background-color:#12141b!important}
+html.navy .ssel option{background-color:#12141b!important}
+html.navy .subprev.box span{background-color:rgba(18,20,27,.7)!important}
+html.navy .mvsheet>.bdrop{background-color:#12141b!important}
+html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(18,20,27,.1) 0%,rgba(18,20,27,.45) 55%,#12141b 97%)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#12141b calc(340px + env(safe-area-inset-top))) local!important}
+html.navy .gpk-bk{background-color:rgba(18,20,27,.25)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#12141b calc(300px + env(safe-area-inset-top))) local!important}
+html.navy .gpk{background-color:rgba(18,20,27,.72)!important}
+html.navy .gpk-bk{background-color:rgba(18,20,27,.4)!important}
+html.navy .gpk-bk{background-color:rgba(18,20,27,.55)!important}
+html.navy body.libv .ltop{background-color:#12141b!important}
+html.navy .hcard{background-color:#12141b!important}
+html.navy .hcard::after{background:linear-gradient(180deg,rgba(18,20,27,0) 30%,rgba(18,20,27,.92) 100%)!important}
+html.navy .lsearch,html.navy .ltools #lsort,html.navy .ltools #lsort.lsortbtn,html.navy .gpk{background-color:#12141b!important}
+html.navy .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(18,20,27,.25) 0%,rgba(18,20,27,0) 18%,rgba(18,20,27,0) 45%,rgba(18,20,27,.75) 78%,#12141b 100%)!important}
+html.navy .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#12141b calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.navy .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(18,20,27,.25) 0%,rgba(18,20,27,0) 18%,rgba(18,20,27,0) 42%,rgba(18,20,27,.8) 78%,#12141b 100%)!important}
+html.navy .seapick{background-color:#12141b!important}
+html.navy .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#12141b)!important}
+html.navy .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(18,20,27,.35))!important}
+html.navy .rcth .pv-light .tb2{background-color:rgba(18,20,27,.08)!important}
+html.navy body{background:radial-gradient(90% 55% at 0% 0%,rgba(70,100,170,.05) 0%,transparent 65%),radial-gradient(80% 60% at 100% 100%,rgba(40,60,120,.08) 0%,transparent 65%),#12141b fixed!important}
+html.navy .tabbar{background:linear-gradient(180deg,rgba(28,31,40,calc(.94*var(--tbA,1))),rgba(18,20,27,calc(.96*var(--tbA,1))))!important;border-color:rgba(160,200,255,.14)!important}
 html.navy .tb.on{background:rgba(160,200,255,.14)}
 </style>
 </head>
@@ -4268,7 +4268,7 @@ function applyTheme(){ try{
   // tab bar see-through (0 = solid) and reduce motion
   r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
   r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#000c36' : '#000000';
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#12141b' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }

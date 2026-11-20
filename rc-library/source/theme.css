@@ -348,7 +348,7 @@ html.light .tb.on{background:rgba(0,0,0,.06)}
 
 
 /* ==== NAVY THEME (html.navy; black backgrounds get navy twins, generated in light_gen.py) ==== */
-html.navy{--bg:#000c36;--bg2:#000c36;--card2:#071650;--line:rgba(160,200,255,.16);--muted:#9fb3d6}
+html.navy{--bg:#12141b;--bg2:#12141b;--card2:#1b1e27;--line:rgba(170,180,210,.12);--muted:#9fb3d6}
 
 /* ==== REDUCE MOTION (Settings, Appearance): no slides, fades or zooms ==== */
 html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
@@ -361,7 +361,7 @@ html.nomotion *,html.nomotion *::before,html.nomotion *::after{animation-duratio
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
 .rcth .pv-light{background:linear-gradient(160deg,#ecebf0,#c6c5cb)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(52,120,220,.14),transparent 70%),linear-gradient(160deg,#04124a,#000a2c)}
+.rcth .pv-navy{background:radial-gradient(90% 60% at 0% 0%,rgba(70,100,170,.08),transparent 70%),linear-gradient(160deg,#1a1d27,#101218)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
 .rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}

@@ -17,7 +17,7 @@ function applyTheme(){ try{
   // tab bar see-through (0 = solid) and reduce motion
   r.style.setProperty('--tbA', String(1 - Math.min(90, Math.max(0, +store.get(K_TBA, 0) || 0)) / 100));
   r.classList.toggle('nomotion', !!store.get(K_NOMO, false));
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#000c36' : '#000000';
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d2d1d7' : navy ? '#12141b' : '#000000';
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
