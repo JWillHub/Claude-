@@ -1113,6 +1113,21 @@ body>#hcar{box-shadow:var(--gl-shine),0 10px 26px rgba(0,0,0,.5)!important}
 html.light body>#hcar,html.light body>#hcar svg{color:var(--accent)!important;stroke:var(--accent)}
 /* sleeker type: Inter Tight headings, a touch tighter than before since the old font was narrow */
 h1,h2,h3,.stitle,.rowhead h3{letter-spacing:-.01em}
+/* top bars (Search page header, Library search row): see-through glass, same slider as the tab bar */
+body.libv main{padding-top:0!important}
+body.libv #v-library{margin-top:0!important}
+html body header.top.top,html body.libv .ltop.ltop{
+  background:rgba(12,12,14,calc(.94*var(--tbA,1)))!important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5)}
+html.navy body header.top.top,html.navy body.libv .ltop.ltop{background:rgba(18,20,27,calc(.94*var(--tbA,1)))!important}
+html.light body header.top.top,html.light body.libv .ltop.ltop{background:rgba(210,209,215,calc(.94*var(--tbA,1)))!important}
+/* cover the strip above the bar so nothing peeks through */
+header.top.top::before,body.libv .ltop.ltop::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:200px;background:inherit;-webkit-backdrop-filter:inherit;backdrop-filter:inherit;pointer-events:none}
+header.top.top,body.libv .ltop.ltop{position:sticky;top:0}
+body.libv #v-library>div:has(#lmain){padding-top:0!important}
+body.libv #lmain{margin-top:0!important;padding-top:0!important}
+body.libv #lmain>.ltop{margin-top:0!important}
+body.libv #lmain>div[style="height:8px"]:first-child{display:none}
 </style>
 <style id="lightgen">html.light .top{background-color:#d2d1d7!important}
 html.light .logo .w1{color:var(--text)!important}
