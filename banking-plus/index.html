@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-aJoOIejSxO8BPGEJvRP68yWcDxe0MrxNf7EhuuF2LVY=' 'sha256-ebN5t094Zv3ZtEY/dmIkOCAwGyRAiiHLNPHk27SGMIc=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kTKr/wGjKBIUiUG8yL8otiRE9W3SHr15HgjZrJuJ9c4=' 'sha256-jkGovHSIp32Uv7Wjw07CNA+Yy8BxTfXENSdAdcZxlLw=' 'sha256-Z34KcKPLz1p4YJt1yNXIDBr38T8i0pYhB0OknXTy48Y=' 'sha256-dwKyPLtYLJWMIN6i6qJKo9Q8mgerGMMIek7UXSAw2cY=' 'sha256-9iXobrQGca0NYTYs05gIadBvesudrl4ZyzYCy/wy1mQ=' 'sha256-j5WnwQEW+6Yih95n/fzmvfnoD+1sk4z641jLgw9UMCA=' 'sha256-zbC7cdkYx/mj0E+/PNHoTdu8FOXHL6wk0XETC1p4+u4=' 'sha256-ilvWI9ynmtwGPj6sOjqi+CsWqeBJ7JGxNJOfyf6zVEA='; style-src 'unsafe-inline'; img-src 'self' data: blob:; manifest-src 'self'; worker-src 'self'; connect-src 'none'; font-src data:; media-src 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; base-uri 'none'">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer">
@@ -1482,13 +1482,17 @@ html:root[data-glass][data-look][data-mode="dark"] .tabpill{box-shadow:0 4px 14p
 #pl .bt-m:active{transform:scale(.92)}
 #pl .bt-mn{flex:1;border:0;background:none;font:inherit;color:var(--text);padding:0;cursor:default;text-align:center;line-height:1.1}
 #pl .bt-mn b{display:block;font-size:26px;font-weight:800;letter-spacing:-.5px}
-#pl .bt-mn small{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-top:3px}
+#pl .bt-mn small{display:block;min-height:16px;font-size:13px;font-weight:600;color:var(--muted);margin-top:3px}
 #pl .bt-mn[data-bxtoday]{cursor:pointer}
 #pl .bt-mn[data-bxtoday] small{color:var(--accent-text,var(--accent))}
 #pl .bt-sum{display:flex;align-items:baseline;gap:6px;margin:0 4px;font-variant-numeric:tabular-nums}
 #pl .bt-sum b{font-size:22px;font-weight:800}
 #pl .bt-sum span{font-size:14px;color:var(--muted)}
 #pl .bt-sum em{margin-left:auto;font-style:normal;font-size:14px;font-weight:700;color:var(--green)}
+body[data-view=bills] #pl{touch-action:pan-y}
+#pl #bxBody{will-change:transform}
+#pl .home-set{display:flex;align-items:center;gap:8px;margin:20px auto 0;padding:11px 20px;border:0;border-radius:999px;background:color-mix(in srgb,var(--text) 8%,transparent);color:var(--text);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
+#pl .home-set:active{transform:scale(.96)}
 #pl .bt-bar{height:6px;border-radius:3px;margin:8px 4px 16px;background:color-mix(in srgb,var(--text) 10%,transparent);overflow:hidden}
 #pl .bt-bar i{display:block;height:100%;border-radius:3px;background:var(--green);transition:width .4s ease}
 #pl .bt-list{padding:2px 0}
@@ -1568,7 +1572,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       <div class="big" id="tTodoBig"></div>
       <div class="sub" id="tTodoSub"></div>
     </button>
-    <button class="link" id="homeBackup" type="button" style="display:block;margin:18px auto 0;padding:8px 10px;font-size:13px"></button>
+    <button class="home-set" id="homeSettings" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
   </section>
 
   <!-- BILLS -->
@@ -2569,6 +2573,7 @@ window.BP={
  unlogBill(key){if(!state)return;const n=state.txns.length;state.txns=state.txns.filter(t=>t.bill!==key);if(state.txns.length!==n){save();render()}},
  backupWords,backupAge,
  openBackup(){ui.tab='settings';ui.sub='data';ui.pendSub='data';ui.editT=false;render();scrollTo(0,0)},
+ openSettings(){ui.tab='settings';ui.sub=null;ui.pendSub=null;ui.editT=false;render();scrollTo(0,0)},
  // Android back swipe on a Settings page goes back to the Settings hub
  settingsBack(){const bp=document.getElementById('bp');if(bp&&!bp.hidden&&ui.tab==='settings'&&ui.sub){if(ui.catArrange)ui.catArrange=false;else ui.sub=/^cat:/.test(ui.sub)?'cats':null;ui.stAnim=true;render();scrollTo(0,0);return true}return false}
 };
@@ -2832,7 +2837,7 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     // ---- simple timeline: one line on top, then every bill in date order, today's shaded
     const todayIsoS = iso(today.getFullYear(), today.getMonth(), today.getDate());
     const head = `<div class="bt-mbar"><button type="button" class="bt-m" data-bxprev aria-label="Previous month">‹</button>
-        <button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}><b>${MONTHS[viewM]}</b><small>${isNow ? viewY : viewY + ' · Tap for today'}</small></button>
+        <button type="button" class="bt-mn" ${isNow ? '' : 'data-bxtoday aria-label="Back to this month"'}><b>${MONTHS[viewM]}${viewY !== today.getFullYear() ? ' ' + viewY : ''}</b><small>${isNow ? '' : 'Tap for today'}</small></button>
         <button type="button" class="bt-m" data-bxnext aria-label="Next month">›</button></div>
       ${state.bills.length ? `<div class="bt-sum"><b>${money(left)}</b><span>left of ${money(total)}</span><em>${pctR}% paid</em></div>
       <div class="bt-bar"><i style="width:${(pct * 100).toFixed(1)}%"></i></div>` : ''}`;
@@ -2957,13 +2962,7 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     $('tBudgetSub').innerHTML = over ? '<span class="pwarn">Over budget this month</span>'
       : s.extra < -0.004 ? `<span class="pwarn">Short after targets: ${money(-s.extra)}</span>` : `Extra money: ${money(s.extra)}`;
   }
-  function renderBackupNote(){
-    const el = $('homeBackup'); if (!el || !window.BP) return;
-    const age = BP.backupAge(), any = state.bills.length || tasks.length || age != null;
-    el.hidden = !any;
-    el.textContent = BP.backupWords() + (age == null || age > 30 ? ' · tap to save one' : '');
-    el.style.color = age == null || age > 30 ? 'var(--red)' : '';
-  }
+  function renderBackupNote(){}
   function renderAll(){ renderHome(); renderBudgetTile(); renderBackupNote(); renderBills(); renderTodo(); }
   // lets the budget's backup, restore and erase reach the bills and to-dos
   window.BPPlanner = {
@@ -2976,7 +2975,7 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     },
     refresh: () => renderAll()
   };
-  $('homeBackup').onclick = () => { if (!window.BP) return; BP.openBackup(); fromHome = true; location.hash = 'budget'; };
+  $('homeSettings').onclick = () => { if (!window.BP) return; BP.openSettings(); fromHome = true; location.hash = 'budget'; };
 
   // ================= ROUTER =================
   const TITLES = { bills: 'Bill Calendar', todo: 'To-Do', budget: 'Budget' };
@@ -3094,6 +3093,38 @@ if(window.BPNative&&BPNative.checkUpdate)setTimeout(()=>{try{BPNative.checkUpdat
     if (e.target.closest('[data-bxclear]')) { selDay = null; renderBills(); return; }
     if (e.target.closest('[data-bxtoday]')) { viewY = today.getFullYear(); viewM = today.getMonth(); selDay = null; renderBills(); }
   });
+  // swipe anywhere on the Bills screen to change months: the page follows the finger, then the next month slides in
+  (function(){
+    let g = null, busy = false, noClick = false;
+    const rm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const put = (el, x, ms) => { el.style.transition = ms ? `transform ${ms}ms cubic-bezier(.2,.7,.3,1), opacity ${ms}ms ease` : 'none'; el.style.transform = x ? `translateX(${x}px)` : ''; el.style.opacity = x ? String(Math.max(.25, 1 - Math.abs(x) / el.offsetWidth * .9)) : ''; };
+    document.addEventListener('pointerdown', e => {
+      if (busy || sheetK || document.body.dataset.view !== 'bills' || !e.target.closest('#pl') || e.target.closest('#bxOv,.bx-ov,.overlay,.fab,input,select,textarea,[role=dialog]') || (e.pointerType === 'mouse' && e.button)) return;
+      g = { x: e.clientX, y: e.clientY, id: e.pointerId, mode: null, dx: 0 };
+    });
+    document.addEventListener('pointermove', e => {
+      if (!g || e.pointerId !== g.id) return;
+      const dx = e.clientX - g.x, dy = e.clientY - g.y;
+      if (!g.mode) { if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.2) g.mode = 'h'; else if (Math.abs(dy) > 10) { g = null; return; } else return; }
+      g.dx = dx; put($('bxBody'), dx * .9, 0);
+    });
+    const end = () => {
+      if (!g) return; const { mode, dx } = g; g = null; if (mode !== 'h') return;
+      noClick = true; setTimeout(() => noClick = false, 80);
+      const el = $('bxBody'), W = el.offsetWidth, dir = dx < 0 ? 1 : -1;
+      if (Math.abs(dx) < W * .2) { put(el, 0, rm() ? 0 : 200); return; }
+      busy = true; const out = rm() ? 0 : 150;
+      put(el, -dir * W, out);
+      setTimeout(() => {
+        $(dir > 0 ? 'next' : 'prev').click();
+        put(el, dir * W * .6, 0); void el.offsetWidth;
+        put(el, 0, rm() ? 0 : 280);
+        setTimeout(() => { busy = false; el.style.transition = ''; }, rm() ? 0 : 290);
+      }, out);
+    };
+    document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+    document.addEventListener('click', e => { if (noClick && e.target.closest('#pl')) { e.stopPropagation(); e.preventDefault(); } }, true);
+  })();
   // swipe the summary card (or the month grid) to change months
   let sx = null, sy = null;
   document.addEventListener('touchstart', e => {
