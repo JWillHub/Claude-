@@ -2227,11 +2227,21 @@ function genreTiles(kind){
        ...TVGENRES.filter(([id]) => !Object.values(G2TV).includes(id)).map(([id, n]) => tile('t' + id, n, { title:n, genreId:id, tv:true }))];
   return list.sort((a, b) => a.name.localeCompare(b.name));
 }
-// a backdrop from the genre's most popular title, cached for a day
-const tileArt = t => cached('gtile:' + t.k, 24, async () => {
-  const d = t.d, tv = d.all ? false : d.tv, id = d.all ? d.mid : d.genreId;
-  const r = await tmdb(tv ? '/discover/tv' : '/discover/movie', { with_genres:id, sort_by:'popularity.desc', 'vote_count.gte':300, include_adult:'false' });
-  const hit = (r.results || []).find(m => m.backdrop_path); return hit ? hit.backdrop_path : '';
+// Tile art: a famous title's backdrop per genre (most-voted, i.e. the best-known films/series), never the same title twice
+// on one screen. Worked out for the whole set at once, then cached for a week.
+const tileArtAll = (kind, list) => cached('gtiles3:' + kind, 24*7, async () => {
+  const pools = await Promise.all(list.map(t => {
+    const d = t.d, tv = d.all ? false : d.tv, id = d.all ? d.mid : d.genreId;
+    return tmdb(tv ? '/discover/tv' : '/discover/movie', { with_genres:id, sort_by:'vote_count.desc', include_adult:'false', with_original_language:'en' })
+      .then(r => (r.results || []).filter(m => m.backdrop_path).map(m => [(tv ? 't' : 'm') + m.id, m.backdrop_path])).catch(() => []);
+  }));
+  const used = new Set(), out = {};
+  // genres with the fewest choices pick first, so a niche genre isn't left without a unique title
+  list.map((t, i) => i).sort((x, y) => pools[x].length - pools[y].length).forEach(i => {
+    const hit = pools[i].find(([id, bd]) => !used.has(id) && !used.has(bd));
+    if(hit){ used.add(hit[0]); used.add(hit[1]); out[list[i].k] = hit[1]; }
+  });
+  return out;
 });
 // Genres tab: the Library-style search bar + filter (All / Movies / Series); square genre tiles below, each opens its own page
 function buildGenreBrowse(){
@@ -2247,8 +2257,9 @@ function buildGenreBrowse(){
     const list = genreTiles(gb.kind);
     tilesEl.innerHTML = list.map((t, i) => `<button class="gtile" data-i="${i}"><span class="gtart"></span><b>${esc(t.name)}</b></button>`).join('');
     $$('.gtile', tilesEl).forEach(el => { const t = list[+el.dataset.i];
-      el.onclick = () => openGenrePage(t.d);
-      tileArt(t).then(p => { if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w500${p})`; }).catch(() => {}); });
+      el.onclick = () => openGenrePage(t.d); });
+    tileArtAll(gb.kind, list).then(art => $$('.gtile', tilesEl).forEach(el => { const p = art[list[+el.dataset.i].k];
+      if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w1280${p})`; })).catch(() => {});
   };
   const load = () => {
     const t = gb.q.trim(), k = gb.kind;
