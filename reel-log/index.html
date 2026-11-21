@@ -1046,6 +1046,28 @@ html.light .dw-head button{color:rgba(0,0,0,.55)}
 html.light .dw-band{background:rgba(0,0,0,.06)}
 html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 @media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
+
+/* ===== Discover, alive ===== */
+/* (1) the front trending picture slowly drifts and zooms while it's showing */
+.hcard{background:#111!important}
+.hcard .hbg{position:absolute;inset:-110px 0 0 0;background:center/cover no-repeat;scale:1.02;transform:translate3d(0,var(--py,0px),0);will-change:transform}
+.hcard[data-p="0"] .hbg{animation:kb 9s ease-out forwards}
+@keyframes kb{from{scale:1.02;translate:0 0}to{scale:1.14;translate:-2.5% -1.5%}}
+.hcard::after{z-index:1}
+.hcard .hin{z-index:2}
+/* (3) dims as you scroll past */
+.hero.hstack::before{content:"";position:absolute;inset:0;z-index:5;border-radius:inherit;background:#000;opacity:var(--dim,0);pointer-events:none}
+/* (2) colour glow behind the top of the page, fading between pictures */
+@property --dg{syntax:'<color>';inherits:false;initial-value:rgba(0,0,0,0)}
+#v-discover{position:relative;isolation:isolate}
+#dglow{position:absolute;left:-10%;right:-10%;top:-120px;height:560px;z-index:-1;pointer-events:none;
+  background:radial-gradient(60% 55% at 50% 30%,color-mix(in srgb,var(--dg) 38%,transparent),transparent 72%);transition:--dg 1.1s ease}
+html.light #dglow{opacity:.6}
+/* (5) posters press in when touched and spring back when let go */
+.pc .pw{transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+.pc:active .pw,.pc.pressing .pw{transform:scale(.94);transition:transform .14s ease-out;transition-delay:0s}
+.hcard[data-p="0"]:active{transform:scale(.98);transition:transform .14s ease-out}
+@media (prefers-reduced-motion:reduce){.hcard[data-p="0"] .hbg{animation:none}#dglow{transition:none}}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1952,7 +1974,7 @@ async function loadHero(){
     if(!pool.length){ h.remove(); return; }
     let at = 0;
     h.classList.add('hstack');
-    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}w780${m.backdrop})"><div class="hin"><span class="tag">Trending now</span><h2>${esc(m.title)}</h2>
+    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}"><div class="hbg" style="background-image:url(${IMG}w780${m.backdrop})"></div><div class="hin"><span class="tag">Trending now</span><h2>${esc(m.title)}</h2>
       <div class="hm">${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}</div>
       <div class="hbtns"><button class="pill" data-hr="${m.id}">★ Rate</button><button class="pill ghost" data-hd="${m.id}">Details</button></div></div></div>`).join('')
       + `<div class="hdots">${pool.map((_, i) => `<i data-d="${i}"></i>`).join('')}</div>`;
@@ -1961,8 +1983,31 @@ async function loadHero(){
       cards.forEach((c, i) => { const p = (i - at + pool.length) % pool.length; c.dataset.p = p < 3 ? p : 'x'; });
       dots.forEach((x, i) => x.classList.toggle('on', i === at));
     };
-    const go = n => { at = (at + n + pool.length) % pool.length; lay(); };
-    lay();
+    // (2) a soft glow behind the top of Discover that takes the colour of the current picture
+    const glow = $('#dglow') || (() => { const g = document.createElement('div'); g.id = 'dglow'; $('#v-discover').prepend(g); return g; })();
+    const tint = {};
+    const tintOf = m => tint[m.id] || (tint[m.id] = new Promise(res => {
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => { try{
+          const c = document.createElement('canvas'); c.width = 12; c.height = 7; const x = c.getContext('2d', { willReadFrequently:true });
+          x.drawImage(im, 0, 0, 12, 7); const d = x.getImageData(0, 0, 12, 7).data;
+          let r = 0, g = 0, b = 0, w = 0;
+          for(let i = 0; i < d.length; i += 4){ const mx = Math.max(d[i], d[i+1], d[i+2]), mn = Math.min(d[i], d[i+1], d[i+2]), sat = mx - mn, k = 1 + sat * sat / 900;
+            r += d[i] * k; g += d[i+1] * k; b += d[i+2] * k; w += k; }
+          r /= w; g /= w; b /= w; const mx = Math.max(r, g, b, 1), boost = Math.min(2.2, 200 / mx);   // keep the hue, lift it so it reads as colour
+          res(`rgb(${Math.round(r * boost)},${Math.round(g * boost)},${Math.round(b * boost)})`);
+        }catch(e){ res(''); } };
+      im.onerror = () => res('');
+      im.src = `${IMG}w92${m.backdrop}`;          // a thumbnail of a couple of KB, only used to read the colour
+    }));
+    const paintGlow = () => tintOf(pool[at]).then(c => { if(c) glow.style.setProperty('--dg', c); });
+    const go = n => { at = (at + n + pool.length) % pool.length; lay(); paintGlow(); };
+    lay(); paintGlow();
+    // (3) the picture inside the card drifts slower than the page, and the card dims as you scroll past it
+    let pq = 0;
+    const par = () => { pq = 0; if($('#v-discover').hidden) return; const y = Math.max(0, Math.min(scrollY, 520));
+      h.style.setProperty('--py', (y * .2).toFixed(1) + 'px'); h.style.setProperty('--dim', (y / 520 * .7).toFixed(3)); };
+    addEventListener('scroll', () => { if(!pq){ pq = 1; requestAnimationFrame(par); } }, { passive:true });
     // Auto-advance every 3.5 seconds through the titles already loaded (no extra downloads).
     // Pauses while you're touching it, when it's scrolled off screen, on other tabs, or with the app in the background.
     const EVERY = 3500;
@@ -1975,6 +2020,8 @@ async function loadHero(){
     };
     const timer = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : setInterval(tick, 500);
     h.addEventListener('pointerdown', () => { last = Date.now(); });
+    if(!window.__tapHap){ window.__tapHap = 1;
+      document.addEventListener('click', e => { if(e.target.closest('.pc, .hcard, .gtile')) try{ hap(8); }catch(_){} }, true); }
     h.addEventListener('click', () => { last = Date.now(); });
     let sx = null, sy = 0, moved = false;
     h.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; moved = false; });
