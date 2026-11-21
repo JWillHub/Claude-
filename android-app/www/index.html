@@ -1971,9 +1971,9 @@ async function loadHero(){
     };
     const go = n => { at = (at + n + pool.length) % pool.length; lay(); };
     lay();
-    // Auto-advance every 7 seconds through the titles already loaded (no extra downloads).
+    // Auto-advance every 3.5 seconds through the titles already loaded (no extra downloads).
     // Pauses while you're touching it, when it's scrolled off screen, on other tabs, or with the app in the background.
-    const EVERY = 7000;
+    const EVERY = 3500;
     let seen = true, last = Date.now();
     new IntersectionObserver(es => { seen = es[0].isIntersecting; }).observe(h);
     const tick = () => {
@@ -1981,7 +1981,7 @@ async function loadHero(){
       if(document.hidden || !seen || sx != null || $('#v-discover')?.hidden || document.body.classList.contains('locked')) { last = Date.now(); return; }
       if(Date.now() - last >= EVERY){ last = Date.now(); go(1); }
     };
-    const timer = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : setInterval(tick, 1000);
+    const timer = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : setInterval(tick, 500);
     h.addEventListener('pointerdown', () => { last = Date.now(); });
     h.addEventListener('click', () => { last = Date.now(); });
     let sx = null, sy = 0, moved = false;
