@@ -440,7 +440,7 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .rcth button:active .pv{transform:scale(.97)}
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-slate{background:linear-gradient(160deg,#2a3440,#1a2129)}
+.rcth .pv-tinted{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,#000),color-mix(in srgb,var(--accent) 10%,#000))}
 .rcth .pv-light{background:linear-gradient(160deg,#e2d8c6,#cbbfa7)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
@@ -448,11 +448,18 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .rcth .pv .p1,.rcth .pv .p2,.rcth .pv .p3{top:53%;width:22%;height:24%;border-radius:5px}
 .rcth .pv .p1{left:10%}.rcth .pv .p2{left:39%}.rcth .pv .p3{left:68%}
 .rcth .pv-dark .p1,.rcth .pv-dark .p2,.rcth .pv-dark .p3{background:#2c2c30}
-.rcth .pv-slate .p1,.rcth .pv-slate .p2,.rcth .pv-slate .p3{background:#3a4654}
+.rcth .pv-tinted .p1,.rcth .pv-tinted .p2,.rcth .pv-tinted .p3{background:color-mix(in srgb,var(--accent) 30%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)}
 .rcth .pv-light .p1,.rcth .pv-light .p2,.rcth .pv-light .p3{background:#b9ab90}
 .rcth .pv .tb2{bottom:6%;left:12%;right:12%;height:9%;border-radius:999px}
-.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-slate .tb2{background:rgba(200,215,235,.18)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
+.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-tinted .tb2{background:color-mix(in srgb,var(--accent) 28%,transparent)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
 .rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
 .rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
 .rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
-html.slate{--bg:#1e2630;--bg2:#1e2630;--card2:#28313d;--line:rgba(180,198,222,.14);--muted:#93a0b2}
+html.slate{--bg:var(--tbg);--bg2:var(--tbg);--card2:var(--tcard);--line:rgba(var(--tacc),.32);--muted:rgba(225,232,245,.58)}
+html.slate .scard,html.slate .gtile,html.slate .franchise,html.slate .lsearch,html.slate .ltools #lsort,html.slate .ltools #gfilt{border-color:rgba(var(--tacc),.4)!important}
+
+/* background: a fine still film grain over everything, plus a soft light from the top in the accent colour */
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -.3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+html.light body::after{opacity:.07;filter:invert(1)}
+html body,html.slate body,html.light body{background-image:linear-gradient(180deg,color-mix(in srgb,var(--accent) 16%,transparent) 0px,transparent 560px)!important;background-repeat:no-repeat!important}

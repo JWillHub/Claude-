@@ -39,7 +39,7 @@ html.light .shbg{background-color:#ececef!important}
 
 # ---- Blue grey theme (html.slate): every black/near-black background becomes blue grey.
 # Only the colour changes on plain backgrounds, so posters and backdrops set elsewhere stay.
-SLATE = '#1e2630'
+SLATE = 'var(--tbg)'
 def slate(s):
     css = ''.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
     css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
@@ -55,18 +55,18 @@ def slate(s):
             prop, val = d.group(1), d.group(2).replace('!important', '').strip()
             if not re.search(r'#000\b|#000000|#0c0a0f|#141119|#120f17|#111\b|rgba\(0,\s*0,\s*0,', val) or 'url(' in val: continue
             nv = re.sub(r'#000000|#000\b|#0c0a0f|#141119|#120f17|#111\b', SLATE, val)
-            nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(30,38,48,', nv)
+            nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(var(--tbgr),', nv)
             if prop == 'background' and 'gradient' not in nv:
-                c = re.search(r'#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)', nv)
+                c = re.search(r'var\(--tbg\)|#[0-9a-fA-F]{3,8}\b|rgba?\((?:[^()]|\([^()]*\))*\)', nv)
                 if not c: continue
                 prop, nv = 'background-color', c.group(0)
             decls.append(f'{prop}:{nv}!important')
         if decls: out.append(','.join('html.slate ' + x for x in sels) + '{' + ';'.join(decls) + '}')
     return s.replace('</head>', '<style id="slategen">' + '\n'.join(out) + '\n' + SLATE_LATE + '</style>\n</head>', 1)
-SLATE_LATE = """html.slate body{background:#1e2630!important}
-html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px #1e2630!important}
-html.slate .tabbar{background:linear-gradient(180deg,rgba(44,54,67,.97),rgba(30,38,48,.97))!important;border-color:rgba(190,210,235,.14)!important}
-html.slate .tb.on{background:rgba(190,210,235,.14)}
+SLATE_LATE = """html.slate body{background-color:var(--tbg)!important}
+html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px var(--tbg)!important}
+html.slate .tabbar{background:linear-gradient(180deg,rgba(var(--tbgr),.92),var(--tbg))!important;border-color:rgba(var(--tacc),.38)!important}
+html.slate .tb.on{background:rgba(var(--tacc),.22)}
 html.slate .mtlogo{filter:none!important}
 """
 

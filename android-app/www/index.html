@@ -1074,7 +1074,7 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .rcth button:active .pv{transform:scale(.97)}
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-slate{background:linear-gradient(160deg,#2a3440,#1a2129)}
+.rcth .pv-tinted{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,#000),color-mix(in srgb,var(--accent) 10%,#000))}
 .rcth .pv-light{background:linear-gradient(160deg,#e2d8c6,#cbbfa7)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
@@ -1082,14 +1082,21 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .rcth .pv .p1,.rcth .pv .p2,.rcth .pv .p3{top:53%;width:22%;height:24%;border-radius:5px}
 .rcth .pv .p1{left:10%}.rcth .pv .p2{left:39%}.rcth .pv .p3{left:68%}
 .rcth .pv-dark .p1,.rcth .pv-dark .p2,.rcth .pv-dark .p3{background:#2c2c30}
-.rcth .pv-slate .p1,.rcth .pv-slate .p2,.rcth .pv-slate .p3{background:#3a4654}
+.rcth .pv-tinted .p1,.rcth .pv-tinted .p2,.rcth .pv-tinted .p3{background:color-mix(in srgb,var(--accent) 30%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)}
 .rcth .pv-light .p1,.rcth .pv-light .p2,.rcth .pv-light .p3{background:#b9ab90}
 .rcth .pv .tb2{bottom:6%;left:12%;right:12%;height:9%;border-radius:999px}
-.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-slate .tb2{background:rgba(200,215,235,.18)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
+.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-tinted .tb2{background:color-mix(in srgb,var(--accent) 28%,transparent)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
 .rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
 .rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
 .rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
-html.slate{--bg:#1e2630;--bg2:#1e2630;--card2:#28313d;--line:rgba(180,198,222,.14);--muted:#93a0b2}
+html.slate{--bg:var(--tbg);--bg2:var(--tbg);--card2:var(--tcard);--line:rgba(var(--tacc),.32);--muted:rgba(225,232,245,.58)}
+html.slate .scard,html.slate .gtile,html.slate .franchise,html.slate .lsearch,html.slate .ltools #lsort,html.slate .ltools #gfilt{border-color:rgba(var(--tacc),.4)!important}
+
+/* background: a fine still film grain over everything, plus a soft light from the top in the accent colour */
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -.3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+html.light body::after{opacity:.07;filter:invert(1)}
+html body,html.slate body,html.light body{background-image:linear-gradient(180deg,color-mix(in srgb,var(--accent) 16%,transparent) 0px,transparent 560px)!important;background-repeat:no-repeat!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#d6cab4!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1229,46 +1236,48 @@ html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #d6cab4!important}
 html.light .shbg{background-color:#c9bca3!important}
 </style>
-<style id="slategen">html.slate .top{background-color:#1e2630!important}
-html.slate .lcx{background-color:rgba(30,38,48,.6)!important}
-html.slate .shcard{background-color:#1e2630!important}
-html.slate .shbg{background-color:#1e2630!important}
-html.slate .shbg::after{background:linear-gradient(180deg,rgba(30,38,48,.15) 0%,rgba(30,38,48,.5) 55%,#1e2630 96%)!important}
-html.slate .shcard .shwrap .pad{background-color:#1e2630!important}
-html.slate .toast,html.slate .ptr{background-color:#1e2630!important}
-html.slate .sh.page{background-color:#1e2630!important}
-html.slate .ltools select option{background-color:#1e2630!important}
-html.slate .grid img,html.slate .rarow img,html.slate .lshow img,html.slate .cwimg,html.slate .epth{background-color:#1e2630!important}
-html.slate .skel{background-color:#1e2630!important}
-html.slate .ssel option{background-color:#1e2630!important}
-html.slate .subprev.box span{background-color:rgba(30,38,48,.7)!important}
-html.slate .mvsheet>.bdrop{background-color:#1e2630!important}
-html.slate .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(30,38,48,.1) 0%,rgba(30,38,48,.45) 55%,#1e2630 97%)!important}
-html.slate .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),#1e2630 calc(340px + env(safe-area-inset-top))) local!important}
-html.slate .gpk-bk{background-color:rgba(30,38,48,.25)!important}
-html.slate .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),#1e2630 calc(300px + env(safe-area-inset-top))) local!important}
-html.slate .gpk{background-color:rgba(30,38,48,.72)!important}
-html.slate .gpk-bk{background-color:rgba(30,38,48,.4)!important}
-html.slate .gpk-bk{background-color:rgba(30,38,48,.55)!important}
-html.slate body.libv .ltop{background-color:#1e2630!important}
-html.slate .hcard{background-color:#1e2630!important}
-html.slate .hcard::after{background:linear-gradient(180deg,rgba(30,38,48,0) 30%,rgba(30,38,48,.92) 100%)!important}
-html.slate .lsearch,html.slate .ltools #lsort,html.slate .ltools #lsort.lsortbtn,html.slate .gpk{background-color:#1e2630!important}
-html.slate .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(30,38,48,.25) 0%,rgba(30,38,48,0) 18%,rgba(30,38,48,0) 45%,rgba(30,38,48,.75) 78%,#1e2630 100%)!important}
-html.slate .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),#1e2630 calc(var(--hero) + env(safe-area-inset-top))) local!important}
-html.slate .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(30,38,48,.25) 0%,rgba(30,38,48,0) 18%,rgba(30,38,48,0) 42%,rgba(30,38,48,.8) 78%,#1e2630 100%)!important}
-html.slate .seapick{background-color:#1e2630!important}
-html.slate body:not(.libv) #v-genres .gtop{background-color:#1e2630!important}
-html.slate .lsearch,html.slate .ltools #gfilt,html.slate .ltools #gfilt.lsortbtn,html.slate .gpk{background-color:#1e2630!important}
-html.slate .gtile::after{background:linear-gradient(180deg,rgba(30,38,48,.05) 35%,rgba(30,38,48,.78))!important}
-html.slate .dw-ov{background-color:rgba(30,38,48,.45)!important}
-html.slate .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#1e2630)!important}
-html.slate .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(30,38,48,.35))!important}
-html.slate .rcth .pv-light .tb2{background-color:rgba(30,38,48,.1)!important}
-html.slate body{background:#1e2630!important}
-html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px #1e2630!important}
-html.slate .tabbar{background:linear-gradient(180deg,rgba(44,54,67,.97),rgba(30,38,48,.97))!important;border-color:rgba(190,210,235,.14)!important}
-html.slate .tb.on{background:rgba(190,210,235,.14)}
+<style id="slategen">html.slate .top{background-color:var(--tbg)!important}
+html.slate .lcx{background-color:rgba(var(--tbgr),.6)!important}
+html.slate .shcard{background-color:var(--tbg)!important}
+html.slate .shbg{background-color:var(--tbg)!important}
+html.slate .shbg::after{background:linear-gradient(180deg,rgba(var(--tbgr),.15) 0%,rgba(var(--tbgr),.5) 55%,var(--tbg) 96%)!important}
+html.slate .shcard .shwrap .pad{background-color:var(--tbg)!important}
+html.slate .toast,html.slate .ptr{background-color:var(--tbg)!important}
+html.slate .sh.page{background-color:var(--tbg)!important}
+html.slate .ltools select option{background-color:var(--tbg)!important}
+html.slate .grid img,html.slate .rarow img,html.slate .lshow img,html.slate .cwimg,html.slate .epth{background-color:var(--tbg)!important}
+html.slate .skel{background-color:var(--tbg)!important}
+html.slate .ssel option{background-color:var(--tbg)!important}
+html.slate .subprev.box span{background-color:rgba(var(--tbgr),.7)!important}
+html.slate .mvsheet>.bdrop{background-color:var(--tbg)!important}
+html.slate .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(var(--tbgr),.1) 0%,rgba(var(--tbgr),.45) 55%,var(--tbg) 97%)!important}
+html.slate .mvsheet>.sbody{background:linear-gradient(transparent calc(250px + env(safe-area-inset-top)),var(--tbg) calc(340px + env(safe-area-inset-top))) local!important}
+html.slate .gpk-bk{background-color:rgba(var(--tbgr),.25)!important}
+html.slate .mvsheet>.sbody{background:linear-gradient(transparent calc(205px + env(safe-area-inset-top)),var(--tbg) calc(300px + env(safe-area-inset-top))) local!important}
+html.slate .gpk{background-color:rgba(var(--tbgr),.72)!important}
+html.slate .gpk-bk{background-color:rgba(var(--tbgr),.4)!important}
+html.slate .gpk-bk{background-color:rgba(var(--tbgr),.55)!important}
+html.slate body.libv .ltop{background-color:var(--tbg)!important}
+html.slate .hcard{background-color:var(--tbg)!important}
+html.slate .hcard::after{background:linear-gradient(180deg,rgba(var(--tbgr),0) 30%,rgba(var(--tbgr),.92) 100%)!important}
+html.slate .lsearch,html.slate .ltools #lsort,html.slate .ltools #lsort.lsortbtn,html.slate .gpk{background-color:var(--tbg)!important}
+html.slate .mvsheet>.bdrop::after{background:linear-gradient(180deg,rgba(var(--tbgr),.25) 0%,rgba(var(--tbgr),0) 18%,rgba(var(--tbgr),0) 45%,rgba(var(--tbgr),.75) 78%,var(--tbg) 100%)!important}
+html.slate .mvsheet>.sbody{background:linear-gradient(transparent calc(var(--hero) - 60px + env(safe-area-inset-top)),var(--tbg) calc(var(--hero) + env(safe-area-inset-top))) local!important}
+html.slate .sh.shcard .shbg::after{background:linear-gradient(180deg,rgba(var(--tbgr),.25) 0%,rgba(var(--tbgr),0) 18%,rgba(var(--tbgr),0) 42%,rgba(var(--tbgr),.8) 78%,var(--tbg) 100%)!important}
+html.slate .seapick{background-color:var(--tbg)!important}
+html.slate body:not(.libv) #v-genres .gtop{background-color:var(--tbg)!important}
+html.slate .lsearch,html.slate .ltools #gfilt,html.slate .ltools #gfilt.lsortbtn,html.slate .gpk{background-color:var(--tbg)!important}
+html.slate .gtile::after{background:linear-gradient(180deg,rgba(var(--tbgr),.05) 35%,rgba(var(--tbgr),.78))!important}
+html.slate .dw-ov{background-color:rgba(var(--tbgr),.45)!important}
+html.slate .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,var(--tbg))!important}
+html.slate .rcth .pv-tinted{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,var(--tbg)),color-mix(in srgb,var(--accent) 10%,var(--tbg)))!important}
+html.slate .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(var(--tbgr),.35))!important}
+html.slate .rcth .pv-tinted .p1,html.slate .rcth .pv-tinted .p2,html.slate .rcth .pv-tinted .p3{background-color:var(--tbg)!important}
+html.slate .rcth .pv-light .tb2{background-color:rgba(var(--tbgr),.1)!important}
+html.slate body{background-color:var(--tbg)!important}
+html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px var(--tbg)!important}
+html.slate .tabbar{background:linear-gradient(180deg,rgba(var(--tbgr),.92),var(--tbg))!important;border-color:rgba(var(--tacc),.38)!important}
+html.slate .tb.on{background:rgba(var(--tacc),.22)}
 html.slate .mtlogo{filter:none!important}
 </style>
 </head>
@@ -4404,10 +4413,20 @@ function applyAccent(){ try{
 // Light or dark: the setting is Dark, Light, or match the phone
 const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
 function applyTheme(){ try{
-  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), slate = t === 'slate';
-  document.documentElement.classList.toggle('light', light);
-  document.documentElement.classList.toggle('slate', slate);
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d6cab4' : slate ? '#1e2630' : '#000000';
+  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), tint = t === 'tinted' || t === 'slate';
+  const h = document.documentElement;
+  h.classList.toggle('light', light);
+  h.classList.toggle('slate', tint);   // "Tinted" (Lumen's): a deep, faint shade of the accent colour
+  let bgHex = light ? '#d6cab4' : '#000000';
+  if(tint){
+    const a = store.get(K_ACCENT, '#b8242c'), n = parseInt(a.slice(1), 16), c = [n >> 16, n >> 8 & 255, n & 255];
+    const sh = k => c.map(v => Math.round(v * k)), hex = x => '#' + x.map(v => v.toString(16).padStart(2, '0')).join('');
+    const bg = sh(.11), card = sh(.17);
+    bgHex = hex(bg);
+    h.style.setProperty('--tbg', bgHex); h.style.setProperty('--tbgr', bg.join(','));
+    h.style.setProperty('--tcard', hex(card)); h.style.setProperty('--tacc', c.join(','));
+  }
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = bgHex;
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -4507,8 +4526,8 @@ function renderSettings(){
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['dark', 'Black'], ['slate', 'Blue grey'], ['light', 'Cream']].map(([k, n]) =>
+      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t === 'slate' ? 'tinted' : t)(store.get(K_THEME, 'dark'));
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['dark', 'Black'], ['tinted', 'Tinted'], ['light', 'Cream']].map(([k, n]) =>
           `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
         <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
@@ -4516,7 +4535,7 @@ function renderSettings(){
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
         <div class="sgh">Browsing</div><div class="scard">
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
-      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); applyTheme(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };

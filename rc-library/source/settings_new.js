@@ -11,10 +11,20 @@ function applyAccent(){ try{
 // Light or dark: the setting is Dark, Light, or match the phone
 const themeMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : null;
 function applyTheme(){ try{
-  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), slate = t === 'slate';
-  document.documentElement.classList.toggle('light', light);
-  document.documentElement.classList.toggle('slate', slate);
-  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = light ? '#d6cab4' : slate ? '#1e2630' : '#000000';
+  const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), tint = t === 'tinted' || t === 'slate';
+  const h = document.documentElement;
+  h.classList.toggle('light', light);
+  h.classList.toggle('slate', tint);   // "Tinted" (Lumen's): a deep, faint shade of the accent colour
+  let bgHex = light ? '#d6cab4' : '#000000';
+  if(tint){
+    const a = store.get(K_ACCENT, '#b8242c'), n = parseInt(a.slice(1), 16), c = [n >> 16, n >> 8 & 255, n & 255];
+    const sh = k => c.map(v => Math.round(v * k)), hex = x => '#' + x.map(v => v.toString(16).padStart(2, '0')).join('');
+    const bg = sh(.11), card = sh(.17);
+    bgHex = hex(bg);
+    h.style.setProperty('--tbg', bgHex); h.style.setProperty('--tbgr', bg.join(','));
+    h.style.setProperty('--tcard', hex(card)); h.style.setProperty('--tacc', c.join(','));
+  }
+  const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = bgHex;
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
 }catch(e){} }
@@ -114,8 +124,8 @@ function renderSettings(){
     });
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
-      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t)(store.get(K_THEME, 'dark'));
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['dark', 'Black'], ['slate', 'Blue grey'], ['light', 'Cream']].map(([k, n]) =>
+      const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t === 'slate' ? 'tinted' : t)(store.get(K_THEME, 'dark'));
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['dark', 'Black'], ['tinted', 'Tinted'], ['light', 'Cream']].map(([k, n]) =>
           `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
         <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>
@@ -123,7 +133,7 @@ function renderSettings(){
         ${selRow('home', 'When the app opens', '', pick('l-start', store.get(K_START, 'discover'), [['discover', 'Discover'], ['library', 'Library'], ['last', 'Last page I was on']]))}</div>
         <div class="sgh">Browsing</div><div class="scard">
         ${sw('hide', 'eye', "Hide what I've rated", 'Keeps Discover and Genres fresh', hideRated)}</div>`;
-      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); hap(); redraw(); });
+      $$('.accsw', box).forEach(x => x.onclick = () => { store.set(K_ACCENT, x.dataset.c); applyAccent(); applyTheme(); hap(); redraw(); });
       $('#l-start', box).onchange = e => store.set(K_START, e.target.value);
       $$('[data-th]', box).forEach(x => x.onclick = () => { store.set(K_THEME, x.dataset.th); applyTheme(); hap(); redraw(); });
       $('#hide', box).onchange = e => { hideRated = e.target.checked; store.set(K_HIDE, hideRated); built.discover = built.genres = built.tv = false; };
