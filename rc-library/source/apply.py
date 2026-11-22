@@ -460,8 +460,25 @@ s = s[:_i] + r'''async function loadHero(){
       dots.forEach((x, i) => x.classList.toggle('on', i === at));
       text();
     };
-    const go = n => { at = (at + n + pool.length) % pool.length; lay(); };
-    lay();
+    // soft glow behind the top of Discover in the current picture's colour (read from a ~2 KB thumbnail, once per title)
+    const vd = $('#v-discover'), tint = {};
+    const tintOf = m => tint[m.id] || (tint[m.id] = new Promise(res => {
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => { try{
+          const c = document.createElement('canvas'); c.width = 12; c.height = 7; const x = c.getContext('2d', { willReadFrequently:true });
+          x.drawImage(im, 0, 0, 12, 7); const d = x.getImageData(0, 0, 12, 7).data;
+          let r = 0, g = 0, b = 0, w = 0;
+          for(let i = 0; i < d.length; i += 4){ const sat = Math.max(d[i], d[i+1], d[i+2]) - Math.min(d[i], d[i+1], d[i+2]), k = 1 + sat * sat / 900;
+            r += d[i] * k; g += d[i+1] * k; b += d[i+2] * k; w += k; }
+          r /= w; g /= w; b /= w; const up = Math.min(2.2, 200 / Math.max(r, g, b, 1));
+          res(`rgb(${Math.round(r * up)},${Math.round(g * up)},${Math.round(b * up)})`);
+        }catch(e){ res(''); } };
+      im.onerror = () => res('');
+      im.src = `${IMG}w92${m.backdrop}`;
+    }));
+    const glow = () => tintOf(pool[at]).then(c => { if(c) vd.style.setProperty('--dg', c); });
+    const go = n => { at = (at + n + pool.length) % pool.length; lay(); glow(); };
+    lay(); glow();
     // Auto-advance every 3.5 seconds through the titles already loaded (no extra downloads).
     // Pauses while you're touching it, when it's scrolled off screen, on other tabs, or with the app in the background.
     const EVERY = 3500;
@@ -474,6 +491,14 @@ s = s[:_i] + r'''async function loadHero(){
     };
     const timer = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : setInterval(tick, 500);
     h.addEventListener('pointerdown', () => { last = Date.now(); });
+    if(!window.__tbHide){ window.__tbHide = 1;
+      let ly = scrollY, q = 0;
+      addEventListener('scroll', () => { if(q) return; q = 1; requestAnimationFrame(() => { q = 0;
+        const y = Math.max(0, scrollY), d = y - ly;
+        if(Math.abs(d) < 6) return; ly = y;
+        document.body.classList.toggle('tbhide', d > 0 && y > 120 && !document.body.classList.contains('locked'));
+      }); }, { passive:true });
+      document.addEventListener('click', e => { if(e.target.closest('.tabbar')) document.body.classList.remove('tbhide'); }, true); }
     h.addEventListener('click', () => { last = Date.now(); });
     let sx = null, sy = 0, moved = false;
     h.addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; moved = false; });
