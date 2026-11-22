@@ -1125,6 +1125,26 @@ public class PlayerActivity extends AppCompatActivity {
         castGood = castFrom;
         exo.pause();
         show("Sending to your TV\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        waitForFormats(0);
+    }
+
+    // the file's video and audio formats decide which way goes first; the phone usually knows them already
+    // (it's been playing the file), otherwise wait up to ~3 s for them
+    private String castVideo = "", castAudio = "";
+    private void waitForFormats(int n) {
+        if (!casting) return;
+        castVideo = ""; castAudio = "";
+        try {
+            for (androidx.media3.common.Tracks.Group g : exo.getCurrentTracks().getGroups()) {
+                for (int i = 0; i < g.length; i++) {
+                    if (!g.isTrackSelected(i)) continue;
+                    String m = g.getTrackFormat(i).sampleMimeType; if (m == null) continue;
+                    if (g.getType() == C.TRACK_TYPE_VIDEO && castVideo.isEmpty()) castVideo = m;
+                    if (g.getType() == C.TRACK_TYPE_AUDIO && castAudio.isEmpty()) castAudio = m;
+                }
+            }
+        } catch (Exception ignored) {}
+        if (castVideo.isEmpty() && n < 6) { ui.postDelayed(() -> waitForFormats(n + 1), 500); return; }
         bg.execute(() -> {
             final List<String[]> tries = castSources();
             ui.post(() -> { if (!casting || castPlayer == null) return; castTries.clear(); castTries.addAll(tries); castTry = 0; sendCast(); });
@@ -1200,8 +1220,23 @@ public class PlayerActivity extends AppCompatActivity {
             if (conv[1] != null) out.add(new String[]{ conv[1], MimeTypes.VIDEO_MP4, "Playing on your TV (converted by Real-Debrid)", "live" });
         }
         if (!mp4) out.add(new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV", "file" });
-        String pref = prefs.getString("castWay", "");
-        for (int i = 0; i < out.size(); i++) if (out.get(i)[3].equals(pref)) { out.add(0, out.remove(i)); break; }
+        // what Chromecasts play reliably: H.264 video with AAC (or MP3) sound
+        boolean known = !castVideo.isEmpty();
+        boolean vOk = MimeTypes.VIDEO_H264.equals(castVideo);
+        boolean aOk = castAudio.isEmpty() || MimeTypes.AUDIO_AAC.equals(castAudio) || MimeTypes.AUDIO_MPEG.equals(castAudio);
+        String[] order;
+        if (!known) order = null;
+        else if (vOk && aOk) order = mp4 ? new String[]{ "file", "hls-ts", "hls", "live" } : new String[]{ "hls-ts", "hls", "live", "file" };
+        else order = new String[]{ "live", "hls-ts", "hls", "file" };   // HEVC picture or Dolby/DTS sound: Real-Debrid's full conversion first
+        if (order != null) {
+            List<String[]> sorted = new ArrayList<>();
+            for (String k : order) for (String[] t : out) if (t[3].equals(k) && !sorted.contains(t)) sorted.add(t);
+            for (String[] t : out) if (!sorted.contains(t)) sorted.add(t);
+            out = sorted;
+        } else {
+            String pref = prefs.getString("castWay", "");
+            for (int i = 0; i < out.size(); i++) if (out.get(i)[3].equals(pref)) { out.add(0, out.remove(i)); break; }
+        }
         return out;
     }
 
