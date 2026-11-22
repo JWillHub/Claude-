@@ -1100,6 +1100,15 @@ html{background:var(--bg)!important}
 html body,html.slate body,html.light body{background:transparent!important}
 body::before{content:"";position:fixed;left:0;right:0;top:0;height:min(560px,70vh);z-index:-1;pointer-events:none;
   background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 17%,transparent),transparent)}
+/* list pages (See all, genres): the carousel button comes back, top right, as the same glass circle as the back button */
+header.top:has(#hback:not([hidden])) .hact{display:flex!important;margin-left:auto}
+header.top .hact #hsearch{display:none!important}
+header.top:has(#hback:not([hidden])) #hcar{width:42px;height:42px;border-radius:50%;color:#fff;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.32);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.35)}
+header.top:has(#hback:not([hidden])) #hcar svg{width:21px;height:21px}
+html.light header.top:has(#hback:not([hidden])) #hcar{color:#111;background:linear-gradient(145deg,rgba(214,202,180,.92),rgba(214,202,180,.7));border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 14px rgba(0,0,0,.12)}
 </style>
 <style id="lightgen">html.light .top{background-color:#d6cab4!important}
 html.light .logo .w1{color:var(--text)!important}
