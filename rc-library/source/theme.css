@@ -419,11 +419,12 @@ html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 .hero.hstack .htx{transition:opacity .18s ease,transform .18s ease}
 .hero.hstack .htx.out{opacity:0;transform:translateY(4px)}
 
-/* soft glow behind the top of Discover, in the colour of the current Trending picture (fades between them) */
-@property --dg{syntax:'<color>';inherits:true;initial-value:rgba(0,0,0,0)}
-#v-discover{background:radial-gradient(70% 420px at 50% 140px,color-mix(in srgb,var(--dg) 34%,transparent),transparent 75%) no-repeat;transition:--dg 1.2s ease}
-html.light #v-discover{background:radial-gradient(70% 420px at 50% 140px,color-mix(in srgb,var(--dg) 22%,transparent),transparent 75%) no-repeat}
 /* bottom bar slides away while scrolling down, fades back in when scrolling up */
 .tabbar{transition:transform .62s cubic-bezier(.22,1,.36,1),opacity .55s cubic-bezier(.4,0,.2,1)}
 body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-events:none}
-@media (prefers-reduced-motion:reduce){#v-discover{transition:none}}
+
+/* Trending card: thin liquid-glass outline in the accent colour */
+.hcard[data-p="0"]{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent),0 0 22px color-mix(in srgb,var(--accent) 22%,transparent),0 14px 30px rgba(0,0,0,.45)}
+.hcard[data-p="0"]::before{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;padding:1.5px;pointer-events:none;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 95%,#fff) 0%,color-mix(in srgb,var(--accent) 35%,transparent) 38%,color-mix(in srgb,var(--accent) 20%,transparent) 62%,color-mix(in srgb,var(--accent) 85%,#fff) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
