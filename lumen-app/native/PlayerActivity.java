@@ -133,7 +133,7 @@ public class PlayerActivity extends AppCompatActivity {
         return b.build();
     }
     private final List<long[]> segs = new ArrayList<>();      // {start, end, kind 0 intro / 1 recap}
-    private TextView skipBtn, nextBtn;
+    private TextView skipBtn, nextBtn, castBtn;
     private ClipDrawable nextFill;
     private int countdown = 0;
     private boolean counting = false;
@@ -276,6 +276,12 @@ public class PlayerActivity extends AppCompatActivity {
             lp.rightMargin = dp(36); lp.bottomMargin = dp(96);
             root.addView(b, lp);
         }
+        // while casting: if the TV has no picture or no sound, tap to send the file another way
+        castBtn = pillButton();
+        castBtn.setOnClickListener(v -> { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); castManual(); });
+        FrameLayout.LayoutParams clp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
+        clp.rightMargin = dp(28); clp.topMargin = dp(28);
+        root.addView(castBtn, clp);
         setUpGestures();
         setContentView(root);
 
@@ -1138,6 +1144,22 @@ public class PlayerActivity extends AppCompatActivity {
         lastCastPos = castGood;
         castSince = SystemClock.uptimeMillis(); castWall = 0; castLastPos = -1; castRunaway = 0;
         show(src[2], -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        castBtn.setText(castTries.size() > 1 ? "Picture or sound wrong? Try another way (" + (castTry + 1) + "/" + castTries.size() + ")" : "Picture or sound wrong? Send again");
+        fade(castBtn, true);
+        castManualAt = 0;
+    }
+
+    // tapped "Try another way": the next way, going round to the first after the last.
+    // If that way then plays for a minute, it's remembered and tried first next time.
+    private long castManualAt = 0;
+    private void castManual() {
+        if (!casting || castPlayer == null || castTries.isEmpty()) return;
+        long p = castPlayer.getCurrentPosition();
+        if (p > 0 && castRunaway == 0) castGood = Math.max(castGood, p);
+        castTry = (castTry + 1) % castTries.size();
+        show("Trying another way\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        sendCast();
+        castManualAt = SystemClock.uptimeMillis();
     }
 
     // the TV isn't playing it (an error, stuck loading, or the clock racing ahead = it's skipping pieces it can't play): next way
@@ -1161,6 +1183,7 @@ public class PlayerActivity extends AppCompatActivity {
             if (castRunaway >= 3) { castNext("runaway"); return; }
         }
         castLastPos = pos; castWall = now;
+        if (castManualAt > 0 && playing && now - castManualAt > 60_000 && castRunaway == 0) { prefs.edit().putString("castWay", castTries.get(castTry)[3]).apply(); castManualAt = 0; }
         // still loading after 30 s: give up on this way
         if (!playing && st != Player.STATE_ENDED && now - castSince > 30_000 && castGood <= castFrom + 1000 && castPlayer.getPlayWhenReady()) castNext("stuck");
     }
@@ -1170,13 +1193,15 @@ public class PlayerActivity extends AppCompatActivity {
         List<String[]> out = new ArrayList<>();
         String path = curUrl.split("\\?")[0].toLowerCase();
         boolean mp4 = path.endsWith(".mp4") || path.endsWith(".m4v");
-        if (mp4) out.add(new String[]{ curUrl, MimeTypes.VIDEO_MP4, "Playing on your TV" });
+        if (mp4) out.add(new String[]{ curUrl, MimeTypes.VIDEO_MP4, "Playing on your TV", "file" });
         String[] conv = rdConverted();
         if (conv != null) {
-            if (conv[0] != null) { out.add(new String[]{ conv[0], HLS_TS, "Playing on your TV (converted by Real-Debrid)" }); out.add(new String[]{ conv[0], HLS_AUTO, "Playing on your TV (converted by Real-Debrid)" }); }
-            if (conv[1] != null) out.add(new String[]{ conv[1], MimeTypes.VIDEO_MP4, "Playing on your TV (converted by Real-Debrid)" });
+            if (conv[0] != null) { out.add(new String[]{ conv[0], HLS_TS, "Playing on your TV (converted by Real-Debrid)", "hls-ts" }); out.add(new String[]{ conv[0], HLS_AUTO, "Playing on your TV (converted by Real-Debrid)", "hls" }); }
+            if (conv[1] != null) out.add(new String[]{ conv[1], MimeTypes.VIDEO_MP4, "Playing on your TV (converted by Real-Debrid)", "live" });
         }
-        if (!mp4) out.add(new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV" });
+        if (!mp4) out.add(new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV", "file" });
+        String pref = prefs.getString("castWay", "");
+        for (int i = 0; i < out.size(); i++) if (out.get(i)[3].equals(pref)) { out.add(0, out.remove(i)); break; }
         return out;
     }
 
@@ -1216,6 +1241,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (!casting) return;
         casting = false;
         long pos = castGood > 0 ? castGood : lastCastPos;
+        fade(castBtn, false);
         current = exo;
         view.setPlayer(fwdPlayer);
         if (exo != null) { exo.seekTo(pos); exo.play(); }
