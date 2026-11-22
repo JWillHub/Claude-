@@ -505,8 +505,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (exo == null || curKey.isEmpty() || loadingNext) return;
         try {
             Player pl = current != null ? current : exo;
-            long pos = pl.getCurrentPosition(), dur = pl.getDuration();
-            if (casting) lastCastPos = pos;
+            long pos = casting ? castGood : pl.getCurrentPosition(), dur = casting ? exo.getDuration() : pl.getDuration();
             if (dur == C.TIME_UNSET || dur <= 0) return;
             JSONObject o = new JSONObject();
             o.put("lastKey", curKey); o.put("positionMs", pos); o.put("durationMs", dur);
@@ -613,6 +612,7 @@ public class PlayerActivity extends AppCompatActivity {
         @Override public void run() {
             if (exo == null) return;
             try { check(); } catch (Exception ignored) {}
+            try { castWatch(); } catch (Exception ignored) {}
             if (SystemClock.uptimeMillis() - lastSaveAt > 8000) saveSpot();
             if (retries > 0 && exo.isPlaying() && SystemClock.uptimeMillis() - lastErrAt > 60_000) retries = 0;
             ui.postDelayed(this, 500);
@@ -1084,20 +1084,20 @@ public class PlayerActivity extends AppCompatActivity {
         } catch (Throwable t) { castPlayer = null; }
     }
 
-    // Real-Debrid's converted streams are HLS in MPEG-TS pieces. Chromecasts assume a different packaging unless told,
-    // and then play the picture with no sound, so say so explicitly for HLS.
+    // HLS goes to the TV in two flavours: "application/x-mpegURL" = told the pieces are MPEG-TS (needed for sound on some),
+    // "application/vnd.apple.mpegurl" = let the TV work it out. Either way it's a normal (not live) stream.
+    static final String HLS_TS = "application/x-mpegURL", HLS_AUTO = "application/vnd.apple.mpegurl";
     private static class HlsCastConverter implements androidx.media3.cast.MediaItemConverter {
         private final androidx.media3.cast.DefaultMediaItemConverter base = new androidx.media3.cast.DefaultMediaItemConverter();
         @Override public com.google.android.gms.cast.MediaQueueItem toMediaQueueItem(MediaItem item) {
             com.google.android.gms.cast.MediaQueueItem q = base.toMediaQueueItem(item);
             com.google.android.gms.cast.MediaInfo mi = q.getMedia();
-            String type = mi == null ? null : mi.getContentType();
-            if (mi == null || type == null || !type.toLowerCase().contains("mpegurl")) return q;
+            if (mi == null) return q;
+            String type = item.localConfiguration != null && item.localConfiguration.mimeType != null ? item.localConfiguration.mimeType : mi.getContentType();
             com.google.android.gms.cast.MediaInfo.Builder b = new com.google.android.gms.cast.MediaInfo.Builder(mi.getContentId())
                 .setContentType(type)
-                .setStreamType(mi.getStreamType())
-                .setHlsSegmentFormat(com.google.android.gms.cast.HlsSegmentFormat.TS)
-                .setHlsVideoSegmentFormat(com.google.android.gms.cast.HlsVideoSegmentFormat.MPEG2_TS);
+                .setStreamType(com.google.android.gms.cast.MediaInfo.STREAM_TYPE_BUFFERED);
+            if (HLS_TS.equals(type)) b.setHlsSegmentFormat(com.google.android.gms.cast.HlsSegmentFormat.TS).setHlsVideoSegmentFormat(com.google.android.gms.cast.HlsVideoSegmentFormat.MPEG2_TS);
             if (mi.getContentUrl() != null) b.setContentUrl(mi.getContentUrl());
             if (mi.getMetadata() != null) b.setMetadata(mi.getMetadata());
             if (mi.getCustomData() != null) b.setCustomData(mi.getCustomData());
@@ -1106,43 +1106,81 @@ public class PlayerActivity extends AppCompatActivity {
         @Override public MediaItem toMediaItem(com.google.android.gms.cast.MediaQueueItem q) { return base.toMediaItem(q); }
     }
 
+    // ways to send the current file to the TV, best first; if one won't play, the next is tried
+    private final List<String[]> castTries = new ArrayList<>();
+    private int castTry = 0;
+    private long castFrom = 0, castGood = 0, castSince = 0, castWall = 0, castLastPos = -1;
+    private int castRunaway = 0;
+
     private void startCast() {
         if (castPlayer == null || casting || exo == null) return;
         casting = true;
-        final long pos = current != null && current != exo ? lastCastPos : exo.getCurrentPosition();
+        castFrom = current != null && current != exo ? castGood : exo.getCurrentPosition();
+        castGood = castFrom;
         exo.pause();
-        final String title = String.valueOf(nameView.getText());
         show("Sending to your TV\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         bg.execute(() -> {
-            final String[] src = castSource();
-            ui.post(() -> {
-                if (!casting || castPlayer == null) return;
-                MediaItem mi = new MediaItem.Builder()
-                    .setUri(src[0])
-                    .setMimeType(src[1])
-                    .setMediaMetadata(meta(title))
-                    .build();
-                castPlayer.setMediaItem(mi, pos);
-                castPlayer.prepare();
-                castPlayer.setPlayWhenReady(true);
-                current = castPlayer;
-                view.setPlayer(castPlayer);
-                lastCastPos = pos;
-                show(src[2], -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-            });
+            final List<String[]> tries = castSources();
+            ui.post(() -> { if (!casting || castPlayer == null) return; castTries.clear(); castTries.addAll(tries); castTry = 0; sendCast(); });
         });
     }
 
-    // What the TV gets: MP4 files go as they are; anything else (MKV, HEVC, DTS...) as Real-Debrid's converted stream
-    private String[] castSource() {
-        String path = curUrl.split("\\?")[0].toLowerCase();
-        if (path.endsWith(".mp4") && !castForceConvert) return new String[]{ curUrl, MimeTypes.VIDEO_MP4, "Playing on your TV" };
-        String[] conv = rdConverted();
-        if (conv != null) return new String[]{ conv[0], conv[1], "Playing on your TV (converted by Real-Debrid)" };
-        return new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV" };
+    private void sendCast() {
+        if (!casting || castPlayer == null) return;
+        if (castTry >= castTries.size()) { show("Your TV couldn't play this file", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL); return; }
+        String[] src = castTries.get(castTry);
+        MediaItem mi = new MediaItem.Builder().setUri(src[0]).setMimeType(src[1]).setMediaMetadata(meta(String.valueOf(nameView.getText()))).build();
+        castPlayer.setMediaItem(mi, castGood);
+        castPlayer.prepare();
+        castPlayer.setPlayWhenReady(true);
+        current = castPlayer;
+        view.setPlayer(castPlayer);
+        lastCastPos = castGood;
+        castSince = SystemClock.uptimeMillis(); castWall = 0; castLastPos = -1; castRunaway = 0;
+        show(src[2], -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
     }
 
-    // Real-Debrid's converted version of the current file (HLS, or MP4), or null
+    // the TV isn't playing it (an error, stuck loading, or the clock racing ahead = it's skipping pieces it can't play): next way
+    private void castNext(String why) {
+        if (!casting) return;
+        castTry++;
+        if (castTry < castTries.size()) show("Trying another way\u2026", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        sendCast();
+    }
+
+    // every half second while casting: is the TV really playing?
+    private void castWatch() {
+        if (!casting || castPlayer == null || castTry >= castTries.size()) return;
+        long now = SystemClock.uptimeMillis(), pos = castPlayer.getCurrentPosition();
+        int st = castPlayer.getPlaybackState();
+        boolean playing = st == Player.STATE_READY && castPlayer.getPlayWhenReady();
+        if (castLastPos >= 0 && castWall > 0 && playing) {
+            long dPos = pos - castLastPos, dWall = now - castWall;
+            if (dWall > 0 && dPos > dWall * 3 + 1500) castRunaway++;        // more than 3x real time
+            else if (dPos >= 0 && dPos <= dWall * 2 + 500) { castRunaway = 0; castGood = pos; lastCastPos = pos; }
+            if (castRunaway >= 3) { castNext("runaway"); return; }
+        }
+        castLastPos = pos; castWall = now;
+        // still loading after 30 s: give up on this way
+        if (!playing && st != Player.STATE_ENDED && now - castSince > 30_000 && castGood <= castFrom + 1000 && castPlayer.getPlayWhenReady()) castNext("stuck");
+    }
+
+    // What the TV gets: MP4 files as they are first; Real-Debrid's converted versions (HLS two ways, then its live MP4); the original last
+    private List<String[]> castSources() {
+        List<String[]> out = new ArrayList<>();
+        String path = curUrl.split("\\?")[0].toLowerCase();
+        boolean mp4 = path.endsWith(".mp4") || path.endsWith(".m4v");
+        if (mp4) out.add(new String[]{ curUrl, MimeTypes.VIDEO_MP4, "Playing on your TV" });
+        String[] conv = rdConverted();
+        if (conv != null) {
+            if (conv[0] != null) { out.add(new String[]{ conv[0], HLS_TS, "Playing on your TV (converted by Real-Debrid)" }); out.add(new String[]{ conv[0], HLS_AUTO, "Playing on your TV (converted by Real-Debrid)" }); }
+            if (conv[1] != null) out.add(new String[]{ conv[1], MimeTypes.VIDEO_MP4, "Playing on your TV (converted by Real-Debrid)" });
+        }
+        if (!mp4) out.add(new String[]{ curUrl, mimeFor(curUrl), "Playing on your TV" });
+        return out;
+    }
+
+    // Real-Debrid's converted versions of the current file: { HLS link or null, live-MP4 link or null }, or null
     private String[] rdConverted() {
         String id = rdIds.get(curUrl);
         if (id != null && !rdToken.isEmpty()) {
@@ -1152,10 +1190,8 @@ public class PlayerActivity extends AppCompatActivity {
                 c.setRequestProperty("Authorization", "Bearer " + rdToken);
                 if (c.getResponseCode() == 200) {
                     JSONObject j = new JSONObject(read(c));
-                    String hls = pick(j.opt("apple"));
-                    if (hls != null) return new String[]{ hls, MimeTypes.APPLICATION_M3U8 };
-                    String mp4 = pick(j.opt("liveMP4"));
-                    if (mp4 != null) return new String[]{ mp4, MimeTypes.VIDEO_MP4 };
+                    String hls = pick(j.opt("apple")), mp4 = pick(j.opt("liveMP4"));
+                    if (hls != null || mp4 != null) return new String[]{ hls, mp4 };
                 }
             } catch (Exception ignored) {}
         }
@@ -1173,26 +1209,13 @@ public class PlayerActivity extends AppCompatActivity {
         return null;
     }
 
-    // the TV couldn't play it as sent: try the converted stream once
-    private void castFailed() {
-        if (!casting) return;
-        if (!castForceConvert) {
-            castForceConvert = true;
-            lastCastPos = castPlayer != null ? Math.max(lastCastPos, castPlayer.getCurrentPosition()) : lastCastPos;
-            casting = false;
-            startCast();
-            return;
-        }
-        show("Your TV couldn't play this file", -1, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-    }
+    private void castFailed() { castNext("error"); }
 
     // casting ended (stopped from the phone or the TV): carry on here from the same spot
     private void stopCast() {
         if (!casting) return;
         casting = false;
-        castForceConvert = false;
-        long pos = castPlayer != null ? castPlayer.getCurrentPosition() : 0;
-        if (pos <= 0) pos = lastCastPos;
+        long pos = castGood > 0 ? castGood : lastCastPos;
         current = exo;
         view.setPlayer(fwdPlayer);
         if (exo != null) { exo.seekTo(pos); exo.play(); }
@@ -1203,8 +1226,8 @@ public class PlayerActivity extends AppCompatActivity {
         done = true;
         Intent out = new Intent();
         if (current != null) {
-            long pos = current.getCurrentPosition();
-            long dur = current.getDuration();
+            long pos = casting ? castGood : current.getCurrentPosition();
+            long dur = casting ? exo.getDuration() : current.getDuration();
             out.putExtra("positionMs", pos);
             out.putExtra("durationMs", dur == C.TIME_UNSET ? 0L : dur);
         }
