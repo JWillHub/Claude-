@@ -1047,6 +1047,11 @@ html.light .dw-head button{color:rgba(0,0,0,.55)}
 html.light .dw-band{background:rgba(0,0,0,.06)}
 html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 @media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
+
+/* Trending now: tag and buttons stay still over the front card; only the title and info fade between titles */
+.hero.hstack .hfix{position:absolute;left:16px;right:16px;bottom:14px;z-index:4}
+.hero.hstack .htx{transition:opacity .18s ease,transform .18s ease}
+.hero.hstack .htx.out{opacity:0;transform:translateY(4px)}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1960,14 +1965,25 @@ async function loadHero(){
     if(!pool.length){ h.remove(); return; }
     let at = 0;
     h.classList.add('hstack');
-    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}w780${m.backdrop})"><div class="hin"><span class="tag">Trending now</span><h2>${esc(m.title)}</h2>
-      <div class="hm">${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}</div>
-      <div class="hbtns"><button class="pill" data-hr="${m.id}">★ Rate</button><button class="pill ghost" data-hd="${m.id}">Details</button></div></div></div>`).join('')
+    // the pictures move; the tag and the Rate / Details buttons stay put and only the title + info change
+    const meta = m => `${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}`;
+    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}w780${m.backdrop})"></div>`).join('')
+      + `<div class="hin hfix"><span class="tag">Trending now</span><div class="htx"><h2></h2><div class="hm"></div></div>
+      <div class="hbtns"><button class="pill" data-hr>★ Rate</button><button class="pill ghost" data-hd>Details</button></div></div>`
       + `<div class="hdots">${pool.map((_, i) => `<i data-d="${i}"></i>`).join('')}</div>`;
+    const htx = $('.htx', h);
+    let shown = -1, swapT;
+    const text = () => {
+      if(shown === at) return;
+      const put = () => { shown = at; $('h2', htx).textContent = pool[at].title; $('.hm', htx).innerHTML = meta(pool[at]); htx.classList.remove('out'); };
+      if(shown < 0) return put();
+      clearTimeout(swapT); htx.classList.add('out'); swapT = setTimeout(put, 180);
+    };
     const cards = $$('.hcard', h), dots = $$('.hdots i', h);
     const lay = () => {
       cards.forEach((c, i) => { const p = (i - at + pool.length) % pool.length; c.dataset.p = p < 3 ? p : 'x'; });
       dots.forEach((x, i) => x.classList.toggle('on', i === at));
+      text();
     };
     const go = n => { at = (at + n + pool.length) % pool.length; lay(); };
     lay();
@@ -1991,8 +2007,9 @@ async function loadHero(){
     h.addEventListener('pointercancel', () => { sx = null; });
     h.onclick = e => {
       if(moved){ moved = false; return; }
-      const r = e.target.closest('[data-hr]'); if(r){ openRatepad(+r.dataset.hr, false); return; }
-      const dd = e.target.closest('[data-hd]'); if(dd){ openMovie(+dd.dataset.hd); return; }
+      if(e.target.closest('[data-hr]')){ openRatepad(pool[at].id, false); return; }
+      if(e.target.closest('[data-hd]')){ openMovie(pool[at].id); return; }
+      if(e.target.closest('.hfix')){ openMovie(pool[at].id); return; }
       const dt = e.target.closest('[data-d]'); if(dt){ at = +dt.dataset.d; lay(); return; }
       const c = e.target.closest('.hcard'); if(!c) return;
       if(c.dataset.p === '0') openMovie(pool[+c.dataset.i].id); else { at = +c.dataset.i; lay(); }

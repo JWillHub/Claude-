@@ -413,3 +413,8 @@ html.light .dw-head button{color:rgba(0,0,0,.55)}
 html.light .dw-band{background:rgba(0,0,0,.06)}
 html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 @media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
+
+/* Trending now: tag and buttons stay still over the front card; only the title and info fade between titles */
+.hero.hstack .hfix{position:absolute;left:16px;right:16px;bottom:14px;z-index:4}
+.hero.hstack .htx{transition:opacity .18s ease,transform .18s ease}
+.hero.hstack .htx.out{opacity:0;transform:translateY(4px)}
