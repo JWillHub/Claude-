@@ -1074,7 +1074,7 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .rcth button:active .pv{transform:scale(.97)}
 .rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
 .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
-.rcth .pv-tinted{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,#000),color-mix(in srgb,var(--accent) 10%,#000))}
+.rcth .pv-tinted{background:linear-gradient(160deg,#16213a,#0b1120)}
 .rcth .pv-light{background:linear-gradient(160deg,#e2d8c6,#cbbfa7)}
 .rcth .pv i{position:absolute;display:block}
 .rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
@@ -1082,21 +1082,24 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .rcth .pv .p1,.rcth .pv .p2,.rcth .pv .p3{top:53%;width:22%;height:24%;border-radius:5px}
 .rcth .pv .p1{left:10%}.rcth .pv .p2{left:39%}.rcth .pv .p3{left:68%}
 .rcth .pv-dark .p1,.rcth .pv-dark .p2,.rcth .pv-dark .p3{background:#2c2c30}
-.rcth .pv-tinted .p1,.rcth .pv-tinted .p2,.rcth .pv-tinted .p3{background:color-mix(in srgb,var(--accent) 30%,#000);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)}
+.rcth .pv-tinted .p1,.rcth .pv-tinted .p2,.rcth .pv-tinted .p3{background:#121b30;box-shadow:inset 0 0 0 1px rgba(70,110,200,.55)}
 .rcth .pv-light .p1,.rcth .pv-light .p2,.rcth .pv-light .p3{background:#b9ab90}
 .rcth .pv .tb2{bottom:6%;left:12%;right:12%;height:9%;border-radius:999px}
-.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-tinted .tb2{background:color-mix(in srgb,var(--accent) 28%,transparent)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
+.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-tinted .tb2{background:rgba(70,110,200,.3)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
 .rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
 .rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
 .rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
-html.slate{--bg:var(--tbg);--bg2:var(--tbg);--card2:var(--tcard);--line:rgba(var(--tacc),.32);--muted:rgba(225,232,245,.58)}
+html.slate{--tbg:#0b1120;--tbgr:11,17,32;--tcard:#0f1729;--tacc:70,110,200;--bg:var(--tbg);--bg2:var(--tbg);--card2:var(--tcard);--line:rgba(var(--tacc),.32);--muted:rgba(225,232,245,.58)}
 html.slate .scard,html.slate .gtile,html.slate .franchise,html.slate .lsearch,html.slate .ltools #lsort,html.slate .ltools #gfilt{border-color:rgba(var(--tacc),.4)!important}
 
 /* background: a fine still film grain over everything, plus a soft light from the top in the accent colour */
 body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -.3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
 html.light body::after{opacity:.07;filter:invert(1)}
-html body,html.slate body,html.light body{background-image:linear-gradient(180deg,color-mix(in srgb,var(--accent) 16%,transparent) 0px,transparent 560px)!important;background-repeat:no-repeat!important}
+html{background:var(--bg)!important}
+html body,html.slate body,html.light body{background:transparent!important}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:min(560px,70vh);z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 17%,transparent),transparent)}
 </style>
 <style id="lightgen">html.light .top{background-color:#d6cab4!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1270,11 +1273,9 @@ html.slate .lsearch,html.slate .ltools #gfilt,html.slate .ltools #gfilt.lsortbtn
 html.slate .gtile::after{background:linear-gradient(180deg,rgba(var(--tbgr),.05) 35%,rgba(var(--tbgr),.78))!important}
 html.slate .dw-ov{background-color:rgba(var(--tbgr),.45)!important}
 html.slate .rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,var(--tbg))!important}
-html.slate .rcth .pv-tinted{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 22%,var(--tbg)),color-mix(in srgb,var(--accent) 10%,var(--tbg)))!important}
 html.slate .rcth .pv .hr{background:linear-gradient(150deg,var(--accent),rgba(var(--tbgr),.35))!important}
-html.slate .rcth .pv-tinted .p1,html.slate .rcth .pv-tinted .p2,html.slate .rcth .pv-tinted .p3{background-color:var(--tbg)!important}
 html.slate .rcth .pv-light .tb2{background-color:rgba(var(--tbgr),.1)!important}
-html.slate body{background-color:var(--tbg)!important}
+
 html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px var(--tbg)!important}
 html.slate .tabbar{background:linear-gradient(180deg,rgba(var(--tbgr),.92),var(--tbg))!important;border-color:rgba(var(--tacc),.38)!important}
 html.slate .tb.on{background:rgba(var(--tacc),.22)}
@@ -4416,16 +4417,8 @@ function applyTheme(){ try{
   const t = store.get(K_THEME, 'dark'), light = t === 'light' || (t === 'system' && !!themeMQ && themeMQ.matches), tint = t === 'tinted' || t === 'slate';
   const h = document.documentElement;
   h.classList.toggle('light', light);
-  h.classList.toggle('slate', tint);   // "Tinted" (Lumen's): a deep, faint shade of the accent colour
-  let bgHex = light ? '#d6cab4' : '#000000';
-  if(tint){
-    const a = store.get(K_ACCENT, '#b8242c'), n = parseInt(a.slice(1), 16), c = [n >> 16, n >> 8 & 255, n & 255];
-    const sh = k => c.map(v => Math.round(v * k)), hex = x => '#' + x.map(v => v.toString(16).padStart(2, '0')).join('');
-    const bg = sh(.11), card = sh(.17);
-    bgHex = hex(bg);
-    h.style.setProperty('--tbg', bgHex); h.style.setProperty('--tbgr', bg.join(','));
-    h.style.setProperty('--tcard', hex(card)); h.style.setProperty('--tacc', c.join(','));
-  }
+  h.classList.toggle('slate', tint);   // "Navy": Lumen's deep navy blue, with blue-edged boxes
+  const bgHex = light ? '#d6cab4' : tint ? '#0b1120' : '#000000';
   const m = document.querySelector('meta[name=theme-color]'); if(m) m.content = bgHex;
   const P = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RCUpdate; if(P && P.setBars) P.setBars({ light }).catch(() => {});
   applyAccent();
@@ -4527,7 +4520,7 @@ function renderSettings(){
     $('#g-look', b).onclick = () => subPage('Appearance', (box, redraw) => {
       const cur = store.get(K_ACCENT, ACCENTS[0][0]);
       const tcur = (t => t === 'system' ? (themeMQ && themeMQ.matches ? 'light' : 'dark') : t === 'slate' ? 'tinted' : t)(store.get(K_THEME, 'dark'));
-      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['dark', 'Black'], ['tinted', 'Tinted'], ['light', 'Cream']].map(([k, n]) =>
+      box.innerHTML = `<div class="sgh">Theme</div><div class="scard rcth" role="radiogroup" aria-label="Theme">${[['dark', 'Black'], ['tinted', 'Navy'], ['light', 'Cream']].map(([k, n]) =>
           `<button class="${tcur === k ? 'on' : ''}" data-th="${k}" role="radio" aria-checked="${tcur === k}"><span class="pv pv-${k}" aria-hidden="true"><i class="lg"></i><i class="hr"></i><i class="p1"></i><i class="p2"></i><i class="p3"></i><i class="tb2"></i></span><span class="nm">${n}</span></button>`).join('')}</div>
         <div class="sgh">Accent color</div><div class="scard"><div class="srow static acc">${ACCENTS.map(([c, n]) =>
           `<button class="accsw${c === cur ? ' on' : ''}" data-c="${c}" aria-label="${n}" style="--c:${c}"></button>`).join('')}</div></div>

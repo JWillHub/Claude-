@@ -63,7 +63,7 @@ def slate(s):
             decls.append(f'{prop}:{nv}!important')
         if decls: out.append(','.join('html.slate ' + x for x in sels) + '{' + ';'.join(decls) + '}')
     return s.replace('</head>', '<style id="slategen">' + '\n'.join(out) + '\n' + SLATE_LATE + '</style>\n</head>', 1)
-SLATE_LATE = """html.slate body{background-color:var(--tbg)!important}
+SLATE_LATE = """
 html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px var(--tbg)!important}
 html.slate .tabbar{background:linear-gradient(180deg,rgba(var(--tbgr),.92),var(--tbg))!important;border-color:rgba(var(--tacc),.38)!important}
 html.slate .tb.on{background:rgba(var(--tacc),.22)}
