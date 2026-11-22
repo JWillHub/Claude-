@@ -452,7 +452,7 @@ s = s[:_i] + r'''async function loadHero(){
       if(shown === at) return;
       const put = () => { shown = at; $('h2', htx).textContent = pool[at].title; $('.hm', htx).innerHTML = meta(pool[at]); htx.classList.remove('out'); };
       if(shown < 0) return put();
-      clearTimeout(swapT); htx.classList.add('out'); swapT = setTimeout(put, 180);
+      clearTimeout(swapT); htx.classList.add('out'); swapT = setTimeout(put, 280);
     };
     const cards = $$('.hcard', h), dots = $$('.hdots i', h);
     const lay = () => {

@@ -1050,7 +1050,7 @@ html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 
 /* Trending now: tag and buttons stay still over the front card; only the title and info fade between titles */
 .hero.hstack .hfix{position:absolute;left:16px;right:16px;bottom:14px;z-index:4}
-.hero.hstack .htx{transition:opacity .18s ease,transform .18s ease}
+.hero.hstack .htx{transition:opacity .28s ease,transform .28s ease}
 .hero.hstack .htx.out{opacity:0;transform:translateY(4px)}
 
 /* bottom bar slides away while scrolling down, fades back in when scrolling up */
@@ -1062,6 +1062,10 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 .hcard[data-p="0"]::before{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;padding:1.5px;pointer-events:none;
   background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 95%,#fff) 0%,color-mix(in srgb,var(--accent) 35%,transparent) 38%,color-mix(in srgb,var(--accent) 20%,transparent) 62%,color-mix(in srgb,var(--accent) 85%,#fff) 100%);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+
+/* smoother Trending changes: the old card fades out on top while the next one fades up from behind */
+.hcard{transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s cubic-bezier(.4,0,.2,1),z-index 0s .3s}
+.hcard[data-p="0"]{transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s cubic-bezier(.4,0,.2,1),z-index 0s}
 </style>
 <style id="lightgen">html.light .top{background-color:#fff!important}
 html.light .logo .w1{color:var(--text)!important}
@@ -1987,7 +1991,7 @@ async function loadHero(){
       if(shown === at) return;
       const put = () => { shown = at; $('h2', htx).textContent = pool[at].title; $('.hm', htx).innerHTML = meta(pool[at]); htx.classList.remove('out'); };
       if(shown < 0) return put();
-      clearTimeout(swapT); htx.classList.add('out'); swapT = setTimeout(put, 180);
+      clearTimeout(swapT); htx.classList.add('out'); swapT = setTimeout(put, 280);
     };
     const cards = $$('.hcard', h), dots = $$('.hdots i', h);
     const lay = () => {
