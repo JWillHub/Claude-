@@ -259,7 +259,7 @@ header.top,.top{border-bottom:0!important;box-shadow:none!important}
 header.top,.ltop{will-change:transform}
 
 /* ==== LIGHT MODE (html.light) ==== */
-html.light{--bg:#fff;--bg2:#fff;--card:transparent;--card2:#f2f2f4;--line:#dedee3;--text:#0b0b0c;--muted:#6e6e73;color-scheme:light}
+html.light{--bg:#d6cab4;--bg2:#d6cab4;--card:transparent;--card2:#c9bca3;--line:#b9ab90;--text:#1b1712;--muted:#5f5646;color-scheme:light}
 html.light .top,html.light body.libv .ltop{background:#fff}
 html.light .tabbar{background:linear-gradient(to top,rgba(255,255,255,.96),rgba(255,255,255,.75) 60%,rgba(255,255,255,0))}
 html.light .tb,html.light .tb.on{color:#1c1c1e}
@@ -432,3 +432,27 @@ body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-ev
 /* smoother Trending changes: the old card fades out on top while the next one fades up from behind */
 .hcard{transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s cubic-bezier(.4,0,.2,1),z-index 0s .3s}
 .hcard[data-p="0"]{transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s cubic-bezier(.4,0,.2,1),z-index 0s}
+
+/* Theme picker cards (like Banking+): Black, Blue grey, Cream */
+.rcth{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+.rcth button{display:flex;flex-direction:column;align-items:center;gap:9px;padding:0;border:0;background:none;font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rcth .pv{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(127,140,160,.35);transition:box-shadow .18s,transform .18s}
+.rcth button:active .pv{transform:scale(.97)}
+.rcth button.on .pv{box-shadow:0 0 0 2.5px var(--accent),0 6px 16px rgba(0,0,0,.25)}
+.rcth .pv-dark{background:linear-gradient(160deg,#1c1c1e,#000)}
+.rcth .pv-slate{background:linear-gradient(160deg,#2a3440,#1a2129)}
+.rcth .pv-light{background:linear-gradient(160deg,#e2d8c6,#cbbfa7)}
+.rcth .pv i{position:absolute;display:block}
+.rcth .pv .lg{top:9%;left:10%;width:34%;height:6%;border-radius:3px;background:var(--accent)}
+.rcth .pv .hr{top:20%;left:10%;right:10%;height:26%;border-radius:8px;background:linear-gradient(150deg,var(--accent),rgba(0,0,0,.35))}
+.rcth .pv .p1,.rcth .pv .p2,.rcth .pv .p3{top:53%;width:22%;height:24%;border-radius:5px}
+.rcth .pv .p1{left:10%}.rcth .pv .p2{left:39%}.rcth .pv .p3{left:68%}
+.rcth .pv-dark .p1,.rcth .pv-dark .p2,.rcth .pv-dark .p3{background:#2c2c30}
+.rcth .pv-slate .p1,.rcth .pv-slate .p2,.rcth .pv-slate .p3{background:#3a4654}
+.rcth .pv-light .p1,.rcth .pv-light .p2,.rcth .pv-light .p3{background:#b9ab90}
+.rcth .pv .tb2{bottom:6%;left:12%;right:12%;height:9%;border-radius:999px}
+.rcth .pv-dark .tb2{background:rgba(255,255,255,.14)}.rcth .pv-slate .tb2{background:rgba(200,215,235,.18)}.rcth .pv-light .tb2{background:rgba(0,0,0,.1)}
+.rcth .nm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600}
+.rcth .nm::before{content:"";width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--muted)}
+.rcth button.on .nm::before{box-shadow:inset 0 0 0 4.5px var(--accent)}
+html.slate{--bg:#1e2630;--bg2:#1e2630;--card2:#28313d;--line:rgba(180,198,222,.14);--muted:#93a0b2}

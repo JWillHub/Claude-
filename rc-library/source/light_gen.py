@@ -35,3 +35,54 @@ html.light .tb svg{filter:none!important}
 html.light .shcard .shwrap .pad{box-shadow:0 -18px 18px #fff!important}
 html.light .shbg{background-color:#ececef!important}
 '''
+
+
+# ---- Blue grey theme (html.slate): every black/near-black background becomes blue grey.
+# Only the colour changes on plain backgrounds, so posters and backdrops set elsewhere stay.
+SLATE = '#1e2630'
+def slate(s):
+    css = ''.join(re.findall(r'<style[^>]*>(.*?)</style>', s, re.S))
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    css = re.sub(r'@keyframes[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}', '', css)
+    out = []
+    for m in re.finditer(r'([^{}@]+)\{([^{}]*)\}', css):
+        sel, body = ' '.join(m.group(1).split()), m.group(2)
+        if not sel or sel.startswith(('0%', '50%', '100%', 'from', 'to')): continue
+        sels = [x.strip() for x in sel.split(',') if x.strip() and not x.strip().startswith('html.') and 'video' not in x and '::-webkit' not in x]
+        if not sels: continue
+        decls = []
+        for d in re.finditer(r'(background(?:-color)?)\s*:\s*([^;]+)', body):
+            prop, val = d.group(1), d.group(2).replace('!important', '').strip()
+            if not re.search(r'#000\b|#000000|#0c0a0f|#141119|#120f17|#111\b|rgba\(0,\s*0,\s*0,', val) or 'url(' in val: continue
+            nv = re.sub(r'#000000|#000\b|#0c0a0f|#141119|#120f17|#111\b', SLATE, val)
+            nv = re.sub(r'rgba\(0,\s*0,\s*0,', 'rgba(30,38,48,', nv)
+            if prop == 'background' and 'gradient' not in nv:
+                c = re.search(r'#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)', nv)
+                if not c: continue
+                prop, nv = 'background-color', c.group(0)
+            decls.append(f'{prop}:{nv}!important')
+        if decls: out.append(','.join('html.slate ' + x for x in sels) + '{' + ';'.join(decls) + '}')
+    return s.replace('</head>', '<style id="slategen">' + '\n'.join(out) + '\n' + SLATE_LATE + '</style>\n</head>', 1)
+SLATE_LATE = """html.slate body{background:#1e2630!important}
+html.slate .shcard .shwrap .pad{box-shadow:0 -18px 18px #1e2630!important}
+html.slate .tabbar{background:linear-gradient(180deg,rgba(44,54,67,.97),rgba(30,38,48,.97))!important;border-color:rgba(190,210,235,.14)!important}
+html.slate .tb.on{background:rgba(190,210,235,.14)}
+html.slate .mtlogo{filter:none!important}
+"""
+
+# ---- Cream: the light theme's whites become a dark cream (backgrounds only; white text on pictures stays white)
+CREAM = {'bg':'#d6cab4', 'card':'#c9bca3', 'rgb':'214,202,180'}
+def cream(s):
+    def fix_rule(m):
+        sel, body = m.group(1), m.group(2)
+        if 'html.light' not in sel: return m.group(0)
+        def fix_decl(d):
+            prop, val = d.group(1), d.group(2)
+            if prop.strip() in ('color', '--text') or prop.strip().endswith('color') and not prop.strip().startswith('background'): return d.group(0)
+            val = re.sub(r'#ffffff\b|#fff\b', CREAM['bg'], val)
+            val = re.sub(r'#f2f2f4|#ececef|#e5e5ea|#f6f6f8|#ecebf0', CREAM['card'], val)
+            val = re.sub(r'rgba\(255,\s*255,\s*255,', 'rgba(' + CREAM['rgb'] + ',', val)
+            val = re.sub(r'rgba\(246,\s*246,\s*248,', 'rgba(' + CREAM['rgb'] + ',', val)
+            return prop + ':' + val
+        return sel + '{' + re.sub(r'([\w-]+)\s*:([^;{}]+)', fix_decl, body) + '}'
+    return re.sub(r'([^{}]*html\.light[^{}]*)\{([^{}]*)\}', fix_rule, s)
