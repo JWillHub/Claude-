@@ -1048,7 +1048,7 @@ html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 @media (prefers-reduced-motion:reduce){.dw-sheet,.dw-ov{transition:none}}
 
 /* Trending now: tag and buttons stay still over the front card; only the title and info fade between titles */
-.hero.hstack .hfix{position:absolute;left:16px;right:16px;bottom:14px;z-index:4}
+.hero.hstack .hfix{position:absolute;left:16px;right:16px;bottom:14px;z-index:5}
 .hero.hstack .htx{transition:opacity .28s ease,transform .28s ease}
 .hero.hstack .htx.out{opacity:0;transform:translateY(4px)}
 
@@ -1057,8 +1057,8 @@ html.light .dw-it{color:rgba(0,0,0,.4)} html.light .dw-it.on{color:#111}
 body.tbhide .tabbar{transform:translateY(calc(100% + 24px));opacity:0;pointer-events:none}
 
 /* Trending card: thin liquid-glass outline in the accent colour */
-.hcard[data-p="0"]{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 55%,transparent),0 0 22px color-mix(in srgb,var(--accent) 22%,transparent),0 14px 30px rgba(0,0,0,.45)}
-.hcard[data-p="0"]::before{content:"";position:absolute;inset:0;z-index:3;border-radius:inherit;padding:1.5px;pointer-events:none;
+.hero.hstack{box-shadow:0 0 18px color-mix(in srgb,var(--accent) 18%,transparent),0 14px 30px rgba(0,0,0,.45)}
+.hero.hstack::after{display:block;content:"";position:absolute;inset:0;z-index:4;border-radius:inherit;padding:.8px;pointer-events:none;
   background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 95%,#fff) 0%,color-mix(in srgb,var(--accent) 35%,transparent) 38%,color-mix(in srgb,var(--accent) 20%,transparent) 62%,color-mix(in srgb,var(--accent) 85%,#fff) 100%);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
 
@@ -1108,6 +1108,30 @@ header.top:has(#hback:not([hidden])) #hcar{width:42px;height:42px;border-radius:
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.35)}
 header.top:has(#hback:not([hidden])) #hcar svg{width:21px;height:21px}
 html.light header.top:has(#hback:not([hidden])) #hcar{color:#111;background:linear-gradient(145deg,rgba(214,202,180,.92),rgba(214,202,180,.7));border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+
+/* ===== liquid glass on pills, boxes and Settings =====
+   a soft sheen on top of each control's own colour, a bright top edge and a faint rim.
+   (no blur: these sit in scrolling lists, so it stays cheap) */
+:root{--lq-sheen:linear-gradient(165deg,rgba(255,255,255,.11),rgba(255,255,255,.025) 45%,rgba(255,255,255,0) 70%);
+  --lq-rim:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(255,255,255,.04),inset 0 0 0 .5px rgba(255,255,255,.12)}
+html.light{--lq-sheen:linear-gradient(165deg,rgba(255,250,240,.55),rgba(255,250,240,.15) 50%,rgba(255,250,240,0) 75%);
+  --lq-rim:inset 0 1px 0 rgba(255,252,245,.75),inset 0 -1px 0 rgba(0,0,0,.04),inset 0 0 0 .5px rgba(60,45,20,.12)}
+html.slate{--lq-sheen:linear-gradient(165deg,rgba(150,180,255,.12),rgba(150,180,255,.03) 45%,rgba(150,180,255,0) 70%);
+  --lq-rim:inset 0 1px 0 rgba(190,210,255,.22),inset 0 -1px 0 rgba(150,180,255,.05),inset 0 0 0 .5px rgba(120,160,240,.22)}
+:is(.pill,.btn,.gbtn,.wbtn,.mact a,.mact button,.chip,.seg,.ysel,.ssel,.sclr,.gsel,.favbtn,.shtabs button,.searchpill,.lunm button,.updfail button,.lsearch,.ltools #lsort,.ltools #gfilt,.hsearch){background-image:var(--lq-sheen)!important;box-shadow:var(--lq-rim),0 2px 8px rgba(0,0,0,.18)}
+:is(.scard,.card,.kshow,.stat,.ratebox,.imdbbox,.epc,.epinfo,.rpc,.rpp,.lrow,.sehd,.aprate,.toast,.ptr,.gpk,.sic){background-image:var(--lq-sheen)!important;box-shadow:var(--lq-rim),0 6px 18px rgba(0,0,0,.22)}
+html.light :is(.pill,.btn,.gbtn,.wbtn,.mact a,.mact button,.chip,.seg,.ysel,.ssel,.sclr,.gsel,.favbtn,.shtabs button,.searchpill,.lunm button,.updfail button,.lsearch,.ltools #lsort,.ltools #gfilt,.hsearch){box-shadow:var(--lq-rim),0 2px 6px rgba(60,40,10,.10)}
+html.light :is(.scard,.card,.kshow,.stat,.ratebox,.imdbbox,.epc,.epinfo,.rpc,.rpp,.lrow,.sehd,.aprate,.toast,.ptr,.gpk,.sic){box-shadow:var(--lq-rim),0 6px 16px rgba(60,40,10,.12)}
+/* the filled accent pill keeps its colour and gets a glossy top */
+.pill:not(.ghost){background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.06) 52%,rgba(0,0,0,.06))!important}
+
+/* text that sits on pictures stays white in Cream too */
+html.light .gtile b,html.light .car .card .cap b,html.light .car .card .cap{color:#fff!important}
+html.light .car .card .cap span,html.light .car .card .cap small{color:rgba(255,255,255,.8)!important}
+/* buttons sitting on a picture keep the dark glass, whatever the theme */
+.hero .pill,.car .pill{--lq-sheen:linear-gradient(165deg,rgba(255,255,255,.14),rgba(255,255,255,.03) 45%,rgba(255,255,255,0) 70%);
+  --lq-rim:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.04),inset 0 0 0 .5px rgba(255,255,255,.14)}
+html.light .hero .pill,html.light .car .pill{box-shadow:var(--lq-rim),0 2px 8px rgba(0,0,0,.25)}
 </style>
 <style id="lightgen">html.light .top{background-color:#d6cab4!important}
 html.light .logo .w1{color:var(--text)!important}
