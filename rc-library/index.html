@@ -1126,12 +1126,15 @@ html.light :is(.scard,.card,.kshow,.stat,.ratebox,.imdbbox,.epc,.epinfo,.rpc,.rp
 .pill:not(.ghost){background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.06) 52%,rgba(0,0,0,.06))!important}
 
 /* text that sits on pictures stays white in Cream too */
-html.light .gtile b,html.light .car .card .cap b,html.light .car .card .cap{color:#fff!important}
-html.light .car .card .cap span,html.light .car .card .cap small{color:rgba(255,255,255,.8)!important}
+html.light body .gtile b,html.light body .car .card .cap b,html.light body .car .card .cap{color:#fff!important}
+html.light body .car .card .cap span,html.light body .car .card .cap small{color:rgba(255,255,255,.8)!important}
 /* buttons sitting on a picture keep the dark glass, whatever the theme */
 .hero .pill,.car .pill{--lq-sheen:linear-gradient(165deg,rgba(255,255,255,.14),rgba(255,255,255,.03) 45%,rgba(255,255,255,0) 70%);
   --lq-rim:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.04),inset 0 0 0 .5px rgba(255,255,255,.14)}
 html.light .hero .pill,html.light .car .pill{box-shadow:var(--lq-rim),0 2px 8px rgba(0,0,0,.25)}
+/* the top bars carry the same glow, lined up with the one behind the page, so there's no seam under them */
+html body header.top,html body:not(.libv) #v-genres .gtop,html body.libv .ltop{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 17%,transparent),transparent) 0 0/100% min(560px,70vh) no-repeat,var(--bg)!important}
 </style>
 <style id="lightgen">html.light .top{background-color:#d6cab4!important}
 html.light .logo .w1{color:var(--text)!important}
