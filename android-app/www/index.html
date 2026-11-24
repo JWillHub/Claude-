@@ -1134,8 +1134,14 @@ html.light body .car .card .cap span,html.light body .car .card .cap small{color
   --lq-rim:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.04),inset 0 0 0 .5px rgba(255,255,255,.14)}
 html.light .hero .pill,html.light .car .pill{box-shadow:var(--lq-rim),0 2px 8px rgba(0,0,0,.25)}
 /* the top bars carry the same glow, lined up with the one behind the page, so there's no seam under them */
-html body header.top,html body:not(.libv) #v-genres .gtop,html body.libv .ltop{
+html body header.top{
   background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 17%,transparent),transparent) 0 0/100% min(560px,70vh) no-repeat,var(--bg)!important}
+
+/* Genres and Library search rows: no backing strip, just the floating search box and filter button (glass, so text stays readable over posters) */
+html body:not(.libv) #v-genres .gtop,html body.libv .ltop,html.slate body.libv .ltop,html.light body.libv .ltop{background:transparent!important;box-shadow:none!important;border:0!important}
+html body #v-genres .gtop .lsearch,html body.libv .ltop .lsearch,html body .ltop .ltools #lsort,html body .ltop .ltools #gfilt,html body .ltop .ltools #lsort.lsortbtn,html body .ltop .ltools #gfilt.lsortbtn{
+  background-color:color-mix(in srgb,var(--bg) 62%,transparent)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}
 </style>
 <style id="lightgen">html.light .top{background-color:#d6cab4!important}
 html.light .logo .w1{color:var(--text)!important}
