@@ -1495,11 +1495,15 @@ function buildGenreBrowse(){
   // vertical wheel: the card nearest the middle of the screen is lit and full size; the rest dim and shrink toward the edges
   let wq = 0;
   const wheel = () => { wq = 0; if(v.hidden || tilesEl.hidden) return;
-    const mid = innerHeight / 2, span = innerHeight * .45;
-    for(const el of tilesEl.children){ const r = el.getBoundingClientRect();
-      if(r.bottom < -200 || r.top > innerHeight + 200) continue;
-      const d = Math.min(1, Math.abs(r.top + r.height / 2 - mid) / span);
-      el.style.setProperty('--d', d.toFixed(3)); } };
+    const mid = innerHeight * .36, span = innerHeight * .3;
+    for(const el of tilesEl.children){ const r = el.offsetTop - scrollY + (tilesEl.getBoundingClientRect().top + scrollY - tilesEl.offsetTop);
+      const c = r + el.offsetHeight / 2;
+      if(c < -300 || c > innerHeight + 300) continue;
+      const sg = Math.max(-2.2, Math.min(2.2, (c - mid) / span));   // below 0 = above the middle, above 0 = below it
+      const d = Math.min(1, Math.abs(sg));
+      el.style.setProperty('--s', sg.toFixed(3)); el.style.setProperty('--d', d.toFixed(3));
+      el.style.zIndex = 100 - Math.round(Math.abs(sg) * 20);
+      el.classList.toggle('mid', d < .18); } };
   if(!window.__gWheel){ window.__gWheel = 1;
     addEventListener('scroll', () => { if(!wq){ wq = 1; requestAnimationFrame(wheel); } }, { passive:true });
     addEventListener('resize', () => requestAnimationFrame(wheel)); }
