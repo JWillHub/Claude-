@@ -1490,35 +1490,7 @@ function buildGenreBrowse(){
       el.onclick = () => openGenrePage(t.d); });
     tileArtAll(gb.kind, list).then(art => $$('.gtile', tilesEl).forEach(el => { const p = art[list[+el.dataset.i].k];
       if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w1280${p})`; })).catch(() => {});
-    wheel();
   };
-  // vertical wheel: the lit spot is where the first card sits under the search bar; cards scrolling past it shrink and darken
-  let wq = 0;
-  const wheel = () => { wq = 0; if(v.hidden || tilesEl.hidden || !tilesEl.firstElementChild) return;
-    const first = tilesEl.firstElementChild, H = first.offsetHeight;
-    const top0 = tilesEl.getBoundingClientRect().top + scrollY + parseFloat(getComputedStyle(tilesEl).paddingTop);   // first card's top on the page
-    const mid = top0 + H / 2, span = H * 1.35;
-    for(const el of tilesEl.children){
-      const cy = tilesEl.getBoundingClientRect().top + el.offsetTop + H / 2;   // the list is the cards' offsetParent
-      if(cy < -300 || cy > innerHeight + 300) continue;
-      const sg = Math.max(-2.2, Math.min(2.2, (cy - mid) / span)), d = Math.min(1, Math.abs(sg));
-      el.style.setProperty('--s', sg.toFixed(3)); el.style.setProperty('--d', d.toFixed(3));
-      el.style.zIndex = 100 - Math.round(Math.abs(sg) * 20);
-      el.classList.toggle('mid', d < .2); } };
-  window.__gwheelFn = wheel;   // always the current list (the tab can be rebuilt)
-  if(!window.__gWheel){ window.__gWheel = 1;
-    let st;
-    addEventListener('scroll', () => {
-      if(!wq){ wq = 1; requestAnimationFrame(() => window.__gwheelFn && window.__gwheelFn()); }
-      // settle on the nearest card once scrolling stops (measured without the tilt, so it never fights the top)
-      clearTimeout(st); st = setTimeout(() => {
-        const g = document.querySelector('#v-genres:not([hidden]) .gtiles:not([hidden])'); if(!g || !g.firstElementChild) return;
-        const H = g.firstElementChild.offsetHeight, y = scrollY, top0 = g.getBoundingClientRect().top + y + parseFloat(getComputedStyle(g).paddingTop);
-        const i = Math.max(0, Math.min(g.children.length - 1, Math.round(y / H)));
-        const target = i * H; if(Math.abs(target - y) > 2) scrollTo({ top:target, behavior:'smooth' });
-      }, 140);
-    }, { passive:true });
-    addEventListener('resize', () => requestAnimationFrame(() => window.__gwheelFn && window.__gwheelFn())); }
   const load = () => {
     const t = gb.q.trim(), k = gb.kind;
     tilesEl.hidden = !!t; grid.hidden = !t; $('.msg', v).textContent = '';

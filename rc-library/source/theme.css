@@ -477,17 +477,3 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,html.slate body.libv .
 html body #v-genres .gtop .lsearch,html body.libv .ltop .lsearch,html body .ltop .ltools #lsort,html body .ltop .ltools #gfilt,html body .ltop .ltools #lsort.lsortbtn,html body .ltop .ltools #gfilt.lsortbtn{
   background-color:color-mix(in srgb,var(--bg) 62%,transparent)!important;
   -webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}
-
-/* Genres: a vertical wheel like Lumen's home row - the top card (right under the search bar) is big, lit and outlined
-   in the accent; the ones below shrink, tip back and fall into darkness. The cards stay under the search bar. */
-.gtiles{position:relative;z-index:0;display:flex!important;flex-direction:column;gap:0;padding:8px 6px calc(100vh - 260px)!important}
-.gtile{position:relative;aspect-ratio:auto!important;height:168px;width:100%;border-radius:22px!important;
-  transform:perspective(1100px) translateY(calc(var(--s,0) * -26px)) rotateX(calc(var(--s,0) * -8deg)) scale(calc(1 - var(--d,0) * .2));
-  transition:transform .22s ease-out,box-shadow .3s;will-change:transform;border:1px solid transparent!important}
-.gtile::before{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:calc(.25 + var(--d,0) * .65);pointer-events:none;transition:opacity .22s ease-out}
-.gtile.mid{border-color:color-mix(in srgb,var(--accent) 70%,transparent)!important;
-  box-shadow:0 0 24px color-mix(in srgb,var(--accent) 26%,transparent),0 18px 40px rgba(0,0,0,.6)!important}
-.gtile.mid::before{opacity:0!important}
-.gtile b{z-index:2!important;font-size:30px!important;left:22px!important;bottom:16px!important}
-.gtile:active{transform:perspective(1100px) translateY(calc(var(--s,0) * -26px)) rotateX(calc(var(--s,0) * -8deg)) scale(calc(.97 - var(--d,0) * .2))}
-body:not(.libv) #v-genres .gtop{z-index:40!important}
