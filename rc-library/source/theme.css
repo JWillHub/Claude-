@@ -477,3 +477,12 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,html.slate body.libv .
 html body #v-genres .gtop .lsearch,html body.libv .ltop .lsearch,html body .ltop .ltools #lsort,html body .ltop .ltools #gfilt,html body .ltop .ltools #lsort.lsortbtn,html body .ltop .ltools #gfilt.lsortbtn{
   background-color:color-mix(in srgb,var(--bg) 62%,transparent)!important;
   -webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}
+
+/* Genres: full-width cards on a vertical wheel - the middle one is lit, the ones above and below dim and shrink */
+.gtiles{display:flex!important;flex-direction:column;gap:16px;padding:calc(50vh - 190px) 0 calc(50vh - 60px)!important}
+html:has(#v-genres:not([hidden]) .gtiles:not([hidden])){scroll-snap-type:y proximity}
+.gtile{aspect-ratio:auto!important;height:200px;width:100%;border-radius:22px!important;scroll-snap-align:center;
+  transform:scale(calc(1 - var(--d,1) * .1));opacity:calc(1 - var(--d,1) * .25);transition:transform .25s ease-out,opacity .25s ease-out;will-change:transform}
+.gtile::before{content:"";position:absolute;inset:0;z-index:1;background:#000;opacity:calc(var(--d,1) * .72);pointer-events:none;transition:opacity .25s ease-out}
+.gtile b{z-index:2!important;font-size:30px!important;left:20px!important;bottom:16px!important}
+.gtile:active{transform:scale(calc(.97 - var(--d,1) * .1))}

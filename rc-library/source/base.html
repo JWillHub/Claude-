@@ -1490,7 +1490,19 @@ function buildGenreBrowse(){
       el.onclick = () => openGenrePage(t.d); });
     tileArtAll(gb.kind, list).then(art => $$('.gtile', tilesEl).forEach(el => { const p = art[list[+el.dataset.i].k];
       if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w1280${p})`; })).catch(() => {});
+    wheel();
   };
+  // vertical wheel: the card nearest the middle of the screen is lit and full size; the rest dim and shrink toward the edges
+  let wq = 0;
+  const wheel = () => { wq = 0; if(v.hidden || tilesEl.hidden) return;
+    const mid = innerHeight / 2, span = innerHeight * .45;
+    for(const el of tilesEl.children){ const r = el.getBoundingClientRect();
+      if(r.bottom < -200 || r.top > innerHeight + 200) continue;
+      const d = Math.min(1, Math.abs(r.top + r.height / 2 - mid) / span);
+      el.style.setProperty('--d', d.toFixed(3)); } };
+  if(!window.__gWheel){ window.__gWheel = 1;
+    addEventListener('scroll', () => { if(!wq){ wq = 1; requestAnimationFrame(wheel); } }, { passive:true });
+    addEventListener('resize', () => requestAnimationFrame(wheel)); }
   const load = () => {
     const t = gb.q.trim(), k = gb.kind;
     tilesEl.hidden = !!t; grid.hidden = !t; $('.msg', v).textContent = '';
