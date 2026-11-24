@@ -1121,6 +1121,15 @@ html body #v-genres .gtop .lsearch,html body.libv .ltop .lsearch,html body .ltop
 .gtiles:not([hidden]){animation:gfade .25s ease}
 @keyframes gfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .gtiles[hidden],.ghint[hidden],#v-genres .grid[hidden]{display:none!important}
+/* ===== Stremio-style tab bar: edge to edge, no box - just an eased dark fade that starts at nothing, so there's no line ===== */
+html body .tabbar{left:0!important;right:0!important;bottom:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none;align-items:flex-end;
+  padding:58px 8px calc(10px + env(safe-area-inset-bottom))!important;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.013) 8%,rgba(0,0,0,.049) 16%,rgba(0,0,0,.104) 24%,rgba(0,0,0,.175) 32%,rgba(0,0,0,.259) 40%,rgba(0,0,0,.352) 48%,rgba(0,0,0,.45) 56%,rgba(0,0,0,.55) 63%,rgba(0,0,0,.648) 70%,rgba(0,0,0,.741) 77%,rgba(0,0,0,.825) 84%,rgba(0,0,0,.896) 90%,rgba(0,0,0,.951) 95%,rgba(0,0,0,.97) 100%)!important}
+html body .tb{pointer-events:auto;background:none!important;box-shadow:none!important;color:rgba(255,255,255,.62);font-weight:600;padding:4px 0;
+  text-shadow:0 1px 3px rgba(0,0,0,.6)}
+html body .tb.on{background:none!important;color:#fff;font-weight:700}
+html body .tb.on svg{color:var(--accent)}
 </style>
 </head>
 <body>
