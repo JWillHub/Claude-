@@ -1111,6 +1111,16 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,html.slate body.libv .
 html body #v-genres .gtop .lsearch,html body.libv .ltop .lsearch,html body .ltop .ltools #lsort,html body .ltop .ltools #gfilt,html body .ltop .ltools #lsort.lsortbtn,html body .ltop .ltools #gfilt.lsortbtn{
   background-color:color-mix(in srgb,var(--bg) 62%,transparent)!important;
   -webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%)}
+
+/* Genres search mode: blank page, results fill in as you type */
+.gcancel{display:none;border:0;background:none;color:var(--accent);font:inherit;font-size:15px;font-weight:600;padding:0 4px;cursor:pointer;flex:none}
+#v-genres.gsearch .gcancel{display:block}
+#v-genres.gsearch #gfilt{display:none!important}
+.ghint{color:var(--muted);text-align:center;font-size:14px;padding:40px 0;animation:gfade .25s ease}
+#v-genres.gsearch .grid:not([hidden]){animation:gfade .25s ease}
+.gtiles:not([hidden]){animation:gfade .25s ease}
+@keyframes gfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.gtiles[hidden],.ghint[hidden],#v-genres .grid[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -1567,6 +1577,7 @@ addEventListener('popstate', () => {
   if(rp.on){ closeRatepad(); history.pushState({ rl:sheetStack.length }, ''); return; }
   if(sheetStack.length){ closeSheet(sheetStack[sheetStack.length - 1], true); return; }
   if(searchOn){ closeSearch(true); return; }
+  if(window.__gsOn){ window.__gsExit(); return; }
   if(PAGES.includes(view)) setView(lastTab, { fromPop:true });
 });
 function makeDraggable(s){
@@ -2285,8 +2296,8 @@ const tileArtAll = (kind, list) => cached('gtiles3:' + kind, 24*7, async () => {
 function buildGenreBrowse(){
   const v = $('#v-genres'); built.genres = true;
   v.innerHTML = `<div class="pad ltop gtop"><div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="gq" autocomplete="off" enterkeyhint="search"></label>
-      <button class="lsortbtn" id="gfilt"><svg viewBox="0 0 24 24"><path d="M5 7h14M7.5 12h9M10 17h4"/></svg></button></div></div>
-    <div class="pad"><div class="gtiles"></div><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
+      <button class="lsortbtn" id="gfilt"><svg viewBox="0 0 24 24"><path d="M5 7h14M7.5 12h9M10 17h4"/></svg></button><button class="gcancel" type="button">Cancel</button></div></div>
+    <div class="pad"><div class="gtiles"></div><div class="ghint" hidden>Start typing to search</div><div class="grid browse"></div><div class="sent" style="height:30px"></div><div class="msg"></div></div>`;
   const q = $('#gq', v), fb = $('#gfilt', v), tilesEl = $('.gtiles', v), grid = $('.grid', v);
   const label = () => { const l = GB_KINDS.find(x => x[0] === gb.kind)[1];
     q.placeholder = gb.kind === 'all' ? 'Search movies and series' : 'Search ' + l.toLowerCase();
@@ -2299,17 +2310,28 @@ function buildGenreBrowse(){
     tileArtAll(gb.kind, list).then(art => $$('.gtile', tilesEl).forEach(el => { const p = art[list[+el.dataset.i].k];
       if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w1280${p})`; })).catch(() => {});
   };
+  // search mode: tapping the search bar clears the page (tiles fade away) and results fill in as you type
+  let on = false;
+  const hint = $('.ghint', v);
+  const enter = () => { if(on) return; on = true; window.__gsOn = true; v.classList.add('gsearch'); history.pushState({ gs:1 }, ''); scrollTo(0, 0); load(); };
+  const exit = fromPop => { if(!on) return; on = false; window.__gsOn = false; v.classList.remove('gsearch');
+    clearTimeout(tm); q.value = ''; gb.q = ''; q.blur(); load();
+    if(!fromPop){ popSkip++; history.back(); } };
+  window.__gsExit = () => exit(true);
   const load = () => {
     const t = gb.q.trim(), k = gb.kind;
-    tilesEl.hidden = !!t; grid.hidden = !t; $('.msg', v).textContent = '';
-    if(!t){ grid._gen = (grid._gen || 0) + 1; grid._obs?.disconnect(); grid.innerHTML = ''; tiles(); return; }
+    tilesEl.hidden = !!t || on; grid.hidden = !t; hint.hidden = !(on && !t); $('.msg', v).textContent = '';
+    if(!t){ grid._gen = (grid._gen || 0) + 1; grid._obs?.disconnect(); grid.innerHTML = ''; if(!on) tiles(); return; }
     const def = { path:k === 'all' ? '/search/multi' : '/search/' + k, params:{ query:t }, tv:k === 'tv' };
     setPageSource({ title:'Search', def });
     feed(null, grid, $('.sent', v), $('.msg', v), def);
   };
   q.value = gb.q; label();
-  let tm; q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { gb.q = q.value; load(); }, 350); };
+  let tm; q.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { gb.q = q.value; load(); }, 250); };
   q.onkeydown = e => { if(e.key === 'Enter'){ clearTimeout(tm); gb.q = q.value; q.blur(); load(); } };
+  q.onfocus = enter;
+  q.onblur = () => { setTimeout(() => { if(on && !q.value.trim() && document.activeElement !== q) exit(false); }, 150); };
+  $('.gcancel', v).onclick = () => exit(false);
   fb.onclick = () => glassPick(GB_KINDS, gb.kind, k => { gb.kind = k; label(); scrollTo(0, 0); load(); });
   load();
 }
