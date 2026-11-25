@@ -1178,6 +1178,37 @@ section.row,.row{margin-top:26px}
 .card,.kshow{border-radius:10px!important;border:1px solid var(--hair)!important;background:#0b0b0c!important}
 .saga .sname,.sname{font-family:Inter,sans-serif!important;font-weight:600!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important}
 .saga{border-radius:10px!important}
+
+/* ---------- Genres: a text index ---------- */
+.lh1{margin:0 0 14px;font-family:var(--disp);font-weight:400;font-size:44px;line-height:1;color:#F2EEE8;letter-spacing:-.01em}
+#v-genres .gtop{padding-top:calc(env(safe-area-inset-top) + 50px)!important;display:block!important}
+#v-genres .gtop .ltools{gap:10px}
+#v-genres .gtop .lsearch,#v-library .ltop .lsearch{background:transparent!important;border:0!important;border-bottom:1px solid rgba(242,238,232,.3)!important;border-radius:0!important;height:48px!important;padding:0 2px!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#v-genres .gtop #gfilt{display:none!important}
+.lseg{display:flex;gap:8px;margin-top:16px}
+.lseg button{height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(242,238,232,.2);background:transparent;color:#F2EEE8;font:600 14px Inter,sans-serif;cursor:pointer}
+.lseg button.on{background:#F2EEE8;color:#000;border-color:#F2EEE8}
+#v-genres.gsearch .lseg{display:none}
+#v-genres .gtiles{display:block!important;padding:6px 0 0!important;border-bottom:1px solid var(--hair)}
+#v-genres .gtile{display:flex!important;align-items:center;gap:14px;width:100%;height:auto!important;aspect-ratio:auto!important;border-radius:0!important;
+  padding:14px 0!important;border:0!important;border-top:1px solid var(--hair)!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#v-genres .gtile::after,#v-genres .gtile::before{display:none!important}
+#v-genres .gtile b{position:static!important;order:1;flex:1;font-family:var(--disp)!important;font-weight:400!important;font-size:34px!important;line-height:1!important;color:#F2EEE8!important;text-shadow:none!important;text-transform:none!important;letter-spacing:-.01em!important}
+#v-genres .gtile .gtart{position:static!important;order:2;flex:none;width:72px;height:48px;border-radius:6px;background-color:#151517;transform:none!important}
+#v-genres .gtile:active b{opacity:.6}
+
+/* ---------- Genre page ---------- */
+body:has(#v-genre:not([hidden])) header.top .logo.sub{visibility:hidden}
+.lgh1{margin:6px 0 4px;font-family:var(--disp);font-weight:400;font-size:56px;line-height:.95;color:#F2EEE8;letter-spacing:-.01em}
+#v-genre .gopts{display:flex!important;align-items:center;justify-content:space-between;margin:6px 0 0!important;border-bottom:1px solid var(--hair);gap:10px}
+#v-genre .seg{background:none!important;border:0!important;padding:0!important;gap:22px!important;display:flex!important}
+#v-genre .seg button{background:none!important;border:0!important;border-radius:0!important;padding:10px 0!important;color:rgba(242,238,232,.5)!important;font:600 15px Inter,sans-serif!important;border-bottom:2px solid transparent!important;box-shadow:none!important}
+#v-genre .seg button.on{color:#F2EEE8!important;border-bottom-color:var(--accent)!important}
+#v-genre .ysel{height:34px!important;border-radius:999px!important;border:1px solid rgba(242,238,232,.25)!important;background:transparent!important;font:600 13px Inter,sans-serif!important;padding:0 12px!important}
+#v-genre .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:22px 18px!important;margin-top:20px}
+.lcap{display:block;margin-top:8px;font:600 14px/1.25 Inter,sans-serif;color:#F2EEE8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* sub-page buttons: flat outlined circles */
+html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #hcar{background:transparent!important;border:1px solid rgba(242,238,232,.25)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;width:44px!important;height:44px!important}
 </style>
 </head>
 <body>
@@ -4562,6 +4593,34 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
   }
   new MutationObserver(() => { clearTimeout(prog.t); prog.t = setTimeout(prog, 30); })
     .observe(document.documentElement, { subtree:true, attributes:true, attributeFilter:['data-p'], childList:true });
+})();
+// Genres tab: big serif heading, All / Movies / Series as buttons (instead of the filter pop-up)
+(function(){
+  const KINDS = [['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']];
+  function dressGenres(){
+    const v = document.getElementById('v-genres'); if(!v) return;
+    const top = v.querySelector('.gtop'); if(!top || top.querySelector('.lh1')) return;
+    top.insertAdjacentHTML('afterbegin', '<h1 class="lh1">Genres</h1>');
+    const seg = document.createElement('div'); seg.className = 'lseg'; seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Show');
+    const kind = (typeof gb === 'object' && gb.kind) || 'all';
+    seg.innerHTML = KINDS.map(([k, l]) => `<button type="button" data-k="${k}" class="${k === kind ? 'on' : ''}" aria-pressed="${k === kind}">${l}</button>`).join('');
+    seg.onclick = e => { const b = e.target.closest('button'); if(!b || typeof gb !== 'object') return;
+      gb.kind = b.dataset.k; buildGenreBrowse(); };
+    top.appendChild(seg);
+  }
+  // Genre page: the genre's name in big serif at the top of the page; titles under the posters
+  function dressGenrePage(){
+    const v = document.getElementById('v-genre'); if(!v || v.hidden) return;
+    const pad = v.querySelector('.pad'); if(!pad) return;
+    const name = (typeof genrePageTitle === 'object' && genrePageTitle && genrePageTitle.big) || '';
+    let h = pad.querySelector('.lgh1');
+    if(!h){ h = document.createElement('h1'); h.className = 'lgh1'; pad.insertBefore(h, pad.firstChild); }
+    if(h.textContent !== name) h.textContent = name;
+    v.querySelectorAll('.grid .pc:not([data-lc])').forEach(pc => { pc.dataset.lc = 1;
+      const img = pc.querySelector('img'); const t = img && (img.alt || img.title); if(t) pc.insertAdjacentHTML('beforeend', `<span class="lcap">${t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</span>`); });
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { dressGenres(); dressGenrePage(); }, 20); })
+    .observe(document.body, { subtree:true, childList:true });
 })();
 </script>
 </body>
