@@ -38,7 +38,7 @@ body:has(#v-discover:not([hidden])) main{padding-top:0!important}
 section.row,.row{margin-top:26px}
 .track{padding-left:20px!important;padding-right:20px!important}
 #v-discover .hero .tag{display:none!important}
-#v-discover .hero.hstack::before{content:"Trending this week";display:block!important;position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:20px;z-index:6;
+#v-discover .hero.hstack::before{content:none!important;display:none!important;position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:20px;z-index:6;
   font:600 13px Inter,sans-serif;color:#F2EEE8;background:none!important;opacity:1!important;inset:auto auto auto 20px}
 .rk{color:#F2EEE8!important;-webkit-text-stroke:0!important;text-shadow:none!important;font-size:44px!important}
 .card .cap b,.franchise b,.kshow b{font-family:Inter,sans-serif!important;font-weight:600!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important}
@@ -125,3 +125,7 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 :is(.setpage,#v-settings,.spg) .slab small,.lsub{font:400 13px Inter,sans-serif!important;color:var(--muted)!important}
 .spg .sgh{font:600 13px Inter,sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:var(--muted)!important;margin:22px 0 6px!important}
 .spg .srow.static{border-top:1px solid var(--hair)!important}
+
+/* sharper, slightly bigger posters in the rows */
+.track>.pc:not(.ranked){width:138px!important}
+.track>.pc.ranked{width:168px!important;padding-left:30px!important}

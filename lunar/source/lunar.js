@@ -86,3 +86,16 @@
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
 })();
+
+// Sharper pictures: posters load at w500 (they're shown big on a high-density screen), the Trending backdrop at full size
+(function(){
+  function sharpen(root){
+    (root.querySelectorAll ? root : document).querySelectorAll('img[src*="/t/p/w185/"],img[src*="/t/p/w342/"]').forEach(im => {
+      if(im.closest('.rpbg')) return;
+      im.src = im.src.replace(/\/t\/p\/w(185|342)\//, '/t/p/w500/'); });
+    document.querySelectorAll('#v-discover .hcard[style*="/t/p/w780/"]').forEach(c => {
+      c.style.backgroundImage = c.style.backgroundImage.replace('/t/p/w780/', '/t/p/original/'); });
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => sharpen(document), 15); })
+    .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['src', 'style'] });
+})();

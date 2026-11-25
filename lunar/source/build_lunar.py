@@ -19,6 +19,8 @@ def lunarize(s):
     s = s.replace('content="Rolling Credits"', 'content="Lunar"')
     s = s.replace("releases/download/android-latest/", "releases/download/lunar-latest/")
     s = s.replace('Rolling Credits pulls every film', 'Lunar pulls every film')
+    s = s.replace("function poster(p, cls = '', size = 'w185'", "function poster(p, cls = '', size = 'w500'")   # sharp posters from the start
+    s = s.replace('style="background-image:url(${IMG}w780${m.backdrop})"', 'style="background-image:url(${IMG}original${m.backdrop})"')   # full-size Trending backdrop
     s = s.replace('</head>', FONTS + '\n<style id="lunar">' + css + '</style>\n</head>', 1)
     s = s.replace('</body>', '<script>' + js + '</script>\n</body>', 1)
     return s

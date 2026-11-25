@@ -1172,7 +1172,7 @@ body:has(#v-discover:not([hidden])) main{padding-top:0!important}
 section.row,.row{margin-top:26px}
 .track{padding-left:20px!important;padding-right:20px!important}
 #v-discover .hero .tag{display:none!important}
-#v-discover .hero.hstack::before{content:"Trending this week";display:block!important;position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:20px;z-index:6;
+#v-discover .hero.hstack::before{content:none!important;display:none!important;position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:20px;z-index:6;
   font:600 13px Inter,sans-serif;color:#F2EEE8;background:none!important;opacity:1!important;inset:auto auto auto 20px}
 .rk{color:#F2EEE8!important;-webkit-text-stroke:0!important;text-shadow:none!important;font-size:44px!important}
 .card .cap b,.franchise b,.kshow b{font-family:Inter,sans-serif!important;font-weight:600!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important}
@@ -1259,6 +1259,10 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 :is(.setpage,#v-settings,.spg) .slab small,.lsub{font:400 13px Inter,sans-serif!important;color:var(--muted)!important}
 .spg .sgh{font:600 13px Inter,sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:var(--muted)!important;margin:22px 0 6px!important}
 .spg .srow.static{border-top:1px solid var(--hair)!important}
+
+/* sharper, slightly bigger posters in the rows */
+.track>.pc:not(.ranked){width:138px!important}
+.track>.pc.ranked{width:168px!important;padding-left:30px!important}
 </style>
 </head>
 <body>
@@ -1509,7 +1513,7 @@ async function repairTitles(){
     if(fixed){ saveAll(); afterChange(); }
   }finally{ repairing = false; }
 }
-function poster(p, cls = '', size = 'w185', title = ''){
+function poster(p, cls = '', size = 'w500', title = ''){
   return p ? `<img class="${cls}" loading="lazy" decoding="async" draggable="false" src="${IMG}${size}${p}" alt="${esc(title)}">`
            : `<div class="${cls} ph">${esc(title)}</div>`;
 }
@@ -2037,7 +2041,7 @@ async function loadHero(){
     h.classList.add('hstack');
     // the pictures move; the tag and the Rate / Details buttons stay put and only the title + info change
     const meta = m => `${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}`;
-    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}w780${m.backdrop})"></div>`).join('')
+    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}original${m.backdrop})"></div>`).join('')
       + `<div class="hin hfix"><span class="tag">Trending now</span><div class="htx"><h2></h2><div class="hm"></div></div>
       <div class="hbtns"><button class="pill" data-hr>★ Rate</button><button class="pill ghost" data-hd>Details</button></div></div>`
       + `<div class="hdots">${pool.map((_, i) => `<i data-d="${i}"></i>`).join('')}</div>`;
@@ -4722,6 +4726,19 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
       if(s && lab && !lab.querySelector('.lsub')) lab.insertAdjacentHTML('beforeend', `<small class="lsub">${s}</small>`); });
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
+})();
+
+// Sharper pictures: posters load at w500 (they're shown big on a high-density screen), the Trending backdrop at full size
+(function(){
+  function sharpen(root){
+    (root.querySelectorAll ? root : document).querySelectorAll('img[src*="/t/p/w185/"],img[src*="/t/p/w342/"]').forEach(im => {
+      if(im.closest('.rpbg')) return;
+      im.src = im.src.replace(/\/t\/p\/w(185|342)\//, '/t/p/w500/'); });
+    document.querySelectorAll('#v-discover .hcard[style*="/t/p/w780/"]').forEach(c => {
+      c.style.backgroundImage = c.style.backgroundImage.replace('/t/p/w780/', '/t/p/original/'); });
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => sharpen(document), 15); })
+    .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['src', 'style'] });
 })();
 </script>
 </body>
