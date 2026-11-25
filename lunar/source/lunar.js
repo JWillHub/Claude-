@@ -68,3 +68,21 @@
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
 })();
+// Settings: your numbers at the top, a short line under each section
+(function(){
+  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Accent colour and start page', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
+  function dress(){
+    const v = document.getElementById('v-settings'); if(!v || v.hidden) return;
+    const page = v.querySelector('.setpage'), title = page && page.querySelector('.stitle'); if(!page || !title) return;
+    if(!page.querySelector('.lstats') && title.textContent.trim() === 'Settings'){
+      let r = 0, w = 0, l = 0;
+      try{ r = Object.keys(ratings || {}).length; }catch(e){}
+      try{ w = Object.keys(watch || {}).length; }catch(e){}
+      try{ l = libTitles().length; }catch(e){}
+      title.insertAdjacentHTML('afterend', `<section class="lstats" aria-label="Your numbers"><div><b>${r}</b><span>Rated</span></div><div><b>${w}</b><span>Watchlist</span></div><div><b>${l}</b><span>In library</span></div></section>`);
+    }
+    page.querySelectorAll('.srow[id]').forEach(row => { const s = SUB[row.id], lab = row.querySelector('.slab');
+      if(s && lab && !lab.querySelector('.lsub')) lab.insertAdjacentHTML('beforeend', `<small class="lsub">${s}</small>`); });
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
+})();

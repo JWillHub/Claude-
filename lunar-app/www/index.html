@@ -1232,6 +1232,33 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 #lgrid .lshow img{border-radius:6px!important}
 #lgrid.lk-movie [data-lshow],#lgrid.lk-tv [data-lmov]{display:none!important}
 .llabel{margin:26px 0 0;font:600 17px Inter,sans-serif;letter-spacing:-.01em;color:#F2EEE8}
+
+/* ---------- Rating ---------- */
+.rpc{background:#0d0d0f!important;border:1px solid rgba(242,238,232,.12)!important;box-shadow:0 30px 80px rgba(0,0,0,.7)!important;border-radius:22px!important}
+.rpc .rpbg{display:none!important}
+.rpc .rpposter img{border-radius:10px!important;box-shadow:none!important}
+.rpc .rptitle{font-family:var(--disp)!important;font-weight:400!important;font-size:32px!important;line-height:1!important;text-transform:none!important;letter-spacing:-.01em!important;color:#F2EEE8!important}
+.rpc .rpyear{font:400 13px Inter,sans-serif!important;color:var(--muted)!important}
+.rpc .rv{font-family:var(--disp)!important;font-weight:400!important;font-size:44px!important;color:#F2EEE8!important}
+.rpc .s5 .st .f svg,.rpc .s5 .f svg{fill:var(--accent)!important;color:var(--accent)!important}
+.rpc .rpp{background:transparent!important;border:1px solid rgba(242,238,232,.25)!important;border-radius:12px!important;font:600 15px Inter,sans-serif!important;color:#F2EEE8!important}
+
+/* ---------- Settings: a plain list with hairlines ---------- */
+.setpage .stitle,.sh h2.stitle{font-family:var(--disp)!important;font-weight:400!important;font-size:44px!important;line-height:1!important;text-transform:none!important;letter-spacing:-.01em!important}
+.setpage{padding-top:calc(env(safe-area-inset-top) + 34px)!important}
+.lstats{display:flex;gap:12px;margin:22px 0 26px}
+.lstats div{flex:1}
+.lstats b{display:block;font-family:var(--disp);font-weight:400;font-size:40px;line-height:1;color:#F2EEE8}
+.lstats span{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
+.setpage .sgroup{margin:0!important}
+:is(.setpage,#v-settings,.spg) .scard{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+:is(.setpage,#v-settings,.spg) .srow{padding:16px 0!important;border:0!important;border-top:1px solid var(--hair)!important;border-radius:0!important;background:transparent!important;min-height:0!important}
+:is(.setpage,#v-settings,.spg) .scard:last-of-type{border-bottom:1px solid var(--hair)!important}
+:is(.setpage,#v-settings,.spg) .sic{display:none!important}
+:is(.setpage,#v-settings,.spg) .slab{font:600 16px Inter,sans-serif!important;color:#F2EEE8!important;display:flex!important;flex-direction:column;gap:3px;text-transform:none!important}
+:is(.setpage,#v-settings,.spg) .slab small,.lsub{font:400 13px Inter,sans-serif!important;color:var(--muted)!important}
+.spg .sgh{font:600 13px Inter,sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:var(--muted)!important;margin:22px 0 6px!important}
+.spg .srow.static{border-top:1px solid var(--hair)!important}
 </style>
 </head>
 <body>
@@ -4675,6 +4702,24 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
     let lab = v.querySelector('.llabel');
     if(v.querySelector('.cwband') && !lab){ grid.insertAdjacentHTML('beforebegin', '<h2 class="llabel">Everything you have</h2>'); }
     if(!v.querySelector('.cwband') && lab) lab.remove();
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
+})();
+// Settings: your numbers at the top, a short line under each section
+(function(){
+  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Accent colour and start page', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
+  function dress(){
+    const v = document.getElementById('v-settings'); if(!v || v.hidden) return;
+    const page = v.querySelector('.setpage'), title = page && page.querySelector('.stitle'); if(!page || !title) return;
+    if(!page.querySelector('.lstats') && title.textContent.trim() === 'Settings'){
+      let r = 0, w = 0, l = 0;
+      try{ r = Object.keys(ratings || {}).length; }catch(e){}
+      try{ w = Object.keys(watch || {}).length; }catch(e){}
+      try{ l = libTitles().length; }catch(e){}
+      title.insertAdjacentHTML('afterend', `<section class="lstats" aria-label="Your numbers"><div><b>${r}</b><span>Rated</span></div><div><b>${w}</b><span>Watchlist</span></div><div><b>${l}</b><span>In library</span></div></section>`);
+    }
+    page.querySelectorAll('.srow[id]').forEach(row => { const s = SUB[row.id], lab = row.querySelector('.slab');
+      if(s && lab && !lab.querySelector('.lsub')) lab.insertAdjacentHTML('beforeend', `<small class="lsub">${s}</small>`); });
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
 })();
