@@ -166,3 +166,5 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 .shcard .epc.fin .lepn,.shcard .epc.fin .ept{color:rgba(242,238,232,.4)!important}
 .shcard .epc .lbar{background:var(--accent)!important;height:3px!important}
 .shcard .epc .epchk{background:rgba(0,0,0,.6)!important;border-radius:50%!important}
+/* no accent color choice in Lunar */
+.sgh:has(+ .scard .acc),.scard:has(.acc){display:none!important}
