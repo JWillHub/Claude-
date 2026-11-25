@@ -1210,6 +1210,28 @@ body:has(#v-genre:not([hidden])) header.top .logo.sub{visibility:hidden}
 .lcap{display:block;margin-top:8px;font:600 14px/1.25 Inter,sans-serif;color:#F2EEE8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* sub-page buttons: flat outlined circles */
 html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #hcar{background:transparent!important;border:1px solid rgba(242,238,232,.25)!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;width:44px!important;height:44px!important}
+
+/* ---------- Library ---------- */
+#v-library .ltop{padding-top:calc(env(safe-area-inset-top) + 50px)!important;display:block!important}
+.llhead{display:flex;align-items:flex-end;justify-content:space-between}
+.llhead .lh1{margin:0}
+.lcount{margin:6px 0 10px;font-size:13px;color:var(--muted)}
+#v-library .ltop .ltools{gap:12px}
+#v-library .ltop #lsort{width:44px!important;height:44px!important;border-radius:50%!important;border:1px solid rgba(242,238,232,.25)!important;background:transparent!important}
+#v-library .lseg{margin:14px 0 4px}
+#v-library .cwh{font:600 17px Inter,sans-serif!important;letter-spacing:-.01em!important;text-transform:none!important;padding:0 20px 12px!important;color:#F2EEE8}
+#v-library .cwlib{display:none!important}
+#v-library .cwtrack{padding:0 20px!important;gap:12px!important}
+#v-library .cwc{background:none!important;border:0!important;padding:0!important;text-align:left}
+#v-library .cwimg{border-radius:8px!important;overflow:hidden}
+#v-library .cwbar{border-radius:0!important;height:3px!important;background:rgba(242,238,232,.15)!important}
+#v-library .cwbar b{background:var(--accent)!important}
+#v-library .cwt{font:600 14px Inter,sans-serif!important;color:#F2EEE8;margin-top:8px}
+#v-library .cwband{margin-top:22px!important;background:none!important}
+#lgrid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;margin-top:22px}
+#lgrid .lshow img{border-radius:6px!important}
+#lgrid.lk-movie [data-lshow],#lgrid.lk-tv [data-lmov]{display:none!important}
+.llabel{margin:26px 0 0;font:600 17px Inter,sans-serif;letter-spacing:-.01em;color:#F2EEE8}
 </style>
 </head>
 <body>
@@ -3429,7 +3451,7 @@ function libTitles(){
 const libSort = (list, sort) => list.sort(sort === 'rated' ? (a, c) => (c.vote || 0) - (a.vote || 0)
   : sort === 'newest' ? (a, c) => (c.date || '').localeCompare(a.date || '')
   : sort === 'popular' ? (a, c) => (c.votes || 0) - (a.votes || 0)
-  : (a, c) => a.title.localeCompare(c.title, undefined, { numeric:true }));
+  : (a, c) => (a.title || '').localeCompare(c.title || '', undefined, { numeric:true }));   // an untitled item must not break the sort
 // Remembered file lists (a day) and stream links (3 hours), so replaying or resuming skips the slow lookups
 const K_LINKS = 'lunar.links', K_TINFO = 'lunar.tinfo', LINK_TTL = 3 * 3600e3, INFO_TTL = 24 * 3600e3;
 let linkCache = store.get(K_LINKS, {}), infoCache = store.get(K_TINFO, {});
@@ -4629,6 +4651,32 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { dressGenres(); dressGenrePage(); }, 20); })
     .observe(document.body, { subtree:true, childList:true });
+})();
+// Library: serif heading with the sort button, counts, and Everything / Movies / Series
+(function(){
+  let kind = 'all';
+  const KINDS = [['all', 'Everything'], ['movie', 'Movies'], ['tv', 'Series']];
+  function dress(){
+    const v = document.getElementById('v-library'); if(!v || v.hidden) return;
+    const top = v.querySelector('.ltop'), grid = document.getElementById('lgrid'); if(!top || !grid) return;
+    if(!top.querySelector('.llhead')){
+      top.insertAdjacentHTML('afterbegin', '<div class="llhead"><h1 class="lh1">Library</h1></div><p class="lcount"></p>');
+      const seg = document.createElement('div'); seg.className = 'lseg'; seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Show');
+      seg.innerHTML = KINDS.map(([k, l]) => `<button type="button" data-k="${k}">${l}</button>`).join('');
+      seg.onclick = e => { const b = e.target.closest('button'); if(!b) return; kind = b.dataset.k; dress(); };
+      top.appendChild(seg);
+    }
+    top.querySelectorAll('.lseg button').forEach(b => { const on = b.dataset.k === kind; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+    grid.classList.toggle('lk-movie', kind === 'movie'); grid.classList.toggle('lk-tv', kind === 'tv');
+    const m = grid.querySelectorAll('[data-lmov]').length, s = grid.querySelectorAll('[data-lshow]').length;
+    const c = top.querySelector('.lcount'), txt = (m || s) ? `${m} movie${m === 1 ? '' : 's'} · ${s} series` : '';
+    if(c.textContent !== txt) c.textContent = txt;
+    const h = v.querySelector('.cwh'); if(h && h.lastChild && h.lastChild.nodeType === 3 && h.lastChild.textContent.trim() === 'Continue watching') h.lastChild.textContent = 'Keep watching';
+    let lab = v.querySelector('.llabel');
+    if(v.querySelector('.cwband') && !lab){ grid.insertAdjacentHTML('beforebegin', '<h2 class="llabel">Everything you have</h2>'); }
+    if(!v.querySelector('.cwband') && lab) lab.remove();
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(dress, 20); }).observe(document.body, { subtree:true, childList:true });
 })();
 </script>
 </body>

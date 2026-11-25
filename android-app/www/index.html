@@ -3349,7 +3349,7 @@ function libTitles(){
 const libSort = (list, sort) => list.sort(sort === 'rated' ? (a, c) => (c.vote || 0) - (a.vote || 0)
   : sort === 'newest' ? (a, c) => (c.date || '').localeCompare(a.date || '')
   : sort === 'popular' ? (a, c) => (c.votes || 0) - (a.votes || 0)
-  : (a, c) => a.title.localeCompare(c.title, undefined, { numeric:true }));
+  : (a, c) => (a.title || '').localeCompare(c.title || '', undefined, { numeric:true }));   // an untitled item must not break the sort
 // Remembered file lists (a day) and stream links (3 hours), so replaying or resuming skips the slow lookups
 const K_LINKS = 'rclib.links', K_TINFO = 'rclib.tinfo', LINK_TTL = 3 * 3600e3, INFO_TTL = 24 * 3600e3;
 let linkCache = store.get(K_LINKS, {}), infoCache = store.get(K_TINFO, {});
