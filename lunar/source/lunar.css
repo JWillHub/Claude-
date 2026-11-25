@@ -13,7 +13,7 @@ body{font-family:Inter,system-ui,-apple-system,Roboto,sans-serif!important;font-
 .pill.ghost{background:transparent!important;color:#F2EEE8!important;border:1px solid rgba(242,238,232,.35)!important}
 
 /* ---------- Discover: Trending is a full-bleed backdrop across the top ---------- */
-#v-discover .hero.hstack{margin:0!important;width:100%!important;border-radius:0!important;aspect-ratio:auto!important;height:470px;max-height:none!important;box-shadow:none!important}
+#v-discover .hero.hstack{margin:0!important;width:100%!important;border-radius:0!important;aspect-ratio:auto!important;height:505px;max-height:none!important;box-shadow:none!important}
 #v-discover .hero.hstack::after{display:none!important}
 #v-discover .hero .hcard{border-radius:0!important;box-shadow:none!important}
 #v-discover .hero .hcard:not([data-p="0"]){opacity:0!important}
