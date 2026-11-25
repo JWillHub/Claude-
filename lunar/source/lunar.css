@@ -1,0 +1,47 @@
+/* ================= LUNAR =================
+   Flat OLED black, a film-title serif for headings, clean sans for everything else, hairlines instead of boxes,
+   one accent. No glass, sheen or glow. The movie/show pages and the fade-out bottom bar are kept from Rolling Credits. */
+:root{--disp:'Instrument Serif',Georgia,serif;--text:#F2EEE8;--muted:rgba(242,238,232,.58);--line:rgba(242,238,232,.1);
+  --lq-sheen:none;--lq-rim:0 0 0 transparent;--hair:rgba(242,238,232,.1)}
+html,body{background:#000!important;color:#F2EEE8}
+body{font-family:Inter,system-ui,-apple-system,Roboto,sans-serif!important;font-weight:400;-webkit-font-smoothing:antialiased}
+/* no liquid glass anywhere */
+:is(.pill,.btn,.gbtn,.wbtn,.mact a,.mact button,.chip,.seg,.ysel,.ssel,.sclr,.gsel,.favbtn,.shtabs button,.searchpill,.lunm button,.updfail button,.lsearch,.ltools #lsort,.ltools #gfilt,.hsearch,.scard,.card,.kshow,.stat,.ratebox,.imdbbox,.epc,.epinfo,.rpc,.rpp,.lrow,.sehd,.aprate,.toast,.ptr,.gpk,.sic){background-image:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* buttons: flat. filled accent, or a thin outline */
+.pill{border-radius:999px!important;font-family:Inter,sans-serif!important;font-weight:600!important;letter-spacing:0!important}
+.pill:not(.ghost){background:var(--accent)!important;color:#fff!important;border:0!important}
+.pill.ghost{background:transparent!important;color:#F2EEE8!important;border:1px solid rgba(242,238,232,.35)!important}
+
+/* ---------- Discover: Trending is a full-bleed backdrop across the top ---------- */
+#v-discover .hero.hstack{margin:0!important;width:100%!important;border-radius:0!important;aspect-ratio:auto!important;height:470px;max-height:none!important;box-shadow:none!important}
+#v-discover .hero.hstack::after{display:none!important}
+#v-discover .hero .hcard{border-radius:0!important;box-shadow:none!important}
+#v-discover .hero .hcard:not([data-p="0"]){opacity:0!important}
+#v-discover .hero .hcard::after{background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.15) 55%,#000 100%)!important}
+#v-discover .hero .hfix{left:20px!important;right:20px!important;bottom:22px!important}
+#v-discover .hero .tag{position:absolute;top:-388px;left:0;background:none!important;color:#F2EEE8!important;padding:0!important;font:600 13px Inter,sans-serif!important;letter-spacing:0!important;text-transform:none!important}
+#v-discover .hero h2{font-family:var(--disp)!important;font-weight:400!important;font-size:52px!important;line-height:.95!important;letter-spacing:-.01em;margin:0 0 10px!important;text-transform:none!important;text-shadow:none!important}
+#v-discover .hero .hm{font-size:14px!important;color:rgba(242,238,232,.75)!important}
+#v-discover .hero .hbtns{margin-top:14px;gap:10px}
+#v-discover .hero .hbtns .pill{height:44px;padding:0 20px!important;font-size:15px!important}
+.lprog{display:flex;gap:4px;margin-top:16px}
+.lprog i{flex:1;height:2px;background:rgba(242,238,232,.25);border-radius:1px}
+.lprog i.on{background:#F2EEE8}
+main{padding-top:0!important}
+body:has(#v-discover:not([hidden])) main{padding-top:0!important}
+/* row headings: plain sans, "See all" on the right */
+.rowhead{align-items:baseline!important;padding:0 20px 12px!important}
+.rowhead h3{font-family:Inter,sans-serif!important;font-weight:600!important;font-size:17px!important;letter-spacing:-.01em!important;text-transform:none!important}
+.rowhead:has(button) h3::after{display:none!important}
+.rowhead:has(button)::after{content:"See all";font-size:13px;font-weight:500;color:var(--accent)}
+.rk{font-family:var(--disp)!important;font-weight:400!important}
+section.row,.row{margin-top:26px}
+.track{padding-left:20px!important;padding-right:20px!important}
+#v-discover .hero .tag{display:none!important}
+#v-discover .hero.hstack::before{content:"Trending this week";display:block!important;position:absolute;top:calc(env(safe-area-inset-top) + 22px);left:20px;z-index:6;
+  font:600 13px Inter,sans-serif;color:#F2EEE8;background:none!important;opacity:1!important;inset:auto auto auto 20px}
+.rk{color:#F2EEE8!important;-webkit-text-stroke:0!important;text-shadow:none!important;font-size:44px!important}
+.card .cap b,.franchise b,.kshow b{font-family:Inter,sans-serif!important;font-weight:600!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important}
+.card,.kshow{border-radius:10px!important;border:1px solid var(--hair)!important;background:#0b0b0c!important}
+.saga .sname,.sname{font-family:Inter,sans-serif!important;font-weight:600!important;font-size:13px!important;text-transform:none!important;letter-spacing:0!important}
+.saga{border-radius:10px!important}

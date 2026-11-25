@@ -1,0 +1,13 @@
+{
+  "appId": "io.github.jwillhub.lunar",
+  "appName": "Lunar",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#000000"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

@@ -36,4 +36,5 @@ PY
 build main; cp index.html "$REPO/reel-log/index.html"
 build copy; cp index.html "$REPO/rc-library/index.html"
 python3 "$SRC/apply_native.py" >/dev/null; cp index.html "$REPO/android-app/www/index.html"
+python3 "$REPO/lunar/source/build_lunar.py" >/dev/null
 echo built

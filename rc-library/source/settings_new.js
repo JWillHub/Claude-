@@ -128,6 +128,7 @@ box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div clas
       box.innerHTML = `<div class="scard">
         ${row('exp', 'down', 'Back up', 'Save ratings, diary and lists to a file')}
         ${row('imp', 'up', 'Restore', 'Bring them back from a backup file')}
+        ${row('expk', 'down', 'Back up with keys', 'For moving to Lunar: also saves your API keys and accent. Delete the file once it\'s imported.')}
         <div class="srow static stor"><span class="slab">Storage<small id="stinfo">Measuring…</small><i class="stbar"><b id="stfill"></b></i></span><button class="pill sclr" id="stclr">Clear cache</button></div></div>
         <input type="file" id="file" accept=".json,application/json" hidden>`;
       // Storage: your own data vs. cached data (title details, stream links), and a button to clear the cache
@@ -149,17 +150,20 @@ box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div clas
         if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
         measure(); toast('Cache cleared. Your ratings and library are untouched.');
       };
-      $('#exp', box).onclick = async () => {
-        const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs }, null, 1);
+      const save = async withKeys => {
+        const extra = withKeys ? { keys:{ tmdb:store.get(K_KEY, ''), rd:store.get(K_RD, ''), omdb:store.get(K_OMDB, '') }, accent:store.get(K_ACCENT, '') } : {};
+        const json = JSON.stringify({ app:'reellog', v:5, entries, ratings, watch, seen, favs, ...extra }, null, 1);
         if(NATIVE){   // in the Android app: Android's own "Save to" screen (Downloads, Drive, ...)
-          try{ const r = await callNative('RCFiles', 'save', { name:`rolling-credits-${today()}.json`, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); }
+          try{ const r = await callNative('RCFiles', 'save', { name:`rolling-credits-${withKeys ? "for-lunar-" : ""}${today()}.json`, data:json, mime:'application/json' }); if(r && r.saved) toast('Backup saved'); }
           catch(e){ toast('Could not save the backup'); }
           return;
         }
         const blob = new Blob([json], { type:'application/json' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `rolling-credits-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        a.download = `rolling-credits-${withKeys ? "for-lunar-" : ""}${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       };
+      $('#exp', box).onclick = () => save(false);
+      $('#expk', box).onclick = () => save(true);
       $('#imp', box).onclick = () => $('#file', box).click();
       $('#file', box).onchange = importBackup;
     });
@@ -212,7 +216,10 @@ box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div clas
       if(data.favs) for(const [id, p] of Object.entries(data.favs)) if(!favs[id]) favs[id] = p;
       if(data.ratings) for(const [id, r] of Object.entries(data.ratings)) if(!ratings[id] || (r.at || 0) > (ratings[id].at || 0)){ ratings[id] = r; rn++; }
       if(!data.ratings) list.forEach(e => { if(e.rating && !ratings[e.tmdb]){ ratings[e.tmdb] = { r:e.rating, title:e.title, year:e.year, poster:e.poster, at:e.added || 0 }; rn++; } });
-      saveAll(); afterChange(); paint(); toast(`Restored ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}`);
+      let kn = 0;   // a "Back up with keys" file also carries the API keys and accent
+      if(data.keys){ [[K_KEY, data.keys.tmdb], [K_RD, data.keys.rd], [K_OMDB, data.keys.omdb]].forEach(([k, v]) => { if(v && typeof v === 'string'){ store.set(k, v); kn++; } }); }
+      if(data.accent && /^#[0-9a-f]{6}$/i.test(data.accent)){ store.set(K_ACCENT, data.accent); try{ applyAccent(); }catch(_){} }
+      saveAll(); afterChange(); paint(); toast(`Restored ${n} diary entr${n === 1 ? 'y' : 'ies'} and ${rn} rating${rn === 1 ? '' : 's'}` + (kn ? ` and ${kn} key${kn === 1 ? '' : 's'}. You can delete the backup file now.` : ''));
     }catch(e){ toast('That file is not a Rolling Credits backup.'); }
   }
   paint();

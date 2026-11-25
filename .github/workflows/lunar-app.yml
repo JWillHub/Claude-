@@ -1,0 +1,75 @@
+# Builds the Lunar Android app (lunar-app/, screens from lunar/source) and publishes the APK as the "lunar-latest" release.
+name: Lunar app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['lunar-app/**', '.github/workflows/lunar-app.yml']
+permissions:
+  contents: write
+concurrency: lunar-app
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: lunar-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Android SDK (preinstalled on GitHub's runners)
+        run: echo "ANDROID_HOME=$ANDROID_HOME" && ls "$ANDROID_HOME/platforms" | tail -3
+      - name: Install Capacitor
+        run: npm install --no-audit --no-fund
+      - name: Create the Android project
+        run: |
+          cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
+          sed -i "s/__BUILDNUM__/${GITHUB_RUN_NUMBER}/g" www/index.html
+          sed -i "s/__BUILD__/${GITHUB_RUN_NUMBER} · $(TZ=America/Chicago date '+%b %-d, %-I:%M %p')/" www/index.html
+          echo "{\"build\": ${GITHUB_RUN_NUMBER}}" > version.json
+          npx cap add android
+          ./scripts/patch-android.sh
+          npx cap sync android
+      - name: Unlock the private signing key (SIGNING_PASSPHRASE secret)
+        env:
+          PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
+        run: |
+          if [ -n "$PASSPHRASE" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in signing.keystore.enc -out debug.keystore -pass env:PASSPHRASE
+            echo "KS_PASS=$PASSPHRASE" >> "$GITHUB_ENV"
+          else
+            echo "::warning::SIGNING_PASSPHRASE secret is not set, so this build uses the old public key"
+            echo "KS_PASS=android" >> "$GITHUB_ENV"
+          fi
+      - name: Build APK
+        working-directory: lunar-app/android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Rename and check it's signed with the app's own key
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk lunar.apk
+          want=$(keytool -list -v -keystore debug.keystore -storepass "$KS_PASS" | grep -m1 'SHA256:' | awk '{print $2}')
+          got=$(keytool -printcert -jarfile lunar.apk | grep -m1 'SHA256:' | awk '{print $2}')
+          echo "want $want"; echo "got  $got"
+          test "$want" = "$got"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lunar-apk
+          path: lunar-app/lunar.apk
+      - name: Publish as the lunar-latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: lunar-latest
+          name: Lunar for Android (latest build)
+          body: "Latest build from ${{ github.sha }}. Download lunar.apk on your phone and open it to install or update."
+          prerelease: false
+          make_latest: false
+          files: |
+            lunar-app/lunar.apk
+            lunar-app/version.json
