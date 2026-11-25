@@ -1302,6 +1302,17 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 .shcard .epc .epchk{background:rgba(0,0,0,.6)!important;border-radius:50%!important}
 /* no accent color choice in Lunar */
 .sgh:has(+ .scard .acc),.scard:has(.acc){display:none!important}
+/* genre strips: the genre's backdrop across the whole row, faded */
+#v-genres .gtile{position:relative!important;height:84px!important;padding:0 16px!important;overflow:hidden!important;isolation:isolate}
+#v-genres .gtile .gtart{position:absolute!important;inset:0!important;width:auto!important;height:auto!important;border-radius:0!important;z-index:-1;
+  background-size:cover!important;background-position:center 30%!important;opacity:.38;filter:saturate(.65);
+  -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.25) 0%,#000 55%);mask-image:linear-gradient(90deg,rgba(0,0,0,.25) 0%,#000 55%)}
+#v-genres .gtile b{position:relative!important;z-index:1;text-shadow:0 1px 12px rgba(0,0,0,.6)!important}
+#v-genres .gtile:active .gtart{opacity:.55}
+#v-genres .gtile{align-items:center!important}#v-genres .gtile b{margin:0!important;padding:0!important;align-self:center!important;transform:translateY(-1px)}
+#v-genres .gtile .gtart{left:30%!important;background-position:center 30%!important;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.6) 30%,#000 60%)!important;mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.6) 30%,#000 60%)!important}
+#v-genres .gtile b{transform:translateY(2px)!important}
 </style>
 </head>
 <body>
