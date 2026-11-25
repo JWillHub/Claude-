@@ -1263,6 +1263,43 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 /* sharper, slightly bigger posters in the rows */
 .track>.pc:not(.ranked){width:138px!important}
 .track>.pc.ranked{width:168px!important;padding-left:30px!important}
+
+/* ---------- posters and stills: a small, crisp corner ---------- */
+.pw,.pw img,.pw .ph,.grid .pc img,.lshow img,.lshow .ph,.lsea img,.shpo img,.mvhead img:not(.mtlogo),.cwimg,.epth,.rpc .rpposter img,.card,.saga,.gtile .gtart,.lcw img,.sehp img,.rarow img,.ppl img,.lshow{border-radius:4px!important}
+
+/* ---------- ratings on every title page: big serif numbers in a row ---------- */
+#mimdb.scores{display:flex!important;align-items:stretch;gap:0;margin:16px 0 6px;flex-wrap:nowrap}
+.lsc{flex:1 1 auto;min-width:0;padding:0 14px;border-left:1px solid rgba(242,238,232,.15)}
+.lsc:first-child{padding-left:0;border-left:0}
+.lsc b{display:block;font-family:var(--disp);font-weight:400;font-size:32px;line-height:1;color:#F2EEE8;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.lsc span{display:block;margin-top:5px;font:500 11.5px Inter,sans-serif;color:rgba(242,238,232,.62);white-space:nowrap}
+.lsc.dim b{color:rgba(242,238,232,.4)}
+#mimdb .imdbm,#mimdb .rt{display:none!important}
+
+/* ---------- series page (from the library): a new layout ---------- */
+.shcard .shname:not(.haslogo){font-family:var(--disp)!important;font-weight:400!important;font-size:46px!important;text-transform:none!important;letter-spacing:-.01em}
+.shcard .shmeta{font:400 13px Inter,sans-serif!important;color:rgba(242,238,232,.7)!important}
+.shcard .epnext .reel,.shcard .epnext button{border-radius:12px!important;background:var(--accent)!important;box-shadow:none!important;background-image:none!important;width:100%;height:50px;font:600 16px Inter,sans-serif!important}
+.shcard .shov{font:400 15px/1.5 Inter,sans-serif!important;color:rgba(242,238,232,.8)!important;margin:16px 0 4px!important}
+.shcard .shtabs{margin:18px 0 0!important;border-bottom:1px solid var(--hair)}
+.shcard .seapick,.shcard .sealbl{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0 26px 12px 0!important;
+  font-family:var(--disp)!important;font-weight:400!important;font-size:30px!important;color:#F2EEE8!important;position:relative;text-transform:none!important;margin:0!important}
+.shcard .seapick::after{right:4px!important;top:38%!important;border-color:rgba(242,238,232,.6)!important}
+.shcard .eplist{display:block!important;gap:0!important}
+.shcard .epc{display:grid!important;grid-template-columns:44px minmax(0,1fr) 108px;align-items:start;gap:12px;padding:16px 0!important;margin:0!important;
+  background:transparent!important;border:0!important;border-bottom:1px solid var(--hair)!important;border-radius:0!important;box-shadow:none!important;text-align:left}
+.shcard .epc .epth{order:3;width:108px!important;border-radius:4px!important;margin:0!important}
+.shcard .epc .eptx{order:2;display:flex;flex-direction:column;gap:4px;min-width:0}
+.shcard .epc .ept{font:600 15px/1.25 Inter,sans-serif!important;color:#F2EEE8!important}
+.shcard .epc .ept b{display:none}
+.shcard .epc .lepn{order:1;font-family:var(--disp);font-size:34px;line-height:.9;color:rgba(242,238,232,.9);text-align:left}
+.shcard .epc .epm{font:400 12px Inter,sans-serif!important;color:rgba(242,238,232,.55)!important}
+.shcard .epc .epir{background:none!important;color:rgba(242,238,232,.75)!important;padding:0!important;font:600 12px Inter,sans-serif!important;border:0!important}
+.shcard .epc .epir::before{content:"★ ";color:var(--accent)}
+.shcard .epc .epo{font:400 13px/1.4 Inter,sans-serif!important;color:rgba(242,238,232,.6)!important;-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.shcard .epc.fin .lepn,.shcard .epc.fin .ept{color:rgba(242,238,232,.4)!important}
+.shcard .epc .lbar{background:var(--accent)!important;height:3px!important}
+.shcard .epc .epchk{background:rgba(0,0,0,.6)!important;border-radius:50%!important}
 </style>
 </head>
 <body>
@@ -3325,7 +3362,7 @@ function fillUpdate(b){
   const btn = $('#appupdbtn', box); if(!btn) return;
   btn.onclick = async () => {
     btn.disabled = true; btn.textContent = 'Downloading…'; updating = true;
-    const url = REL + 'rolling-credits.apk?v=' + latestBuild;
+    const url = REL + 'lunar.apk?v=' + latestBuild;
     const C = window.Capacitor || {}, P = (C.Plugins && C.Plugins.RCUpdate) || (C.registerPlugin && C.registerPlugin('RCUpdate'));
     let handle = null, last = Date.now(), dog = null, gone = false;
     const fallback = why => {
@@ -4739,6 +4776,32 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => sharpen(document), 15); })
     .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['src', 'style'] });
+})();
+// Ratings row on movie and show pages: IMDb · Critics · Your rating, as big numbers
+(function(){
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function build(box){
+    const sheetEl = box.closest('.sh') || document; const s5 = sheetEl.querySelector('.ratebar .s5');
+    const im = box.querySelector('.imdbm'), rt = box.querySelector('.rt');
+    let imN = '', imV = ''; if(im){ im.childNodes.forEach(n => { if(n.nodeType === 3 && n.textContent.trim()) imN = n.textContent.trim(); }); const sm = im.querySelector('.small'); imV = sm ? sm.textContent.replace(' votes', '') : ''; }
+    const rtV = rt ? rt.textContent.trim() : '';
+    const r = s5 ? +s5.dataset.r || 0 : 0;
+    const cols = [];
+    if(imN) cols.push(`<div class="lsc"><b>${esc(imN)}</b><span>IMDb${imV ? ' · ' + esc(imV) : ''}</span></div>`);
+    if(rtV) cols.push(`<div class="lsc"><b>${esc(rtV)}</b><span>Critics</span></div>`);
+    cols.push(`<div class="lsc lmine${r ? '' : ' dim'}"><b>${r ? (r % 1 ? r.toFixed(1) : r) : '—'}</b><span>Your rating</span></div>`);
+    const html = cols.join('');
+    let wrap = box.querySelector('.lscw');
+    if(!wrap){ wrap = document.createElement('div'); wrap.className = 'lscw'; wrap.style.display = 'contents'; box.appendChild(wrap); }
+    if(wrap.innerHTML !== html) wrap.innerHTML = html;
+  }
+  function all(){ document.querySelectorAll('#mimdb').forEach(build); }
+  // series page: big serif episode numbers
+  function eps(){ document.querySelectorAll('.shcard .epc:not([data-ln])').forEach(c => { c.dataset.ln = 1;
+    const b = c.querySelector('.ept b'); const n = b ? b.textContent.trim() : '';
+    c.insertAdjacentHTML('afterbegin', `<span class="lepn" aria-hidden="true">${n ? n.padStart(2, '0') : ''}</span>`); }); }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { all(); eps(); }, 25); })
+    .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['data-r'] });
 })();
 </script>
 </body>

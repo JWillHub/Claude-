@@ -99,3 +99,29 @@
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => sharpen(document), 15); })
     .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['src', 'style'] });
 })();
+// Ratings row on movie and show pages: IMDb · Critics · Your rating, as big numbers
+(function(){
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function build(box){
+    const sheetEl = box.closest('.sh') || document; const s5 = sheetEl.querySelector('.ratebar .s5');
+    const im = box.querySelector('.imdbm'), rt = box.querySelector('.rt');
+    let imN = '', imV = ''; if(im){ im.childNodes.forEach(n => { if(n.nodeType === 3 && n.textContent.trim()) imN = n.textContent.trim(); }); const sm = im.querySelector('.small'); imV = sm ? sm.textContent.replace(' votes', '') : ''; }
+    const rtV = rt ? rt.textContent.trim() : '';
+    const r = s5 ? +s5.dataset.r || 0 : 0;
+    const cols = [];
+    if(imN) cols.push(`<div class="lsc"><b>${esc(imN)}</b><span>IMDb${imV ? ' · ' + esc(imV) : ''}</span></div>`);
+    if(rtV) cols.push(`<div class="lsc"><b>${esc(rtV)}</b><span>Critics</span></div>`);
+    cols.push(`<div class="lsc lmine${r ? '' : ' dim'}"><b>${r ? (r % 1 ? r.toFixed(1) : r) : '—'}</b><span>Your rating</span></div>`);
+    const html = cols.join('');
+    let wrap = box.querySelector('.lscw');
+    if(!wrap){ wrap = document.createElement('div'); wrap.className = 'lscw'; wrap.style.display = 'contents'; box.appendChild(wrap); }
+    if(wrap.innerHTML !== html) wrap.innerHTML = html;
+  }
+  function all(){ document.querySelectorAll('#mimdb').forEach(build); }
+  // series page: big serif episode numbers
+  function eps(){ document.querySelectorAll('.shcard .epc:not([data-ln])').forEach(c => { c.dataset.ln = 1;
+    const b = c.querySelector('.ept b'); const n = b ? b.textContent.trim() : '';
+    c.insertAdjacentHTML('afterbegin', `<span class="lepn" aria-hidden="true">${n ? n.padStart(2, '0') : ''}</span>`); }); }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { all(); eps(); }, 25); })
+    .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['data-r'] });
+})();
