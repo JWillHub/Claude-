@@ -87,7 +87,7 @@
 })();
 // Settings: your numbers at the top, a short line under each section
 (function(){
-  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Start page', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
+  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Start page', 'g-pref':'Filters, data saver and haptics', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
   function dress(){
     const v = document.getElementById('v-settings'); if(!v || v.hidden) return;
     const page = v.querySelector('.setpage'), title = page && page.querySelector('.stitle'); if(!page || !title) return;
@@ -108,6 +108,7 @@
 // Sharper pictures: posters load at w500 (they're shown big on a high-density screen), the Trending backdrop at full size
 (function(){
   function sharpen(root){
+    if(window.LDS) return;   // data saver keeps the smaller images
     (root.querySelectorAll ? root : document).querySelectorAll('img[src*="/t/p/w185/"],img[src*="/t/p/w342/"]').forEach(im => {
       if(im.closest('.rpbg')) return;
       im.src = im.src.replace(/\/t\/p\/w(185|342)\//, '/t/p/w500/'); });
@@ -180,4 +181,62 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
     else if(home && home.isConnected && !home.contains(a)){ a.classList.remove('labout'); home.insertBefore(a, home.firstChild); }
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(place, 15); }).observe(document.body, { subtree:true, childList:true });
+})();
+
+// Content filters: anime, reality/talk shows and little-known titles stay out of browsing (never out of search)
+(function(){
+  if(typeof tmdb !== 'function') return;
+  const orig = tmdb, get = (k, d) => { try{ const v = localStorage.getItem('lunar.f.' + k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } };
+  const REAL = [10763, 10764, 10766, 10767], recent = Date.now() - 75 * 864e5;
+  tmdb = async function(path, params){
+    const j = await orig(path, params);
+    if(!j || !Array.isArray(j.results) || /^\/search/.test(path)) return j;
+    const anime = get('anime', false), real = get('real', false), votes = +get('votes', 0) || 0;
+    if(!anime && !real && !votes) return j;
+    const keep = m => {
+      const g = m.genre_ids || (m.genres || []).map(x => x.id);
+      if(anime && g.includes(16) && m.original_language === 'ja') return false;
+      if(real && g.some(x => REAL.includes(x))) return false;
+      if(votes && m.media_type !== 'person'){
+        const d = Date.parse(m.release_date || m.first_air_date || '') || 0;
+        if(d < recent && (m.vote_count || 0) < votes) return false;   // new and upcoming titles haven't had time to collect votes
+      }
+      return true;
+    };
+    return { ...j, results:j.results.filter(keep) };
+  };
+})();
+// Haptics: a light tick on taps, and a switch that silences every vibration
+(function(){
+  const on = () => { try{ const v = localStorage.getItem('lunar.f.hap'); return v == null ? true : JSON.parse(v) !== false; }catch(e){ return true; } };
+  const vib = navigator.vibrate ? navigator.vibrate.bind(navigator) : null;
+  if(vib) navigator.vibrate = p => on() ? vib(p) : false;
+  document.addEventListener('pointerdown', e => {
+    if(e.pointerType !== 'touch' || !vib || !on()) return;
+    if(e.target.closest('.tabbar button,.tabbar a,.tb,#v-genres .gtile,.seg button,.lseg button,.pill,.srow:not(.static),.lstats button,.s5,#hback,#hcar')) vib(6);
+  }, { passive:true, capture:true });
+})();
+// Bottom tab bar follows the finger: it slides down as the page scrolls down, back up as it scrolls up
+(function(){
+  let bar = null, off = 0, ly = scrollY, settleT = 0;
+  const H = () => (bar ? bar.offsetHeight : 80) + 24;
+  const paint = anim => {
+    if(!bar) return;
+    bar.style.transition = anim ? 'transform .45s cubic-bezier(.22,1,.36,1),opacity .45s ease' : 'none';
+    bar.style.transform = off ? `translateY(${off}px)` : '';
+    bar.style.opacity = off ? String(Math.max(0, 1 - off / H())) : '';
+    bar.style.pointerEvents = off > H() * 0.6 ? 'none' : '';
+  };
+  addEventListener('scroll', () => {
+    bar = bar && bar.isConnected ? bar : document.querySelector('.tabbar');
+    const y = Math.max(0, scrollY), d = y - ly; ly = y;
+    if(document.body.classList.contains('locked')) return;
+    off = y < 4 ? 0 : Math.max(0, Math.min(H(), off + d));
+    paint(false);
+    clearTimeout(settleT);   // when the finger stops, finish the move it was making
+    settleT = setTimeout(() => { if(off && off < H()){ off = off > H() / 2 ? H() : 0; paint(true); } }, 160);
+  }, { passive:true });
+  // a new page or a tap on the bar brings it back
+  document.addEventListener('click', e => { if(e.target.closest('.tabbar') || e.target.closest('.pc,.gtile')){ setTimeout(() => { off = 0; ly = scrollY; paint(true); }, 0); } }, true);
+  addEventListener('popstate', () => { off = 0; ly = scrollY; paint(true); });
 })();

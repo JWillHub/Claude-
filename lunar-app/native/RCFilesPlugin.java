@@ -17,6 +17,15 @@ import java.nio.charset.StandardCharsets;
 @CapacitorPlugin(name = "RCFiles")
 public class RCFilesPlugin extends Plugin {
 
+    // RCFiles.clearWebCache() empties the web view's own cache (downloaded posters and backdrops)
+    @PluginMethod
+    public void clearWebCache(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            try { getBridge().getWebView().clearCache(true); } catch (Exception e) { }
+            call.resolve();
+        });
+    }
+
     @PluginMethod
     public void save(PluginCall call) {
         String name = call.getString("name", "backup.json");

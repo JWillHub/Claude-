@@ -19,6 +19,13 @@ def lunarize(s):
     s = s.replace('content="Rolling Credits"', 'content="Lunar"')
     s = s.replace("releases/download/android-latest/", "releases/download/lunar-latest/")
     s = s.replace("rolling-credits.apk", "lunar.apk")
+    # data saver: posters and backdrops come from size variables chosen once at start-up
+    s = s.replace("${IMG}w500", "${IMG}${LPS}").replace("${IMG}original", "${IMG}${LBS}").replace("${IMG}w1280", "${IMG}${LBS}")
+    assert 'src="${IMG}${size}${p}"' in s
+    s = s.replace('src="${IMG}${size}${p}"', 'src="${IMG}${size === \'w500\' ? LPS : size}${p}"')
+    # the tab bar follows the finger instead of hiding by itself (lunar.js drives it)
+    assert "document.body.classList.toggle('tbhide', d > 0 && y > 120 && !document.body.classList.contains('locked'));" in s
+    s = s.replace("document.body.classList.toggle('tbhide', d > 0 && y > 120 && !document.body.classList.contains('locked'));", "")
     # no pop-up rating card: holding a poster no longer starts a timer, so it acts like a normal tap
     assert "lp.timer = setTimeout(() => {" in s
     s = s.replace("lp.timer = setTimeout(() => {", "lp.timer = 0 && setTimeout(() => {")
@@ -32,7 +39,8 @@ def lunarize(s):
     s = s.replace("let c = store.get(K_ACCENT, '#b8242c'),", "let c = '#b8242c',")
     s = s.replace('Rolling Credits pulls every film', 'Lunar pulls every film')
     s = s.replace("function poster(p, cls = '', size = 'w185'", "function poster(p, cls = '', size = 'w500'")   # sharp posters from the start
-    s = s.replace('style="background-image:url(${IMG}w780${m.backdrop})"', 'style="background-image:url(${IMG}original${m.backdrop})"')   # full-size Trending backdrop
+    s = s.replace('style="background-image:url(${IMG}w780${m.backdrop})"', 'style="background-image:url(${IMG}${LBS}${m.backdrop})"')   # full-size Trending backdrop
+    s = s.replace('<head>', '<head>\n<script>var LDS = false; try{ LDS = JSON.parse(localStorage.getItem("lunar.f.saver") || "false") === true; }catch(e){} var LPS = LDS ? "w342" : "w500", LBS = LDS ? "w780" : "original";</script>', 1)
     s = s.replace('</head>', FONTS + '\n<style id="lunar">' + css + '</style>\n</head>', 1)
     s = s.replace('</body>', '<script>' + js + '</script>\n</body>', 1)
     return s

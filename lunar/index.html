@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script>var LDS = false; try{ LDS = JSON.parse(localStorage.getItem("lunar.f.saver") || "false") === true; }catch(e){} var LPS = LDS ? "w342" : "w500", LBS = LDS ? "w780" : "original";</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c0a0f">
@@ -1620,7 +1621,7 @@ async function repairTitles(){
   }finally{ repairing = false; }
 }
 function poster(p, cls = '', size = 'w500', title = ''){
-  return p ? `<img class="${cls}" loading="lazy" decoding="async" draggable="false" src="${IMG}${size}${p}" alt="${esc(title)}">`
+  return p ? `<img class="${cls}" loading="lazy" decoding="async" draggable="false" src="${IMG}${size === 'w500' ? LPS : size}${p}" alt="${esc(title)}">`
            : `<div class="${cls} ph">${esc(title)}</div>`;
 }
 
@@ -2147,7 +2148,7 @@ async function loadHero(){
     h.classList.add('hstack');
     // the pictures move; the tag and the Rate / Details buttons stay put and only the title + info change
     const meta = m => `${esc(m.year)}${m.genres.length ? ' · ' + m.genres.slice(0, 3).map(g => GNAME[g]).filter(Boolean).join(', ') : ''}`;
-    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}original${m.backdrop})"></div>`).join('')
+    h.innerHTML = pool.map((m, i) => `<div class="hcard" data-i="${i}" style="background-image:url(${IMG}${LBS}${m.backdrop})"></div>`).join('')
       + `<div class="hin hfix"><span class="tag">Trending now</span><div class="htx"><h2></h2><div class="hm"></div></div>
       <div class="hbtns"><button class="pill" data-hr>★ Rate</button><button class="pill ghost" data-hd>Details</button></div></div>`
       + `<div class="hdots">${pool.map((_, i) => `<i data-d="${i}"></i>`).join('')}</div>`;
@@ -2184,7 +2185,7 @@ async function loadHero(){
       addEventListener('scroll', () => { if(q) return; q = 1; requestAnimationFrame(() => { q = 0;
         const y = Math.max(0, scrollY), d = y - ly;
         if(Math.abs(d) < 6) return; ly = y;
-        document.body.classList.toggle('tbhide', d > 0 && y > 120 && !document.body.classList.contains('locked'));
+        
       }); }, { passive:true });
       document.addEventListener('click', e => { if(e.target.closest('.tabbar')) document.body.classList.remove('tbhide'); }, true); }
     h.addEventListener('click', () => { last = Date.now(); });
@@ -2556,7 +2557,7 @@ function buildGenreBrowse(){
     $$('.gtile', tilesEl).forEach(el => { const t = list[+el.dataset.i];
       el.onclick = () => openGenrePage(t.d); });
     tileArtAll(gb.kind, list).then(art => $$('.gtile', tilesEl).forEach(el => { const p = art[list[+el.dataset.i].k];
-      if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}w1280${p})`; })).catch(() => {});
+      if(p) el.querySelector('.gtart').style.backgroundImage = `url(${IMG}${LBS}${p})`; })).catch(() => {});
   };
   // search mode: tapping the search bar clears the page (tiles fade away) and results fill in as you type
   let on = false;
@@ -4232,7 +4233,7 @@ function drawLibrary(b){
     // wide pictures: the episode's still for shows, the backdrop for movies
     $$('.cwc', b).forEach(x => {
       const id = pid(x.dataset.cid), ep = (x.dataset.cl.match(/S(\d+)\s*E(\d+)/) || []);
-      const put = path => { if(path && x.isConnected) $('.cwimg', x).innerHTML = `<img src="${IMG}w500${path}" alt="" loading="lazy"><i class="cwplay">${PLAYSVG}</i>`; };
+      const put = path => { if(path && x.isConnected) $('.cwimg', x).innerHTML = `<img src="${IMG}${LPS}${path}" alt="" loading="lazy"><i class="cwplay">${PLAYSVG}</i>`; };
       const bd = () => detailsFor(id).then(d => put(d.backdrop)).catch(() => {});
       if(typeof id === 'string' && ep[1]) seasonEps(+String(id).slice(2), +ep[1]).then(l => { const e = l.find(z => z.e === +ep[2]); e && e.still ? put(e.still) : bd(); }).catch(bd);
       else bd();
@@ -4356,7 +4357,7 @@ async function moreLike(box, id){
   if(!list.length || !box.isConnected) return;
   remember(list);
   box.innerHTML = `<section class="cwband mlband"><div class="cwh"><span class="cwdot"></span>More like this</div><div class="cwtrack nodrag">${list.map(m => {
-    const pic = m.backdrop ? `<img src="${IMG}w500${m.backdrop}" alt="" loading="lazy">` : `<span class="cwph">${esc(m.title)}</span>`;
+    const pic = m.backdrop ? `<img src="${IMG}${LPS}${m.backdrop}" alt="" loading="lazy">` : `<span class="cwph">${esc(m.title)}</span>`;
     return `<button class="cwc" data-like="${esc(m.id)}"><span class="cwimg">${pic}</span><span class="cwt">${esc(m.title)}</span><span class="small">${inLib(m.id) ? '<b class="mlown">In your library</b>' : esc([m.year, m.tv ? 'Series' : 'Movie'].filter(Boolean).join(' · '))}</span></button>`; }).join('')}</div></section>`;
   $$('[data-like]', box).forEach(x => x.onclick = () => openLibCard(pid(x.dataset.like)));
 }
@@ -4548,7 +4549,10 @@ function renderSettings(){
     palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2.3a3.8 3.8 0 0 0 3.8-3.8C20.5 6.6 16.7 3.5 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.5" r=".9"/><circle cx="14.6" cy="7.5" r=".9"/>',
     home:'<path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4z"/>'
   };
-  const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'lunar.links' || k === 'lunar.tinfo';
+  // 'lunar.' becomes 'lunar.' in the Lunar build, so this is true only there
+  const IS_LUNAR = 'lunar.'.startsWith('lunar');
+  const K_F_ANIME = 'lunar.f.anime', K_F_REAL = 'lunar.f.real', K_F_VOTES = 'lunar.f.votes', K_F_SAVER = 'lunar.f.saver', K_F_HAP = 'lunar.f.hap';
+  const isCacheKey = k => /^(reellog|rclib|lunar)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'lunar.links' || k === 'lunar.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
@@ -4576,6 +4580,7 @@ function renderSettings(){
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
         ${row('g-look', 'palette', 'Appearance', '')}
+        ${IS_LUNAR ? row('g-pref', 'eye', 'Content and data', '') : ''}
         ${row('g-data', 'down', 'Your data', '')}
       </div></div>
       <div class="sgroup smain"><div class="scard">
@@ -4598,6 +4603,20 @@ function renderSettings(){
         wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); closeAllSheets(); setTimeout(openLibrary, 60); }; } });
       $('#s-omdb', box).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
         how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
+    });
+    const gpf = $('#g-pref', b); if(gpf) gpf.onclick = () => subPage('Content and data', box => {
+      const g = (k, d) => store.get(k, d);
+      box.innerHTML = `<div class="sgh">Content filters</div><div class="scard">
+        ${sw('f-anime', 'eye', 'Hide anime', 'Japanese animation stays out of Discover, Genres and lists', g(K_F_ANIME, false))}
+        ${sw('f-real', 'eye', 'Hide reality and talk shows', 'Also leaves out soaps and news', g(K_F_REAL, false))}
+        ${selRow('film', 'Hide little-known titles', 'Fewer than this many votes on TMDB', pick('f-votes', g(K_F_VOTES, 0), [[0, 'Off'], [50, '50'], [200, '200'], [1000, '1,000']]))}</div>
+        <div class="sgh">Data and feel</div><div class="scard">
+        ${sw('f-saver', 'down', 'Data saver', 'Smaller posters and backdrops; restarts the app', g(K_F_SAVER, false))}
+        ${sw('f-hap', 'next', 'Haptics', 'A light tick when you tap tabs, genres and buttons', g(K_F_HAP, true))}</div>
+        <p class="small" style="margin:10px 4px 0;font-size:12.5px">Filters don't apply to search, so you can still find anything by name.</p>`;
+      const bind = (id, k, isBool, after) => { const el = $('#' + id, box); el.onchange = () => { store.set(k, isBool ? el.checked : +el.value); after && after(); }; };
+      bind('f-anime', K_F_ANIME, true); bind('f-real', K_F_REAL, true); bind('f-votes', K_F_VOTES, false); bind('f-hap', K_F_HAP, true);
+      bind('f-saver', K_F_SAVER, true, () => setTimeout(() => location.reload(), 350));
     });
     const gp = $('#g-play', b); if(gp) gp.onclick = () => subPage('Player', box => {
       const g = (k, d) => store.get(k, d);
@@ -4652,7 +4671,9 @@ box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div clas
         for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
         try{ sessionStorage.clear(); }catch(e){}
         if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
-        measure(); toast('Cache cleared. Your ratings and library are untouched.');
+        try{ if(window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))); }catch(e){}
+        if(IS_LUNAR && NATIVE) callNative('RCFiles', 'clearWebCache', {}).catch(() => {});   // saved posters and backdrops too
+        measure(); toast(IS_LUNAR ? 'Cache and saved images cleared. Your ratings and library are untouched.' : 'Cache cleared. Your ratings and library are untouched.');
       };
       const save = async withKeys => {
         const extra = withKeys ? { keys:{ tmdb:store.get(K_KEY, ''), rd:store.get(K_RD, ''), omdb:store.get(K_OMDB, '') }, accent:store.get(K_ACCENT, '') } : {};
@@ -4834,7 +4855,7 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
 })();
 // Settings: your numbers at the top, a short line under each section
 (function(){
-  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Start page', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
+  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Start page', 'g-pref':'Filters, data saver and haptics', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
   function dress(){
     const v = document.getElementById('v-settings'); if(!v || v.hidden) return;
     const page = v.querySelector('.setpage'), title = page && page.querySelector('.stitle'); if(!page || !title) return;
@@ -4855,6 +4876,7 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
 // Sharper pictures: posters load at w500 (they're shown big on a high-density screen), the Trending backdrop at full size
 (function(){
   function sharpen(root){
+    if(window.LDS) return;   // data saver keeps the smaller images
     (root.querySelectorAll ? root : document).querySelectorAll('img[src*="/t/p/w185/"],img[src*="/t/p/w342/"]').forEach(im => {
       if(im.closest('.rpbg')) return;
       im.src = im.src.replace(/\/t\/p\/w(185|342)\//, '/t/p/w500/'); });
@@ -4927,6 +4949,64 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
     else if(home && home.isConnected && !home.contains(a)){ a.classList.remove('labout'); home.insertBefore(a, home.firstChild); }
   }
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(place, 15); }).observe(document.body, { subtree:true, childList:true });
+})();
+
+// Content filters: anime, reality/talk shows and little-known titles stay out of browsing (never out of search)
+(function(){
+  if(typeof tmdb !== 'function') return;
+  const orig = tmdb, get = (k, d) => { try{ const v = localStorage.getItem('lunar.f.' + k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } };
+  const REAL = [10763, 10764, 10766, 10767], recent = Date.now() - 75 * 864e5;
+  tmdb = async function(path, params){
+    const j = await orig(path, params);
+    if(!j || !Array.isArray(j.results) || /^\/search/.test(path)) return j;
+    const anime = get('anime', false), real = get('real', false), votes = +get('votes', 0) || 0;
+    if(!anime && !real && !votes) return j;
+    const keep = m => {
+      const g = m.genre_ids || (m.genres || []).map(x => x.id);
+      if(anime && g.includes(16) && m.original_language === 'ja') return false;
+      if(real && g.some(x => REAL.includes(x))) return false;
+      if(votes && m.media_type !== 'person'){
+        const d = Date.parse(m.release_date || m.first_air_date || '') || 0;
+        if(d < recent && (m.vote_count || 0) < votes) return false;   // new and upcoming titles haven't had time to collect votes
+      }
+      return true;
+    };
+    return { ...j, results:j.results.filter(keep) };
+  };
+})();
+// Haptics: a light tick on taps, and a switch that silences every vibration
+(function(){
+  const on = () => { try{ const v = localStorage.getItem('lunar.f.hap'); return v == null ? true : JSON.parse(v) !== false; }catch(e){ return true; } };
+  const vib = navigator.vibrate ? navigator.vibrate.bind(navigator) : null;
+  if(vib) navigator.vibrate = p => on() ? vib(p) : false;
+  document.addEventListener('pointerdown', e => {
+    if(e.pointerType !== 'touch' || !vib || !on()) return;
+    if(e.target.closest('.tabbar button,.tabbar a,.tb,#v-genres .gtile,.seg button,.lseg button,.pill,.srow:not(.static),.lstats button,.s5,#hback,#hcar')) vib(6);
+  }, { passive:true, capture:true });
+})();
+// Bottom tab bar follows the finger: it slides down as the page scrolls down, back up as it scrolls up
+(function(){
+  let bar = null, off = 0, ly = scrollY, settleT = 0;
+  const H = () => (bar ? bar.offsetHeight : 80) + 24;
+  const paint = anim => {
+    if(!bar) return;
+    bar.style.transition = anim ? 'transform .45s cubic-bezier(.22,1,.36,1),opacity .45s ease' : 'none';
+    bar.style.transform = off ? `translateY(${off}px)` : '';
+    bar.style.opacity = off ? String(Math.max(0, 1 - off / H())) : '';
+    bar.style.pointerEvents = off > H() * 0.6 ? 'none' : '';
+  };
+  addEventListener('scroll', () => {
+    bar = bar && bar.isConnected ? bar : document.querySelector('.tabbar');
+    const y = Math.max(0, scrollY), d = y - ly; ly = y;
+    if(document.body.classList.contains('locked')) return;
+    off = y < 4 ? 0 : Math.max(0, Math.min(H(), off + d));
+    paint(false);
+    clearTimeout(settleT);   // when the finger stops, finish the move it was making
+    settleT = setTimeout(() => { if(off && off < H()){ off = off > H() / 2 ? H() : 0; paint(true); } }, 160);
+  }, { passive:true });
+  // a new page or a tap on the bar brings it back
+  document.addEventListener('click', e => { if(e.target.closest('.tabbar') || e.target.closest('.pc,.gtile')){ setTimeout(() => { off = 0; ly = scrollY; paint(true); }, 0); } }, true);
+  addEventListener('popstate', () => { off = 0; ly = scrollY; paint(true); });
 })();
 </script>
 </body>

@@ -4301,7 +4301,10 @@ function renderSettings(){
     palette:'<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.8-1.7h2.3a3.8 3.8 0 0 0 3.8-3.8C20.5 6.6 16.7 3.5 12 3.5z"/><circle cx="7.8" cy="11" r=".9"/><circle cx="10.5" cy="7.5" r=".9"/><circle cx="14.6" cy="7.5" r=".9"/>',
     home:'<path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4z"/>'
   };
-  const isCacheKey = k => /^(reellog|rclib)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
+  // 'rclib.' becomes 'lunar.' in the Lunar build, so this is true only there
+  const IS_LUNAR = 'rclib.'.startsWith('lunar');
+  const K_F_ANIME = 'rclib.f.anime', K_F_REAL = 'rclib.f.real', K_F_VOTES = 'rclib.f.votes', K_F_SAVER = 'rclib.f.saver', K_F_HAP = 'rclib.f.hap';
+  const isCacheKey = k => /^(reellog|rclib|lunar)\.c\d?\./.test(k) || /^longbox\.c\d+\./.test(k) || k === 'rclib.links' || k === 'rclib.tinfo';
   const ico = k => `<span class="sic"><svg viewBox="0 0 24 24">${IC[k]}</svg></span>`;
   const row = (id, icon, label, sub, value, tone) => `<button class="srow" id="${id}">${ico(icon)}<span class="slab">${label}${sub ? `<small>${sub}</small>` : ''}</span>${value ? `<span class="sval ${tone || ''}">${value}</span>` : ''}<span class="schev"></span></button>`;
   const LANGS = [['en','English'],['es','Spanish'],['fr','French'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese'],['hi','Hindi'],['ru','Russian']];
@@ -4329,6 +4332,7 @@ function renderSettings(){
         ${row('g-conn', 'cloud', 'Connections', '', tm ? '' : 'Set up', 'warn')}
         ${NATIVE ? row('g-play', 'next', 'Player', '') : ''}
         ${row('g-look', 'palette', 'Appearance', '')}
+        ${IS_LUNAR ? row('g-pref', 'eye', 'Content and data', '') : ''}
         ${row('g-data', 'down', 'Your data', '')}
       </div></div>
       <div class="sgroup smain"><div class="scard">
@@ -4351,6 +4355,20 @@ function renderSettings(){
         wire:(kb, ks) => { const x = $('#ks-lib', kb); if(x) x.onclick = () => { ks.close(); closeAllSheets(); setTimeout(openLibrary, 60); }; } });
       $('#s-omdb', box).onclick = () => keySheet({ name:'Rotten Tomatoes', what:'Adds Rotten Tomatoes critic scores to title cards, using a free OMDb key (up to 1,000 lookups a day; each title is looked up once a week).',
         how:'omdbapi.com → API Key → choose the free tier → the key arrives by email.', link:'https://www.omdbapi.com/apikey.aspx', key:K_OMDB, placeholder:'Paste your OMDb key' });
+    });
+    const gpf = $('#g-pref', b); if(gpf) gpf.onclick = () => subPage('Content and data', box => {
+      const g = (k, d) => store.get(k, d);
+      box.innerHTML = `<div class="sgh">Content filters</div><div class="scard">
+        ${sw('f-anime', 'eye', 'Hide anime', 'Japanese animation stays out of Discover, Genres and lists', g(K_F_ANIME, false))}
+        ${sw('f-real', 'eye', 'Hide reality and talk shows', 'Also leaves out soaps and news', g(K_F_REAL, false))}
+        ${selRow('film', 'Hide little-known titles', 'Fewer than this many votes on TMDB', pick('f-votes', g(K_F_VOTES, 0), [[0, 'Off'], [50, '50'], [200, '200'], [1000, '1,000']]))}</div>
+        <div class="sgh">Data and feel</div><div class="scard">
+        ${sw('f-saver', 'down', 'Data saver', 'Smaller posters and backdrops; restarts the app', g(K_F_SAVER, false))}
+        ${sw('f-hap', 'next', 'Haptics', 'A light tick when you tap tabs, genres and buttons', g(K_F_HAP, true))}</div>
+        <p class="small" style="margin:10px 4px 0;font-size:12.5px">Filters don't apply to search, so you can still find anything by name.</p>`;
+      const bind = (id, k, isBool, after) => { const el = $('#' + id, box); el.onchange = () => { store.set(k, isBool ? el.checked : +el.value); after && after(); }; };
+      bind('f-anime', K_F_ANIME, true); bind('f-real', K_F_REAL, true); bind('f-votes', K_F_VOTES, false); bind('f-hap', K_F_HAP, true);
+      bind('f-saver', K_F_SAVER, true, () => setTimeout(() => location.reload(), 350));
     });
     const gp = $('#g-play', b); if(gp) gp.onclick = () => subPage('Player', box => {
       const g = (k, d) => store.get(k, d);
@@ -4405,7 +4423,9 @@ box.innerHTML = `<div class="sgh">Accent color</div><div class="scard"><div clas
         for(let i = localStorage.length - 1; i >= 0; i--){ const k = localStorage.key(i); if(isCacheKey(k)) localStorage.removeItem(k); }
         try{ sessionStorage.clear(); }catch(e){}
         if(typeof linkCache === 'object') Object.keys(linkCache).forEach(k => delete linkCache[k]);
-        measure(); toast('Cache cleared. Your ratings and library are untouched.');
+        try{ if(window.caches) caches.keys().then(ks => ks.forEach(k => caches.delete(k))); }catch(e){}
+        if(IS_LUNAR && NATIVE) callNative('RCFiles', 'clearWebCache', {}).catch(() => {});   // saved posters and backdrops too
+        measure(); toast(IS_LUNAR ? 'Cache and saved images cleared. Your ratings and library are untouched.' : 'Cache cleared. Your ratings and library are untouched.');
       };
       const save = async withKeys => {
         const extra = withKeys ? { keys:{ tmdb:store.get(K_KEY, ''), rd:store.get(K_RD, ''), omdb:store.get(K_OMDB, '') }, accent:store.get(K_ACCENT, '') } : {};
