@@ -250,3 +250,14 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-ge
 #appupd.labout .updbtn{margin:0!important;height:38px;padding:0 18px!important;border-radius:999px!important;border:0!important;background:var(--accent)!important;color:#fff!important;font:600 14px Inter,sans-serif!important;box-shadow:none!important}
 #appupd.labout .updbtn:disabled{background:rgba(242,238,232,.12)!important;color:rgba(242,238,232,.8)!important}
 #appupd.labout .updfail{flex-basis:100%;margin:2px 0 0!important}
+
+/* ---------- smooth scrolling: lighter genre strips (no mask, no filter, no held layers) ---------- */
+#v-genres .gtile{isolation:auto!important;transform:none!important;transition:none!important}
+#v-genres .gtile .gtart{-webkit-mask-image:none!important;mask-image:none!important;filter:none!important;opacity:.5!important;transition:none!important;will-change:auto!important}
+#v-genres .gtile .gtart::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.55) 28%,rgba(0,0,0,0) 62%)}
+#v-genres .gtile b{z-index:2!important}
+/* no press effect on the strips: swiping over them shouldn't shrink or brighten anything */
+#v-genres .gtile:active{transform:none!important}
+#v-genres .gtile:active .gtart{opacity:.5!important}
+/* entrance animations leave nothing behind once they finish */
+#v-genres .gtiles:not([hidden]) .gtile,#v-genre .grid>*,#v-list .grid>*{animation-fill-mode:backwards!important}

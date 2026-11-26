@@ -211,8 +211,9 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
   const on = () => { try{ const v = localStorage.getItem('lunar.f.hap'); return v == null ? true : JSON.parse(v) !== false; }catch(e){ return true; } };
   const vib = navigator.vibrate ? navigator.vibrate.bind(navigator) : null;
   if(vib) navigator.vibrate = p => on() ? vib(p) : false;
-  document.addEventListener('pointerdown', e => {
-    if(e.pointerType !== 'touch' || !vib || !on()) return;
+  // fires on real taps only (a click), so swiping up and down never buzzes
+  document.addEventListener('click', e => {
+    if(!vib || !on()) return;
     if(e.target.closest('.tabbar button,.tabbar a,.tb,#v-genres .gtile,.seg button,.lseg button,.pill,.srow:not(.static),.lstats button,.s5,#hback,#hcar')) vib(6);
   }, { passive:true, capture:true });
 })();
