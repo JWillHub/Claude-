@@ -19,6 +19,8 @@ def lunarize(s):
     s = s.replace('content="Rolling Credits"', 'content="Lunar"')
     s = s.replace("releases/download/android-latest/", "releases/download/lunar-latest/")
     s = s.replace("rolling-credits.apk", "lunar.apk")
+    # ask for sharp images up front so nothing gets swapped (and redrawn) after it loads
+    s = s.replace("w185',", "w500',").replace("'w342'", "'w500'").replace("w185${p.profile}", "w500${p.profile}").replace("}w342${f0.profile}", "}w500${f0.profile}").replace("}w342${p.profile}", "}w500${p.profile}")
     s = s.replace("let c = store.get(K_ACCENT, '#b8242c'),", "let c = '#b8242c',")
     s = s.replace('Rolling Credits pulls every film', 'Lunar pulls every film')
     s = s.replace("function poster(p, cls = '', size = 'w185'", "function poster(p, cls = '', size = 'w500'")   # sharp posters from the start

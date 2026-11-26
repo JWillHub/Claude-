@@ -1447,7 +1447,7 @@ const SPLAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.8 6.1Q12
 const HEART = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></svg>';
 const initials = n => (n || '?').split(' ').map(w => w[0]).slice(0, 2).join('');
 function personHTML(p, sub){
-  return `<button class="pp" data-person="${p.id}">${p.profile ? `<img loading="lazy" src="${IMG}w185${p.profile}" alt="">` : `<span class="pi">${esc(initials(p.name))}</span>`}
+  return `<button class="pp" data-person="${p.id}">${p.profile ? `<img loading="lazy" src="${IMG}w500${p.profile}" alt="">` : `<span class="pi">${esc(initials(p.name))}</span>`}
     <b>${esc(p.name)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</button>`;
 }
 const BOOK = '<svg viewBox="0 0 12 15"><path d="M0 0h12v15L6 10.5 0 15z"/></svg>';
@@ -1654,7 +1654,7 @@ function refreshBadges(){
 function cardHTML(m, rank){
   const b = badge(m.id);
   return `<div class="pc${rank ? ' ranked' : ''}" data-id="${m.id}">${rank ? `<span class="rk">${rank}</span>` : ''}
-    <div class="pw">${poster(m.poster, '', 'w185', m.title)}<span class="bd${bdCls(m.id, b)}">${b}</span></div></div>`;
+    <div class="pw">${poster(m.poster, '', 'w500', m.title)}<span class="bd${bdCls(m.id, b)}">${b}</span></div></div>`;
 }
 
 /* ================= toast ================= */
@@ -1866,7 +1866,7 @@ function openRatepad(id, tracking, x, y){
   clearTimeout(rp.closeT); clearTimeout(rp.saveT);
   el.classList.remove('on');
   el.innerHTML = `<div class="rpc" id="rpc">${f.poster ? `<div class="rpbg" style="background-image:url(${IMG}w92${f.poster})"></div>` : ''}
-    <div class="rpposter">${poster(f.poster, '', 'w342', f.title)}</div>
+    <div class="rpposter">${poster(f.poster, '', 'w500', f.title)}</div>
     <div class="rptitle">${esc(f.title)}</div>
     <div class="rpyear">${esc(f.year)}</div>
     ${starsHTML(44, 6)}
@@ -2716,7 +2716,7 @@ async function loadTile(el){
     if(!films.length) throw 0;
     const rel = films.filter(released), pics = (rel.length ? rel : films).filter(f => f.poster);
     const pick = [pics[1], pics[2], pics[0]].filter(Boolean);
-    $$(`.saga[data-saga="${s.k}"] .fan`).forEach(f => f.innerHTML = pick.map(p => poster(p.poster, '', 'w185', p.title)).join(''));
+    $$(`.saga[data-saga="${s.k}"] .fan`).forEach(f => f.innerHTML = pick.map(p => poster(p.poster, '', 'w500', p.title)).join(''));
     fillTile(s.k);
   }catch(e){
     $$(`.saga[data-saga="${s.k}"]`).forEach(t => { t.classList.add('off'); $('.smeta', t).textContent = e && e.message ? 'Could not load' : 'Not found'; });
@@ -2976,7 +2976,7 @@ async function openShow(id){
   await waitDetails(id);
   const tid = +String(id).slice(2), f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${f.poster || m.poster ? `background-image:url(${IMG}w780${f.poster || m.poster})` : ''}"></div>
-    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
+    <div class="mvhead">${poster(f.poster, '', 'w500', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
       <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
     <p class="ov clamp" id="mov" onclick="this.classList.toggle('clamp')">${esc(m.overview || '')}</p>
     <div id="mlib"></div><div id="mwatch"></div>
@@ -3022,7 +3022,7 @@ async function openMovie(id){
   await waitDetails(id);
   const f = filmOf(id), m = movies.get(id) || {};
   const s = sheet(`<div class="bdrop" style="${f.poster || m.poster ? `background-image:url(${IMG}w780${f.poster || m.poster})` : ''}"></div>
-    <div class="mvhead">${poster(f.poster, '', 'w342', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
+    <div class="mvhead">${poster(f.poster, '', 'w500', f.title)}<div><h2>${esc(f.title)}</h2><div class="meta" id="mm">${esc(f.year)}</div><div class="meta" id="md"></div>
       <div id="mimdb"></div><div class="mact" id="mact"></div></div></div>
     <div id="msaga"></div><p class="ov" id="mov">${esc(m.overview || '')}</p><div id="mlib"></div><div id="mwatch"></div><div id="mcast"></div><div class="small" id="mvote" style="margin-top:10px"></div><div id="mhist" style="margin-top:14px"></div>
     <div class="ratebar nodrag"><div><div class="lbl">Your rating</div><div class="rv2" id="mrv"></div></div>
@@ -3139,7 +3139,7 @@ async function imdbMovie(tt){
 /* ---------- Person card ---------- */
 async function openPerson(pid){
   const f0 = favs[pid];
-  const s = sheet(`<div class="phead">${f0 && f0.profile ? `<img src="${IMG}w342${f0.profile}" alt="">` : `<span class="pi">…</span>`}
+  const s = sheet(`<div class="phead">${f0 && f0.profile ? `<img src="${IMG}w500${f0.profile}" alt="">` : `<span class="pi">…</span>`}
       <div><h2>${esc(f0 ? f0.name : 'Loading…')}</h2><div class="meta" id="pmeta"></div><button class="favbtn" id="pfav">${HEART}Favorite</button></div></div>
     <p class="bio" id="pbio"></p>
     <div class="pbar"><div class="seg" id="pseg"></div><div class="seg" id="psort"><button data-s="pop" class="on">Popular</button><button data-s="new">Newest</button></div></div>
@@ -3158,7 +3158,7 @@ async function openPerson(pid){
   }catch(e){ $('#pgrid', b).innerHTML = `<div class="msg" style="grid-column:1/-1">${errText(e)}</div>`; return; }
   if(!s.el.isConnected) return;
   remember([...p.acting, ...p.directing]);
-  $('.phead', b).firstElementChild.outerHTML = p.profile ? `<img src="${IMG}w342${p.profile}" alt="">` : `<span class="pi">${esc(initials(p.name))}</span>`;
+  $('.phead', b).firstElementChild.outerHTML = p.profile ? `<img src="${IMG}w500${p.profile}" alt="">` : `<span class="pi">${esc(initials(p.name))}</span>`;
   $('.phead h2', b).textContent = p.name;
   const age = p.born ? Math.floor(((p.died ? new Date(p.died) : new Date()) - new Date(p.born)) / 31557600000) : null;
   $('#pmeta', b).textContent = [p.dept === 'Directing' ? 'Director' : p.dept === 'Acting' ? 'Actor' : p.dept, p.born ? (p.died ? `${p.born.slice(0, 4)}–${p.died.slice(0, 4)}` : `Age ${age}`) : '', p.place || ''].filter(Boolean).join(' · ');
@@ -3301,7 +3301,7 @@ function openReview(){
   const d = reviewData();
   const s = sheet(`<div class="rev"><div class="small" style="letter-spacing:1.4px;font-weight:800;text-transform:uppercase">${d.thisYear ? 'Your ' + d.yr + ' in film' : 'Your film life so far'}</div>
     <div class="big">${d.count}</div><div class="small">films rated</div>
-    <div class="tops">${d.top.map(f => `<div>${poster(f.poster, '', 'w185', f.title)}<span>${fmtR(f.r)}★</span></div>`).join('')}</div>
+    <div class="tops">${d.top.map(f => `<div>${poster(f.poster, '', 'w500', f.title)}<span>${fmtR(f.r)}★</span></div>`).join('')}</div>
     <div class="small">Your top ${d.top.length}</div>
     <div class="rgrid"><div><b>${d.avg ? d.avg.toFixed(1) + '★' : '—'}</b><span>Average rating</span></div><div><b>${esc(d.genre)}</b><span>Favorite genre</span></div>
       <div><b>${esc(d.decade)}</b><span>Your decade</span></div><div><b>${d.fives}</b><span>Five-star films</span></div></div>
@@ -3322,7 +3322,7 @@ async function saveReviewImage(d, btn){
   x.fillStyle = '#b8242c'; x.font = disp(230); x.fillText(String(d.count), W / 2, 390);
   x.fillStyle = '#f4efe9'; x.font = '600 38px system-ui, sans-serif'; x.fillText('films rated', W / 2, 445);
   const load = src => new Promise(res => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
-  const imgs = await Promise.all(d.top.map(f => f.poster ? load(IMG + 'w342' + f.poster) : Promise.resolve(null)));
+  const imgs = await Promise.all(d.top.map(f => f.poster ? load(IMG + 'w500' + f.poster) : Promise.resolve(null)));
   const pw = 176, ph = 264, gap = 22, total = d.top.length * pw + (d.top.length - 1) * gap; let px = (W - total) / 2;
   d.top.forEach((f, i) => {
     x.save(); x.beginPath(); x.roundRect(px, 510, pw, ph, 16); x.clip();
@@ -3938,7 +3938,7 @@ async function afterPlay(box, c){
   const resumeAt = prog[meta.key] ? prog[meta.key].t : 0;
   box.innerHTML = `<div class="ap fadein">
     <div class="apbd"><div class="apbdin">
-      <div class="apposter">${poster(lm.poster || f0.poster, '', 'w185', name)}</div>
+      <div class="apposter">${poster(lm.poster || f0.poster, '', 'w500', name)}</div>
       <div class="aptxt"><div class="apname">${esc(name)}</div><div class="apsub" id="apsub">${esc([lm.year || f0.year, meta.label].filter(Boolean).join(' · '))}</div></div>
     </div></div>
     ${c.error ? `<div class="msg" style="padding:14px 0 0">The player couldn't play this file (${esc(c.error)}).</div>` : ''}
@@ -4035,7 +4035,7 @@ function fixMatch(tid, after){
       const d = await tmdb('/search/multi', { query:q, include_adult:'false' });
       const rows = (d.results || []).filter(m => m.media_type === 'movie' || m.media_type === 'tv').map(m => m.media_type === 'tv' ? slimTV(m) : slim(m)).slice(0, 18);
       g.innerHTML = rows.length ? rows.map(m => `<button class="fpick" data-fid="${esc(m.id)}" style="background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer">
-        ${poster(m.poster, '', 'w185', m.title)}<div class="small" style="margin-top:4px">${esc(m.title)} ${esc(m.year)}</div></button>`).join('')
+        ${poster(m.poster, '', 'w500', m.title)}<div class="small" style="margin-top:4px">${esc(m.title)} ${esc(m.year)}</div></button>`).join('')
         : '<div class="msg" style="grid-column:1/-1">No results. Try a shorter title.</div>';
       $$('.fpick', g).forEach(x => x.onclick = () => {
         const m = rows.find(r => String(r.id) === x.dataset.fid); if(!m) return;
@@ -4123,7 +4123,7 @@ async function showEpisodes(id){
 const seasonsCache = new Map();   // show id -> Map(season -> episodes), for this visit
 
 function seasonCard(f, sn, count, posterPath){
-  return `<button class="lsea" data-show="${esc(f.id)}" data-sn="${sn}">${poster(posterPath || f.poster, '', 'w185', f.title)}
+  return `<button class="lsea" data-show="${esc(f.id)}" data-sn="${sn}">${poster(posterPath || f.poster, '', 'w500', f.title)}
     <span>${sn ? 'Season ' + sn : 'Extras'}</span><span class="small">${count ? count + ' episode' + (count === 1 ? '' : 's') : ''}</span></button>`;
 }
 let libType = 'all', libPick = 'all';   // Library dropdowns: All / Movies / Series, then All titles or one title
@@ -4218,8 +4218,8 @@ function drawLibrary(b){
       if(so === 'added') list.sort((a, c) => addedAt(c) - addedAt(a));
       else if(so === 'watched') list.sort((a, c) => watchedAt(c) - watchedAt(a) || addedAt(c) - addedAt(a));
       grid.innerHTML = has && !rdLib.synced && !list.length ? '<i class="skel"></i>'.repeat(9) : list.map(f => f.tv
-        ? `<button class="lshow" data-lshow="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`
-        : `<button class="lshow" data-lmov="${esc(f.id)}">${poster(f.poster, '', 'w342', f.title)}</button>`).join('');
+        ? `<button class="lshow" data-lshow="${esc(f.id)}">${poster(f.poster, '', 'w500', f.title)}</button>`
+        : `<button class="lshow" data-lmov="${esc(f.id)}">${poster(f.poster, '', 'w500', f.title)}</button>`).join('');
     }
     $('#lmsg', b).textContent = has && rdLib.synced && !all.length ? 'Nothing in your Real-Debrid library yet.'
       : $('#lq', b).value.trim() && !grid.children.length ? 'No matches in your library.' : '';
@@ -4279,7 +4279,7 @@ function drawLibrary(b){
 function openLibMovie(id){
   const f = libTitles().find(x => String(x.id) === String(id)) || filmOf(id);
   const s = sheet(`<div class="shwrap">
-    <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
+    <div class="shhero" id="mvhero"><div class="shin"><div class="shpo">${poster(f.poster, '', 'w500', f.title)}</div>
       <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta" id="mvmeta">${esc(f.year || '')}</div>
         <div id="mlib"></div><button class="morecp" id="mvcopies" hidden>More copies</button></div></div></div>
     <div class="pad" style="padding-top:6px"><p class="shov" id="mvov"></p>
@@ -4334,7 +4334,7 @@ async function showPage(pg, f, card){
   const id = f.id, tid = +String(id).slice(2);
   pg.innerHTML = `<div class="shp">
     <div class="shhero" id="shhero">
-      <div class="shin"><div class="shpo">${poster(f.poster, '', 'w342', f.title)}</div>
+      <div class="shin"><div class="shpo">${poster(f.poster, '', 'w500', f.title)}</div>
         <div class="shtx"><h1 class="shname">${esc(f.title)}</h1><div class="shmeta"><span id="shmeta">${esc(f.year || '')}</span><span id="shcount"></span></div><div id="shplay"></div></div></div></div>
     <div class="pad" style="padding-top:6px">
       <p class="shov" id="shov"></p>
@@ -4441,7 +4441,7 @@ async function openSeason(id, sn){
   if(!eps.length){ $('#lbox', b).innerHTML = '<div class="msg">No episodes found for this season.</div>'; return; }
   let si = null, bd = null;
   const head = (watched, total) => `<div class="sehd" style="${bd ? `background-image:linear-gradient(180deg,rgba(12,10,15,.1),rgba(12,10,15,.94)),url(${IMG}w780${bd})` : ''}">
-      <div class="sehp">${poster((si && si.poster) || lm.poster || f.poster, '', 'w185', title)}</div>
+      <div class="sehp">${poster((si && si.poster) || lm.poster || f.poster, '', 'w500', title)}</div>
       <div class="seht"><div class="apname">${esc(title)}</div><div class="apsub">${sn ? 'Season ' + sn : 'Extras'}${si && si.year ? ' · ' + si.year : ''}</div>
         <div class="apsub">${watched ? `${watched} of ${total} watched` : `${total} episode${total === 1 ? '' : 's'} in your library`}</div></div></div>`;
   const draw = renderEpisodes($('#lbox', b), eps, id, title, { head });
