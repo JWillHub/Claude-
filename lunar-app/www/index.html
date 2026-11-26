@@ -1361,6 +1361,16 @@ body:has(#v-list:not([hidden])) header.top .logo.sub{visibility:hidden}
 /* rating card: the word gets its own room so it never runs into the buttons */
 .rpc .rv{height:auto!important;min-height:44px;font-size:36px!important;line-height:1.1!important;margin:10px 0 16px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rpc .rpbtns{position:relative;z-index:2}
+
+/* headers and search bars sit at the top of the page and scroll away with it */
+html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-genre .lgtop{position:relative!important;top:auto!important}
+
+/* press effects: a smooth, gentle press-in on any touch, eased back out on release */
+.pc .pw{transition:transform .45s var(--lease)!important;transition-delay:0s!important}
+.pc:active .pw,.pc.pressing .pw{transform:scale(.95)!important;transition:transform .3s cubic-bezier(.33,.8,.4,1)!important;transition-delay:0s!important}
+#v-genres .gtile{transition:transform .45s var(--lease)!important}
+#v-genres .gtile:active{transform:scale(.975)!important;transition:transform .3s cubic-bezier(.33,.8,.4,1)!important}
+#v-genres .gtile .gtart{transition:opacity .4s ease!important}
 </style>
 </head>
 <body>
