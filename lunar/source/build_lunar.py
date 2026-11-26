@@ -19,6 +19,9 @@ def lunarize(s):
     s = s.replace('content="Rolling Credits"', 'content="Lunar"')
     s = s.replace("releases/download/android-latest/", "releases/download/lunar-latest/")
     s = s.replace("rolling-credits.apk", "lunar.apk")
+    # hold opens the rating card; rating takes a separate tap (no rating while still holding)
+    assert "openRatepad(pid(pc.dataset.id), true, lp.x, lp.y);" in s
+    s = s.replace("openRatepad(pid(pc.dataset.id), true, lp.x, lp.y);", "openRatepad(pid(pc.dataset.id), false);")
     # search bars and headers stay put: no sliding away on scroll
     s = s.replace("const bars=()=>document.querySelectorAll('header.top,body.libv .ltop,#v-genres:not([hidden]) .gtop');", "const bars=()=>[];")
     # ask for sharp images up front so nothing gets swapped (and redrawn) after it loads
