@@ -45,7 +45,18 @@
     v.querySelectorAll('.grid .pc:not([data-lc])').forEach(pc => { pc.dataset.lc = 1;
       const img = pc.querySelector('img'); const t = img && (img.alt || img.title); if(t) pc.insertAdjacentHTML('beforeend', `<span class="lcap">${t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</span>`); });
   }
-  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { dressGenres(); dressGenrePage(); }, 20); })
+  // See all / Rated / Watchlist / In library pages: same look as a genre page
+  function dressListPage(){
+    const v = document.getElementById('v-list'); if(!v || v.hidden) return;
+    const pad = v.querySelector('.pad'); if(!pad) return;
+    const name = (typeof listPageTitle === 'string' && listPageTitle) || '';
+    let h = pad.querySelector('.lgh1');
+    if(!h){ h = document.createElement('h1'); h.className = 'lgh1'; pad.insertBefore(h, pad.firstChild); }
+    if(h.textContent !== name) h.textContent = name;
+    v.querySelectorAll('.grid .pc:not([data-lc])').forEach(pc => { pc.dataset.lc = 1;
+      const img = pc.querySelector('img'); const t = img && (img.alt || img.title); if(t) pc.insertAdjacentHTML('beforeend', `<span class="lcap">${t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</span>`); });
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { dressGenres(); dressGenrePage(); dressListPage(); }, 20); })
     .observe(document.body, { subtree:true, childList:true });
 })();
 // Library: serif heading with the sort button, counts, and Everything / Movies / Series
@@ -76,7 +87,7 @@
 })();
 // Settings: your numbers at the top, a short line under each section
 (function(){
-  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Accent colour and start page', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
+  const SUB = { 'g-conn':'Real-Debrid and TMDB', 'g-look':'Start page', 'g-data':'Back up, restore and storage', 'g-player':'Episodes, sound and subtitles', 's-about':'Version and updates', 'g-roku':'Watch your library on your TV' };
   function dress(){
     const v = document.getElementById('v-settings'); if(!v || v.hidden) return;
     const page = v.querySelector('.setpage'), title = page && page.querySelector('.stitle'); if(!page || !title) return;
@@ -85,7 +96,8 @@
       try{ r = Object.keys(ratings || {}).length; }catch(e){}
       try{ w = Object.keys(watch || {}).length; }catch(e){}
       try{ l = libTitles().length; }catch(e){}
-      title.insertAdjacentHTML('afterend', `<section class="lstats" aria-label="Your numbers"><div><b>${r}</b><span>Rated</span></div><div><b>${w}</b><span>Watchlist</span></div><div><b>${l}</b><span>In library</span></div></section>`);
+      title.insertAdjacentHTML('afterend', `<section class="lstats" aria-label="Your numbers"><button type="button" data-k="rated"><b>${r}</b><span>Rated</span></button><button type="button" data-k="watch"><b>${w}</b><span>Watchlist</span></button><button type="button" data-k="lib"><b>${l}</b><span>In library</span></button></section>`);
+      page.querySelector('.lstats').onclick = e => { const b = e.target.closest('button'); if(b) openStat(b.dataset.k); };
     }
     page.querySelectorAll('.srow[id]').forEach(row => { const s = SUB[row.id], lab = row.querySelector('.slab');
       if(s && lab && !lab.querySelector('.lsub')) lab.insertAdjacentHTML('beforeend', `<small class="lsub">${s}</small>`); });
@@ -131,3 +143,25 @@
   let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { all(); eps(); }, 25); })
     .observe(document.body, { subtree:true, childList:true, attributes:true, attributeFilter:['data-r'] });
 })();
+
+// Settings numbers open a page of those titles, with the usual back button
+function openStat(k){
+  try{
+    if(k === 'watch'){ openStaticList('watch'); return; }
+    if(k === 'rated'){
+      const list = Object.entries(ratings || {}).sort((a, c) => (c[1].at || 0) - (a[1].at || 0));
+      const b = openListPage('Rated', `${list.length} ${list.length === 1 ? 'title' : 'titles'}, newest first`);
+      b.querySelector('.grid').innerHTML = list.map(([id, x]) => cardHTML({ id:pid(id), title:x.title, poster:x.poster })).join('');
+      b.querySelector('.msg').textContent = list.length ? '' : 'Nothing rated yet.';
+      setPageSource(list.length ? { title:'Rated', items:list.map(([id]) => ({ ...filmOf(pid(id)), id:pid(id) })) } : null);
+      return;
+    }
+    if(k === 'lib'){
+      const list = libSort(libTitles(), 'title');
+      const b = openListPage('In library', `${list.length} ${list.length === 1 ? 'title' : 'titles'}`);
+      b.querySelector('.grid').innerHTML = list.map(m => cardHTML(m)).join('');
+      b.querySelector('.msg').textContent = list.length ? '' : 'Your library is empty.';
+      setPageSource(list.length ? { title:'In library', items:list } : null);
+    }
+  }catch(e){ console.warn('stat page', e); }
+}
