@@ -1396,6 +1396,9 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-ge
 #v-genres .gtile:active .gtart{opacity:.5!important}
 /* entrance animations leave nothing behind once they finish */
 #v-genres .gtiles:not([hidden]) .gtile,#v-genre .grid>*,#v-list .grid>*{animation-fill-mode:backwards!important}
+/* strips brighten when pressed (no shrink); a short delay keeps quick swipes from lighting them up */
+#v-genres .gtile .gtart{transition:opacity .35s ease!important}
+#v-genres .gtile:active .gtart{opacity:.8!important;transition:opacity .2s ease .08s!important}
 </style>
 </head>
 <body>
