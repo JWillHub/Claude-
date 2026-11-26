@@ -167,3 +167,17 @@ function openStat(k){
 }
 // any leftover route to the rating card opens the title's page instead (rating lives there)
 try{ openRatepad = id => openMovie(id); }catch(e){}
+// The version and update button live on the About page, not the main Settings list
+(function(){
+  let home = null, keep = null;
+  function place(){
+    let a = document.getElementById('appupd');
+    if(a) keep = a; else if(keep && home && home.isConnected) a = keep;   // About closed and took it along: bring it back
+    if(!a) return;
+    if(a.isConnected && a.closest('.smain')) home = a.parentNode;
+    const about = [...document.querySelectorAll('.sh .stitle')].find(h => h.textContent.trim() === 'About' && h.closest('.sh:not(.closing)'));
+    if(about){ if(!about.parentNode.contains(a)){ a.classList.add('labout'); about.after(a); } }
+    else if(home && home.isConnected && !home.contains(a)){ a.classList.remove('labout'); home.insertBefore(a, home.firstChild); }
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(place, 15); }).observe(document.body, { subtree:true, childList:true });
+})();

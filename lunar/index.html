@@ -1372,6 +1372,10 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-ge
 #v-genres .gtile .gtart{transition:opacity .4s ease!important}
 /* no pop-up rating card in Lunar: the Trending Rate button goes, Details stays */
 [data-hr],#hr{display:none!important}
+/* version row only shows inside About; the Lunar keys backup is for Rolling Credits only */
+.smain #appupd{display:none!important}
+#appupd.labout{display:block!important;padding:4px 0 16px!important;margin:0 0 14px!important;border-bottom:1px solid var(--hair)}
+#expk{display:none!important}
 </style>
 </head>
 <body>
@@ -4910,6 +4914,20 @@ function openStat(k){
 }
 // any leftover route to the rating card opens the title's page instead (rating lives there)
 try{ openRatepad = id => openMovie(id); }catch(e){}
+// The version and update button live on the About page, not the main Settings list
+(function(){
+  let home = null, keep = null;
+  function place(){
+    let a = document.getElementById('appupd');
+    if(a) keep = a; else if(keep && home && home.isConnected) a = keep;   // About closed and took it along: bring it back
+    if(!a) return;
+    if(a.isConnected && a.closest('.smain')) home = a.parentNode;
+    const about = [...document.querySelectorAll('.sh .stitle')].find(h => h.textContent.trim() === 'About' && h.closest('.sh:not(.closing)'));
+    if(about){ if(!about.parentNode.contains(a)){ a.classList.add('labout'); about.after(a); } }
+    else if(home && home.isConnected && !home.contains(a)){ a.classList.remove('labout'); home.insertBefore(a, home.firstChild); }
+  }
+  let t; new MutationObserver(() => { clearTimeout(t); t = setTimeout(place, 15); }).observe(document.body, { subtree:true, childList:true });
+})();
 </script>
 </body>
 </html>
