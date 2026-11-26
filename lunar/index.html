@@ -1337,6 +1337,10 @@ main>section.enter{animation:lpage .6s var(--lease) both!important}
 /* tab bar, tabs and pills change color softly */
 .tb,.tb *,.lseg button,.seg button,.pill{transition:color .35s ease,background-color .35s ease,border-color .35s ease,opacity .35s ease!important}
 @media (prefers-reduced-motion:reduce){main>section.enter,#v-genres .gtile,#v-genre .grid>*{animation:none!important}}
+/* genre page: title and options stay pinned up top */
+#v-genre .lgtop{position:sticky;top:calc(62px + env(safe-area-inset-top));z-index:20;background:#000;margin:0 -16px;padding:0 16px 2px}
+#v-genre .lgtop .gopts{margin:10px 0 12px!important}
+#v-genres .gtop,#v-library .ltop{transform:none!important}
 </style>
 </head>
 <body>
@@ -4699,7 +4703,7 @@ if('serviceWorker' in navigator && location.protocol === 'https:') navigator.ser
 </script>
 
 <script>(()=>{let y=scrollY,off=0,acc=0,gliding=false;
-const bars=()=>document.querySelectorAll('header.top,body.libv .ltop,#v-genres:not([hidden]) .gtop');
+const bars=()=>[];
 const set=(o,glide)=>{off=o;bars().forEach(b=>{const h=b.offsetHeight+2;b.style.transition=glide?'transform .42s cubic-bezier(.22,1,.36,1)':'none';b.style.transform=o?`translateY(${-Math.min(o,h)}px)`:'';});};
 addEventListener('scroll',()=>{const n=Math.max(0,scrollY),d=n-y;y=n;
 if(document.querySelector('.top.searching')){if(off)set(0,true);return}
@@ -4744,6 +4748,12 @@ document.addEventListener('click',e=>{if(e.target.closest('nav,.tabbar,.tabs'))s
     let h = pad.querySelector('.lgh1');
     if(!h){ h = document.createElement('h1'); h.className = 'lgh1'; pad.insertBefore(h, pad.firstChild); }
     if(h.textContent !== name) h.textContent = name;
+    // keep the title and its options pinned under the back button while the posters scroll
+    const opts = pad.querySelector('.gopts');
+    let top = pad.querySelector('.lgtop');
+    if(!top){ top = document.createElement('div'); top.className = 'lgtop'; pad.insertBefore(top, pad.firstChild); }
+    if(h.parentNode !== top) top.appendChild(h);
+    if(opts && opts.parentNode !== top) top.appendChild(opts);
     v.querySelectorAll('.grid .pc:not([data-lc])').forEach(pc => { pc.dataset.lc = 1;
       const img = pc.querySelector('img'); const t = img && (img.alt || img.title); if(t) pc.insertAdjacentHTML('beforeend', `<span class="lcap">${t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</span>`); });
   }

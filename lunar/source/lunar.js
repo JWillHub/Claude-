@@ -36,6 +36,12 @@
     let h = pad.querySelector('.lgh1');
     if(!h){ h = document.createElement('h1'); h.className = 'lgh1'; pad.insertBefore(h, pad.firstChild); }
     if(h.textContent !== name) h.textContent = name;
+    // keep the title and its options pinned under the back button while the posters scroll
+    const opts = pad.querySelector('.gopts');
+    let top = pad.querySelector('.lgtop');
+    if(!top){ top = document.createElement('div'); top.className = 'lgtop'; pad.insertBefore(top, pad.firstChild); }
+    if(h.parentNode !== top) top.appendChild(h);
+    if(opts && opts.parentNode !== top) top.appendChild(opts);
     v.querySelectorAll('.grid .pc:not([data-lc])').forEach(pc => { pc.dataset.lc = 1;
       const img = pc.querySelector('img'); const t = img && (img.alt || img.title); if(t) pc.insertAdjacentHTML('beforeend', `<span class="lcap">${t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</span>`); });
   }
