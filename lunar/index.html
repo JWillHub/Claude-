@@ -1315,6 +1315,28 @@ html body header.top .ib.hback,html body header.top:has(#hback:not([hidden])) #h
 #v-genres .gtiles{margin-right:-16px!important}
 #v-genres .gtile{border-top:0!important;margin-bottom:5px!important}#v-genres .gtiles{border-bottom:0!important}
 #v-genres .gtiles .gtile::before{content:""!important;display:block!important;position:absolute!important;left:0;top:22px;bottom:22px;width:2px;background:var(--accent)!important;z-index:1;border-radius:1px}
+
+/* ---------- Lumen-style motion: slow fade with a gentle rise, soft ease-out ---------- */
+:root{--lease:cubic-bezier(.22,.9,.24,1)}
+@keyframes lpage{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes lrise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes lfade{from{opacity:0}to{opacity:1}}
+main>section.enter{animation:lpage .6s var(--lease) both!important}
+/* genre strips and filter switches: each strip eases in just after the one above */
+.gtiles:not([hidden]){animation:none!important}
+#v-genres .gtiles:not([hidden]) .gtile{animation:lrise .55s var(--lease) both}
+#v-genres .gtile:nth-child(1){animation-delay:.02s}#v-genres .gtile:nth-child(2){animation-delay:.06s}#v-genres .gtile:nth-child(3){animation-delay:.1s}
+#v-genres .gtile:nth-child(4){animation-delay:.14s}#v-genres .gtile:nth-child(5){animation-delay:.18s}#v-genres .gtile:nth-child(6){animation-delay:.22s}
+#v-genres .gtile:nth-child(7){animation-delay:.26s}#v-genres .gtile:nth-child(8){animation-delay:.3s}#v-genres .gtile:nth-child(n+9){animation-delay:.34s}
+/* posters on a genre page and in grids: same easing, a light stagger */
+#v-genre .grid>*{animation:lrise .5s var(--lease) both}
+#v-genre .grid>:nth-child(2){animation-delay:.04s}#v-genre .grid>:nth-child(3){animation-delay:.08s}#v-genre .grid>:nth-child(4){animation-delay:.12s}
+#v-genre .grid>:nth-child(5){animation-delay:.16s}#v-genre .grid>:nth-child(6){animation-delay:.2s}#v-genre .grid>:nth-child(n+7){animation-delay:.24s}
+/* "Loading…" only shows if loading actually takes a moment */
+#v-genre .msg,#v-genres .msg{animation:lfade .4s ease .45s both}
+/* tab bar, tabs and pills change color softly */
+.tb,.tb *,.lseg button,.seg button,.pill{transition:color .35s ease,background-color .35s ease,border-color .35s ease,opacity .35s ease!important}
+@media (prefers-reduced-motion:reduce){main>section.enter,#v-genres .gtile,#v-genre .grid>*{animation:none!important}}
 </style>
 </head>
 <body>
