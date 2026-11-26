@@ -237,3 +237,5 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-ge
 #v-genres .gtile{transition:transform .45s var(--lease)!important}
 #v-genres .gtile:active{transform:scale(.975)!important;transition:transform .3s cubic-bezier(.33,.8,.4,1)!important}
 #v-genres .gtile .gtart{transition:opacity .4s ease!important}
+/* no pop-up rating card in Lunar: the Trending Rate button goes, Details stays */
+[data-hr],#hr{display:none!important}

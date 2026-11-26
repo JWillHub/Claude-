@@ -19,6 +19,9 @@ def lunarize(s):
     s = s.replace('content="Rolling Credits"', 'content="Lunar"')
     s = s.replace("releases/download/android-latest/", "releases/download/lunar-latest/")
     s = s.replace("rolling-credits.apk", "lunar.apk")
+    # no pop-up rating card: holding a poster no longer starts a timer, so it acts like a normal tap
+    assert "lp.timer = setTimeout(() => {" in s
+    s = s.replace("lp.timer = setTimeout(() => {", "lp.timer = 0 && setTimeout(() => {")
     # hold opens the rating card; rating takes a separate tap (no rating while still holding)
     assert "openRatepad(pid(pc.dataset.id), true, lp.x, lp.y);" in s
     s = s.replace("openRatepad(pid(pc.dataset.id), true, lp.x, lp.y);", "openRatepad(pid(pc.dataset.id), false);")

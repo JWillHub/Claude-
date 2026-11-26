@@ -165,3 +165,5 @@ function openStat(k){
     }
   }catch(e){ console.warn('stat page', e); }
 }
+// any leftover route to the rating card opens the title's page instead (rating lives there)
+try{ openRatepad = id => openMovie(id); }catch(e){}
