@@ -1411,6 +1411,14 @@ main>section.enter{animation-duration:.4s!important}
 #v-genre .pc img,#v-list .pc img{opacity:0;transition:opacity .45s ease}
 #v-genre .pc img.lin,#v-list .pc img.lin{opacity:1}
 #v-genre .msg,#v-list .msg{animation:none!important}
+
+/* ---------- tab switches are instant: no black frame, no replayed cascade ---------- */
+@keyframes ltab{from{opacity:.55}to{opacity:1}}
+#v-discover.enter,#v-genres.enter,#v-library.enter,#v-settings.enter{animation:ltab .16s ease-out both!important}
+#v-genres .gtiles:not([hidden]) .gtile{animation:none!important}
+/* pages opened from a tab (genre, lists, see all) keep a short, gentle rise */
+@keyframes lpage2{from{opacity:.3;transform:translateY(8px)}to{opacity:1;transform:none}}
+#v-genre.enter,#v-list.enter{animation:lpage2 .3s var(--lease) backwards!important}
 </style>
 </head>
 <body>
