@@ -260,3 +260,123 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
   }
   new MutationObserver(fill).observe(document.body, { subtree:true, childList:true, characterData:true });
 })();
+// ================= Search tab (replaces Genres) =================
+// One search bar. Genre words ("comedy", "action comedy"), decades ("90s horror"), years, "movies"/"shows" and
+// "best"/"new" turn into a browse of that genre; anything else is a normal title search.
+(function(){
+  if(typeof buildGenreBrowse !== 'function') return;
+  // genre words -> [movie genre ids, series genre ids]; null means TMDB has no such series genre
+  const G = {
+    action:[[28],[10759]], adventure:[[12],[10759]], animation:[[16],[16]], animated:[[16],[16]], cartoon:[[16],[16]], anime:[[16],[16]],
+    comedy:[[35],[35]], comedies:[[35],[35]], funny:[[35],[35]], crime:[[80],[80]], documentary:[[99],[99]], documentaries:[[99],[99]], docs:[[99],[99]],
+    drama:[[18],[18]], family:[[10751],[10751]], kids:[[10751],[10762]], fantasy:[[14],[10765]], history:[[36],null], historical:[[36],null],
+    horror:[[27],null], scary:[[27],null], music:[[10402],null], musical:[[10402],null], musicals:[[10402],null], mystery:[[9648],[9648]], mysteries:[[9648],[9648]],
+    romance:[[10749],null], romantic:[[10749],null], romcom:[[10749, 35],null], 'rom-com':[[10749, 35],null],
+    'sci-fi':[[878],[10765]], scifi:[[878],[10765]], 'sci fi':[[878],[10765]], 'science fiction':[[878],[10765]],
+    thriller:[[53],null], thrillers:[[53],null], suspense:[[53],null], war:[[10752],[10768]], western:[[37],[37]], westerns:[[37],[37]],
+    reality:[null,[10764]], soap:[null,[10766]], 'talk show':[null,[10767]], news:[null,[10763]]
+  };
+  const NAME = { 28:'Action', 12:'Adventure', 16:'Animation', 35:'Comedy', 80:'Crime', 99:'Documentary', 18:'Drama', 10751:'Family', 14:'Fantasy', 36:'History',
+    27:'Horror', 10402:'Music', 9648:'Mystery', 10749:'Romance', 878:'Sci-Fi', 53:'Thriller', 10752:'War', 37:'Western', 10759:'Action', 10762:'Kids',
+    10765:'Sci-Fi & Fantasy', 10768:'War', 10764:'Reality', 10766:'Soap', 10767:'Talk show', 10763:'News' };
+  const KIND = { movie:'movie', movies:'movie', film:'movie', films:'movie', show:'tv', shows:'tv', series:'tv', tv:'tv' };
+  const SORT = { best:'rated', top:'rated', 'top rated':'rated', 'highest rated':'rated', new:'newest', newest:'newest', latest:'newest', recent:'newest' };
+  const FILL = new Set(['and', '&', '+', 'with']);
+  function parse(text){
+    let w = text.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9&+\- ]/g, ' ').trim().split(/\s+/).filter(Boolean);
+    const out = { m:[], t:[], tvOk:true, mvOk:true, names:[], kind:null, sort:'popular', decade:'', year:0, left:0 };
+    for(let i = 0; i < w.length; i++){
+      const two = w[i] + ' ' + (w[i + 1] || ''), one = w[i], sing = one.replace(/ies$/, 'y').replace(/s$/, '');
+      let hit = null, used = 1;
+      if(w[i + 1] && (G[two] || SORT[two] || KIND[two])){ hit = two; used = 2; } else if(G[one] || SORT[one] || KIND[one]) hit = one; else if(G[sing]) hit = sing;
+      if(hit && G[hit]){ const [m, t] = G[hit];
+        if(m) out.m.push(...m); else out.mvOk = false;
+        if(t) out.t.push(...t); else out.tvOk = false;
+        out.names.push(NAME[(m || t)[0]] + (m && m.length > 1 ? ' ' + NAME[m[1]] : ''));
+      } else if(hit && KIND[hit]) out.kind = KIND[hit];
+      else if(hit && SORT[hit]) out.sort = SORT[hit];
+      else if(/^(19|20)\d0s$/.test(one)) out.decade = one;
+      else if(/^\d0s$/.test(one)){ const d = +one.slice(0, 2); out.decade = (d >= 30 ? '19' : '20') + one; }
+      else if(/^(19[2-9]\d|20[0-3]\d)$/.test(one)) out.year = +one;
+      else if(FILL.has(one)) {}
+      else out.left++;
+      i += used - 1;
+    }
+    out.browse = !out.left && (out.names.length || out.decade || out.year) ? true : false;
+    return out;
+  }
+  function defFor(p, tv){
+    const ids = [...new Set(tv ? p.t : p.m)].join(',');
+    const d = genreDef(tv, ids, p.sort, p.decade);
+    if(p.year){ if(tv) d.params.first_air_date_year = p.year; else d.params.primary_release_year = p.year; }
+    return d;
+  }
+  // a browse across both movies and series: one page of each, interleaved
+  const _pageOf = pageOf;
+  pageOf = async function(def, page){
+    if(!def || !def.mix) return _pageOf(def, page);
+    const parts = await Promise.all(def.mix.map(d => _pageOf(d, page).catch(() => ({ page, total:0, results:[] }))));
+    const out = [], a = parts[0].results, b = parts[1].results;
+    for(let i = 0; i < Math.max(a.length, b.length); i++){ if(a[i]) out.push(a[i]); if(b[i]) out.push(b[i]); }
+    return { page, total:Math.max(...parts.map(x => x.total || 0)), results:out };
+  };
+  const SUGGEST = ['Comedy', 'Action', 'Horror', 'Sci-fi', 'Animation', 'Romcom', '90s action', 'Best dramas', 'New thrillers', 'Crime shows', 'Westerns'];
+  const esc2 = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  buildGenreBrowse = function(){
+    const v = $('#v-genres'); built.genres = true; window.__gsOn = false;
+    v.innerHTML = `<div class="pad ltop gtop lsrch"><h1 class="lh1">Search</h1>
+      <div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="gq" autocomplete="off" enterkeyhint="search" placeholder="Titles, genres, decades"></label>
+      <button class="lclr" type="button" hidden>Clear</button></div>
+      <div class="lseg" role="group" aria-label="Show">${[['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']].map(([k, l]) => `<button type="button" data-k="${k}" class="${k === gb.kind ? 'on' : ''}">${l}</button>`).join('')}</div></div>
+      <div class="pad"><div class="lsug"><div class="lsugh">Try</div>${SUGGEST.map(s => `<button type="button">${s}</button>`).join('')}</div>
+      <div class="lsum" hidden></div><div class="grid browse" id="gres1"></div><div class="sent" id="gsent1" style="height:1px"></div><div class="msg" id="gmsg1"></div>
+      <div class="lsum" id="gsum2" hidden></div><div class="grid browse" id="gres2"></div><div class="sent" id="gsent2" style="height:30px"></div><div class="msg" id="gmsg2"></div></div>`;
+    const q = $('#gq', v), clr = $('.lclr', v), sug = $('.lsug', v), sum = $('.lsum', v), sum2 = $('#gsum2', v);
+    const g1 = $('#gres1', v), g2 = $('#gres2', v), m1 = $('#gmsg1', v), m2 = $('#gmsg2', v), s1 = $('#gsent1', v), s2 = $('#gsent2', v);
+    const stop = g => { g._gen = (g._gen || 0) + 1; g._obs?.disconnect(); g.innerHTML = ''; };
+    const load = () => {
+      const t = gb.q.trim(); clr.hidden = !t; sug.hidden = !!t; sum.hidden = sum2.hidden = true; m1.textContent = m2.textContent = '';
+      stop(g1); stop(g2);
+      if(!t) return;
+      const p = parse(t), kind = p.kind || gb.kind;
+      const search = { path:kind === 'all' ? '/search/multi' : '/search/' + kind, params:{ query:t }, tv:kind === 'tv' };
+      let browse = null;
+      if(p.browse){
+        const mv = p.mvOk && (p.m.length || !p.names.length), tv = p.tvOk && (p.t.length || !p.names.length);
+        const useM = mv && kind !== 'tv', useT = tv && kind !== 'movie';
+        if(useM && useT) browse = { mix:[defFor(p, false), defFor(p, true)] };
+        else if(useM) browse = defFor(p, false);
+        else if(useT) browse = defFor(p, true);
+        if(browse){
+          const what = useM && useT ? 'Movies and series' : useM ? 'Movies' : 'Series';
+          const bits = [p.names.join(' + '), p.year || (p.decade ? p.decade.replace(/^\d\d(\d0s)$/, "'$1") : ''), { rated:'Top rated', newest:'Newest', popular:'' }[p.sort]].filter(Boolean);
+          sum.innerHTML = `<b>${esc2(bits.join(' · '))}</b><span>${what}</span>`; sum.hidden = false;
+        }
+      }
+      if(browse){
+        setPageSource({ title:'Search', def:browse });
+        feed(null, g1, s1, m1, { ...browse, max:p.names.length === 1 && !p.decade && !p.year && p.sort === 'popular' ? 60 : 0 });
+        // a single genre word can also be a title (a film called "Comedy"): those come under the genre results
+        if(p.names.length === 1 && !p.decade && !p.year && p.sort === 'popular' && !p.kind){
+          sum2.innerHTML = `<b>Titles matching “${esc2(t)}”</b>`; sum2.hidden = false;
+          feed(null, g2, s2, m2, { ...search, max:40 });
+        }
+      } else {
+        setPageSource({ title:'Search', def:search });
+        feed(null, g1, s1, m1, search);
+      }
+    };
+    let tm; q.value = gb.q;
+    q.oninput = () => { clearTimeout(tm); clr.hidden = !q.value; tm = setTimeout(() => { gb.q = q.value; load(); }, 280); };
+    q.onkeydown = e => { if(e.key === 'Enter'){ clearTimeout(tm); gb.q = q.value; q.blur(); load(); } };
+    clr.onclick = () => { clearTimeout(tm); q.value = ''; gb.q = ''; load(); q.focus(); };
+    sug.onclick = e => { const b = e.target.closest('button'); if(!b) return; q.value = b.textContent; gb.q = q.value; scrollTo(0, 0); load(); };
+    $('.lseg', v).onclick = e => { const b = e.target.closest('button'); if(!b || b.dataset.k === gb.kind) return; gb.kind = b.dataset.k;
+      $$('.lseg button', v).forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); load(); };
+    load();
+  };
+  // the tab itself: "Search" with a magnifier
+  const tab = document.querySelector('.tb[data-v="genres"]');
+  if(tab) tab.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>Search';
+  if(document.querySelector('#v-genres .gtop')) buildGenreBrowse();   // already built at start-up (Genres as start page)
+})();

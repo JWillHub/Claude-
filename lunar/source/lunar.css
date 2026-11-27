@@ -285,3 +285,22 @@ main>section.enter{animation-duration:.4s!important}
 /* pages opened from a tab (genre, lists, see all) keep a short, gentle rise */
 @keyframes lpage2{from{opacity:.3;transform:translateY(8px)}to{opacity:1;transform:none}}
 #v-genre.enter,#v-list.enter{animation:lpage2 .3s var(--lease) backwards!important}
+
+/* ---------- Search tab (replaces Genres) ---------- */
+#v-genres .lsrch .ltools{display:flex;align-items:center}
+#v-genres .lsrch .lsearch{flex:1}
+#v-genres .lclr{border:0;background:none;color:var(--accent);font:600 15px Inter,sans-serif;padding:0 2px 0 6px;flex:none}
+#v-genres .lclr[hidden]{display:none}
+#v-genres .lsug{padding:18px 0 8px;display:flex;flex-wrap:wrap;gap:8px}
+#v-genres .lsug[hidden]{display:none}
+#v-genres .lsugh{flex-basis:100%;font:600 13px Inter,sans-serif;color:var(--muted);margin:0 0 4px}
+#v-genres .lsug button{border:1px solid rgba(242,238,232,.22);background:transparent;color:#F2EEE8;border-radius:999px;height:38px;padding:0 16px;font:500 14px Inter,sans-serif}
+#v-genres .lsug button:active{background:rgba(242,238,232,.08)}
+#v-genres .lsum{display:flex;align-items:baseline;gap:10px;padding:18px 0 12px}
+#v-genres .lsum[hidden]{display:none}
+#v-genres .lsum b{font-family:var(--disp);font-weight:400;font-size:30px;line-height:1;color:#F2EEE8}
+#v-genres #gsum2 b{font:600 15px Inter,sans-serif}
+#v-genres .lsum span{font-size:13px;color:var(--muted)}
+#v-genres .grid.browse{padding-top:6px}
+#v-genres .gtiles,#v-genres .ghint{display:none!important}
+#v-genres #gq::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
