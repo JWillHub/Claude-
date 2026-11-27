@@ -320,25 +320,31 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
     for(let i = 0; i < Math.max(a.length, b.length); i++){ if(a[i]) out.push(a[i]); if(b[i]) out.push(b[i]); }
     return { page, total:Math.max(...parts.map(x => x.total || 0)), results:out };
   };
-  const SUGGEST = ['Comedy', 'Action', 'Horror', 'Sci-fi', 'Animation', 'Romcom', '90s action', 'Best dramas', 'New thrillers', 'Crime shows', 'Westerns'];
   const esc2 = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const gf = { sort:'popular', decade:'', genre:'' };
   buildGenreBrowse = function(){
     const v = $('#v-genres'); built.genres = true; window.__gsOn = false;
     v.innerHTML = `<div class="pad ltop gtop lsrch"><h1 class="lh1">Search</h1>
       <div class="ltools"><label class="lsearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg><input type="search" id="gq" autocomplete="off" enterkeyhint="search" placeholder="Titles, genres, decades"></label>
       <button class="lclr" type="button" hidden>Clear</button></div>
-      <div class="lseg" role="group" aria-label="Show">${[['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']].map(([k, l]) => `<button type="button" data-k="${k}" class="${k === gb.kind ? 'on' : ''}">${l}</button>`).join('')}</div></div>
-      <div class="pad"><div class="lsug"><div class="lsugh">Try</div>${SUGGEST.map(s => `<button type="button">${s}</button>`).join('')}</div>
+      <div class="lseg" role="group" aria-label="Show">${[['all', 'All'], ['movie', 'Movies'], ['tv', 'Series']].map(([k, l]) => `<button type="button" data-k="${k}" class="${k === gb.kind ? 'on' : ''}">${l}</button>`).join('')}<button type="button" class="lfbtn" aria-haspopup="true"><span>Filter</span><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg></button></div>
+      <div class="lfmenu" hidden></div></div>
+      <div class="pad">
       <div class="lsum" hidden></div><div class="grid browse" id="gres1"></div><div class="sent" id="gsent1" style="height:1px"></div><div class="msg" id="gmsg1"></div>
       <div class="lsum" id="gsum2" hidden></div><div class="grid browse" id="gres2"></div><div class="sent" id="gsent2" style="height:30px"></div><div class="msg" id="gmsg2"></div></div>`;
-    const q = $('#gq', v), clr = $('.lclr', v), sug = $('.lsug', v), sum = $('.lsum', v), sum2 = $('#gsum2', v);
+    const q = $('#gq', v), clr = $('.lclr', v), sum = $('.lsum', v), sum2 = $('#gsum2', v);
     const g1 = $('#gres1', v), g2 = $('#gres2', v), m1 = $('#gmsg1', v), m2 = $('#gmsg2', v), s1 = $('#gsent1', v), s2 = $('#gsent2', v);
     const stop = g => { g._gen = (g._gen || 0) + 1; g._obs?.disconnect(); g.innerHTML = ''; };
     const load = () => {
-      const t = gb.q.trim(); clr.hidden = !t; sug.hidden = !!t; sum.hidden = sum2.hidden = true; m1.textContent = m2.textContent = '';
+      const t = gb.q.trim(); clr.hidden = !t; sum.hidden = sum2.hidden = true; m1.textContent = m2.textContent = '';
       stop(g1); stop(g2);
-      if(!t) return;
-      const p = parse(t), kind = p.kind || gb.kind;
+      const fOn = gf.sort !== 'popular' || gf.decade || gf.genre;
+      if(!t && !gf.genre) return;            // an empty search shows nothing, unless a genre is picked in Filter
+      const p = parse(t || gf.genre), kind = p.kind || gb.kind;
+      if(t && gf.genre && p.browse && !p.names.length){ const x = parse(gf.genre); Object.assign(p, { m:x.m, t:x.t, mvOk:x.mvOk, tvOk:x.tvOk, names:x.names }); }
+      else if(t && gf.genre && p.browse){ const x = parse(gf.genre); p.m.push(...x.m); p.t.push(...x.t); p.mvOk = p.mvOk && x.mvOk; p.tvOk = p.tvOk && x.tvOk; if(!p.names.includes(x.names[0])) p.names.push(x.names[0]); }
+      if(p.sort === 'popular') p.sort = gf.sort;
+      if(!p.decade && !p.year) p.decade = gf.decade;
       const search = { path:kind === 'all' ? '/search/multi' : '/search/' + kind, params:{ query:t }, tv:kind === 'tv' };
       let browse = null;
       if(p.browse){
@@ -357,7 +363,7 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
         setPageSource({ title:'Search', def:browse });
         feed(null, g1, s1, m1, { ...browse, max:p.names.length === 1 && !p.decade && !p.year && p.sort === 'popular' ? 60 : 0 });
         // a single genre word can also be a title (a film called "Comedy"): those come under the genre results
-        if(p.names.length === 1 && !p.decade && !p.year && p.sort === 'popular' && !p.kind){
+        if(t && !fOn && p.names.length === 1 && !p.decade && !p.year && p.sort === 'popular' && !p.kind){
           sum2.innerHTML = `<b>Titles matching “${esc2(t)}”</b>`; sum2.hidden = false;
           feed(null, g2, s2, m2, { ...search, max:40 });
         }
@@ -370,9 +376,28 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
     q.oninput = () => { clearTimeout(tm); clr.hidden = !q.value; tm = setTimeout(() => { gb.q = q.value; load(); }, 280); };
     q.onkeydown = e => { if(e.key === 'Enter'){ clearTimeout(tm); gb.q = q.value; q.blur(); load(); } };
     clr.onclick = () => { clearTimeout(tm); q.value = ''; gb.q = ''; load(); q.focus(); };
-    sug.onclick = e => { const b = e.target.closest('button'); if(!b) return; q.value = b.textContent; gb.q = q.value; scrollTo(0, 0); load(); };
-    $('.lseg', v).onclick = e => { const b = e.target.closest('button'); if(!b || b.dataset.k === gb.kind) return; gb.kind = b.dataset.k;
-      $$('.lseg button', v).forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); load(); };
+    // Filter dropdown: sort, decade and genre. Words typed in the search still win over it.
+    const fb = $('.lfbtn', v), menu = $('.lfmenu', v);
+    const GEN = [['', 'Any'], ...Object.keys(G).filter(k => ['action','adventure','animation','comedy','crime','documentary','drama','family','fantasy','history','horror','music','mystery','romance','sci-fi','thriller','war','western','reality'].includes(k)).map(k => [k, k === 'sci-fi' ? 'Sci-Fi' : k[0].toUpperCase() + k.slice(1)])];
+    const SECT = [['sort', 'Sort by', [['popular', 'Popular'], ['rated', 'Top rated'], ['newest', 'Newest']]],
+      ['decade', 'Decade', [['', 'Any'], ['2020s', '2020s'], ['2010s', '2010s'], ['2000s', '2000s'], ['1990s', '1990s'], ['1980s', '1980s'], ['1970s', '1970s'], ['1960s', '1960s']]],
+      ['genre', 'Genre', GEN]];
+    const fLabel = () => { const n = (gf.sort !== 'popular') + !!gf.decade + !!gf.genre;
+      fb.querySelector('span').textContent = n ? `Filter · ${n}` : 'Filter'; fb.classList.toggle('on', !!n); };
+    const drawMenu = () => { menu.innerHTML = SECT.map(([k, h, opts]) => `<div class="lfh">${h}</div><div class="lfopts">${opts.map(([val, l]) =>
+      `<button type="button" data-f="${k}" data-val="${val}" class="${gf[k] === val ? 'on' : ''}">${l}</button>`).join('')}</div>`).join('')
+      + `<div class="lfend"><button type="button" class="lfreset">Reset</button><button type="button" class="lfdone">Done</button></div>`; };
+    const closeMenu = () => { menu.hidden = true; fb.setAttribute('aria-expanded', 'false'); };
+    fb.onclick = e => { e.stopPropagation(); if(!menu.hidden) return closeMenu(); drawMenu(); menu.hidden = false; fb.setAttribute('aria-expanded', 'true'); };
+    menu.onclick = e => { e.stopPropagation(); const b = e.target.closest('button'); if(!b) return;
+      if(b.classList.contains('lfdone')) return closeMenu();
+      if(b.classList.contains('lfreset')){ gf.sort = 'popular'; gf.decade = ''; gf.genre = ''; }
+      else gf[b.dataset.f] = b.dataset.val;
+      drawMenu(); fLabel(); scrollTo(0, 0); load(); };
+    document.addEventListener('click', e => { if(!menu.hidden && !e.target.closest('.lfmenu,.lfbtn')) closeMenu(); });
+    fLabel();
+    $('.lseg', v).onclick = e => { const b = e.target.closest('button'); if(!b || !b.dataset.k || b.dataset.k === gb.kind) return; gb.kind = b.dataset.k;
+      $$('.lseg button[data-k]', v).forEach(x => x.classList.toggle('on', x === b)); scrollTo(0, 0); load(); };
     load();
   };
   // the tab itself: "Search" with a magnifier

@@ -304,3 +304,20 @@ main>section.enter{animation-duration:.4s!important}
 #v-genres .grid.browse{padding-top:6px}
 #v-genres .gtiles,#v-genres .ghint{display:none!important}
 #v-genres #gq::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+/* Search: All / Movies / Series / Filter share the row evenly; Filter opens a flat dropdown */
+#v-genres .lsrch{position:relative}
+#v-genres .lsrch .lseg{display:grid!important;grid-template-columns:repeat(4,1fr);gap:8px}
+#v-genres .lsrch .lseg button{padding:0 6px!important;min-width:0;display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+#v-genres .lfbtn svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#v-genres .lfbtn.on{border-color:var(--accent)!important;color:#F2EEE8}
+#v-genres .lfbtn[aria-expanded="true"] svg{transform:rotate(180deg)}
+#v-genres .lfmenu{position:absolute;left:16px;right:16px;top:100%;margin-top:8px;z-index:40;background:#0c0c0d;border:1px solid rgba(242,238,232,.16);border-radius:14px;padding:6px 14px 12px;max-height:62vh;overflow-y:auto}
+#v-genres .lfmenu[hidden]{display:none}
+#v-genres .lfh{font:600 12px Inter,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px}
+#v-genres .lfopts{display:flex;flex-wrap:wrap;gap:6px}
+#v-genres .lfopts button{height:34px;padding:0 13px;border-radius:999px;border:1px solid rgba(242,238,232,.18);background:transparent;color:#F2EEE8;font:500 13.5px Inter,sans-serif}
+#v-genres .lfopts button.on{background:#F2EEE8;color:#000;border-color:#F2EEE8}
+#v-genres .lfend{display:flex;justify-content:space-between;margin-top:14px;padding-top:10px;border-top:1px solid var(--hair)}
+#v-genres .lfend button{border:0;background:none;color:var(--muted);font:600 14px Inter,sans-serif;padding:6px 2px}
+#v-genres .lfend .lfdone{color:var(--accent)}
+#v-genres .lsrch .lseg .lfbtn.on{background:transparent!important;color:#F2EEE8!important;border-color:var(--accent)!important}
