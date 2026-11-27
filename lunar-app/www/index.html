@@ -1399,6 +1399,19 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-ge
 /* strips brighten when pressed (no shrink); a short delay keeps quick swipes from lighting them up */
 #v-genres .gtile .gtart{transition:opacity .35s ease!important}
 #v-genres .gtile:active .gtart{opacity:.8!important;transition:opacity .2s ease .08s!important}
+
+/* ---------- genre and list pages: quick, calm loading ---------- */
+main>section.enter{animation-duration:.4s!important}
+#v-genre .grid>*,#v-list .grid>*{animation:none!important}
+/* placeholders while the first page loads */
+.lskel{aspect-ratio:2/3;border-radius:4px;background:linear-gradient(100deg,#0e0e0e 30%,#1a1a1a 50%,#0e0e0e 70%);background-size:300% 100%;animation:lshim 1.3s ease-in-out infinite}
+.lskel+.lskel{}
+@keyframes lshim{from{background-position:100% 0}to{background-position:0 0}}
+/* posters fade in once they've actually loaded, over a dark tile, instead of popping in piece by piece */
+#v-genre .pw,#v-list .pw,#v-genres .pw{background:#101010}
+#v-genre .pc img,#v-list .pc img{opacity:0;transition:opacity .45s ease}
+#v-genre .pc img.lin,#v-list .pc img.lin{opacity:1}
+#v-genre .msg,#v-list .msg{animation:none!important}
 </style>
 </head>
 <body>
@@ -5037,6 +5050,25 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
   // a new page or a tap on the bar brings it back
   document.addEventListener('click', e => { if(e.target.closest('.tabbar') || e.target.closest('.pc,.gtile')){ setTimeout(() => { off = 0; ly = scrollY; paint(true); }, 0); } }, true);
   addEventListener('popstate', () => { off = 0; ly = scrollY; paint(true); });
+})();
+// Genre and list pages: placeholder tiles right away, then each poster fades in when it has loaded
+(function(){
+  document.addEventListener('load', e => { const im = e.target; if(im.tagName === 'IMG') im.classList.add('lin'); }, true);
+  document.addEventListener('error', e => { const im = e.target; if(im.tagName === 'IMG') im.classList.add('lin'); }, true);
+  const skel = '<div class="lskel" aria-hidden="true"></div>'.repeat(6);
+  function fill(){
+    ['v-genre', 'v-list'].forEach(id => {
+      const v = document.getElementById(id); if(!v || v.hidden) return;
+      const g = v.querySelector('.grid'), m = v.querySelector('.msg'); if(!g) return;
+      // images that were already in the cache finish before the listener sees them
+      g.querySelectorAll('img:not(.lin)').forEach(im => { if(im.complete && im.naturalWidth) im.classList.add('lin'); });
+      const loading = m && /Loading/.test(m.textContent);
+      if(loading && !g.children.length){ g.innerHTML = skel; if(m) m.style.visibility = 'hidden'; }
+      else if(g.querySelector('.pc') && g.querySelector('.lskel')) g.querySelectorAll('.lskel').forEach(x => x.remove());
+      else if(!loading && m) m.style.visibility = '';
+    });
+  }
+  new MutationObserver(fill).observe(document.body, { subtree:true, childList:true, characterData:true });
 })();
 </script>
 </body>

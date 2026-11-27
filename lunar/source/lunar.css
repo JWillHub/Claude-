@@ -264,3 +264,16 @@ html body:not(.libv) #v-genres .gtop,html body.libv .ltop,#v-library .ltop,#v-ge
 /* strips brighten when pressed (no shrink); a short delay keeps quick swipes from lighting them up */
 #v-genres .gtile .gtart{transition:opacity .35s ease!important}
 #v-genres .gtile:active .gtart{opacity:.8!important;transition:opacity .2s ease .08s!important}
+
+/* ---------- genre and list pages: quick, calm loading ---------- */
+main>section.enter{animation-duration:.4s!important}
+#v-genre .grid>*,#v-list .grid>*{animation:none!important}
+/* placeholders while the first page loads */
+.lskel{aspect-ratio:2/3;border-radius:4px;background:linear-gradient(100deg,#0e0e0e 30%,#1a1a1a 50%,#0e0e0e 70%);background-size:300% 100%;animation:lshim 1.3s ease-in-out infinite}
+.lskel+.lskel{}
+@keyframes lshim{from{background-position:100% 0}to{background-position:0 0}}
+/* posters fade in once they've actually loaded, over a dark tile, instead of popping in piece by piece */
+#v-genre .pw,#v-list .pw,#v-genres .pw{background:#101010}
+#v-genre .pc img,#v-list .pc img{opacity:0;transition:opacity .45s ease}
+#v-genre .pc img.lin,#v-list .pc img.lin{opacity:1}
+#v-genre .msg,#v-list .msg{animation:none!important}

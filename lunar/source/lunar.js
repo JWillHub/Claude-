@@ -241,3 +241,22 @@ try{ openRatepad = id => openMovie(id); }catch(e){}
   document.addEventListener('click', e => { if(e.target.closest('.tabbar') || e.target.closest('.pc,.gtile')){ setTimeout(() => { off = 0; ly = scrollY; paint(true); }, 0); } }, true);
   addEventListener('popstate', () => { off = 0; ly = scrollY; paint(true); });
 })();
+// Genre and list pages: placeholder tiles right away, then each poster fades in when it has loaded
+(function(){
+  document.addEventListener('load', e => { const im = e.target; if(im.tagName === 'IMG') im.classList.add('lin'); }, true);
+  document.addEventListener('error', e => { const im = e.target; if(im.tagName === 'IMG') im.classList.add('lin'); }, true);
+  const skel = '<div class="lskel" aria-hidden="true"></div>'.repeat(6);
+  function fill(){
+    ['v-genre', 'v-list'].forEach(id => {
+      const v = document.getElementById(id); if(!v || v.hidden) return;
+      const g = v.querySelector('.grid'), m = v.querySelector('.msg'); if(!g) return;
+      // images that were already in the cache finish before the listener sees them
+      g.querySelectorAll('img:not(.lin)').forEach(im => { if(im.complete && im.naturalWidth) im.classList.add('lin'); });
+      const loading = m && /Loading/.test(m.textContent);
+      if(loading && !g.children.length){ g.innerHTML = skel; if(m) m.style.visibility = 'hidden'; }
+      else if(g.querySelector('.pc') && g.querySelector('.lskel')) g.querySelectorAll('.lskel').forEach(x => x.remove());
+      else if(!loading && m) m.style.visibility = '';
+    });
+  }
+  new MutationObserver(fill).observe(document.body, { subtree:true, childList:true, characterData:true });
+})();
